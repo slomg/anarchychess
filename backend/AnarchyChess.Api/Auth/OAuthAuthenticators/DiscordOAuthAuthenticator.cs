@@ -1,37 +1,21 @@
 ﻿using System.Security.Claims;
 using System.Text.Json;
 using AnarchyChess.Api.Auth.Errors;
-using AnarchyChess.Api.Profile.Entities;
-using AnarchyChess.Api.Profile.Services;
+using AnarchyChess.Api.Auth.Models;
 using ErrorOr;
 using OpenIddict.Abstractions;
 using static OpenIddict.Client.WebIntegration.OpenIddictClientWebIntegrationConstants;
 
-namespace AnarchyChess.Api.Auth.Services.OAuthAuthenticators;
+namespace AnarchyChess.Api.Auth.OAuthAuthenticators;
 
-public class DiscordOAuthAuthenticator(
-    ILogger<DiscordOAuthAuthenticator> logger,
-    IAuthService authService,
-    IUsernameGenerator usernameGenerator
-) : IOAuthAuthenticator
+public class DiscordOAuthAuthenticator(ILogger<DiscordOAuthAuthenticator> logger)
+    : IOAuthAuthenticator
 {
     public string Provider => Providers.Discord;
 
     private readonly ILogger<DiscordOAuthAuthenticator> _logger = logger;
-    private readonly IAuthService _authService = authService;
-    private readonly IUsernameGenerator _usernameGenerator = usernameGenerator;
 
-    public async Task<ErrorOr<AuthedUser>> SignUserUpAsync(
-        ClaimsPrincipal claimsPrincipal,
-        string providerKey
-    )
-    {
-        var username = await _usernameGenerator.GenerateUniqueUsernameAsync();
-        var signupResult = await _authService.SignupAsync(username);
-        return signupResult;
-    }
-
-    public ErrorOr<string> GetProviderKey(ClaimsPrincipal claimsPrincipal)
+    public ErrorOr<OAuthIdentity> ExtractOAuthIdentity(ClaimsPrincipal claimsPrincipal)
     {
         var userClaim = claimsPrincipal.GetClaim("user");
         if (userClaim is null)
@@ -54,6 +38,6 @@ public class DiscordOAuthAuthenticator(
             return AuthErrors.OAuthInvalid;
         }
 
-        return discordId;
+        return new OAuthIdentity(ProviderKey: discordId, Email: null);
     }
 }
