@@ -1,8 +1,8 @@
-﻿using AnarchyChess.Api.Profile.Validators;
+﻿using AnarchyChess.Api.CountryCodes.Validators;
 using AwesomeAssertions;
 using FluentValidation;
 
-namespace AnarchyChess.Api.Unit.Tests.ProfileTests.ValidatorTests;
+namespace AnarchyChess.Api.Unit.Tests.CountryCodesTests;
 
 public class CountryCodeValidatorTests
 {
