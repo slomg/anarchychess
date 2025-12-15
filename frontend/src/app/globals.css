@@ -50,8 +50,8 @@
     --color-error: #f87171;
 
     --background-checkerboard: repeating-conic-gradient(
-        #111111 0% 25%,
-        transparent 0% 50%
+        #1f1f1f 0% 25%,
+        #181818 0% 50%
     );
 
     --animate-double-tap:
