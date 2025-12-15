@@ -36,7 +36,7 @@ describe("NewRulesGuide", () => {
     });
 
     it("should attach the id", () => {
-        const { container } = render(<NewRulesGuide id="rules-guide" />);
-        expect(container.firstChild).toHaveAttribute("id", "rules-guide");
+        const { container } = render(<NewRulesGuide id="rules" />);
+        expect(container.firstChild).toHaveAttribute("id", "rules");
     });
 });

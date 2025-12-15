@@ -31,7 +31,7 @@ describe("NewPiecesGuide", () => {
     });
 
     it("should attach the id", () => {
-        const { container } = render(<NewPiecesGuide id="pieces-guide" />);
-        expect(container.firstChild).toHaveAttribute("id", "pieces-guide");
+        const { container } = render(<NewPiecesGuide id="pieces" />);
+        expect(container.firstChild).toHaveAttribute("id", "pieces");
     });
 });
