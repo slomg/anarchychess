@@ -10,7 +10,7 @@ namespace AnarchyChess.Api.Game.Services;
 public interface IFenCalculator
 {
     string CalculateFen(IReadOnlyChessBoard board);
-    ErrorOr<ChessBoard> DecodeFen(string fen);
+    ErrorOr<ChessBoard> DecodeFen(string fen, GameColor sideToMove = GameColor.White);
 }
 
 public class FenCalculator(IPieceLetterMap pieceLetterMap) : IFenCalculator
@@ -60,7 +60,7 @@ public class FenCalculator(IPieceLetterMap pieceLetterMap) : IFenCalculator
         return fen;
     }
 
-    public ErrorOr<ChessBoard> DecodeFen(string fen)
+    public ErrorOr<ChessBoard> DecodeFen(string fen, GameColor sideToMove = GameColor.White)
     {
         if (fen.Length == 0)
             return GameErrors.MalformedFen;
@@ -117,7 +117,7 @@ public class FenCalculator(IPieceLetterMap pieceLetterMap) : IFenCalculator
             width = x;
         }
 
-        return new ChessBoard(pieces, height: height, width: width);
+        return new ChessBoard(pieces, height: height, width: width, sideToMove);
     }
 
     private static GameColor? GetColorFromLetter(char letter)

@@ -99,6 +99,20 @@ public class FenCalculatorTests : BaseIntegrationTest
     }
 
     [Fact]
+    public void DecodeFen_sets_sideToMove_correctly()
+    {
+        var result = _fenCalculator.DecodeFen(
+            "10/10/10/10/10/10/10/10/10/10",
+            sideToMove: GameColor.Black
+        );
+
+        result.IsError.Should().BeFalse();
+
+        ChessBoard expectedBoard = new([], height: 10, width: 10, sideToMove: GameColor.Black);
+        result.Value.Should().BeEquivalentTo(expectedBoard);
+    }
+
+    [Fact]
     public void DecodeFen_correctly_handles_non_standard_board_size()
     {
         // 4x3
