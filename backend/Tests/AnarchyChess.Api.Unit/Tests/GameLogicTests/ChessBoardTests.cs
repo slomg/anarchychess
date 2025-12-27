@@ -331,6 +331,38 @@ public class ChessBoardTests
     }
 
     [Fact]
+    public void PlayMove_flips_SideToMove_after_each_move()
+    {
+        ChessBoard board = new(sideToMove: GameColor.White);
+
+        Piece whitePawn = PieceFactory.White(PieceType.Pawn);
+        Piece blackPawn = PieceFactory.Black(PieceType.Pawn);
+
+        Move whiteMove = new(
+            from: new AlgebraicPoint("e2"),
+            to: new AlgebraicPoint("e4"),
+            piece: whitePawn
+        );
+
+        Move blackMove = new(
+            from: new AlgebraicPoint("e7"),
+            to: new AlgebraicPoint("e5"),
+            piece: blackPawn
+        );
+
+        board.PlacePiece(whiteMove.From, whitePawn);
+        board.PlacePiece(blackMove.From, blackPawn);
+
+        board.SideToMove.Should().Be(GameColor.White);
+
+        board.PlayMove(whiteMove);
+        board.SideToMove.Should().Be(GameColor.Black);
+
+        board.PlayMove(blackMove);
+        board.SideToMove.Should().Be(GameColor.White);
+    }
+
+    [Fact]
     public void PlacePiece_adds_piece()
     {
         ChessBoard board = new();

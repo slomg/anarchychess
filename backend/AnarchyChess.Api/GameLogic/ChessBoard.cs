@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using AnarchyChess.Api.GameLogic.Extensions;
 using AnarchyChess.Api.GameLogic.Models;
 
 namespace AnarchyChess.Api.GameLogic;
@@ -18,7 +19,6 @@ public class ChessBoard : IReadOnlyChessBoard
     [];
 
     public IReadOnlyList<Move> Moves => _moves;
-    public GameColor SideToMove => _moves.Count % 2 == 0 ? GameColor.White : GameColor.Black;
 
     [Id(3)]
     public int Height { get; }
@@ -26,14 +26,19 @@ public class ChessBoard : IReadOnlyChessBoard
     [Id(4)]
     public int Width { get; }
 
+    [Id(5)]
+    public GameColor SideToMove { get; private set; }
+
     public ChessBoard(
         Dictionary<AlgebraicPoint, Piece>? pieces = null,
         int height = GameLogicConstants.BoardHeight,
-        int width = GameLogicConstants.BoardWidth
+        int width = GameLogicConstants.BoardWidth,
+        GameColor sideToMove = GameColor.White
     )
     {
         Height = height;
         Width = width;
+        SideToMove = sideToMove;
 
         _board = new Piece[height, width];
         if (pieces is not null)
@@ -139,6 +144,7 @@ public class ChessBoard : IReadOnlyChessBoard
         }
 
         _moves.Add(move);
+        SideToMove = SideToMove.Invert();
     }
 
     public void PlacePiece(AlgebraicPoint point, Piece piece)
