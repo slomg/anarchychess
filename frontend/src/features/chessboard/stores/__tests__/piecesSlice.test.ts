@@ -11,7 +11,12 @@ import {
     screenPoint,
 } from "@/features/point/pointUtils";
 
-import { BoardState, IntermediateSquare, LegalMoveMap } from "../../lib/types";
+import {
+    BoardState,
+    IntermediateSquare,
+    LegalMoveMap,
+    Move,
+} from "../../lib/types";
 import { ChessboardStore, createChessboardStore } from "../chessboardStore";
 import flushMicrotasks from "@/lib/testUtils/flushMicrotasks";
 import { createMoveOptions } from "../../lib/moveOptions";
@@ -21,6 +26,7 @@ import BoardPieces from "../../lib/boardPieces";
 import { GameColor, PieceType, SpecialMoveType } from "@/lib/apiClient";
 import { Piece } from "../../lib/types";
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
+import { EventBus } from "@/lib/eventBus";
 
 vi.mock("@/features/audio/audioPlayer");
 
@@ -235,13 +241,22 @@ describe("PiecesSlice", () => {
                     moveOptions: createMoveOptions({ legalMoves }),
                 });
 
-                const result = await store.getState().handleMousePieceDrop({
+                const { handleMousePieceDrop, pieceMovementEvent } =
+                    store.getState();
+
+                let emittedMove: Move | null = null;
+                pieceMovementEvent.subscribe(
+                    (move) => void (emittedMove = move),
+                );
+
+                const result = await handleMousePieceDrop({
                     mousePoint: mousePosition,
                     isDrag: false,
                     isDoubleClick: false,
                 });
 
                 expect(result).toEqual({ success: true });
+                expect(emittedMove).toEqual(move);
                 expectPieces({ position: expectedPosition, piece });
             },
         );

@@ -1,36 +1,34 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 import { StoreApi } from "zustand";
 
-import LiveChessboardProfile, {
-    ProfileSide as ChessProfileSide,
-} from "./LiveChessboardProfile";
-import createLiveChessStore, { LiveChessStore } from "../stores/liveChessStore";
-import ChessboardLayout from "@/features/chessboard/components/ChessboardLayout";
 import {
     ChessboardStore,
     createChessboardStore,
 } from "@/features/chessboard/stores/chessboardStore";
-import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardStoreContext";
-import MoveHistoryTable from "./MoveHistoryTable";
-import GameControlsCard from "./GameControls/GameControlsCard";
-import GameChat from "./GameChat";
-import GameOverPopup from "./GameOverPopup";
-import LiveChessStoreContext from "../contexts/liveChessContext";
-import useLiveChessEvents from "../hooks/useLiveChessEvents";
-import { useSessionUser } from "@/features/auth/hooks/useSessionUser";
-import { GameState, Preferences } from "@/lib/apiClient";
-import useInvalidateOnNavigate from "@/hooks/useInvalidateOnNavigate";
 import {
     createStoreProps,
     ProcessedGameState,
 } from "../lib/gameStateProcessor";
-import useConst from "@/hooks/useConst";
-import { Move } from "@/features/chessboard/lib/types";
+
+import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardStoreContext";
 import ChessboardWithSidebar from "@/features/chessboard/components/ChessboardWithSidebar";
-import { useGameEmitter } from "../hooks/useGameHub";
+import ChessboardLayout from "@/features/chessboard/components/ChessboardLayout";
+import createLiveChessStore, { LiveChessStore } from "../stores/liveChessStore";
+import LiveChessboardProfile, { ProfileSide } from "./LiveChessboardProfile";
+import { useSessionUser } from "@/features/auth/hooks/useSessionUser";
+import useInvalidateOnNavigate from "@/hooks/useInvalidateOnNavigate";
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
+import LiveChessStoreContext from "../contexts/liveChessContext";
+import GameControlsCard from "./GameControls/GameControlsCard";
+import useLiveMoveEmitter from "../hooks/useLiveMoveEmitter";
+import useLiveChessEvents from "../hooks/useLiveChessEvents";
+import { GameState, Preferences } from "@/lib/apiClient";
+import MoveHistoryTable from "./MoveHistoryTable";
+import GameOverPopup from "./GameOverPopup";
+import useConst from "@/hooks/useConst";
+import GameChat from "./GameChat";
 
 const LiveChessboard = ({
     gameToken,
@@ -58,23 +56,12 @@ const LiveChessboard = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps -- only play sound once
     }, []);
 
-    const sendGameEvent = useGameEmitter(gameToken);
-    const sendMove = useCallback(
-        async (move: Move) => {
-            liveChessStore.getState().markPendingMoveAck();
-            await sendGameEvent("MovePieceAsync", gameToken, move.moveKey);
-        },
-        [sendGameEvent, gameToken, liveChessStore],
-    );
-
     const chessboardStore = useConst<StoreApi<ChessboardStore>>(() =>
-        createChessboardStore({
-            ...storeProps.board,
-            onPieceMovement: sendMove,
-        }),
+        createChessboardStore(storeProps.board),
     );
 
     useLiveChessEvents(liveChessStore, chessboardStore);
+    useLiveMoveEmitter(liveChessStore, chessboardStore);
     useInvalidateOnNavigate();
 
     return (
@@ -85,7 +72,7 @@ const LiveChessboard = ({
                     chessboard={
                         <>
                             <LiveChessboardProfile
-                                side={ChessProfileSide.Opponent}
+                                side={ProfileSide.Opponent}
                             />
                             <ChessboardLayout
                                 breakpoints={[
@@ -108,7 +95,7 @@ const LiveChessboard = ({
                                 className="mx-auto"
                             />
                             <LiveChessboardProfile
-                                side={ChessProfileSide.CurrentlyPlaying}
+                                side={ProfileSide.CurrentlyPlaying}
                             />
                         </>
                     }

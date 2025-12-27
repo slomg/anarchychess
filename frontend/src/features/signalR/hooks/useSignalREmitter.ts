@@ -4,9 +4,9 @@ import { useCallback, useEffect, useRef } from "react";
 import useSignalRConnection from "./useSignalRConnection";
 import useSignalRStore from "../stores/signalRStore";
 
-const useSignalREmitter = <TEventMap extends Record<string, unknown[]>>(
+function useSignalREmitter<TEventMap extends Record<string, unknown[]>>(
     hubUrl: string,
-) => {
+) {
     const connection = useSignalRConnection(hubUrl);
     const state = useSignalRStore((x) => x.hubs.get(hubUrl)?.state);
 
@@ -47,7 +47,7 @@ const useSignalREmitter = <TEventMap extends Record<string, unknown[]>>(
         [],
     );
     return sendEvent;
-};
+}
 export default useSignalREmitter;
 
 export function signalREmitterHookFactory<

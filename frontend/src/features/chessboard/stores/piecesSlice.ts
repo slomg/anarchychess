@@ -11,11 +11,11 @@ import {
 } from "../lib/simulateMove";
 import BoardPieces from "../lib/boardPieces";
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
+import { EventBus } from "@/lib/eventBus";
 
 export interface PieceSliceProps {
     pieces: BoardPieces;
     canDrag: boolean;
-    onPieceMovement?: (move: Move) => Promise<void>;
 }
 
 export interface PiecesSlice {
@@ -24,7 +24,7 @@ export interface PiecesSlice {
     canDrag: boolean;
     isProcessingMove: boolean;
 
-    onPieceMovement?: (move: Move) => Promise<void>;
+    pieceMovementEvent: EventBus<[move: Move], void>;
 
     selectPiece(pieceId: PieceID): boolean;
     unselectPiece(): void;
@@ -55,12 +55,14 @@ export function createPiecesSlice(
 > {
     return (set, get) => {
         async function applyMoveTurn(move: Move): Promise<void> {
-            const { applyMoveImmediate, disableMovement, onPieceMovement } =
+            const { applyMoveImmediate, disableMovement, pieceMovementEvent } =
                 get();
 
             const animationPromise = applyMoveImmediate(move);
+
             disableMovement();
-            await onPieceMovement?.(move);
+            await pieceMovementEvent.emit(move);
+
             await animationPromise;
         }
 
@@ -108,6 +110,8 @@ export function createPiecesSlice(
             selectedPieceId: null,
             animatingPieces: new Set(),
             isProcessingMove: false,
+
+            pieceMovementEvent: new EventBus(),
 
             selectPiece(pieceId) {
                 const { showLegalMoves, pieces, selectedPieceId } = get();

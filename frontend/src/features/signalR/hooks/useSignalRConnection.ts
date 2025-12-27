@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import useSignalRStore from "@/features/signalR/stores/signalRStore";
 import { shallow } from "zustand/shallow";
 
-const useSignalRConnection = (hubUrl: string): HubConnection | undefined => {
+function useSignalRConnection(hubUrl: string): HubConnection | undefined {
     const { connection, joinHub, dereferenceHub } = useSignalRStore(
         (x) => ({
             connection: x.hubs.get(hubUrl)?.connection,
@@ -20,6 +20,6 @@ const useSignalRConnection = (hubUrl: string): HubConnection | undefined => {
     }, [hubUrl, joinHub, dereferenceHub]);
 
     return connection;
-};
+}
 
 export default useSignalRConnection;

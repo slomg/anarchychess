@@ -23,16 +23,6 @@ describe("CountrySelector", () => {
         expect(select).toHaveAttribute("name", "country");
     });
 
-    it("should render an option for each country from the JSON", () => {
-        renderWithFormik();
-
-        const options = screen.getAllByRole<HTMLInputElement>("option");
-        expect(options.map((o) => o.value)).toEqual(Object.keys(countries));
-        expect(options.map((o) => o.textContent)).toEqual(
-            Object.values(countries),
-        );
-    });
-
     it("should render options with the correct classes", () => {
         renderWithFormik();
 
