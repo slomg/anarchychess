@@ -1,4 +1,5 @@
-﻿using AnarchyChess.Api.ArchivedGames.Models;
+﻿using AnarchyChess.Api.Analysis.Models;
+using AnarchyChess.Api.ArchivedGames.Models;
 using AnarchyChess.Api.Challenges.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Matchmaking.Models;
@@ -75,6 +76,14 @@ public interface IAnarchyChessApi
         string userId,
         [Query] PaginationQuery pagination
     );
+    #endregion
+
+    #region Analysis
+    [Get("/api/analysis/initial")]
+    Task<IApiResponse<AnalysisPosition>> GetInitialAnalysisPosition();
+
+    [Post("/api/analysis/next")]
+    Task<IApiResponse<AnalysisPosition>> GetNextAnalysisPosition(AnalysisMove move);
     #endregion
 
     #region Ratings
