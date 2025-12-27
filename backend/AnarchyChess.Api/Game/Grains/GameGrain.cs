@@ -358,11 +358,13 @@ public class GameGrain : Grain, IGameGrain, IRemindable
 
         game.DrawRequest.DecrementCooldown();
         if (game.DrawRequest.TryDeclineDraw(currentPlayer.Color, _settings.DrawCooldown))
+        {
             await _gameNotifier.NotifyDrawStateChangeAsync(
                 _token,
                 game.DrawRequest.GetState(),
                 game.NotifierState
             );
+        }
 
         var timeLeft = _clock.CommitTurn(currentPlayer.Color, game.ClockState);
         MoveSnapshot moveSnapshot = new(moveResult.MovePath, moveResult.San, timeLeft);
