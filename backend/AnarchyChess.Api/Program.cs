@@ -3,6 +3,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using AnarchyChess.Api.Analysis.Services;
 using AnarchyChess.Api.ArchivedGames.Repositories;
 using AnarchyChess.Api.ArchivedGames.Services;
 using AnarchyChess.Api.Auth.Errors;
@@ -411,6 +412,8 @@ builder.Services.AddSingleton<IFenCalculator, FenCalculator>();
 builder.Services.AddSingleton<IPieceLetterMap, PieceLetterMap>();
 builder.Services.AddSingleton<ILegalMoveCalculator, LegalMoveCalculator>();
 builder.Services.AddSingleton<IMoveEncoder, MoveEncoder>();
+
+builder.Services.AddSingleton<IPositionAnalysis, PositionAnalysis>();
 
 builder.Services.AddSingleton<ISanNotator, RegularNotator>();
 builder.Services.AddSingleton<ISanNotator, KingsideCastleNotator>();
