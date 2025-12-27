@@ -1,10 +1,10 @@
-﻿using AnarchyChess.Api.GameLogic;
+﻿using AnarchyChess.Api.Game.Errors;
+using AnarchyChess.Api.Game.Models;
+using AnarchyChess.Api.Game.SanNotation;
+using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Extensions;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
-using AnarchyChess.Api.Game.Errors;
-using AnarchyChess.Api.Game.Models;
-using AnarchyChess.Api.Game.SanNotation;
 using ErrorOr;
 
 namespace AnarchyChess.Api.Game.Services;
@@ -13,6 +13,7 @@ public interface IGameCore
 {
     LegalMoveSet GetLegalMovesOf(GameColor? of, GameCoreState state);
     ErrorOr<MoveResult> MakeMove(MoveKey key, GameCoreState state);
+    MoveResult MakeMove(Move move, GameCoreState state);
     GameColor SideToMove(GameCoreState state);
     string StartGame(GameCoreState state);
 }
@@ -74,18 +75,23 @@ public class GameCore(
 
     public ErrorOr<MoveResult> MakeMove(MoveKey key, GameCoreState state)
     {
-        var movingSide = state.Board.SideToMove;
         if (!state.LegalMoves.MoveMap.TryGetValue(key, out var move))
         {
             _logger.LogWarning("Could not find move with key {Key}", key);
             return GameErrors.MoveInvalid;
         }
 
+        return MakeMove(move, state);
+    }
+
+    public MoveResult MakeMove(Move move, GameCoreState state)
+    {
+        var movingSide = state.Board.SideToMove;
         state.Board.PlayMove(move);
         var fen = _fenCalculator.CalculateFen(state.Board);
 
         GameEndStatus? endStatus = null;
-        var winStatus = EvaluateKingCaptureResult(move, state.Board, movingSide: movingSide);
+        var winStatus = EvaluateKingCaptureResult(move, state.Board, movingSide);
         if (winStatus is not null)
         {
             endStatus = winStatus;
