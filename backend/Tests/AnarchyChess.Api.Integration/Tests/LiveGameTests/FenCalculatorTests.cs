@@ -138,7 +138,7 @@ public class FenCalculatorTests : BaseIntegrationTest
     [Fact]
     public void DecodeFen_returns_error_for_empty_rank()
     {
-        var result = _fenCalculator.DecodeFen("3/0/3");
+        var result = _fenCalculator.DecodeFen("0/0/0");
 
         result.IsError.Should().BeTrue();
         result.FirstError.Should().Be(GameErrors.MalformedFen);
