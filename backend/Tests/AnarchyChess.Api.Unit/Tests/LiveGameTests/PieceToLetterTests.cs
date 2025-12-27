@@ -1,5 +1,5 @@
-﻿using AnarchyChess.Api.GameLogic.Models;
-using AnarchyChess.Api.Game.Services;
+﻿using AnarchyChess.Api.Game.Services;
+using AnarchyChess.Api.GameLogic.Models;
 using AwesomeAssertions;
 
 namespace AnarchyChess.Api.Unit.Tests.LiveGameTests;
@@ -8,28 +8,28 @@ public class PieceToLetterTests : BaseUnitTest
 {
     private readonly PieceToLetter _pieceToLetter = new();
 
-    public static TheoryData<PieceType, string> PieceTypeTestData() =>
+    public static TheoryData<PieceType, char> PieceTypeTestData() =>
         new()
         {
-            { PieceType.King, "k" },
-            { PieceType.Queen, "q" },
-            { PieceType.Pawn, "p" },
-            { PieceType.UnderagePawn, "d" },
-            { PieceType.SterilePawn, "s" },
-            { PieceType.Rook, "r" },
-            { PieceType.Bishop, "b" },
-            { PieceType.Horsey, "h" },
-            { PieceType.Knook, "n" },
-            { PieceType.Antiqueen, "a" },
-            { PieceType.Checker, "c" },
-            { PieceType.TraitorRook, "+" },
+            { PieceType.King, 'k' },
+            { PieceType.Queen, 'q' },
+            { PieceType.Pawn, 'p' },
+            { PieceType.UnderagePawn, 'd' },
+            { PieceType.SterilePawn, 's' },
+            { PieceType.Rook, 'r' },
+            { PieceType.Bishop, 'b' },
+            { PieceType.Horsey, 'h' },
+            { PieceType.Knook, 'n' },
+            { PieceType.Antiqueen, 'a' },
+            { PieceType.Checker, 'c' },
+            { PieceType.TraitorRook, '+' },
         };
 
     [Theory]
     [MemberData(nameof(PieceTypeTestData))]
     public void GetLetter_returns_the_correct_letter_for_PieceType(
         PieceType piece,
-        string expectedLetter
+        char expectedLetter
     )
     {
         var result = _pieceToLetter.GetLetter(piece);
@@ -59,6 +59,6 @@ public class PieceToLetterTests : BaseUnitTest
 
         var result = _pieceToLetter.GetLetter(unknownPiece);
 
-        result.Should().Be("?");
+        result.Should().Be('?');
     }
 }

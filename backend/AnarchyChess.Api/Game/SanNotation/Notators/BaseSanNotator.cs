@@ -27,7 +27,7 @@ public abstract class BaseSanNotator(IPieceToLetter pieceToLetter) : ISanNotator
     protected string PieceChar(PieceType piece) =>
         GameLogicConstants.PawnLikePieces.Contains(piece)
             ? ""
-            : _pieceToLetter.GetLetter(piece).ToUpper();
+            : char.ToUpper(_pieceToLetter.GetLetter(piece)).ToString();
 
     protected static void DisambiguatePosition(
         Move move,

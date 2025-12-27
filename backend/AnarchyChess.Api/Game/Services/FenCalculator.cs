@@ -16,7 +16,7 @@ public class FenCalculator(IPieceToLetter pieceToLetter) : IFenCalculator
 
     public string CalculateFen(IReadOnlyChessBoard board)
     {
-        var sb = new StringBuilder();
+        StringBuilder sb = new();
 
         // enumerate from black perspective because we FENs start with the black pieces
         for (int y = board.Height - 1; y >= 0; y--)
@@ -39,8 +39,8 @@ public class FenCalculator(IPieceToLetter pieceToLetter) : IFenCalculator
 
                 var pieceLetter = _pieceToLetter.GetLetter(piece.Type);
                 pieceLetter = piece.Color.Match(
-                    whenWhite: pieceLetter.ToUpper(),
-                    whenBlack: pieceLetter.ToLower(),
+                    whenWhite: char.ToUpper(pieceLetter),
+                    whenBlack: char.ToLower(pieceLetter),
                     whenNeutral: pieceLetter
                 );
 

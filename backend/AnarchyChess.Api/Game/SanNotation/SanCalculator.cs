@@ -1,7 +1,7 @@
 ﻿using System.Text;
-using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.Game.SanNotation.Notators;
 using AnarchyChess.Api.Game.Services;
+using AnarchyChess.Api.GameLogic.Models;
 
 namespace AnarchyChess.Api.Game.SanNotation;
 
@@ -33,7 +33,7 @@ public class SanCalculator : ISanCalculator
         if (move.PromotesTo is PieceType promotesTo)
         {
             sb.Append('=');
-            sb.Append(_pieceToLetter.GetLetter(promotesTo).ToUpper());
+            sb.Append(char.ToUpper(_pieceToLetter.GetLetter(promotesTo)));
         }
 
         if (isKingCapture)
