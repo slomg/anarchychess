@@ -1,13 +1,16 @@
 ﻿using System.Text;
+using AnarchyChess.Api.Game.Errors;
 using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Extensions;
 using AnarchyChess.Api.GameLogic.Models;
+using ErrorOr;
 
 namespace AnarchyChess.Api.Game.Services;
 
 public interface IFenCalculator
 {
     string CalculateFen(IReadOnlyChessBoard board);
+    ErrorOr<ChessBoard> DecodeFen(string fen);
 }
 
 public class FenCalculator(IPieceLetterMap pieceLetterMap) : IFenCalculator
@@ -24,7 +27,7 @@ public class FenCalculator(IPieceLetterMap pieceLetterMap) : IFenCalculator
             int emptyCount = 0;
             for (int x = 0; x < board.Width; x++)
             {
-                var point = new AlgebraicPoint(x, y);
+                AlgebraicPoint point = new(x, y);
                 if (!board.TryGetPieceAt(point, out var piece))
                 {
                     emptyCount++;
@@ -55,5 +58,75 @@ public class FenCalculator(IPieceLetterMap pieceLetterMap) : IFenCalculator
 
         var fen = sb.ToString();
         return fen;
+    }
+
+    public ErrorOr<ChessBoard> DecodeFen(string fen)
+    {
+        if (fen.Length == 0)
+            return GameErrors.MalformedFen;
+
+        Dictionary<AlgebraicPoint, Piece> pieces = [];
+
+        var ranks = fen.Split('/').Reverse().ToArray();
+        int height = ranks.Length;
+        int width = 0;
+        for (var y = 0; y < ranks.Length; y++)
+        {
+            var rank = ranks[y];
+
+            string num = "";
+            int x = 0;
+            foreach (var square in rank)
+            {
+                if (char.IsDigit(square))
+                {
+                    num += square;
+                    continue;
+                }
+
+                if (num.Length > 0)
+                {
+                    x += int.Parse(num);
+                    num = "";
+                }
+
+                var color = GetColorFromLetter(square);
+                var pieceType = _pieceLetterMap.GetPiece(square);
+                if (pieceType is null)
+                    return GameErrors.InvalidPieceLetter;
+
+                Piece piece = new(pieceType.Value, color);
+                pieces[new AlgebraicPoint(x, y)] = piece;
+
+                x++;
+            }
+
+            // handle trailing numbers in the rank
+            if (num.Length > 0)
+            {
+                x += int.Parse(num);
+            }
+
+            if (x == 0)
+                return GameErrors.MalformedFen;
+
+            // width was already set, but the x indicates a different width
+            if (width != 0 && x != width)
+                return GameErrors.MalformedFen;
+
+            width = x;
+        }
+
+        return new ChessBoard(pieces, height: height, width: width);
+    }
+
+    private static GameColor? GetColorFromLetter(char letter)
+    {
+        bool isLetter = (letter >= 'A' && letter <= 'Z') || (letter >= 'a' && letter <= 'z');
+        // not letter = neutral pieces
+        if (!isLetter)
+            return null;
+
+        return char.IsUpper(letter) ? GameColor.White : GameColor.Black;
     }
 }

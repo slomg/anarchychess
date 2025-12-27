@@ -41,14 +41,14 @@ public static class ErrorCodes
     public const string AuthOAuthInvalid = "Auth.OAuth.Invalid";
     public const string AuthOAuthProviderNotFound = "Auth.OAuth.ProviderNotFound";
 
-    public const string GameLogicPieceNotFound = "GameLogic.PieceNotFound";
-    public const string GameLogicPointOutOfBound = "GameLogic.PointOutOfBound";
-
     public const string MatchmakingSeekNotFound = "Matchmaking.SeekNotFound";
     public const string MatchmakingSeekerNotCompatible = "Matchmaking.SeekerNotCompatible";
 
     public const string PlayerSessionConnectionInGame = "PlayerSession.ConnectionInGame";
     public const string PlayerSessionTooManyGames = "PlayerSession.TooManyGames";
+
+    public const string GameLogicPieceNotFound = "GameLogic.PieceNotFound";
+    public const string GameLogicPointOutOfBound = "GameLogic.PointOutOfBound";
 
     public const string GameNotFound = "Game.NotFound";
     public const string GameAlreadyEnded = "Game.AlreadyEnded";
@@ -58,6 +58,8 @@ public static class ErrorCodes
     public const string GameDrawOnCooldown = "Game.DrawOnCooldown";
     public const string GameDrawNotRequested = "Game.DrawNotRequested";
     public const string GameNotOver = "Game.NotOver";
+    public const string GameInvalidPieceLetter = "Game.InvalidPieceLetter";
+    public const string GameMalformedFen = "Game.MalformedFen";
 
     public const string GameChatInvalidUser = "GameChat.InvalidUser";
     public const string GameChatInvalidMessage = "GameChat.InvalidMessage";

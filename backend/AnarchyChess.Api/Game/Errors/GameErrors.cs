@@ -37,4 +37,10 @@ public static class GameErrors
 
     public static Error GameNotOver =>
         Error.Conflict(ErrorCodes.GameNotOver, "The game is still active");
+
+    public static Error InvalidPieceLetter =>
+        Error.Validation(ErrorCodes.GameInvalidPieceLetter, "A provided piece letter is invalid");
+
+    public static Error MalformedFen =>
+        Error.Validation(ErrorCodes.GameMalformedFen, "The provided fen is malformed");
 }
