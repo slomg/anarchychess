@@ -514,6 +514,31 @@ export type TimeControlSettingsRequest = {
     incrementSeconds: number;
 };
 
+export type AnalysisPosition = {
+    fen: string;
+    san?: string | null;
+    moveOptions: MoveOptions;
+    sideToMove: GameColor;
+    endStatus?: GameEndStatus | null;
+};
+
+export type GameEndStatus = {
+    result: GameResult;
+    resultDescription: string;
+};
+
+export type AnalysisMove = {
+    fen: string;
+    movingPlayer: GameColor;
+    piecePosition: AlgebraicPoint;
+    moveKey: string;
+};
+
+export type AlgebraicPoint = {
+    x: number;
+    y: number;
+};
+
 export enum ErrorCode {
     PROFILE_NOT_FOUND = "Profile.NotFound",
     PROFILE_COOLDOWN_SETTING = "Profile.Cooldown.Setting",
@@ -531,12 +556,12 @@ export enum ErrorCode {
     AUTH_O_AUTH_FAILURE = "Auth.OAuth.Failure",
     AUTH_O_AUTH_INVALID = "Auth.OAuth.Invalid",
     AUTH_O_AUTH_PROVIDER_NOT_FOUND = "Auth.OAuth.ProviderNotFound",
-    GAME_LOGIC_PIECE_NOT_FOUND = "GameLogic.PieceNotFound",
-    GAME_LOGIC_POINT_OUT_OF_BOUND = "GameLogic.PointOutOfBound",
     MATCHMAKING_SEEK_NOT_FOUND = "Matchmaking.SeekNotFound",
     MATCHMAKING_SEEKER_NOT_COMPATIBLE = "Matchmaking.SeekerNotCompatible",
     PLAYER_SESSION_CONNECTION_IN_GAME = "PlayerSession.ConnectionInGame",
     PLAYER_SESSION_TOO_MANY_GAMES = "PlayerSession.TooManyGames",
+    GAME_LOGIC_PIECE_NOT_FOUND = "GameLogic.PieceNotFound",
+    GAME_LOGIC_POINT_OUT_OF_BOUND = "GameLogic.PointOutOfBound",
     GAME_NOT_FOUND = "Game.NotFound",
     GAME_ALREADY_ENDED = "Game.AlreadyEnded",
     GAME_PLAYER_INVALID = "Game.PlayerInvalid",
@@ -545,6 +570,8 @@ export enum ErrorCode {
     GAME_DRAW_ON_COOLDOWN = "Game.DrawOnCooldown",
     GAME_DRAW_NOT_REQUESTED = "Game.DrawNotRequested",
     GAME_NOT_OVER = "Game.NotOver",
+    GAME_INVALID_PIECE_LETTER = "Game.InvalidPieceLetter",
+    GAME_MALFORMED_FEN = "Game.MalformedFen",
     GAME_CHAT_INVALID_USER = "GameChat.InvalidUser",
     GAME_CHAT_INVALID_MESSAGE = "GameChat.InvalidMessage",
     GAME_CHAT_ON_COOLDOWN = "GameChat.OnCooldown",
@@ -1449,3 +1476,38 @@ export type SignInOAuthData = {
     query?: never;
     url: "/api/OAuth/signin/{provider}";
 };
+
+export type GetInitialAnalysisPositionData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: "/api/Analysis/initial";
+};
+
+export type GetInitialAnalysisPositionResponses = {
+    200: AnalysisPosition;
+};
+
+export type GetInitialAnalysisPositionResponse =
+    GetInitialAnalysisPositionResponses[keyof GetInitialAnalysisPositionResponses];
+
+export type GetNextAnalysisPositionData = {
+    body: AnalysisMove;
+    path?: never;
+    query?: never;
+    url: "/api/Analysis/next";
+};
+
+export type GetNextAnalysisPositionErrors = {
+    400: ApiProblemDetails;
+};
+
+export type GetNextAnalysisPositionError =
+    GetNextAnalysisPositionErrors[keyof GetNextAnalysisPositionErrors];
+
+export type GetNextAnalysisPositionResponses = {
+    200: AnalysisPosition;
+};
+
+export type GetNextAnalysisPositionResponse =
+    GetNextAnalysisPositionResponses[keyof GetNextAnalysisPositionResponses];

@@ -63,12 +63,17 @@ import type {
     GetHasStarredData,
     GetHasStarredErrors,
     GetHasStarredResponses,
+    GetInitialAnalysisPositionData,
+    GetInitialAnalysisPositionResponses,
     GetMyQuestRankingData,
     GetMyQuestRankingErrors,
     GetMyQuestRankingResponses,
     GetMyWinStreakStatsData,
     GetMyWinStreakStatsErrors,
     GetMyWinStreakStatsResponses,
+    GetNextAnalysisPositionData,
+    GetNextAnalysisPositionErrors,
+    GetNextAnalysisPositionResponses,
     GetPreferencesData,
     GetPreferencesErrors,
     GetPreferencesResponses,
@@ -149,294 +154,206 @@ export type Options<
 
 export const getRatingArchives = <ThrowOnError extends boolean = false>(
     options: Options<GetRatingArchivesData, ThrowOnError>,
-) => {
-    return (options.client ?? client).get<
+) =>
+    (options.client ?? client).get<
         GetRatingArchivesResponses,
         GetRatingArchivesErrors,
         ThrowOnError
-    >({
-        url: "/api/Rating/{userId}/archive",
-        ...options,
-    });
-};
+    >({ url: "/api/Rating/{userId}/archive", ...options });
 
 export const getCurrentRatings = <ThrowOnError extends boolean = false>(
     options: Options<GetCurrentRatingsData, ThrowOnError>,
-) => {
-    return (options.client ?? client).get<
+) =>
+    (options.client ?? client).get<
         GetCurrentRatingsResponses,
         GetCurrentRatingsErrors,
         ThrowOnError
-    >({
-        url: "/api/Rating/{userId}",
-        ...options,
-    });
-};
+    >({ url: "/api/Rating/{userId}", ...options });
 
 export const getWinStreakLeaderboard = <ThrowOnError extends boolean = false>(
     options?: Options<GetWinStreakLeaderboardData, ThrowOnError>,
-) => {
-    return (options?.client ?? client).get<
+) =>
+    (options?.client ?? client).get<
         GetWinStreakLeaderboardResponses,
         unknown,
         ThrowOnError
-    >({
-        url: "/api/WinStreak/leaderboard",
-        ...options,
-    });
-};
+    >({ url: "/api/WinStreak/leaderboard", ...options });
 
 export const getMyWinStreakStats = <ThrowOnError extends boolean = false>(
     options?: Options<GetMyWinStreakStatsData, ThrowOnError>,
-) => {
-    return (options?.client ?? client).get<
+) =>
+    (options?.client ?? client).get<
         GetMyWinStreakStatsResponses,
         GetMyWinStreakStatsErrors,
         ThrowOnError
-    >({
-        url: "/api/WinStreak/me",
-        ...options,
-    });
-};
+    >({ url: "/api/WinStreak/me", ...options });
 
 export const getStarredUsers = <ThrowOnError extends boolean = false>(
     options: Options<GetStarredUsersData, ThrowOnError>,
-) => {
-    return (options.client ?? client).get<
+) =>
+    (options.client ?? client).get<
         GetStarredUsersResponses,
         GetStarredUsersErrors,
         ThrowOnError
-    >({
-        url: "/api/Social/starred/{userId}",
-        ...options,
-    });
-};
+    >({ url: "/api/Social/starred/{userId}", ...options });
 
 export const getStarsReceivedCount = <ThrowOnError extends boolean = false>(
     options: Options<GetStarsReceivedCountData, ThrowOnError>,
-) => {
-    return (options.client ?? client).get<
+) =>
+    (options.client ?? client).get<
         GetStarsReceivedCountResponses,
         unknown,
         ThrowOnError
-    >({
-        url: "/api/Social/stars/{starredUserId}",
-        ...options,
-    });
-};
+    >({ url: "/api/Social/stars/{starredUserId}", ...options });
 
 export const getHasStarred = <ThrowOnError extends boolean = false>(
     options: Options<GetHasStarredData, ThrowOnError>,
-) => {
-    return (options.client ?? client).get<
+) =>
+    (options.client ?? client).get<
         GetHasStarredResponses,
         GetHasStarredErrors,
         ThrowOnError
-    >({
-        url: "/api/Social/star/{starredUserId}/exists",
-        ...options,
-    });
-};
+    >({ url: "/api/Social/star/{starredUserId}/exists", ...options });
 
 export const removeStar = <ThrowOnError extends boolean = false>(
     options: Options<RemoveStarData, ThrowOnError>,
-) => {
-    return (options.client ?? client).delete<
+) =>
+    (options.client ?? client).delete<
         RemoveStarResponses,
         RemoveStarErrors,
         ThrowOnError
-    >({
-        url: "/api/Social/star/{starredUserId}",
-        ...options,
-    });
-};
+    >({ url: "/api/Social/star/{starredUserId}", ...options });
 
 export const addStar = <ThrowOnError extends boolean = false>(
     options: Options<AddStarData, ThrowOnError>,
-) => {
-    return (options.client ?? client).post<
+) =>
+    (options.client ?? client).post<
         AddStarResponses,
         AddStarErrors,
         ThrowOnError
-    >({
-        url: "/api/Social/star/{starredUserId}",
-        ...options,
-    });
-};
+    >({ url: "/api/Social/star/{starredUserId}", ...options });
 
 export const getBlockedUsers = <ThrowOnError extends boolean = false>(
     options?: Options<GetBlockedUsersData, ThrowOnError>,
-) => {
-    return (options?.client ?? client).get<
+) =>
+    (options?.client ?? client).get<
         GetBlockedUsersResponses,
         GetBlockedUsersErrors,
         ThrowOnError
-    >({
-        url: "/api/Social/blocked",
-        ...options,
-    });
-};
+    >({ url: "/api/Social/blocked", ...options });
 
 export const getHasBlocked = <ThrowOnError extends boolean = false>(
     options: Options<GetHasBlockedData, ThrowOnError>,
-) => {
-    return (options.client ?? client).get<
+) =>
+    (options.client ?? client).get<
         GetHasBlockedResponses,
         GetHasBlockedErrors,
         ThrowOnError
-    >({
-        url: "/api/Social/block/{blockedUserId}/exists",
-        ...options,
-    });
-};
+    >({ url: "/api/Social/block/{blockedUserId}/exists", ...options });
 
 export const unblockUser = <ThrowOnError extends boolean = false>(
     options: Options<UnblockUserData, ThrowOnError>,
-) => {
-    return (options.client ?? client).delete<
+) =>
+    (options.client ?? client).delete<
         UnblockUserResponses,
         UnblockUserErrors,
         ThrowOnError
-    >({
-        url: "/api/Social/block/{blockedUserId}",
-        ...options,
-    });
-};
+    >({ url: "/api/Social/block/{blockedUserId}", ...options });
 
 export const blockUser = <ThrowOnError extends boolean = false>(
     options: Options<BlockUserData, ThrowOnError>,
-) => {
-    return (options.client ?? client).post<
+) =>
+    (options.client ?? client).post<
         BlockUserResponses,
         BlockUserErrors,
         ThrowOnError
-    >({
-        url: "/api/Social/block/{blockedUserId}",
-        ...options,
-    });
-};
+    >({ url: "/api/Social/block/{blockedUserId}", ...options });
 
 export const getDailyQuest = <ThrowOnError extends boolean = false>(
     options?: Options<GetDailyQuestData, ThrowOnError>,
-) => {
-    return (options?.client ?? client).get<
+) =>
+    (options?.client ?? client).get<
         GetDailyQuestResponses,
         GetDailyQuestErrors,
         ThrowOnError
-    >({
-        url: "/api/Quests",
-        ...options,
-    });
-};
+    >({ url: "/api/Quests", ...options });
 
 export const replaceDailyQuest = <ThrowOnError extends boolean = false>(
     options?: Options<ReplaceDailyQuestData, ThrowOnError>,
-) => {
-    return (options?.client ?? client).post<
+) =>
+    (options?.client ?? client).post<
         ReplaceDailyQuestResponses,
         ReplaceDailyQuestErrors,
         ThrowOnError
-    >({
-        url: "/api/Quests/replace",
-        ...options,
-    });
-};
+    >({ url: "/api/Quests/replace", ...options });
 
 export const collectQuestReward = <ThrowOnError extends boolean = false>(
     options?: Options<CollectQuestRewardData, ThrowOnError>,
-) => {
-    return (options?.client ?? client).post<
+) =>
+    (options?.client ?? client).post<
         CollectQuestRewardResponses,
         CollectQuestRewardErrors,
         ThrowOnError
-    >({
-        url: "/api/Quests/claim",
-        ...options,
-    });
-};
+    >({ url: "/api/Quests/claim", ...options });
 
 export const getUserQuestPoints = <ThrowOnError extends boolean = false>(
     options: Options<GetUserQuestPointsData, ThrowOnError>,
-) => {
-    return (options.client ?? client).get<
+) =>
+    (options.client ?? client).get<
         GetUserQuestPointsResponses,
         unknown,
         ThrowOnError
-    >({
-        url: "/api/Quests/points/{userId}",
-        ...options,
-    });
-};
+    >({ url: "/api/Quests/points/{userId}", ...options });
 
 export const getQuestLeaderboard = <ThrowOnError extends boolean = false>(
     options?: Options<GetQuestLeaderboardData, ThrowOnError>,
-) => {
-    return (options?.client ?? client).get<
+) =>
+    (options?.client ?? client).get<
         GetQuestLeaderboardResponses,
         unknown,
         ThrowOnError
-    >({
-        url: "/api/Quests/leaderboard",
-        ...options,
-    });
-};
+    >({ url: "/api/Quests/leaderboard", ...options });
 
 export const getMyQuestRanking = <ThrowOnError extends boolean = false>(
     options?: Options<GetMyQuestRankingData, ThrowOnError>,
-) => {
-    return (options?.client ?? client).get<
+) =>
+    (options?.client ?? client).get<
         GetMyQuestRankingResponses,
         GetMyQuestRankingErrors,
         ThrowOnError
-    >({
-        url: "/api/Quests/leaderboard/me",
-        ...options,
-    });
-};
+    >({ url: "/api/Quests/leaderboard/me", ...options });
 
 export const getSessionUser = <ThrowOnError extends boolean = false>(
     options?: Options<GetSessionUserData, ThrowOnError>,
-) => {
-    return (options?.client ?? client).get<
+) =>
+    (options?.client ?? client).get<
         GetSessionUserResponses,
         GetSessionUserErrors,
         ThrowOnError
-    >({
-        url: "/api/Profile/me",
-        ...options,
-    });
-};
+    >({ url: "/api/Profile/me", ...options });
 
 export const getUserByUsername = <ThrowOnError extends boolean = false>(
     options: Options<GetUserByUsernameData, ThrowOnError>,
-) => {
-    return (options.client ?? client).get<
+) =>
+    (options.client ?? client).get<
         GetUserByUsernameResponses,
         GetUserByUsernameErrors,
         ThrowOnError
-    >({
-        url: "/api/Profile/by-username/{username}",
-        ...options,
-    });
-};
+    >({ url: "/api/Profile/by-username/{username}", ...options });
 
 export const getUserById = <ThrowOnError extends boolean = false>(
     options: Options<GetUserByIdData, ThrowOnError>,
-) => {
-    return (options.client ?? client).get<
+) =>
+    (options.client ?? client).get<
         GetUserByIdResponses,
         GetUserByIdErrors,
         ThrowOnError
-    >({
-        url: "/api/Profile/by-id/{userId}",
-        ...options,
-    });
-};
+    >({ url: "/api/Profile/by-id/{userId}", ...options });
 
 export const editProfileSettings = <ThrowOnError extends boolean = false>(
     options: Options<EditProfileSettingsData, ThrowOnError>,
-) => {
-    return (options.client ?? client).put<
+) =>
+    (options.client ?? client).put<
         EditProfileSettingsResponses,
         EditProfileSettingsErrors,
         ThrowOnError
@@ -448,12 +365,11 @@ export const editProfileSettings = <ThrowOnError extends boolean = false>(
             ...options.headers,
         },
     });
-};
 
 export const editUsername = <ThrowOnError extends boolean = false>(
     options: Options<EditUsernameData, ThrowOnError>,
-) => {
-    return (options.client ?? client).put<
+) =>
+    (options.client ?? client).put<
         EditUsernameResponses,
         EditUsernameErrors,
         ThrowOnError
@@ -465,25 +381,20 @@ export const editUsername = <ThrowOnError extends boolean = false>(
             ...options.headers,
         },
     });
-};
 
 export const deleteProfilePicture = <ThrowOnError extends boolean = false>(
     options?: Options<DeleteProfilePictureData, ThrowOnError>,
-) => {
-    return (options?.client ?? client).delete<
+) =>
+    (options?.client ?? client).delete<
         DeleteProfilePictureResponses,
         DeleteProfilePictureErrors,
         ThrowOnError
-    >({
-        url: "/api/Profile/profile-picture",
-        ...options,
-    });
-};
+    >({ url: "/api/Profile/profile-picture", ...options });
 
 export const uploadProfilePicture = <ThrowOnError extends boolean = false>(
     options?: Options<UploadProfilePictureData, ThrowOnError>,
-) => {
-    return (options?.client ?? client).put<
+) =>
+    (options?.client ?? client).put<
         UploadProfilePictureResponses,
         UploadProfilePictureErrors,
         ThrowOnError
@@ -496,38 +407,29 @@ export const uploadProfilePicture = <ThrowOnError extends boolean = false>(
             ...options?.headers,
         },
     });
-};
 
 export const getProfilePicture = <ThrowOnError extends boolean = false>(
     options: Options<GetProfilePictureData, ThrowOnError>,
-) => {
-    return (options.client ?? client).get<
+) =>
+    (options.client ?? client).get<
         GetProfilePictureResponses,
         unknown,
         ThrowOnError
-    >({
-        url: "/api/Profile/profile-picture/{userId}",
-        ...options,
-    });
-};
+    >({ url: "/api/Profile/profile-picture/{userId}", ...options });
 
 export const getPreferences = <ThrowOnError extends boolean = false>(
     options?: Options<GetPreferencesData, ThrowOnError>,
-) => {
-    return (options?.client ?? client).get<
+) =>
+    (options?.client ?? client).get<
         GetPreferencesResponses,
         GetPreferencesErrors,
         ThrowOnError
-    >({
-        url: "/api/Preference",
-        ...options,
-    });
-};
+    >({ url: "/api/Preference", ...options });
 
 export const setPreferences = <ThrowOnError extends boolean = false>(
     options: Options<SetPreferencesData, ThrowOnError>,
-) => {
-    return (options.client ?? client).put<
+) =>
+    (options.client ?? client).put<
         SetPreferencesResponses,
         SetPreferencesErrors,
         ThrowOnError
@@ -539,51 +441,37 @@ export const setPreferences = <ThrowOnError extends boolean = false>(
             ...options.headers,
         },
     });
-};
 
 export const getGame = <ThrowOnError extends boolean = false>(
     options: Options<GetGameData, ThrowOnError>,
-) => {
-    return (options.client ?? client).get<
+) =>
+    (options.client ?? client).get<
         GetGameResponses,
         GetGameErrors,
         ThrowOnError
-    >({
-        url: "/api/Game/{gameToken}",
-        ...options,
-    });
-};
+    >({ url: "/api/Game/{gameToken}", ...options });
 
 export const getGameResults = <ThrowOnError extends boolean = false>(
     options: Options<GetGameResultsData, ThrowOnError>,
-) => {
-    return (options.client ?? client).get<
+) =>
+    (options.client ?? client).get<
         GetGameResultsResponses,
         unknown,
         ThrowOnError
-    >({
-        url: "/api/Game/results/{userId}",
-        ...options,
-    });
-};
+    >({ url: "/api/Game/results/{userId}", ...options });
 
 export const index = <ThrowOnError extends boolean = false>(
     options?: Options<IndexData, ThrowOnError>,
-) => {
-    return (options?.client ?? client).get<
-        IndexResponses,
-        unknown,
-        ThrowOnError
-    >({
+) =>
+    (options?.client ?? client).get<IndexResponses, unknown, ThrowOnError>({
         url: "/error",
         ...options,
     });
-};
 
 export const createChallenge = <ThrowOnError extends boolean = false>(
     options: Options<CreateChallengeData, ThrowOnError>,
-) => {
-    return (options.client ?? client).put<
+) =>
+    (options.client ?? client).put<
         CreateChallengeResponses,
         CreateChallengeErrors,
         ThrowOnError
@@ -595,145 +483,129 @@ export const createChallenge = <ThrowOnError extends boolean = false>(
             ...options.headers,
         },
     });
-};
 
 export const cancelChallenge = <ThrowOnError extends boolean = false>(
     options: Options<CancelChallengeData, ThrowOnError>,
-) => {
-    return (options.client ?? client).delete<
+) =>
+    (options.client ?? client).delete<
         CancelChallengeResponses,
         CancelChallengeErrors,
         ThrowOnError
-    >({
-        url: "/api/Challenge/by-id/{challengeToken}",
-        ...options,
-    });
-};
+    >({ url: "/api/Challenge/by-id/{challengeToken}", ...options });
 
 export const getChallenge = <ThrowOnError extends boolean = false>(
     options: Options<GetChallengeData, ThrowOnError>,
-) => {
-    return (options.client ?? client).get<
+) =>
+    (options.client ?? client).get<
         GetChallengeResponses,
         GetChallengeErrors,
         ThrowOnError
-    >({
-        url: "/api/Challenge/by-id/{challengeToken}",
-        ...options,
-    });
-};
+    >({ url: "/api/Challenge/by-id/{challengeToken}", ...options });
 
 export const acceptChallenge = <ThrowOnError extends boolean = false>(
     options: Options<AcceptChallengeData, ThrowOnError>,
-) => {
-    return (options.client ?? client).post<
+) =>
+    (options.client ?? client).post<
         AcceptChallengeResponses,
         AcceptChallengeErrors,
         ThrowOnError
-    >({
-        url: "/api/Challenge/by-id/{challengeToken}/accept",
-        ...options,
-    });
-};
+    >({ url: "/api/Challenge/by-id/{challengeToken}/accept", ...options });
 
 export const cancelAllIncomingChallenges = <
     ThrowOnError extends boolean = false,
 >(
     options?: Options<CancelAllIncomingChallengesData, ThrowOnError>,
-) => {
-    return (options?.client ?? client).delete<
+) =>
+    (options?.client ?? client).delete<
         CancelAllIncomingChallengesResponses,
         CancelAllIncomingChallengesErrors,
         ThrowOnError
-    >({
-        url: "/api/Challenge/incoming",
-        ...options,
-    });
-};
+    >({ url: "/api/Challenge/incoming", ...options });
 
 export const refresh = <ThrowOnError extends boolean = false>(
     options?: Options<RefreshData, ThrowOnError>,
-) => {
-    return (options?.client ?? client).post<
+) =>
+    (options?.client ?? client).post<
         RefreshResponses,
         RefreshErrors,
         ThrowOnError
-    >({
-        url: "/api/Auth/refresh",
-        ...options,
-    });
-};
+    >({ url: "/api/Auth/refresh", ...options });
 
 export const logout = <ThrowOnError extends boolean = false>(
     options?: Options<LogoutData, ThrowOnError>,
-) => {
-    return (options?.client ?? client).post<
-        LogoutResponses,
-        unknown,
-        ThrowOnError
-    >({
+) =>
+    (options?.client ?? client).post<LogoutResponses, unknown, ThrowOnError>({
         url: "/api/Auth/logout",
         ...options,
     });
-};
 
 export const createGuestUser = <ThrowOnError extends boolean = false>(
     options?: Options<CreateGuestUserData, ThrowOnError>,
-) => {
-    return (options?.client ?? client).post<
+) =>
+    (options?.client ?? client).post<
         CreateGuestUserResponses,
         unknown,
         ThrowOnError
-    >({
-        url: "/api/Auth/guest",
-        ...options,
-    });
-};
+    >({ url: "/api/Auth/guest", ...options });
 
 export const testAuthed = <ThrowOnError extends boolean = false>(
     options?: Options<TestAuthedData, ThrowOnError>,
-) => {
-    return (options?.client ?? client).post<
+) =>
+    (options?.client ?? client).post<
         TestAuthedResponses,
         TestAuthedErrors,
         ThrowOnError
-    >({
-        url: "/api/Auth/test-auth",
-        ...options,
-    });
-};
+    >({ url: "/api/Auth/test-auth", ...options });
 
 export const testGuest = <ThrowOnError extends boolean = false>(
     options?: Options<TestGuestData, ThrowOnError>,
-) => {
-    return (options?.client ?? client).post<
+) =>
+    (options?.client ?? client).post<
         TestGuestResponses,
         TestGuestErrors,
         ThrowOnError
-    >({
-        url: "/api/Auth/test-guest-auth",
-        ...options,
-    });
-};
+    >({ url: "/api/Auth/test-guest-auth", ...options });
 
 export const oAuthCallback = <ThrowOnError extends boolean = false>(
     options: Options<OAuthCallbackData, ThrowOnError>,
-) => {
-    return (options.client ?? client).get<
+) =>
+    (options.client ?? client).get<
         OAuthCallbackResponses,
         unknown,
         ThrowOnError
-    >({
-        url: "/api/OAuth/{provider}/callback",
-        ...options,
-    });
-};
+    >({ url: "/api/OAuth/{provider}/callback", ...options });
 
 export const signInOAuth = <ThrowOnError extends boolean = false>(
     options: Options<SignInOAuthData, ThrowOnError>,
-) => {
-    return (options.client ?? client).get<unknown, unknown, ThrowOnError>({
+) =>
+    (options.client ?? client).get<unknown, unknown, ThrowOnError>({
         url: "/api/OAuth/signin/{provider}",
         ...options,
     });
-};
+
+export const getInitialAnalysisPosition = <
+    ThrowOnError extends boolean = false,
+>(
+    options?: Options<GetInitialAnalysisPositionData, ThrowOnError>,
+) =>
+    (options?.client ?? client).get<
+        GetInitialAnalysisPositionResponses,
+        unknown,
+        ThrowOnError
+    >({ url: "/api/Analysis/initial", ...options });
+
+export const getNextAnalysisPosition = <ThrowOnError extends boolean = false>(
+    options: Options<GetNextAnalysisPositionData, ThrowOnError>,
+) =>
+    (options.client ?? client).post<
+        GetNextAnalysisPositionResponses,
+        GetNextAnalysisPositionErrors,
+        ThrowOnError
+    >({
+        url: "/api/Analysis/next",
+        ...options,
+        headers: {
+            "Content-Type": "application/json",
+            ...options.headers,
+        },
+    });
