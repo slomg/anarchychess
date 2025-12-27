@@ -79,4 +79,24 @@ public class PositionAnalysisTests : BaseIntegrationTest
         );
         newPosition.Should().BeEquivalentTo(expectedPosition);
     }
+
+    [Fact]
+    public void GetNextLegalMoves_includes_end_status_when_needed()
+    {
+        AnalysisMove analysisMove = new(
+            "qK", // black queen next to white king
+            GameColor.Black,
+            new AlgebraicPoint("a1"),
+            new MoveKey(new AlgebraicPoint("a1"), new AlgebraicPoint("b1"))
+        );
+
+        var result = _positionAnalysis.GetNextLegalMoves(analysisMove);
+
+        result.IsError.Should().BeFalse();
+
+        var newPosition = result.Value;
+        newPosition.EndStatus.Should().NotBeNull();
+        newPosition.EndStatus.Result.Should().Be(GameResult.BlackWin);
+        newPosition.SideToMove.Should().Be(GameColor.White);
+    }
 }
