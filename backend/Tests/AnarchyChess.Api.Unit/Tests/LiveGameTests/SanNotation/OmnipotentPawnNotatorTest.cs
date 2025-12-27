@@ -1,15 +1,15 @@
-﻿using AnarchyChess.Api.GameLogic.Models;
+﻿using System.Text;
 using AnarchyChess.Api.Game.SanNotation.Notators;
 using AnarchyChess.Api.Game.Services;
+using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.TestInfrastructure.Factories;
 using AwesomeAssertions;
-using System.Text;
 
 namespace AnarchyChess.Api.Unit.Tests.LiveGameTests.SanNotation;
 
 public class OmnipotentPawnNotatorTest
 {
-    private readonly OmnipotentPawnNotator _notator = new(new PieceToLetter());
+    private readonly OmnipotentPawnNotator _notator = new(new PieceLetterMap());
 
     [Fact]
     public void HandlesMoveType_is_correct() =>

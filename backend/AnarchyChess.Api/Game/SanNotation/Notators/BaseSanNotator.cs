@@ -5,9 +5,9 @@ using AnarchyChess.Api.GameLogic.Models;
 
 namespace AnarchyChess.Api.Game.SanNotation.Notators;
 
-public abstract class BaseSanNotator(IPieceToLetter pieceToLetter) : ISanNotator
+public abstract class BaseSanNotator(IPieceLetterMap pieceLetterMap) : ISanNotator
 {
-    private readonly IPieceToLetter _pieceToLetter = pieceToLetter;
+    private readonly IPieceLetterMap _pieceLetterMap = pieceLetterMap;
 
     public abstract SpecialMoveType HandlesMoveType { get; }
 
@@ -27,7 +27,7 @@ public abstract class BaseSanNotator(IPieceToLetter pieceToLetter) : ISanNotator
     protected string PieceChar(PieceType piece) =>
         GameLogicConstants.PawnLikePieces.Contains(piece)
             ? ""
-            : char.ToUpper(_pieceToLetter.GetLetter(piece)).ToString();
+            : char.ToUpper(_pieceLetterMap.GetLetter(piece)).ToString();
 
     protected static void DisambiguatePosition(
         Move move,

@@ -1,11 +1,11 @@
 ﻿using System.Text;
+using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Models;
-using AnarchyChess.Api.Game.Services;
 
 namespace AnarchyChess.Api.Game.SanNotation.Notators;
 
-public class RegularNotator(IPieceToLetter pieceToLetter) : BaseSanNotator(pieceToLetter)
+public class RegularNotator(IPieceLetterMap pieceLetterMap) : BaseSanNotator(pieceLetterMap)
 {
     public override SpecialMoveType HandlesMoveType => SpecialMoveType.None;
 

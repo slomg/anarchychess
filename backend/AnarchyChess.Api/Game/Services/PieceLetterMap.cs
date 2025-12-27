@@ -2,12 +2,13 @@
 
 namespace AnarchyChess.Api.Game.Services;
 
-public interface IPieceToLetter
+public interface IPieceLetterMap
 {
     char GetLetter(PieceType piece);
+    PieceType? GetPiece(char letter);
 }
 
-public class PieceToLetter : IPieceToLetter
+public class PieceLetterMap : IPieceLetterMap
 {
     private readonly Dictionary<PieceType, char> _pieceToLetter = new()
     {
@@ -25,6 +26,4 @@ public class PieceToLetter : IPieceToLetter
         [PieceType.TraitorRook] = '+',
     };
 
-    public string GetLetter(PieceType piece) => _pieceToLetterMap.GetValueOrDefault(piece, "?");
-    public char GetLetter(PieceType piece) => _pieceToLetter.GetValueOrDefault(piece, '?');
 }

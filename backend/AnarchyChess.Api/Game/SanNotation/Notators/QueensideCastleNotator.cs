@@ -1,10 +1,10 @@
 ﻿using System.Text;
-using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.Game.Services;
+using AnarchyChess.Api.GameLogic.Models;
 
 namespace AnarchyChess.Api.Game.SanNotation.Notators;
 
-public class QueensideCastleNotator(IPieceToLetter pieceToLetter) : BaseSanNotator(pieceToLetter)
+public class QueensideCastleNotator(IPieceLetterMap pieceLetterMap) : BaseSanNotator(pieceLetterMap)
 {
     public override SpecialMoveType HandlesMoveType => SpecialMoveType.QueensideCastle;
 

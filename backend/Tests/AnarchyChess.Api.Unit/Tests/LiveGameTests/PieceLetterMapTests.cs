@@ -4,9 +4,9 @@ using AwesomeAssertions;
 
 namespace AnarchyChess.Api.Unit.Tests.LiveGameTests;
 
-public class PieceToLetterTests : BaseUnitTest
+public class PieceLetterMapTests : BaseUnitTest
 {
-    private readonly PieceToLetter _pieceToLetter = new();
+    private readonly PieceLetterMap _pieceLetterMap = new();
 
     public static TheoryData<PieceType, char> PieceTypeTestData() =>
         new()
@@ -32,7 +32,7 @@ public class PieceToLetterTests : BaseUnitTest
         char expectedLetter
     )
     {
-        var result = _pieceToLetter.GetLetter(piece);
+        var result = _pieceLetterMap.GetLetter(piece);
 
         result.Should().Be(expectedLetter);
     }
@@ -57,7 +57,7 @@ public class PieceToLetterTests : BaseUnitTest
         // some invalid PieceType
         var unknownPiece = (PieceType)999;
 
-        var result = _pieceToLetter.GetLetter(unknownPiece);
+        var result = _pieceLetterMap.GetLetter(unknownPiece);
 
         result.Should().Be('?');
     }

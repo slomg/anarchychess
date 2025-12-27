@@ -10,9 +10,9 @@ public interface IFenCalculator
     string CalculateFen(IReadOnlyChessBoard board);
 }
 
-public class FenCalculator(IPieceToLetter pieceToLetter) : IFenCalculator
+public class FenCalculator(IPieceLetterMap pieceLetterMap) : IFenCalculator
 {
-    private readonly IPieceToLetter _pieceToLetter = pieceToLetter;
+    private readonly IPieceLetterMap _pieceLetterMap = pieceLetterMap;
 
     public string CalculateFen(IReadOnlyChessBoard board)
     {
@@ -37,7 +37,7 @@ public class FenCalculator(IPieceToLetter pieceToLetter) : IFenCalculator
                     emptyCount = 0;
                 }
 
-                var pieceLetter = _pieceToLetter.GetLetter(piece.Type);
+                var pieceLetter = _pieceLetterMap.GetLetter(piece.Type);
                 pieceLetter = piece.Color.Match(
                     whenWhite: char.ToUpper(pieceLetter),
                     whenBlack: char.ToLower(pieceLetter),

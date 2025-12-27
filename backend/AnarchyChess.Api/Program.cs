@@ -408,7 +408,7 @@ builder.Services.AddTransient<IGameClock, GameClock>();
 builder.Services.AddTransient<IDrawEvaulator, DrawEvaulator>();
 builder.Services.AddSingleton<ISanCalculator, SanCalculator>();
 builder.Services.AddSingleton<IFenCalculator, FenCalculator>();
-builder.Services.AddSingleton<IPieceToLetter, PieceToLetter>();
+builder.Services.AddSingleton<IPieceLetterMap, PieceLetterMap>();
 builder.Services.AddSingleton<ILegalMoveCalculator, LegalMoveCalculator>();
 builder.Services.AddSingleton<IMoveEncoder, MoveEncoder>();
 

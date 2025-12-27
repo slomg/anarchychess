@@ -12,13 +12,13 @@ public interface ISanCalculator
 
 public class SanCalculator : ISanCalculator
 {
-    private readonly IPieceToLetter _pieceToLetter;
+    private readonly IPieceLetterMap _pieceLetterMap;
     private readonly Dictionary<SpecialMoveType, ISanNotator> _notators;
     private readonly ISanNotator _defaultNotator;
 
-    public SanCalculator(IPieceToLetter pieceToLetter, IEnumerable<ISanNotator> notators)
+    public SanCalculator(IPieceLetterMap pieceLetterMap, IEnumerable<ISanNotator> notators)
     {
-        _pieceToLetter = pieceToLetter;
+        _pieceLetterMap = pieceLetterMap;
         _notators = notators.ToDictionary(x => x.HandlesMoveType);
         _defaultNotator = _notators[SpecialMoveType.None];
     }
@@ -33,7 +33,7 @@ public class SanCalculator : ISanCalculator
         if (move.PromotesTo is PieceType promotesTo)
         {
             sb.Append('=');
-            sb.Append(char.ToUpper(_pieceToLetter.GetLetter(promotesTo)));
+            sb.Append(char.ToUpper(_pieceLetterMap.GetLetter(promotesTo)));
         }
 
         if (isKingCapture)

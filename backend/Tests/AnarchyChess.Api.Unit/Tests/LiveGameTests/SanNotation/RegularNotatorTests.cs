@@ -9,7 +9,7 @@ namespace AnarchyChess.Api.Unit.Tests.LiveGameTests.SanNotation;
 
 public class RegularNotatorTests
 {
-    private readonly RegularNotator _notator = new(new PieceToLetter());
+    private readonly RegularNotator _notator = new(new PieceLetterMap());
 
     [Fact]
     public void HandlesMoveType_is_correct() =>

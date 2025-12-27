@@ -1,7 +1,7 @@
-﻿using AnarchyChess.Api.GameLogic.Models;
-using AnarchyChess.Api.Game.SanNotation;
+﻿using AnarchyChess.Api.Game.SanNotation;
 using AnarchyChess.Api.Game.SanNotation.Notators;
 using AnarchyChess.Api.Game.Services;
+using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.TestInfrastructure;
 using AnarchyChess.Api.TestInfrastructure.Factories;
 using AwesomeAssertions;
@@ -24,8 +24,8 @@ public class SanCalculatorTests : BaseIntegrationTest
     {
         var act = () =>
             new SanCalculator(
-                new PieceToLetter(),
-                [new KingsideCastleNotator(new PieceToLetter())]
+                new PieceLetterMap(),
+                [new KingsideCastleNotator(new PieceLetterMap())]
             );
 
         act.Should().Throw<KeyNotFoundException>();

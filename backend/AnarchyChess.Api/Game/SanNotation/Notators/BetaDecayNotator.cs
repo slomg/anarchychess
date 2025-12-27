@@ -1,10 +1,10 @@
 ﻿using System.Text;
-using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.Game.Services;
+using AnarchyChess.Api.GameLogic.Models;
 
 namespace AnarchyChess.Api.Game.SanNotation.Notators;
 
-public class BetaDecayNotator(IPieceToLetter pieceToLetter) : BaseSanNotator(pieceToLetter)
+public class BetaDecayNotator(IPieceLetterMap pieceLetterMap) : BaseSanNotator(pieceLetterMap)
 {
     public override SpecialMoveType HandlesMoveType => SpecialMoveType.RadioactiveBetaDecay;
 
