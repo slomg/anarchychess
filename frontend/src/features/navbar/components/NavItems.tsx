@@ -6,6 +6,7 @@ import {
     UserCircleIcon,
     BoltSlashIcon,
     CalendarIcon,
+    MagnifyingGlassIcon,
     HomeIcon,
     ArrowLeftEndOnRectangleIcon,
     BookOpenIcon,
@@ -34,14 +35,16 @@ export const UpperNavItems = ({
             >
                 Play
             </NavItem>
+
             <NavItem
                 as={Link}
-                href="/"
-                icon={<HomeIcon />}
+                href={constants.PATHS.ANALYSIS}
+                icon={<MagnifyingGlassIcon />}
                 isCollapsed={isCollapsed}
             >
-                Home
+                Analysis
             </NavItem>
+
             <NavItem
                 as={Link}
                 href={constants.PATHS.QUESTS}

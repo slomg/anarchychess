@@ -36,6 +36,7 @@ const PATHS = {
     GUIDE: "/guide",
     QUESTS: "/quests",
     PROFILE: "/profile",
+    ANALYSIS: "/analysis",
     CHALLENGE: "/challenge",
     WIN_STREAK: "/win-streak",
     SETTINGS_BASE: "/settings",
