@@ -8,7 +8,7 @@ public class PieceLetterMapTests : BaseUnitTest
 {
     private readonly PieceLetterMap _pieceLetterMap = new();
 
-    public static TheoryData<PieceType, char> PieceTypeTestData() =>
+    public static TheoryData<PieceType, char> PieceToLetterTestData() =>
         new()
         {
             { PieceType.King, 'k' },
@@ -25,8 +25,25 @@ public class PieceLetterMapTests : BaseUnitTest
             { PieceType.TraitorRook, '+' },
         };
 
+    public static TheoryData<char, PieceType> LetterToPieceTestData() =>
+        new()
+        {
+            { 'k', PieceType.King },
+            { 'q', PieceType.Queen },
+            { 'p', PieceType.Pawn },
+            { 'd', PieceType.UnderagePawn },
+            { 's', PieceType.SterilePawn },
+            { 'r', PieceType.Rook },
+            { 'b', PieceType.Bishop },
+            { 'h', PieceType.Horsey },
+            { 'n', PieceType.Knook },
+            { 'a', PieceType.Antiqueen },
+            { 'c', PieceType.Checker },
+            { '+', PieceType.TraitorRook },
+        };
+
     [Theory]
-    [MemberData(nameof(PieceTypeTestData))]
+    [MemberData(nameof(PieceToLetterTestData))]
     public void GetLetter_returns_the_correct_letter_for_PieceType(
         PieceType piece,
         char expectedLetter
@@ -38,9 +55,9 @@ public class PieceLetterMapTests : BaseUnitTest
     }
 
     [Fact]
-    public void AllPieceTypes_should_be_tested()
+    public void PieceToLetterTestData_includes_all_piece_types()
     {
-        var testedPieces = PieceTypeTestData().Select(x => x.Data.Item1).ToHashSet();
+        var testedPieces = PieceToLetterTestData().Select(x => x.Data.Item1).ToHashSet();
         var allPieces = Enum.GetValues<PieceType>().ToHashSet();
 
         allPieces
@@ -60,5 +77,35 @@ public class PieceLetterMapTests : BaseUnitTest
         var result = _pieceLetterMap.GetLetter(unknownPiece);
 
         result.Should().Be('?');
+    }
+
+    [Theory]
+    [MemberData(nameof(LetterToPieceTestData))]
+    public void GetPiece_returns_the_correct_piece_for_letter(char letter, PieceType expectedPiece)
+    {
+        var result = _pieceLetterMap.GetPiece(letter);
+
+        result.Should().Be(expectedPiece);
+    }
+
+    [Fact]
+    public void GetPiece_returns_null_for_unknown_letters()
+    {
+        var result = _pieceLetterMap.GetPiece('1');
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public void LetterToPieceTestData_includes_all_piece_letters()
+    {
+        var testedLetters = LetterToPieceTestData().Select(x => x.Data.Item1).ToHashSet();
+        var allLetters = Enum.GetValues<PieceType>().Select(_pieceLetterMap.GetLetter).ToHashSet();
+
+        allLetters
+            .Should()
+            .BeSubsetOf(
+                testedLetters,
+                because: $"All letters corresponding to PieceType enum values must be covered by the test data. Missing: {string.Join(", ", allLetters.Except(testedLetters))}"
+            );
     }
 }

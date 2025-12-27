@@ -26,4 +26,24 @@ public class PieceLetterMap : IPieceLetterMap
         [PieceType.TraitorRook] = '+',
     };
 
+    private readonly Dictionary<char, PieceType?> _letterToPiece = new()
+    {
+        ['k'] = PieceType.King,
+        ['q'] = PieceType.Queen,
+        ['p'] = PieceType.Pawn,
+        ['d'] = PieceType.UnderagePawn,
+        ['s'] = PieceType.SterilePawn,
+        ['r'] = PieceType.Rook,
+        ['b'] = PieceType.Bishop,
+        ['h'] = PieceType.Horsey,
+        ['n'] = PieceType.Knook,
+        ['a'] = PieceType.Antiqueen,
+        ['c'] = PieceType.Checker,
+        ['+'] = PieceType.TraitorRook,
+    };
+
+    public char GetLetter(PieceType piece) => _pieceToLetter.GetValueOrDefault(piece, '?');
+
+    public PieceType? GetPiece(char letter) =>
+        _letterToPiece.GetValueOrDefault(char.ToLower(letter));
 }
