@@ -1,3 +1,5 @@
+import { notFound } from "next/navigation";
+
 import WinStreakObjective from "@/features/winStreak/components/WinStreakObjective";
 import WinStreakProfileStats from "@/features/winStreak/components/WinStreakProfile";
 import WinStreakHeader from "@/features/winStreak/components/WinStreakHeader";
@@ -11,6 +13,8 @@ import WinStreakLeaderboard from "@/features/winStreak/components/WinStreakLeade
 export const metadata = { title: "Win Streak Challenge - Anarchy Chess" };
 
 export default async function WinStreakPage() {
+    notFound();
+
     return (
         <WithOptionalAuthedUser>
             {async ({ accessToken }) => {
@@ -37,10 +41,16 @@ export default async function WinStreakPage() {
                 ]);
 
                 return (
-                    <main className="mx-auto flex max-w-7xl flex-1 flex-col items-center gap-3 p-5">
+                    <main
+                        className="mx-auto flex max-w-7xl flex-1 flex-col
+                            items-center gap-3 p-5"
+                    >
                         <WinStreakHeader />
 
-                        <div className="grid w-full grid-rows-2 gap-3 lg:grid-cols-2 lg:grid-rows-1">
+                        <div
+                            className="grid w-full grid-rows-2 gap-3
+                                lg:grid-cols-2 lg:grid-rows-1"
+                        >
                             <WinStreakObjective />
                             <WinStreakRules />
                         </div>
