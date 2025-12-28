@@ -265,7 +265,7 @@ public class GameGrainTests : BaseOrleansIntegrationTest
                             new MoveNotification(
                                 GameToken: _gameToken,
                                 Move: expectedMoveSnapshot,
-                                MoveNumber: 1,
+                                PlyNumber: 1,
                                 Clocks: expectedClock,
                                 SideToMove: GameColor.Black,
                                 SideToMoveUserId: _blackPlayer.UserId,

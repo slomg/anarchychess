@@ -62,7 +62,7 @@ public class GameNotifierTests
         MoveNotification notification = new(
             GameToken: _gameToken,
             Move: new MoveSnapshotFaker().Generate(),
-            MoveNumber: 5,
+            PlyNumber: 5,
             Clocks: new ClockSnapshot(
                 WhiteClock: 10,
                 BlackClock: 20,
@@ -82,7 +82,7 @@ public class GameNotifierTests
             .MoveMadeAsync(
                 notification.Move,
                 notification.SideToMove,
-                notification.MoveNumber,
+                notification.PlyNumber,
                 notification.Clocks
             );
         await _clientUserGameGroupProxyMock

@@ -379,7 +379,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             notification: new(
                 GameToken: _token,
                 Move: moveSnapshot,
-                MoveNumber: game.MoveSnapshots.Count,
+                PlyNumber: game.MoveSnapshots.Count,
                 Clocks: _clock.ToSnapshot(game.ClockState),
                 SideToMove: nextPlayer.Color,
                 SideToMoveUserId: nextPlayer.UserId,
