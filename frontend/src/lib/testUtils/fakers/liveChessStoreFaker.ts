@@ -1,21 +1,15 @@
+import { faker } from "@faker-js/faker";
+
 import { LiveChessStoreProps } from "@/features/liveGame/stores/liveChessStore";
 import { GameColor, GamePlayer, PoolType, TimeControl } from "@/lib/apiClient";
-import { faker } from "@faker-js/faker";
 import { createFakePlayer } from "./playerFaker";
-import { createFakePosition } from "./positionFaker";
 import { createFakeClock } from "./clockFaker";
-import { createFakeLegalMoves } from "./chessboardFakers";
 
 export function createFakeLiveChessStoreProps(
     override: Partial<LiveChessStoreProps> & {
         viewerColor?: GameColor | null;
     } = {},
 ): LiveChessStoreProps {
-    const positionHistory = override?.positionHistory ?? [
-        createFakePosition(),
-        createFakePosition(),
-    ];
-
     const whitePlayer = createFakePlayer(GameColor.WHITE);
     const blackPlayer = createFakePlayer(GameColor.BLACK);
 
@@ -27,9 +21,6 @@ export function createFakeLiveChessStoreProps(
 
     return {
         gameToken: faker.string.alpha(16),
-        positionHistory,
-        viewingMoveNumber: positionHistory.length - 1,
-        latestLegalMoves: createFakeLegalMoves(),
 
         sideToMove: faker.helpers.enumValue(GameColor),
         sourceRevision: faker.number.int({ min: 5, max: 100 }),

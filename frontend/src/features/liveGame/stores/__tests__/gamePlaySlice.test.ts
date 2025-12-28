@@ -1,14 +1,13 @@
 import { StoreApi } from "zustand";
+
 import createLiveChessStore, {
     LiveChessStore,
     LiveChessStoreProps,
 } from "../liveChessStore";
+
 import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
-import { Clocks, GameColor } from "@/lib/apiClient";
-import { createFakePosition } from "@/lib/testUtils/fakers/positionFaker";
-import { createFakeLegalMoves } from "@/lib/testUtils/fakers/chessboardFakers";
 import { createFakeClock } from "@/lib/testUtils/fakers/clockFaker";
-import LegalMoves from "@/features/chessboard/lib/legalMoves";
+import { Clocks, GameColor } from "@/lib/apiClient";
 
 describe("gamePlaySlice", () => {
     let store: StoreApi<LiveChessStore>;
@@ -21,7 +20,6 @@ describe("gamePlaySlice", () => {
 
     describe("receiveMove", () => {
         it("should update clocks, sideToMove, and clear isPendingMoveAck", () => {
-            const newPosition = createFakePosition();
             const newClocks: Clocks = {
                 whiteClock: 500,
                 blackClock: 600,
@@ -41,7 +39,7 @@ describe("gamePlaySlice", () => {
                 sideToMove: GameColor.WHITE,
             });
 
-            store.getState().receiveMove(newPosition, newClocks, newSideToMove);
+            store.getState().receiveMove(newClocks, newSideToMove);
             const state = store.getState();
 
             expect(state.clocks).toBe(newClocks);
@@ -49,42 +47,15 @@ describe("gamePlaySlice", () => {
             expect(state.isPendingMoveAck).toBe(false);
         });
 
-        it("should call receivePosition and decrementDrawCooldown", () => {
-            const decrementMock = vi.fn();
-            const receivePosSpy = vi.fn();
-
+        it("should call decrementDrawCooldown", () => {
+            const decrementDrawCooldownMock = vi.fn();
             store.setState({
-                decrementDrawCooldown: decrementMock,
-                receivePosition: receivePosSpy,
+                decrementDrawCooldown: decrementDrawCooldownMock,
             });
 
-            const newPosition = createFakePosition();
-            store
-                .getState()
-                .receiveMove(newPosition, createFakeClock(), GameColor.WHITE);
+            store.getState().receiveMove(createFakeClock(), GameColor.WHITE);
 
-            expect(decrementMock).toHaveBeenCalledOnce();
-            expect(receivePosSpy).toHaveBeenCalledExactlyOnceWith(newPosition);
-        });
-    });
-
-    describe("resetLegalMovesForOpponentTurn", () => {
-        it("should reset latestMoveOptions", () => {
-            const testLegalMoves = createFakeLegalMoves();
-            store.setState({ latestLegalMoves: testLegalMoves });
-
-            store.getState().resetLegalMovesForOpponentTurn();
-
-            expect(store.getState().latestLegalMoves).toEqual(new LegalMoves());
-        });
-    });
-
-    describe("receiveLegalMoves", () => {
-        it("should update latestMoveOptions", () => {
-            const newMoves = createFakeLegalMoves({ hasForcedMoves: true });
-
-            store.getState().receiveLegalMoves(newMoves);
-            expect(store.getState().latestLegalMoves).toBe(newMoves);
+            expect(decrementDrawCooldownMock).toHaveBeenCalledOnce();
         });
     });
 

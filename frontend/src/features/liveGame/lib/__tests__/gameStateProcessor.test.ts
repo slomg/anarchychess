@@ -4,8 +4,7 @@ import { createFakeGameState } from "@/lib/testUtils/fakers/gameStateFaker";
 import { ChessboardProps } from "@/features/chessboard/stores/chessboardStore";
 import { LiveChessStoreProps } from "../../stores/liveChessStore";
 import { LogicalPoint } from "@/features/point/types";
-import { Position } from "../types";
-import { MoveBounds } from "@/features/chessboard/lib/types";
+import { MoveBounds, Position } from "@/features/chessboard/lib/types";
 import constants from "@/lib/constants";
 import { simulateMove } from "@/features/chessboard/lib/simulateMove";
 import { logicalPoint } from "@/features/point/pointUtils";
@@ -102,10 +101,10 @@ describe("createStoreProps", () => {
         const positionHistory: Position[] = [
             {
                 pieces: new BoardPieces(pieces),
-                clocks: {
-                    whiteClock: baseMs,
-                    blackClock: baseMs,
-                },
+                // clocks: {
+                //     whiteClock: baseMs,
+                //     blackClock: baseMs,
+                // },
             },
         ];
 
@@ -146,7 +145,7 @@ describe("createStoreProps", () => {
             positionHistory.push({
                 pieces,
                 move: move.decoded,
-                clocks: move.clocks,
+                // clocks: move.clocks,
                 san: move.san,
             });
         }
@@ -173,16 +172,12 @@ describe("createStoreProps", () => {
                 whitePlayer: gameState.whitePlayer,
                 blackPlayer: gameState.blackPlayer,
                 sideToMove: gameState.sideToMove,
-                positionHistory,
 
                 pool: gameState.pool,
                 viewer: {
                     userId: gameState.blackPlayer.userId,
                     playerColor: GameColor.BLACK,
                 },
-
-                viewingMoveNumber: 4,
-                latestLegalMoves: legalMoves,
 
                 drawState: gameState.drawState,
                 clocks: gameState.clocks,
@@ -195,6 +190,7 @@ describe("createStoreProps", () => {
                     width: constants.BOARD_WIDTH,
                     height: constants.BOARD_HEIGHT,
                 },
+                positionHistory,
                 lastMove,
                 viewingFrom: GameColor.BLACK,
                 canDrag: true,

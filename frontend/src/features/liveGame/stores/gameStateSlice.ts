@@ -71,7 +71,6 @@ export function createGameStateSlice(
                 if (state.blackPlayer.rating && resultData.blackRatingChange)
                     state.blackPlayer.rating += resultData.blackRatingChange;
 
-                state.latestLegalMoves = new LegalMoves();
                 state.resultData = resultData;
             });
         },

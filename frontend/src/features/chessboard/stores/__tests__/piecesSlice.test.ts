@@ -1,7 +1,7 @@
 import { StoreApi } from "zustand";
 
 import {
-    createFakeLegalMoves,
+    createFakeBoardPieces,
     createFakeMove,
     createFakePiece,
 } from "@/lib/testUtils/fakers/chessboardFakers";
@@ -11,21 +11,16 @@ import {
     screenPoint,
 } from "@/features/point/pointUtils";
 
-import {
-    AnimationStep,
-    BoardState,
-    IntermediateSquare,
-    Move,
-} from "../../lib/types";
 import { ChessboardStore, createChessboardStore } from "../chessboardStore";
+import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
 import flushMicrotasks from "@/lib/testUtils/flushMicrotasks";
+import { IntermediateSquare, Move } from "../../lib/types";
 import { LogicalPoint } from "@/features/point/types";
 import { ScreenPoint } from "@/features/point/types";
 import BoardPieces from "../../lib/boardPieces";
-import { GameColor, PieceType, SpecialMoveType } from "@/lib/apiClient";
-import { Piece } from "../../lib/types";
-import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
 import LegalMoves from "../../lib/legalMoves";
+import { GameColor } from "@/lib/apiClient";
+import { Piece } from "../../lib/types";
 
 vi.mock("@/features/audio/audioPlayer");
 
@@ -458,211 +453,15 @@ describe("PiecesSlice", () => {
         });
     });
 
-    describe("goToPosition", () => {
-        it("should call applyMoveAnimated in goToPosition when animateIntermediates=true", async () => {
-            const piece = createFakePiece({
-                position: logicalPoint({ x: 0, y: 0 }),
-            });
-            const move = createFakeMove({
-                from: piece.position,
-                to: logicalPoint({ x: 2, y: 2 }),
-            });
-            const legalMoves = createFakeLegalMoves();
+    describe("setImmediatePieces", () => {
+        it("should override pieces", () => {
+            const pieces = createFakeBoardPieces();
+            store.setState({ pieces });
 
-            const applyMoveAnimatedMock = vi.fn();
-            store.setState({
-                applyMoveAnimated: applyMoveAnimatedMock,
-            });
+            const newPieces = createFakeBoardPieces();
+            store.getState().setImmediatePieces(newPieces);
 
-            const boardState: BoardState = {
-                pieces: BoardPieces.fromPieces(piece),
-                legalMoves,
-                moveThatProducedPosition: move,
-                moveFromPreviousViewedPosition: move,
-            };
-
-            await store
-                .getState()
-                .goToPosition(boardState, { animateIntermediates: true });
-
-            expect(applyMoveAnimatedMock).toHaveBeenCalledExactlyOnceWith(move);
-            expect(store.getState().legalMoves).toEqual(boardState.legalMoves);
-        });
-
-        it("should directly set pieces in goToPosition without animateIntermediates", async () => {
-            const piece = createFakePiece({
-                position: logicalPoint({ x: 0, y: 0 }),
-            });
-            const newPos = logicalPoint({ x: 1, y: 1 });
-
-            const playAnimationMock = vi.fn();
-            store.setState({
-                playAnimation: playAnimationMock,
-                pieces: BoardPieces.fromPieces(piece),
-            });
-
-            const boardState: BoardState = {
-                pieces: BoardPieces.fromPieces({
-                    ...piece,
-                    position: newPos,
-                }),
-                legalMoves: new LegalMoves(),
-            };
-
-            await store.getState().goToPosition(boardState);
-
-            expect(playAnimationMock).toHaveBeenCalledExactlyOnceWith({
-                newPieces: boardState.pieces,
-                movedPieceIds: [piece.id],
-                isCapture: false,
-                isPromotion: false,
-            });
-        });
-
-        it("should set isCapture to true if moveFromPreviousViewedPosition is a capture", async () => {
-            const piece = createFakePiece({
-                position: logicalPoint({ x: 0, y: 0 }),
-            });
-            const newPos = logicalPoint({ x: 1, y: 1 });
-            const playAnimationMock = vi.fn();
-
-            store.setState({
-                playAnimation: playAnimationMock,
-                pieces: BoardPieces.fromPieces(piece),
-            });
-
-            const boardState: BoardState = {
-                pieces: BoardPieces.fromPieces({
-                    ...piece,
-                    position: newPos,
-                }),
-                legalMoves: new LegalMoves(),
-                moveFromPreviousViewedPosition: createFakeMove({
-                    captures: [logicalPoint({ x: 1, y: 1 })],
-                }),
-            };
-
-            await store.getState().goToPosition(boardState);
-            expect(playAnimationMock).toHaveBeenCalledExactlyOnceWith<
-                [AnimationStep]
-            >({
-                newPieces: boardState.pieces,
-                movedPieceIds: [piece.id],
-                isCapture: true,
-                isPromotion: false,
-                specialType: null,
-            });
-        });
-
-        it("should pass specialType to playAnimation when present", async () => {
-            const piece = createFakePiece({
-                position: logicalPoint({ x: 0, y: 0 }),
-            });
-            const newPos = logicalPoint({ x: 2, y: 2 });
-            const playAnimationMock = vi.fn();
-
-            store.setState({
-                playAnimation: playAnimationMock,
-                pieces: BoardPieces.fromPieces(piece),
-            });
-
-            const boardState: BoardState = {
-                pieces: BoardPieces.fromPieces({
-                    ...piece,
-                    position: newPos,
-                }),
-                legalMoves: new LegalMoves(),
-                moveFromPreviousViewedPosition: createFakeMove({
-                    specialType: SpecialMoveType.KNOOKLEAR_FUSION,
-                }),
-            };
-
-            await store.getState().goToPosition(boardState);
-
-            expect(playAnimationMock).toHaveBeenCalledExactlyOnceWith<
-                [AnimationStep]
-            >({
-                newPieces: boardState.pieces,
-                movedPieceIds: [piece.id],
-                isCapture: false,
-                isPromotion: false,
-                specialType: SpecialMoveType.KNOOKLEAR_FUSION,
-            });
-        });
-
-        it("should set isPromotion=true when promotesTo is defined", async () => {
-            const piece = createFakePiece({
-                position: logicalPoint({ x: 0, y: 0 }),
-            });
-            const newPos = logicalPoint({ x: 0, y: 7 });
-            const playAnimationMock = vi.fn();
-
-            store.setState({
-                playAnimation: playAnimationMock,
-                pieces: BoardPieces.fromPieces(piece),
-            });
-
-            const boardState: BoardState = {
-                pieces: BoardPieces.fromPieces({
-                    ...piece,
-                    position: newPos,
-                }),
-                legalMoves: new LegalMoves(),
-                moveFromPreviousViewedPosition: createFakeMove({
-                    promotesTo: PieceType.QUEEN,
-                }),
-            };
-
-            await store.getState().goToPosition(boardState);
-
-            expect(playAnimationMock).toHaveBeenCalledExactlyOnceWith<
-                [AnimationStep]
-            >({
-                newPieces: boardState.pieces,
-                movedPieceIds: [piece.id],
-                isCapture: false,
-                isPromotion: true,
-                specialType: null,
-            });
-        });
-
-        it("should set moveBounds when moveThatProducedPosition is defined", async () => {
-            const piece = createFakePiece({
-                position: logicalPoint({ x: 0, y: 0 }),
-            });
-            const newPos = logicalPoint({ x: 0, y: 4 });
-            const playAnimationMock = vi.fn();
-
-            store.setState({
-                playAnimation: playAnimationMock,
-                pieces: BoardPieces.fromPieces(piece),
-            });
-
-            const boardState: BoardState = {
-                pieces: BoardPieces.fromPieces({
-                    ...piece,
-                    position: newPos,
-                }),
-                legalMoves: new LegalMoves(),
-                moveThatProducedPosition: createFakeMove({
-                    from: piece.position,
-                    to: newPos,
-                }),
-                moveFromPreviousViewedPosition: createFakeMove(),
-            };
-
-            await store.getState().goToPosition(boardState);
-
-            expect(playAnimationMock).toHaveBeenCalledExactlyOnceWith<
-                [AnimationStep]
-            >({
-                newPieces: boardState.pieces,
-                movedPieceIds: [piece.id],
-                moveBounds: { from: piece.position, to: newPos },
-                isCapture: false,
-                isPromotion: false,
-                specialType: null,
-            });
+            expect(store.getState().pieces).toEqual(newPieces);
         });
     });
 });

@@ -4,7 +4,6 @@ import { StoreApi } from "zustand";
 import { ChessboardStore } from "../stores/chessboardStore";
 import expandMinimalMove from "../lib/expandMinimalMove";
 import { decodeFen } from "../lib/fenDecoder";
-import LegalMoves from "../lib/legalMoves";
 
 export default function useBoardReplay(
     replays: GameReplay[],
@@ -19,9 +18,7 @@ export default function useBoardReplay(
         const currentReplay = replays[replayIndexRef];
         if (moveIndex === 0) {
             const pieces = decodeFen(currentReplay.startingFen);
-            chessboardStore
-                .getState()
-                .goToPosition({ pieces, legalMoves: new LegalMoves() });
+            chessboardStore.getState().setImmediatePieces(pieces);
         }
 
         let timeout: NodeJS.Timeout;

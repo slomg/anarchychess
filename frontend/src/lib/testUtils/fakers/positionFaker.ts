@@ -1,18 +1,19 @@
-import { Position } from "@/features/liveGame/lib/types";
-import { faker } from "@faker-js/faker";
 import { createFakeBoardPieces } from "./chessboardFakers";
+import { Position } from "@/features/chessboard/lib/types";
 import { createFakeSan } from "./sanFaker";
 
 export function createFakePosition(
     overrides: Partial<Position> = {},
 ): Position {
     return {
-        san: createFakeSan(),
         pieces: createFakeBoardPieces(),
-        clocks: {
-            whiteClock: faker.number.int({ min: 1000, max: 100000 }),
-            blackClock: faker.number.int({ min: 1000, max: 100000 }),
-        },
+        san: createFakeSan(),
         ...overrides,
+    };
+}
+
+export function createFakeStartingPosition(): Position {
+    return {
+        pieces: createFakeBoardPieces(),
     };
 }

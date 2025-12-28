@@ -24,7 +24,6 @@ import { createFakeClock } from "@/lib/testUtils/fakers/clockFaker";
 import { act } from "react";
 import { refetchGame } from "../../lib/gameStateProcessor";
 import { createFakePosition } from "@/lib/testUtils/fakers/positionFaker";
-import { Position } from "../../lib/types";
 import {
     createFakeLegalMoves,
     createFakePiece,
@@ -36,6 +35,7 @@ import { decodeMovePath } from "../../lib/moveDecoder";
 import { GameClientEvents, useGameEvent } from "../useGameHub";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
 import LegalMoves from "@/features/chessboard/lib/legalMoves";
+import { Position } from "@/features/chessboard/lib/types";
 
 vi.mock("@/features/liveGame/hooks/useGameHub");
 vi.mock("@/features/liveGame/lib/gameStateProcessor");
@@ -67,11 +67,11 @@ describe("useLiveChessEvents", () => {
             position: logicalPoint({ x: 1, y: 1 }),
         });
         chessboardStore.setState({
+            viewingPlyIdx: 0,
+            positionHistory: [createFakePosition()],
             pieces: BoardPieces.fromPieces(piece),
         });
         liveChessStore.setState({
-            viewingMoveNumber: 0,
-            positionHistory: [createFakePosition()],
             viewer: { userId: "test id", playerColor: GameColor.WHITE },
         });
         return piece;
@@ -136,7 +136,7 @@ describe("useLiveChessEvents", () => {
 
     describe("MoveMadeAsync", () => {
         it("should trigger a refetch when moveNumber is out of sync", async () => {
-            liveChessStore.setState({
+            chessboardStore.setState({
                 positionHistory: [createFakePosition()],
             });
 
@@ -155,7 +155,7 @@ describe("useLiveChessEvents", () => {
             );
 
             expect(refetchGame).toHaveBeenCalled();
-            expect(liveChessStore.getState().positionHistory.length).toBe(1);
+            expect(chessboardStore.getState().positionHistory.length).toBe(1);
         });
 
         it.each([true, false])(
@@ -167,13 +167,13 @@ describe("useLiveChessEvents", () => {
                 const clocks = createFakeClock();
                 const piecesBefore = chessboardStore.getState().pieces;
                 const positionHistoryBefore =
-                    liveChessStore.getState().positionHistory;
+                    chessboardStore.getState().positionHistory;
                 if (awaitingAck) liveChessStore.getState().markPendingMoveAck();
 
                 const move = await triggerMoveMade(GameColor.WHITE, clocks);
 
-                expect(liveChessStore.getState().viewingMoveNumber).toBe(1);
-                expect(liveChessStore.getState().positionHistory.length).toBe(
+                expect(chessboardStore.getState().viewingPlyIdx).toBe(1);
+                expect(chessboardStore.getState().positionHistory.length).toBe(
                     positionHistoryBefore.length + 1,
                 );
 
@@ -185,15 +185,11 @@ describe("useLiveChessEvents", () => {
                 }
 
                 expect(
-                    liveChessStore.getState().positionHistory[1],
+                    chessboardStore.getState().positionHistory[1],
                 ).toEqual<Position>({
                     san: move.san,
                     move: decodeMovePath(move.path, 10),
                     pieces: piecesAfter,
-                    clocks: {
-                        whiteClock: clocks.whiteClock,
-                        blackClock: clocks.blackClock,
-                    },
                 });
             },
         );
@@ -206,7 +202,6 @@ describe("useLiveChessEvents", () => {
             async (ourColor, newSideToMove) => {
                 liveChessStore.setState({
                     viewer: { userId: "test id", playerColor: ourColor },
-                    latestLegalMoves: createFakeLegalMoves(),
                 });
                 chessboardStore.setState({
                     legalMoves: createFakeLegalMoves(),
@@ -228,44 +223,13 @@ describe("useLiveChessEvents", () => {
                 );
 
                 const legalMoves = chessboardStore.getState().legalMoves;
-                const latestPositionLegalMoves =
-                    liveChessStore.getState().latestLegalMoves;
                 if (ourColor !== newSideToMove) {
                     expect(legalMoves.size).toBe(0);
-                    expect(latestPositionLegalMoves.size).toBe(0);
                 } else {
                     expect(legalMoves.size).not.toBe(0);
-                    expect(latestPositionLegalMoves.size).not.toBe(0);
                 }
             },
         );
-
-        it("should jump forward if we are viewing past moves", async () => {
-            liveChessStore.setState({
-                viewingMoveNumber: 0,
-                positionHistory: [createFakePosition(), createFakePosition()],
-                viewer: { userId: "test id", playerColor: GameColor.WHITE },
-            });
-
-            renderLiveChessEvents();
-
-            const move = createFakeMoveSnapshot({
-                san: "test san",
-                path: { fromIdx: 11, toIdx: 12, moveKey: "0" },
-            });
-            const clocks = createFakeClock();
-
-            await act(async () =>
-                gameEventHandlers.MoveMadeAsync?.(
-                    move,
-                    GameColor.WHITE,
-                    2,
-                    clocks,
-                ),
-            );
-
-            expect(liveChessStore.getState().viewingMoveNumber).toBe(2);
-        });
     });
 
     describe("LegalMovesChangedAsync", () => {
@@ -276,10 +240,6 @@ describe("useLiveChessEvents", () => {
         }
 
         it("should decode legal moves and update both stores", async () => {
-            liveChessStore.setState({
-                latestLegalMoves: new LegalMoves(),
-            });
-
             chessboardStore.setState({
                 legalMoves: new LegalMoves(),
             });
@@ -310,12 +270,6 @@ describe("useLiveChessEvents", () => {
                     hasForcedMoves,
                 ),
             );
-
-            const liveState = liveChessStore.getState();
-            expect(liveState.latestLegalMoves.hasForcedMoves).toBe(
-                hasForcedMoves,
-            );
-            expect(liveState.latestLegalMoves.size).toBeGreaterThan(0);
 
             const chessboardState = chessboardStore.getState();
             expect(chessboardState.legalMoves.hasForcedMoves).toBe(
@@ -357,7 +311,6 @@ describe("useLiveChessEvents", () => {
         it("should update liveChessStore, disable chessboard movement, and set final clocks", async () => {
             liveChessStore.setState({
                 resultData: null,
-                latestLegalMoves: createFakeLegalMoves(),
             });
             chessboardStore.setState({
                 legalMoves: createFakeLegalMoves(),

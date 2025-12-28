@@ -3,10 +3,10 @@ import { Clocks, GameColor, MoveSnapshot } from "@/lib/apiClient";
 import { StoreApi, useStore } from "zustand";
 import { LiveChessStore } from "../stores/liveChessStore";
 import { decodeMovePath, decodeEncodedMovesIntoMap } from "../lib/moveDecoder";
-import { Position } from "../lib/types";
 import { refetchGame } from "../lib/gameStateProcessor";
 import { useGameEvent } from "./useGameHub";
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
+import { Position } from "@/features/chessboard/lib/types";
 
 export default function useLiveChessEvents(
     liveChessStore: StoreApi<LiveChessStore>,
@@ -14,16 +14,6 @@ export default function useLiveChessEvents(
 ) {
     const boardDimensions = useStore(chessboardStore, (x) => x.boardDimensions);
     const gameToken = useStore(liveChessStore, (x) => x.gameToken);
-
-    async function jumpForwards() {
-        const { positionHistory, viewingMoveNumber, teleportToLastMove } =
-            liveChessStore.getState();
-        const { goToPosition } = chessboardStore.getState();
-        if (viewingMoveNumber !== positionHistory.length - 1) {
-            const position = teleportToLastMove();
-            await goToPosition(position.state);
-        }
-    }
 
     useGameEvent(gameToken, "SyncRevisionAsync", async (currentRevision) => {
         const { sourceRevision } = liveChessStore.getState();
@@ -41,15 +31,14 @@ export default function useLiveChessEvents(
             moveNumber: number,
             clocks: Clocks,
         ) => {
+            const { isPendingMoveAck, viewer, receiveMove } =
+                liveChessStore.getState();
             const {
                 positionHistory,
-                isPendingMoveAck,
-                viewer,
-                receiveMove,
-                resetLegalMovesForOpponentTurn,
-            } = liveChessStore.getState();
-            const { applyMoveAnimated, disableMovement } =
-                chessboardStore.getState();
+                addPosition,
+                applyMoveAnimated,
+                disableMovement,
+            } = chessboardStore.getState();
 
             // we missed a move... we need to refetch the state
             if (moveNumber != positionHistory.length) {
@@ -59,7 +48,6 @@ export default function useLiveChessEvents(
 
             if (viewer.playerColor !== sideToMove) {
                 disableMovement();
-                resetLegalMovesForOpponentTurn();
             }
 
             const decodedMove = decodeMovePath(
@@ -67,21 +55,22 @@ export default function useLiveChessEvents(
                 boardDimensions.width,
             );
             if (!isPendingMoveAck) {
-                await jumpForwards();
                 await applyMoveAnimated(decodedMove);
             }
 
             const pieces = chessboardStore.getState().pieces;
             const position: Position = {
+                pieces,
                 san: move.san,
                 move: decodedMove,
-                pieces,
-                clocks: {
-                    whiteClock: clocks.whiteClock,
-                    blackClock: clocks.blackClock,
-                },
+                // clocks: {
+                //     whiteClock: clocks.whiteClock,
+                //     blackClock: clocks.blackClock,
+                // },
             };
-            receiveMove(position, clocks, sideToMove);
+
+            addPosition(position);
+            receiveMove(clocks, sideToMove);
         },
     );
 
@@ -95,7 +84,6 @@ export default function useLiveChessEvents(
                 hasForcedMoves: hasForcedMoves,
             });
 
-            liveChessStore.getState().receiveLegalMoves(decodedLegalMoves);
             chessboardStore.getState().setLegalMoves(decodedLegalMoves);
         },
     );

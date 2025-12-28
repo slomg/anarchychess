@@ -12,7 +12,7 @@ export const createCoreSlice: StateCreator<
     [["zustand/immer", never], never],
     [],
     CoreSlice
-> = (set, _, store) => ({
+> = (set, get, store) => ({
     resetState(initState) {
         set(() => ({
             ...store.getInitialState(),
@@ -21,10 +21,8 @@ export const createCoreSlice: StateCreator<
     },
 
     disableMovement(): void {
-        set((state) => {
-            state.legalMoves = new LegalMoves();
-            state.highlightedLegalMoves = [];
-            state.selectedPieceId = null;
-        });
+        const { setLegalMoves, unselectPiece } = get();
+        setLegalMoves(new LegalMoves());
+        unselectPiece();
     },
 });

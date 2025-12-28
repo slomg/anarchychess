@@ -29,13 +29,6 @@ export type MinimalMove = Partial<Move> & {
     to: LogicalPoint;
 };
 
-export interface BoardState {
-    pieces: BoardPieces;
-    legalMoves: LegalMoves;
-    moveThatProducedPosition?: Move;
-    moveFromPreviousViewedPosition?: Move;
-}
-
 export interface MoveSideEffect {
     from: LogicalPoint;
     to: LogicalPoint;
@@ -73,4 +66,10 @@ export interface MoveAnimation {
 export interface GameReplay {
     startingFen: string;
     moves: MinimalMove[];
+}
+
+export interface Position {
+    pieces: BoardPieces;
+    move?: Move;
+    san?: string;
 }

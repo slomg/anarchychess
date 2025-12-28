@@ -2,21 +2,18 @@ import React, { useEffect, useMemo, useRef } from "react";
 import clsx from "clsx";
 
 import { useChessboardStore } from "@/features/chessboard/hooks/useChessboard";
-import useLiveChessStore from "../hooks/useLiveChessStore";
 import useAutoScroll from "@/hooks/useAutoScroll";
-import { HistoryStep } from "../lib/types";
 import Card from "@/components/ui/Card";
 import GameActions from "./GameActions";
 
 const MoveHistoryTable = () => {
-    const { shiftMoveViewBy, teleportToMove, teleportToLastMove } =
-        useLiveChessStore((x) => ({
+    const positionHistory = useChessboardStore((x) => x.positionHistory);
+    const { shiftMoveViewBy, teleportToPosition, teleportToLatestPosition } =
+        useChessboardStore((x) => ({
             shiftMoveViewBy: x.shiftMoveViewBy,
-            teleportToMove: x.teleportToMove,
-            teleportToLastMove: x.teleportToLastMove,
+            teleportToPosition: x.teleportToPosition,
+            teleportToLatestPosition: x.teleportToLatestPosition,
         }));
-    const positionHistory = useLiveChessStore((x) => x.positionHistory);
-    const goToPosition = useChessboardStore((x) => x.goToPosition);
 
     const tableRef = useRef<HTMLDivElement | null>(null);
     useAutoScroll(tableRef, [positionHistory]);
@@ -44,32 +41,25 @@ const MoveHistoryTable = () => {
 
     useEffect(() => {
         async function onKeyDown(event: KeyboardEvent): Promise<void> {
-            let historyStep: HistoryStep | undefined;
             switch (event.key) {
                 case "ArrowLeft":
-                    historyStep = shiftMoveViewBy(-1);
+                    await shiftMoveViewBy(-1);
                     break;
                 case "ArrowRight":
-                    historyStep = shiftMoveViewBy(1);
+                    await shiftMoveViewBy(1);
                     break;
                 case "ArrowUp":
-                    historyStep = teleportToMove(0);
+                    await teleportToPosition(0);
                     break;
                 case "ArrowDown":
-                    historyStep = teleportToLastMove();
+                    await teleportToLatestPosition();
                     break;
             }
-            if (!historyStep) return;
-
-            await goToPosition(historyStep.state, {
-                animateIntermediates:
-                    historyStep.isOneStepForward && !event.repeat,
-            });
         }
 
         window.addEventListener("keydown", onKeyDown);
         return () => window.removeEventListener("keydown", onKeyDown);
-    }, [goToPosition, shiftMoveViewBy, teleportToMove, teleportToLastMove]);
+    }, [shiftMoveViewBy, teleportToPosition, teleportToLatestPosition]);
 
     return (
         <Card className="relative block max-h-96 p-0 lg:max-h-full">
@@ -97,23 +87,12 @@ const MoveRow = ({
     const whiteMoveIdx = index * 2 - 1;
     const blackMoveIdx = whiteMoveIdx + 1;
 
-    const { teleportToMove, isViewingWhite, isViewingBlack } =
-        useLiveChessStore((x) => ({
-            teleportToMove: x.teleportToMove,
-            isViewingWhite: x.viewingMoveNumber === whiteMoveIdx,
-            isViewingBlack: x.viewingMoveNumber === blackMoveIdx,
+    const { teleportToPosition, isViewingWhite, isViewingBlack } =
+        useChessboardStore((x) => ({
+            teleportToPosition: x.teleportToPosition,
+            isViewingWhite: x.viewingPlyIdx === whiteMoveIdx,
+            isViewingBlack: x.viewingPlyIdx === blackMoveIdx,
         }));
-
-    const goToPosition = useChessboardStore((x) => x.goToPosition);
-
-    async function handleClick(moveIdx: number): Promise<void> {
-        const historyStep = teleportToMove(moveIdx);
-        if (!historyStep) return;
-
-        await goToPosition(historyStep.state, {
-            animateIntermediates: historyStep.isOneStepForward,
-        });
-    }
 
     const color = index % 2 === 0 ? "bg-white/10" : "";
     const selectedClass = "bg-blue-300/30";
@@ -125,7 +104,7 @@ const MoveRow = ({
                     "cursor-pointer overflow-x-auto p-3",
                     isViewingWhite && selectedClass,
                 )}
-                onClick={() => handleClick(whiteMoveIdx)}
+                onClick={() => teleportToPosition(whiteMoveIdx)}
             >
                 <div className="overflow-x-auto">{moveWhite}</div>
             </td>
@@ -134,7 +113,7 @@ const MoveRow = ({
                     "cursor-pointer overflow-x-auto p-3",
                     isViewingBlack && selectedClass,
                 )}
-                onClick={() => handleClick(blackMoveIdx)}
+                onClick={() => teleportToPosition(blackMoveIdx)}
             >
                 <div className="overflow-x-auto">{moveBlack}</div>
             </td>

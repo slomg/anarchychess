@@ -1,6 +1,6 @@
 import { LogicalPoint } from "@/features/point/types";
 import { ScreenPoint } from "@/features/point/types";
-import { BoardState, MoveBounds, PieceID } from "../lib/types";
+import { PieceID } from "../lib/types";
 import { Move } from "../lib/types";
 import type { ChessboardStore } from "./chessboardStore";
 import { StateCreator } from "zustand";
@@ -37,10 +37,7 @@ export interface PiecesSlice {
     applyMoveAnimated(move: Move): Promise<void>;
     applyMoveImmediate(move: Move): Promise<void>;
 
-    goToPosition(
-        boardState: BoardState,
-        options?: { animateIntermediates?: boolean },
-    ): Promise<void>;
+    setImmediatePieces(pieces: BoardPieces): void;
 
     screenPointToPiece(position: ScreenPoint): PieceID | undefined;
 }
@@ -87,21 +84,6 @@ export function createPiecesSlice(
 
             const move = await getLegalMove(dest, selectedPieceId, pieces);
             return move;
-        }
-
-        function findMovedPiecesBetween(
-            oldPieces: BoardPieces,
-            newPieces: BoardPieces,
-        ): PieceID[] {
-            const movedPieceIds: PieceID[] = [];
-            for (const newPiece of oldPieces) {
-                const piece = newPieces.getById(newPiece.id);
-                if (!piece) continue;
-                if (!pointEquals(piece.position, newPiece.position))
-                    movedPieceIds.push(newPiece.id);
-            }
-
-            return movedPieceIds;
         }
 
         return {
@@ -207,58 +189,9 @@ export function createPiecesSlice(
                 }
             },
 
-            async goToPosition(boardState, options) {
-                const {
-                    applyMoveAnimated,
-                    playAnimation,
-                    setLegalMoves,
-                    pieces,
-                } = get();
-
-                setLegalMoves(boardState.legalMoves);
-
-                const {
-                    moveFromPreviousViewedPosition,
-                    moveThatProducedPosition,
-                } = boardState;
-
-                if (options?.animateIntermediates && moveThatProducedPosition) {
-                    await applyMoveAnimated(moveThatProducedPosition);
-                    return;
-                }
-
-                const movedPieceIds = findMovedPiecesBetween(
-                    pieces,
-                    boardState.pieces,
-                );
-
+            setImmediatePieces(pieces) {
                 set((state) => {
-                    state.pieces = boardState.pieces;
-                    state.selectedPieceId = null;
-                });
-
-                const moveBounds: MoveBounds | undefined =
-                    moveThatProducedPosition
-                        ? {
-                              from: moveThatProducedPosition.from,
-                              to: moveThatProducedPosition.to,
-                          }
-                        : undefined;
-                const isCapture = moveFromPreviousViewedPosition
-                    ? moveFromPreviousViewedPosition.captures.length > 0
-                    : false;
-                const isPromotion = moveFromPreviousViewedPosition
-                    ? moveFromPreviousViewedPosition.promotesTo !== null
-                    : false;
-
-                await playAnimation({
-                    newPieces: boardState.pieces,
-                    movedPieceIds,
-
-                    moveBounds,
-                    isCapture,
-                    isPromotion,
-                    specialType: moveFromPreviousViewedPosition?.specialType,
+                    state.pieces = pieces;
                 });
             },
 

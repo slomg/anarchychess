@@ -4,12 +4,6 @@ import { shallow } from "zustand/shallow";
 import { enableMapSet } from "immer";
 
 import {
-    createHistorySlice,
-    HistorySlice,
-    HistorySliceProps,
-} from "./historySlice";
-
-import {
     createGamePlaySlice,
     GamePlaySlice,
     GamePlaySliceProps,
@@ -23,20 +17,13 @@ import {
 
 import { createRematchSlice, RematchSlice } from "./rematchSlice";
 
-export type LiveChessStoreProps = HistorySliceProps &
-    GamePlaySliceProps &
-    GameStateSliceProps;
-
-export type LiveChessStore = HistorySlice &
-    GamePlaySlice &
-    GameStateSlice &
-    RematchSlice;
+export type LiveChessStoreProps = GamePlaySliceProps & GameStateSliceProps;
+export type LiveChessStore = GamePlaySlice & GameStateSlice & RematchSlice;
 
 enableMapSet();
 export default function createLiveChessStore(initState: LiveChessStoreProps) {
     return createWithEqualityFn<LiveChessStore>()(
         immer((...a) => ({
-            ...createHistorySlice(initState)(...a),
             ...createGamePlaySlice(initState)(...a),
             ...createGameStateSlice(initState)(...a),
             ...createRematchSlice(...a),

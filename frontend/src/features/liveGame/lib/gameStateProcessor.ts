@@ -11,13 +11,13 @@ import {
 } from "@/features/chessboard/stores/chessboardStore";
 import { decodeFen } from "../../chessboard/lib/fenDecoder";
 import { ClockSnapshot } from "./types";
-import { Position } from "./types";
 import { decodeMovePath, decodeMovePathIntoLegalMoves } from "./moveDecoder";
 import { simulateMove } from "@/features/chessboard/lib/simulateMove";
 import constants from "@/lib/constants";
 import { StoreApi } from "zustand";
 import { LiveChessViewer } from "../stores/gamePlaySlice";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
+import { Position } from "@/features/chessboard/lib/types";
 
 export interface ProcessedGameState {
     live: LiveChessStoreProps;
@@ -61,16 +61,14 @@ export function createStoreProps(
         pool: gameState.pool,
         viewer,
 
-        positionHistory,
-        viewingMoveNumber: positionHistory.length - 1,
-        latestLegalMoves: legalMoves,
-
         drawState: gameState.drawState,
         clocks: gameState.clocks,
         resultData: gameState.resultData ?? null,
     };
     const board: ChessboardProps = {
         pieces: lastPosition?.pieces ?? new BoardPieces(),
+        positionHistory,
+
         legalMoves: legalMoves,
         lastMove: lastPosition?.move && {
             from: lastPosition.move.from,
@@ -107,7 +105,7 @@ function getPositionHistory(gameState: GameState): Position[] {
     const positionHistory: Position[] = [
         {
             pieces,
-            clocks: { ...clockSnapshot },
+            // clocks: { ...clockSnapshot },
         },
     ];
     for (const [i, moveSnapshot] of gameState.moveHistory.entries()) {
@@ -125,7 +123,7 @@ function getPositionHistory(gameState: GameState): Position[] {
             move,
             san: moveSnapshot.san,
             pieces: newPieces,
-            clocks: { ...clockSnapshot },
+            // clocks: { ...clockSnapshot },
         };
         positionHistory.push(position);
         pieces = newPieces;

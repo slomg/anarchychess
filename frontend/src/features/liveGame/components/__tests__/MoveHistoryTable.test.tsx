@@ -1,58 +1,33 @@
 import { render, screen } from "@testing-library/react";
 import { StoreApi } from "zustand";
 
-import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
-import LiveChessStoreContext from "@/features/liveGame/contexts/liveChessContext";
-import createLiveChessStore, {
-    LiveChessStore,
-} from "@/features/liveGame/stores/liveChessStore";
 import MoveHistoryTable from "../MoveHistoryTable";
-import { createFakePosition } from "@/lib/testUtils/fakers/positionFaker";
+import {
+    createFakePosition,
+    createFakeStartingPosition,
+} from "@/lib/testUtils/fakers/positionFaker";
 import {
     ChessboardStore,
     createChessboardStore,
 } from "@/features/chessboard/stores/chessboardStore";
 import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardStoreContext";
 import userEvent from "@testing-library/user-event";
-import { createFakeLegalMoves } from "@/lib/testUtils/fakers/chessboardFakers";
-import { Position } from "../../lib/types";
 import { mockScrollTo } from "@/lib/testUtils/mocks/mockDom";
-import LegalMoves from "@/features/chessboard/lib/legalMoves";
 
 describe("MoveHistoryTable", () => {
-    let liveStore: StoreApi<LiveChessStore>;
     let chessboardStore: StoreApi<ChessboardStore>;
-
-    const emptyLegalMoves = new LegalMoves();
-    let latestLegalMoves: LegalMoves;
 
     beforeEach(() => {
         mockScrollTo();
-
-        latestLegalMoves = createFakeLegalMoves();
-
-        liveStore = createLiveChessStore(
-            createFakeLiveChessStoreProps({
-                positionHistory: [],
-                latestLegalMoves: latestLegalMoves,
-            }),
-        );
         chessboardStore = createChessboardStore();
     });
 
     function renderWithCtx() {
         return render(
-            <LiveChessStoreContext.Provider value={liveStore}>
-                <ChessboardStoreContext.Provider value={chessboardStore}>
-                    <MoveHistoryTable />
-                </ChessboardStoreContext.Provider>
-            </LiveChessStoreContext.Provider>,
+            <ChessboardStoreContext.Provider value={chessboardStore}>
+                <MoveHistoryTable />
+            </ChessboardStoreContext.Provider>,
         );
-    }
-
-    function expectPosition(position: Position, legalMoves: LegalMoves) {
-        expect(chessboardStore.getState().pieces).toEqual(position.pieces);
-        expect(chessboardStore.getState().legalMoves).toEqual(legalMoves);
     }
 
     it("should render an empty table when there are no moves", () => {
@@ -62,9 +37,9 @@ describe("MoveHistoryTable", () => {
     });
 
     it("should render a single row when there is one move", () => {
-        liveStore.setState({
+        chessboardStore.setState({
             positionHistory: [
-                createFakePosition({ san: undefined }),
+                createFakeStartingPosition(),
                 createFakePosition({ san: "e4" }),
             ],
         });
@@ -76,9 +51,9 @@ describe("MoveHistoryTable", () => {
     });
 
     it("should render multiple rows for multiple moves", () => {
-        liveStore.setState({
+        chessboardStore.setState({
             positionHistory: [
-                createFakePosition({ san: undefined }),
+                createFakeStartingPosition(),
                 createFakePosition({ san: "e4" }),
                 createFakePosition({ san: "e5" }),
                 createFakePosition({ san: "Nf3" }),
@@ -97,9 +72,9 @@ describe("MoveHistoryTable", () => {
     });
 
     it("should apply alternating background color class for odd rows", () => {
-        liveStore.setState({
+        chessboardStore.setState({
             positionHistory: [
-                createFakePosition({ san: undefined }),
+                createFakeStartingPosition(),
                 createFakePosition({ san: "e4" }),
                 createFakePosition({ san: "e5" }),
                 createFakePosition({ san: "Nf3" }),
@@ -117,14 +92,13 @@ describe("MoveHistoryTable", () => {
     });
 
     it("should update position using arrow keys", async () => {
-        const move1 = createFakePosition({ san: undefined });
-        const move2 = createFakePosition();
-        const move3 = createFakePosition();
+        const position1 = createFakeStartingPosition();
+        const position2 = createFakePosition();
+        const position3 = createFakePosition();
 
-        liveStore.setState({
-            latestLegalMoves: latestLegalMoves,
-            viewingMoveNumber: 0,
-            positionHistory: [move1, move2, move3],
+        chessboardStore.setState({
+            viewingPlyIdx: 0,
+            positionHistory: [position1, position2, position3],
         });
 
         const user = userEvent.setup();
@@ -132,137 +106,46 @@ describe("MoveHistoryTable", () => {
 
         // go to move 2
         await user.keyboard("{ArrowRight}");
-        expectPosition(move2, emptyLegalMoves);
+        expect(chessboardStore.getState().pieces).toEqual(position2.pieces);
 
         // go to move 3
         await user.keyboard("{ArrowRight}");
-        expectPosition(move3, latestLegalMoves);
+        expect(chessboardStore.getState().pieces).toEqual(position3.pieces);
 
         // go back to move 2
         await user.keyboard("{ArrowLeft}");
-        expectPosition(move2, emptyLegalMoves);
+        expect(chessboardStore.getState().pieces).toEqual(position2.pieces);
 
         // jump to end
         await user.keyboard("{ArrowDown}");
-        expectPosition(move3, latestLegalMoves);
+        expect(chessboardStore.getState().pieces).toEqual(position3.pieces);
 
         // jump to start
         await user.keyboard("{ArrowUp}");
-        expectPosition(move1, emptyLegalMoves);
+        expect(chessboardStore.getState().pieces).toEqual(position1.pieces);
     });
 
     it("should update position when clicking on a move", async () => {
-        const move1 = createFakePosition({ san: undefined });
-        const move2 = createFakePosition({ san: "e4" });
-        const move3 = createFakePosition({ san: "e5" });
-        const move4 = createFakePosition({ san: "e6" });
+        const position1 = createFakeStartingPosition();
+        const position2 = createFakePosition({ san: "e4" });
+        const position3 = createFakePosition({ san: "e5" });
+        const position4 = createFakePosition({ san: "e6" });
 
-        liveStore.setState({
-            positionHistory: [move1, move2, move3, move4],
+        chessboardStore.setState({
+            positionHistory: [position1, position2, position3, position4],
         });
 
         const user = userEvent.setup();
         renderWithCtx();
 
         await user.click(screen.getByText("e4"));
-        expectPosition(move2, emptyLegalMoves);
+        expect(chessboardStore.getState().pieces).toEqual(position2.pieces);
 
         await user.click(screen.getByText("e5"));
-        expectPosition(move3, emptyLegalMoves);
+        expect(chessboardStore.getState().pieces).toEqual(position3.pieces);
 
         await user.click(screen.getByText("e6"));
-        expectPosition(move4, latestLegalMoves);
-    });
-
-    it("should call goToPosition with correct animateIntermediates for arrow keys", async () => {
-        const move1 = createFakePosition({ san: undefined });
-        const move2 = createFakePosition();
-        const move3 = createFakePosition();
-        const goToPositionMock = vi.fn();
-
-        liveStore.setState({
-            latestLegalMoves: latestLegalMoves,
-            viewingMoveNumber: 0,
-            positionHistory: [move1, move2, move3],
-        });
-        chessboardStore.setState({
-            goToPosition: goToPositionMock,
-        });
-
-        const user = userEvent.setup();
-        renderWithCtx();
-
-        // 1
-        await user.keyboard("{ArrowRight}");
-        expect(goToPositionMock).toHaveBeenLastCalledWith(
-            expect.objectContaining({ pieces: move2.pieces }),
-            { animateIntermediates: true },
-        );
-
-        // 2
-        await user.keyboard("{ArrowRight}");
-        expect(goToPositionMock).toHaveBeenLastCalledWith(
-            expect.objectContaining({ pieces: move3.pieces }),
-            { animateIntermediates: true },
-        );
-
-        // 1
-        await user.keyboard("{ArrowLeft}");
-        expect(goToPositionMock).toHaveBeenLastCalledWith(
-            expect.objectContaining({ pieces: move2.pieces }),
-            { animateIntermediates: false },
-        );
-
-        // 2
-        await user.keyboard("{ArrowDown}");
-        expect(goToPositionMock).toHaveBeenLastCalledWith(
-            expect.objectContaining({ pieces: move3.pieces }),
-            { animateIntermediates: true },
-        );
-
-        // 0
-        await user.keyboard("{ArrowUp}");
-        expect(goToPositionMock).toHaveBeenLastCalledWith(
-            expect.objectContaining({ pieces: move1.pieces }),
-            { animateIntermediates: false },
-        );
-    });
-
-    it("should call goToPosition with correct animateIntermediates when clicking on a move", async () => {
-        const move1 = createFakePosition({ san: undefined });
-        const move2 = createFakePosition({ san: "e4" });
-        const move3 = createFakePosition({ san: "e5" });
-        const move4 = createFakePosition({ san: "e6" });
-        const goToPositionMock = vi.fn();
-
-        liveStore.setState({
-            positionHistory: [move1, move2, move3, move4],
-            viewingMoveNumber: 0,
-        });
-        chessboardStore.setState({
-            goToPosition: goToPositionMock,
-        });
-
-        const user = userEvent.setup();
-        renderWithCtx();
-
-        await user.click(screen.getByText("e5"));
-        expect(goToPositionMock).toHaveBeenLastCalledWith(
-            expect.objectContaining({ pieces: move3.pieces }),
-            { animateIntermediates: false },
-        );
-
-        await user.click(screen.getByText("e6"));
-        expect(goToPositionMock).toHaveBeenLastCalledWith(
-            expect.objectContaining({ pieces: move4.pieces }),
-            { animateIntermediates: true },
-        );
-
-        await user.click(screen.getByText("e4"));
-        expect(goToPositionMock).toHaveBeenLastCalledWith(
-            expect.objectContaining({ pieces: move2.pieces }),
-            { animateIntermediates: false },
-        );
+        expect(chessboardStore.getState().pieces).toEqual(position4.pieces);
     });
 
     it("should render game actions", () => {

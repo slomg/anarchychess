@@ -29,11 +29,17 @@ import {
 import { AudioSlice, AudioSliceProps, createAudioSlice } from "./audioSlice";
 import BoardPieces from "../lib/boardPieces";
 import LegalMoves from "../lib/legalMoves";
+import {
+    createHistorySlice,
+    HistorySlice,
+    HistorySliceProps,
+} from "./historySlice";
 
 export type ChessboardStore = BoardSlice &
     PiecesSlice &
     PromotionSlice &
     LegalMovesSlice &
+    HistorySlice &
     OverlaySlice &
     InteractionSlice &
     IntermediateSlice &
@@ -42,6 +48,7 @@ export type ChessboardStore = BoardSlice &
     CoreSlice;
 export type ChessboardProps = BoardSliceProps &
     PieceSliceProps &
+    HistorySliceProps &
     AudioSliceProps &
     AnimationSliceProps &
     LegalMovesSliceProps;
@@ -67,6 +74,7 @@ export function createChessboardStore(
                 ...createPiecesSlice(initState)(...a),
                 ...createPromotionSlice(...a),
                 ...createLegalMovesSlice(initState)(...a),
+                ...createHistorySlice(initState)(...a),
                 ...createOverlaySlice(...a),
                 ...createInteractionSlice(...a),
                 ...createIntermediateSlice(...a),

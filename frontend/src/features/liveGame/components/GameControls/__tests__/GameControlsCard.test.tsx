@@ -9,8 +9,16 @@ import LiveChessStoreContext from "@/features/liveGame/contexts/liveChessContext
 import { StoreApi } from "zustand";
 import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
 import { GameResult } from "@/lib/apiClient";
-import { createFakePosition } from "@/lib/testUtils/fakers/positionFaker";
+import {
+    createFakePosition,
+    createFakeStartingPosition,
+} from "@/lib/testUtils/fakers/positionFaker";
 import { useGameEmitter } from "@/features/liveGame/hooks/useGameHub";
+import {
+    ChessboardStore,
+    createChessboardStore,
+} from "@/features/chessboard/stores/chessboardStore";
+import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardStoreContext";
 
 vi.mock("@/features/liveGame/hooks/useGameHub");
 vi.mock("@/features/lobby/hooks/useLobbyHub");
@@ -18,55 +26,61 @@ vi.mock("@/features/lobby/hooks/useLobbyHub");
 describe("GameControlsCard", () => {
     const useGameEmitterMock = vi.mocked(useGameEmitter);
     const sendGameEventMock = vi.fn();
-    let store: StoreApi<LiveChessStore>;
+
+    let liveStore: StoreApi<LiveChessStore>;
+    let chessboardStore: StoreApi<ChessboardStore>;
 
     beforeEach(() => {
-        store = createLiveChessStore(createFakeLiveChessStoreProps());
+        liveStore = createLiveChessStore(createFakeLiveChessStoreProps());
+        chessboardStore = createChessboardStore();
+
         useGameEmitterMock.mockReturnValue(sendGameEventMock);
     });
 
+    function renderWithCtx() {
+        return render(
+            <ChessboardStoreContext.Provider value={chessboardStore}>
+                <LiveChessStoreContext.Provider value={liveStore}>
+                    <GameControlsCard />
+                </LiveChessStoreContext.Provider>
+            </ChessboardStoreContext.Provider>,
+        );
+    }
+
     it("should first render LiveGameControls with Abort", () => {
-        store.setState({
-            positionHistory: [createFakePosition()],
+        chessboardStore.setState({
+            positionHistory: [createFakeStartingPosition()],
         });
 
-        render(
-            <LiveChessStoreContext.Provider value={store}>
-                <GameControlsCard />
-            </LiveChessStoreContext.Provider>,
-        );
+        renderWithCtx();
 
         expect(screen.getByTitle(/Abort/i)).toBeInTheDocument();
         expect(screen.getByTitle(/Draw/i)).toBeInTheDocument();
     });
 
     it("should render Resign if moveHistory has 2+ moves", () => {
-        store.setState({
-            positionHistory: [createFakePosition(), createFakePosition()],
+        chessboardStore.setState({
+            positionHistory: [
+                createFakeStartingPosition(),
+                createFakePosition(),
+            ],
         });
 
-        render(
-            <LiveChessStoreContext.Provider value={store}>
-                <GameControlsCard />
-            </LiveChessStoreContext.Provider>,
-        );
+        renderWithCtx();
 
         expect(screen.getByTitle(/Resign/i)).toBeInTheDocument();
         expect(screen.getByTitle(/Draw/i)).toBeInTheDocument();
     });
 
     it("should render GameOverControls when resultData exists", () => {
-        store.setState({
+        liveStore.setState({
             resultData: {
                 result: GameResult.WHITE_WIN,
                 resultDescription: "white won",
             },
         });
-        render(
-            <LiveChessStoreContext.Provider value={store}>
-                <GameControlsCard />
-            </LiveChessStoreContext.Provider>,
-        );
+
+        renderWithCtx();
 
         expect(screen.getByText(/New Game/i)).toBeInTheDocument();
         expect(screen.getByText(/Rematch/i)).toBeInTheDocument();
@@ -75,18 +89,16 @@ describe("GameControlsCard", () => {
     it("should call sendGameEvent when clicking Abort", async () => {
         const user = userEvent.setup();
 
-        store.setState({ positionHistory: [] });
+        chessboardStore.setState({
+            positionHistory: [createFakeStartingPosition()],
+        });
 
-        render(
-            <LiveChessStoreContext.Provider value={store}>
-                <GameControlsCard />
-            </LiveChessStoreContext.Provider>,
-        );
+        renderWithCtx();
 
         await user.click(screen.getByTitle(/Abort/i));
         expect(sendGameEventMock).toHaveBeenCalledWith(
             "EndGameAsync",
-            store.getState().gameToken,
+            liveStore.getState().gameToken,
         );
     });
 });

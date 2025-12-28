@@ -1,31 +1,34 @@
 import { StateCreator } from "zustand";
 
 import { ChessboardStore } from "./chessboardStore";
-import {
-    MoveBounds,
-    PieceID,
-    Position,
-    ProcessedMoveOptions,
-} from "../lib/types";
+import { Move, MoveBounds, PieceID, Position } from "../lib/types";
 import BoardPieces from "../lib/boardPieces";
 import { pointEquals } from "@/features/point/pointUtils";
+import LegalMoves from "../lib/legalMoves";
 
 export interface HistorySliceProps {
     positionHistory?: Position[];
     pieces: BoardPieces;
-    moveOptions: ProcessedMoveOptions;
+    legalMoves: LegalMoves;
 }
 
 export interface HistorySlice {
     viewingPlyIdx: number;
     positionHistory: Position[];
 
-    teleportToMove(plyIdx: number): Promise<void>;
+    teleportToPosition(plyIdx: number): Promise<void>;
     shiftMoveViewBy(amount: number): Promise<void>;
-    teleportToLatestMove(): Promise<void>;
+    teleportToLatestPosition(): Promise<void>;
 
     getLatestPosition(): Position;
-    receivePosition(newPosition: Position): void;
+    applyHistoryPosition({
+        moveFromPreviousViewedPosition,
+        position,
+    }: {
+        moveFromPreviousViewedPosition?: Move;
+        position: Position;
+    }): Promise<void>;
+    addPosition(newPosition: Position): void;
 }
 
 export function createHistorySlice(
@@ -52,70 +55,21 @@ export function createHistorySlice(
             return movedPieceIds;
         }
 
-        async function applyHistoryPosition(
-            newPlyIdx: number,
-            viewingPlyIdx: number,
-            position: Position,
-        ): Promise<void> {
-            const { pieces, positionHistory, playAnimation } = get();
-
-            const movedPieceIds = findMovedPiecesBetween(
-                pieces,
-                position.pieces,
-            );
-
-            set((state) => {
-                state.pieces = position.pieces;
-                state.selectedPieceId = null;
-            });
-
-            // the move that should be considered "last" from the perspective of the current viewed position.
-            // if moving forward in history (number > viewingMoveNumber), this is the move that produced the current position (position.move).
-            // if moving backward in history (number < viewingMoveNumber), this is the move in the next position,
-            // because that was the move that brought us to the current position from the previous step.
-            const moveFromPreviousViewedPosition =
-                newPlyIdx > viewingPlyIdx
-                    ? position.move
-                    : positionHistory[newPlyIdx + 1]?.move;
-
-            const moveBounds: MoveBounds | undefined = position.move
-                ? {
-                      from: position.move.from,
-                      to: position.move.to,
-                  }
-                : undefined;
-            const isCapture = moveFromPreviousViewedPosition
-                ? moveFromPreviousViewedPosition.captures.length > 0
-                : false;
-            const isPromotion = moveFromPreviousViewedPosition
-                ? moveFromPreviousViewedPosition.promotesTo !== null
-                : false;
-
-            await playAnimation({
-                newPieces: position.pieces,
-                movedPieceIds,
-
-                moveBounds,
-                isCapture,
-                isPromotion,
-                specialType: moveFromPreviousViewedPosition?.specialMoveType,
-            });
-        }
-
         return {
             viewingPlyIdx: initState.positionHistory
                 ? initState.positionHistory.length - 1
                 : 0,
             positionHistory: initState.positionHistory || [
-                {
-                    pieces: initState.pieces,
-                    moveOptions: initState.moveOptions,
-                },
+                { pieces: initState.pieces },
             ],
 
-            async teleportToMove(plyIdx): Promise<void> {
-                const { positionHistory, viewingPlyIdx, applyMoveAnimated } =
-                    get();
+            async teleportToPosition(plyIdx): Promise<void> {
+                const {
+                    positionHistory,
+                    viewingPlyIdx,
+                    applyMoveAnimated,
+                    applyHistoryPosition,
+                } = get();
                 if (
                     plyIdx < 0 ||
                     plyIdx >= positionHistory.length ||
@@ -137,19 +91,30 @@ export function createHistorySlice(
                     return;
                 }
 
-                await applyHistoryPosition(plyIdx, viewingPlyIdx, position);
+                // the move that should be considered "last" from the perspective of the current viewed position.
+                // if moving forward in history (number > viewingMoveNumber), this is the move that produced the current position (position.move).
+                // if moving backward in history (number < viewingMoveNumber), this is the move in the next position,
+                // because that was the move that brought us to the current position from the previous step.
+                const moveFromPreviousViewedPosition =
+                    plyIdx > viewingPlyIdx
+                        ? position.move
+                        : positionHistory[plyIdx + 1]?.move;
+                applyHistoryPosition({
+                    moveFromPreviousViewedPosition,
+                    position,
+                });
             },
 
             async shiftMoveViewBy(amount) {
-                const { teleportToMove, viewingPlyIdx } = get();
-                await teleportToMove(viewingPlyIdx + amount);
+                const { teleportToPosition, viewingPlyIdx } = get();
+                await teleportToPosition(viewingPlyIdx + amount);
             },
 
-            async teleportToLatestMove() {
-                const { positionHistory, teleportToMove } = get();
+            async teleportToLatestPosition() {
+                const { positionHistory, teleportToPosition } = get();
                 const lastIndex = positionHistory.length - 1;
                 if (lastIndex < 0) throw new Error("positionHistory is empty");
-                await teleportToMove(lastIndex)!;
+                await teleportToPosition(lastIndex)!;
             },
 
             getLatestPosition(): Position {
@@ -157,7 +122,50 @@ export function createHistorySlice(
                 return positionHistory[positionHistory.length - 1];
             },
 
-            receivePosition(newPosition: Position) {
+            async applyHistoryPosition({
+                moveFromPreviousViewedPosition,
+                position,
+            }): Promise<void> {
+                const { pieces, playAnimation } = get();
+
+                const movedPieceIds = findMovedPiecesBetween(
+                    pieces,
+                    position.pieces,
+                );
+
+                set((state) => {
+                    state.pieces = position.pieces;
+                    state.selectedPieceId = null;
+                });
+
+                const moveBounds: MoveBounds | undefined = position.move
+                    ? {
+                          from: position.move.from,
+                          to: position.move.to,
+                      }
+                    : undefined;
+                const isCapture = moveFromPreviousViewedPosition
+                    ? moveFromPreviousViewedPosition.captures.length > 0
+                    : false;
+                const isPromotion = moveFromPreviousViewedPosition
+                    ? moveFromPreviousViewedPosition.promotesTo !== null
+                    : false;
+
+                await playAnimation({
+                    newPieces: position.pieces,
+                    movedPieceIds,
+
+                    moveBounds,
+                    isCapture,
+                    isPromotion,
+                    specialType: moveFromPreviousViewedPosition?.specialType,
+                });
+            },
+
+            addPosition(newPosition: Position) {
+                const { teleportToLatestPosition } = get();
+
+                teleportToLatestPosition();
                 set((state) => {
                     state.positionHistory.push(newPosition);
                     state.viewingPlyIdx = state.positionHistory.length - 1;
