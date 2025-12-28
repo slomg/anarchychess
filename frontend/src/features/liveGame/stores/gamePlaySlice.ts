@@ -1,10 +1,9 @@
 import { StateCreator } from "zustand";
 
-import { createMoveOptions } from "@/features/chessboard/lib/moveOptions";
-import { ProcessedMoveOptions } from "@/features/chessboard/lib/types";
 import { Clocks, GameColor } from "@/lib/apiClient";
 import type { LiveChessStore } from "./liveChessStore";
 import { Position } from "../lib/types";
+import LegalMoves from "@/features/chessboard/lib/legalMoves";
 
 export interface LiveChessViewer {
     userId: string;
@@ -27,7 +26,7 @@ export interface GamePlaySlice extends GamePlaySliceProps {
         sideToMove: GameColor,
     ): void;
     resetLegalMovesForOpponentTurn(): void;
-    receiveLegalMoves(moveOptions: ProcessedMoveOptions): void;
+    receiveLegalMoves(legalMoves: LegalMoves): void;
     markPendingMoveAck(): void;
 
     setClocks(clocks: Clocks): void;
@@ -59,12 +58,12 @@ export function createGamePlaySlice(
         },
         resetLegalMovesForOpponentTurn() {
             set((state) => {
-                state.latestMoveOptions = createMoveOptions();
+                state.latestLegalMoves = new LegalMoves();
             });
         },
-        receiveLegalMoves(moveOptions) {
+        receiveLegalMoves(legalMoves) {
             set((state) => {
-                state.latestMoveOptions = moveOptions;
+                state.latestLegalMoves = legalMoves;
             });
         },
 

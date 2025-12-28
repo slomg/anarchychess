@@ -1,7 +1,7 @@
 import { StoreApi } from "zustand";
 
 import {
-    createFakeLegalMoveMap,
+    createFakeLegalMoves,
     createFakeMove,
     createFakePiece,
 } from "@/lib/testUtils/fakers/chessboardFakers";
@@ -12,21 +12,20 @@ import {
 } from "@/features/point/pointUtils";
 
 import {
+    AnimationStep,
     BoardState,
     IntermediateSquare,
-    LegalMoveMap,
     Move,
 } from "../../lib/types";
 import { ChessboardStore, createChessboardStore } from "../chessboardStore";
 import flushMicrotasks from "@/lib/testUtils/flushMicrotasks";
-import { createMoveOptions } from "../../lib/moveOptions";
 import { LogicalPoint } from "@/features/point/types";
 import { ScreenPoint } from "@/features/point/types";
 import BoardPieces from "../../lib/boardPieces";
 import { GameColor, PieceType, SpecialMoveType } from "@/lib/apiClient";
 import { Piece } from "../../lib/types";
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
-import { EventBus } from "@/lib/eventBus";
+import LegalMoves from "../../lib/legalMoves";
 
 vi.mock("@/features/audio/audioPlayer");
 
@@ -230,7 +229,7 @@ describe("PiecesSlice", () => {
                 });
 
                 const pieces = BoardPieces.fromPieces(piece);
-                const legalMoves: LegalMoveMap = new Map([
+                const legalMoves = new LegalMoves([
                     [pointToStr(piece.position), [move]],
                 ]);
 
@@ -238,7 +237,7 @@ describe("PiecesSlice", () => {
                     selectedPieceId: piece.id,
                     pieces,
                     viewingFrom,
-                    moveOptions: createMoveOptions({ legalMoves }),
+                    legalMoves,
                 });
 
                 const { handleMousePieceDrop, pieceMovementEvent } =
@@ -271,7 +270,7 @@ describe("PiecesSlice", () => {
             });
 
             const pieces = BoardPieces.fromPieces(piece);
-            const legalMoves: LegalMoveMap = new Map([
+            const legalMoves = new LegalMoves([
                 [pointToStr(piece.position), [move]],
             ]);
 
@@ -279,7 +278,7 @@ describe("PiecesSlice", () => {
                 isProcessingMove: true,
                 selectedPieceId: piece.id,
                 pieces,
-                moveOptions: createMoveOptions({ legalMoves }),
+                legalMoves,
             });
 
             const result = await store.getState().handleMousePieceDrop({
@@ -302,14 +301,14 @@ describe("PiecesSlice", () => {
             });
 
             const pieces = BoardPieces.fromPieces(piece);
-            const legalMoves: LegalMoveMap = new Map([
+            const legalMoves = new LegalMoves([
                 [pointToStr(piece.position), [move]],
             ]);
 
             store.setState({
                 selectedPieceId: piece.id,
                 pieces,
-                moveOptions: createMoveOptions({ legalMoves }),
+                legalMoves,
             });
 
             const movePromise = store.getState().handleMousePieceDrop({
@@ -328,10 +327,7 @@ describe("PiecesSlice", () => {
             const clearAnimationMock = vi.fn();
             store.setState({
                 pieces,
-                moveOptions: createMoveOptions({
-                    legalMoves: new Map(),
-                    hasForcedMoves: true,
-                }),
+                legalMoves: new LegalMoves(),
                 clearAnimation: clearAnimationMock,
             });
 
@@ -350,10 +346,7 @@ describe("PiecesSlice", () => {
             const flashLegalMovesMock = vi.fn();
             store.setState({
                 pieces,
-                moveOptions: createMoveOptions({
-                    legalMoves: new Map(),
-                    hasForcedMoves: true,
-                }),
+                legalMoves: new LegalMoves([], true),
                 flashLegalMoves: flashLegalMovesMock,
             });
 
@@ -375,10 +368,7 @@ describe("PiecesSlice", () => {
             const flashLegalMovesMock = vi.fn();
             store.setState({
                 pieces,
-                moveOptions: createMoveOptions({
-                    legalMoves: new Map(),
-                    hasForcedMoves: true,
-                }),
+                legalMoves: new LegalMoves([], true),
                 flashLegalMoves: flashLegalMovesMock,
             });
 
@@ -397,10 +387,7 @@ describe("PiecesSlice", () => {
             const flashLegalMovesMock = vi.fn();
             store.setState({
                 pieces,
-                moveOptions: createMoveOptions({
-                    legalMoves: new Map(),
-                    hasForcedMoves: false,
-                }),
+                legalMoves: new LegalMoves(),
                 flashLegalMoves: flashLegalMovesMock,
             });
 
@@ -423,14 +410,14 @@ describe("PiecesSlice", () => {
                 from: piece.position,
                 to: piece.position,
             });
-            const legalMoves: LegalMoveMap = new Map([
+            const legalMoves = new LegalMoves([
                 [pointToStr(piece.position), [move]],
             ]);
 
             store.setState({
                 selectedPieceId: piece.id,
                 pieces,
-                moveOptions: createMoveOptions({ legalMoves }),
+                legalMoves,
             });
 
             const result = await store.getState().handleMousePieceDrop({
@@ -451,14 +438,14 @@ describe("PiecesSlice", () => {
                 from: piece.position,
                 to: logicalPoint({ x: 1, y: 1 }),
             });
-            const legalMoves: LegalMoveMap = new Map([
+            const legalMoves = new LegalMoves([
                 [pointToStr(piece.position), [move]],
             ]);
 
             store.setState({
                 selectedPieceId: piece.id,
                 pieces,
-                moveOptions: createMoveOptions({ legalMoves }),
+                legalMoves,
             });
 
             const result = await store.getState().handleMousePieceDrop({
@@ -480,7 +467,7 @@ describe("PiecesSlice", () => {
                 from: piece.position,
                 to: logicalPoint({ x: 2, y: 2 }),
             });
-            const legalMoves = createFakeLegalMoveMap();
+            const legalMoves = createFakeLegalMoves();
 
             const applyMoveAnimatedMock = vi.fn();
             store.setState({
@@ -489,7 +476,7 @@ describe("PiecesSlice", () => {
 
             const boardState: BoardState = {
                 pieces: BoardPieces.fromPieces(piece),
-                moveOptions: { legalMoves, hasForcedMoves: false },
+                legalMoves,
                 moveThatProducedPosition: move,
                 moveFromPreviousViewedPosition: move,
             };
@@ -499,9 +486,7 @@ describe("PiecesSlice", () => {
                 .goToPosition(boardState, { animateIntermediates: true });
 
             expect(applyMoveAnimatedMock).toHaveBeenCalledExactlyOnceWith(move);
-            expect(store.getState().moveOptions).toEqual(
-                boardState.moveOptions,
-            );
+            expect(store.getState().legalMoves).toEqual(boardState.legalMoves);
         });
 
         it("should directly set pieces in goToPosition without animateIntermediates", async () => {
@@ -521,7 +506,7 @@ describe("PiecesSlice", () => {
                     ...piece,
                     position: newPos,
                 }),
-                moveOptions: { legalMoves: new Map(), hasForcedMoves: false },
+                legalMoves: new LegalMoves(),
             };
 
             await store.getState().goToPosition(boardState);
@@ -551,23 +536,25 @@ describe("PiecesSlice", () => {
                     ...piece,
                     position: newPos,
                 }),
-                moveOptions: { legalMoves: new Map(), hasForcedMoves: false },
+                legalMoves: new LegalMoves(),
                 moveFromPreviousViewedPosition: createFakeMove({
                     captures: [logicalPoint({ x: 1, y: 1 })],
                 }),
             };
 
             await store.getState().goToPosition(boardState);
-            expect(playAnimationMock).toHaveBeenCalledExactlyOnceWith({
+            expect(playAnimationMock).toHaveBeenCalledExactlyOnceWith<
+                [AnimationStep]
+            >({
                 newPieces: boardState.pieces,
                 movedPieceIds: [piece.id],
                 isCapture: true,
                 isPromotion: false,
-                specialMoveType: null,
+                specialType: null,
             });
         });
 
-        it("should pass specialMoveType to playAnimation when present", async () => {
+        it("should pass specialType to playAnimation when present", async () => {
             const piece = createFakePiece({
                 position: logicalPoint({ x: 0, y: 0 }),
             });
@@ -584,7 +571,7 @@ describe("PiecesSlice", () => {
                     ...piece,
                     position: newPos,
                 }),
-                moveOptions: { legalMoves: new Map(), hasForcedMoves: false },
+                legalMoves: new LegalMoves(),
                 moveFromPreviousViewedPosition: createFakeMove({
                     specialType: SpecialMoveType.KNOOKLEAR_FUSION,
                 }),
@@ -592,12 +579,14 @@ describe("PiecesSlice", () => {
 
             await store.getState().goToPosition(boardState);
 
-            expect(playAnimationMock).toHaveBeenCalledExactlyOnceWith({
+            expect(playAnimationMock).toHaveBeenCalledExactlyOnceWith<
+                [AnimationStep]
+            >({
                 newPieces: boardState.pieces,
                 movedPieceIds: [piece.id],
                 isCapture: false,
                 isPromotion: false,
-                specialMoveType: SpecialMoveType.KNOOKLEAR_FUSION,
+                specialType: SpecialMoveType.KNOOKLEAR_FUSION,
             });
         });
 
@@ -618,7 +607,7 @@ describe("PiecesSlice", () => {
                     ...piece,
                     position: newPos,
                 }),
-                moveOptions: { legalMoves: new Map(), hasForcedMoves: false },
+                legalMoves: new LegalMoves(),
                 moveFromPreviousViewedPosition: createFakeMove({
                     promotesTo: PieceType.QUEEN,
                 }),
@@ -626,12 +615,14 @@ describe("PiecesSlice", () => {
 
             await store.getState().goToPosition(boardState);
 
-            expect(playAnimationMock).toHaveBeenCalledExactlyOnceWith({
+            expect(playAnimationMock).toHaveBeenCalledExactlyOnceWith<
+                [AnimationStep]
+            >({
                 newPieces: boardState.pieces,
                 movedPieceIds: [piece.id],
                 isCapture: false,
                 isPromotion: true,
-                specialMoveType: null,
+                specialType: null,
             });
         });
 
@@ -652,7 +643,7 @@ describe("PiecesSlice", () => {
                     ...piece,
                     position: newPos,
                 }),
-                moveOptions: { legalMoves: new Map(), hasForcedMoves: false },
+                legalMoves: new LegalMoves(),
                 moveThatProducedPosition: createFakeMove({
                     from: piece.position,
                     to: newPos,
@@ -662,13 +653,15 @@ describe("PiecesSlice", () => {
 
             await store.getState().goToPosition(boardState);
 
-            expect(playAnimationMock).toHaveBeenCalledExactlyOnceWith({
+            expect(playAnimationMock).toHaveBeenCalledExactlyOnceWith<
+                [AnimationStep]
+            >({
                 newPieces: boardState.pieces,
                 movedPieceIds: [piece.id],
                 moveBounds: { from: piece.position, to: newPos },
                 isCapture: false,
                 isPromotion: false,
-                specialMoveType: null,
+                specialType: null,
             });
         });
     });

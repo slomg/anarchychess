@@ -3,8 +3,8 @@ import { GameReplay } from "../lib/types";
 import { StoreApi } from "zustand";
 import { ChessboardStore } from "../stores/chessboardStore";
 import expandMinimalMove from "../lib/expandMinimalMove";
-import { createMoveOptions } from "../lib/moveOptions";
 import { decodeFen } from "../lib/fenDecoder";
+import LegalMoves from "../lib/legalMoves";
 
 export default function useBoardReplay(
     replays: GameReplay[],
@@ -21,7 +21,7 @@ export default function useBoardReplay(
             const pieces = decodeFen(currentReplay.startingFen);
             chessboardStore
                 .getState()
-                .goToPosition({ pieces, moveOptions: createMoveOptions() });
+                .goToPosition({ pieces, legalMoves: new LegalMoves() });
         }
 
         let timeout: NodeJS.Timeout;

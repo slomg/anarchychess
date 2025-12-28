@@ -26,16 +26,16 @@ import { refetchGame } from "../../lib/gameStateProcessor";
 import { createFakePosition } from "@/lib/testUtils/fakers/positionFaker";
 import { Position } from "../../lib/types";
 import {
-    createFakeLegalMoveMap,
+    createFakeLegalMoves,
     createFakePiece,
     createRandomPoint,
 } from "@/lib/testUtils/fakers/chessboardFakers";
 import { logicalPoint } from "@/features/point/pointUtils";
 import { brotliCompressSync } from "zlib";
-import { createMoveOptions } from "@/features/chessboard/lib/moveOptions";
-import { decodePath } from "../../lib/moveDecoder";
+import { decodeMovePath } from "../../lib/moveDecoder";
 import { GameClientEvents, useGameEvent } from "../useGameHub";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
+import LegalMoves from "@/features/chessboard/lib/legalMoves";
 
 vi.mock("@/features/liveGame/hooks/useGameHub");
 vi.mock("@/features/liveGame/lib/gameStateProcessor");
@@ -188,7 +188,7 @@ describe("useLiveChessEvents", () => {
                     liveChessStore.getState().positionHistory[1],
                 ).toEqual<Position>({
                     san: move.san,
-                    move: decodePath(move.path, 10),
+                    move: decodeMovePath(move.path, 10),
                     pieces: piecesAfter,
                     clocks: {
                         whiteClock: clocks.whiteClock,
@@ -206,14 +206,10 @@ describe("useLiveChessEvents", () => {
             async (ourColor, newSideToMove) => {
                 liveChessStore.setState({
                     viewer: { userId: "test id", playerColor: ourColor },
-                    latestMoveOptions: createMoveOptions({
-                        legalMoves: createFakeLegalMoveMap(),
-                    }),
+                    latestLegalMoves: createFakeLegalMoves(),
                 });
                 chessboardStore.setState({
-                    moveOptions: createMoveOptions({
-                        legalMoves: createFakeLegalMoveMap(),
-                    }),
+                    legalMoves: createFakeLegalMoves(),
                 });
 
                 setupStandardStoresForMove();
@@ -231,17 +227,15 @@ describe("useLiveChessEvents", () => {
                         ),
                 );
 
-                const moveOptions = chessboardStore.getState().moveOptions;
-                const latestPositionMoveOptions =
-                    liveChessStore.getState().latestMoveOptions;
+                const legalMoves = chessboardStore.getState().legalMoves;
+                const latestPositionLegalMoves =
+                    liveChessStore.getState().latestLegalMoves;
                 if (ourColor !== newSideToMove) {
-                    expect(moveOptions.legalMoves.size).toBe(0);
-                    expect(latestPositionMoveOptions.legalMoves.size).toBe(0);
+                    expect(legalMoves.size).toBe(0);
+                    expect(latestPositionLegalMoves.size).toBe(0);
                 } else {
-                    expect(moveOptions.legalMoves.size).not.toBe(0);
-                    expect(latestPositionMoveOptions.legalMoves.size).not.toBe(
-                        0,
-                    );
+                    expect(legalMoves.size).not.toBe(0);
+                    expect(latestPositionLegalMoves.size).not.toBe(0);
                 }
             },
         );
@@ -283,14 +277,11 @@ describe("useLiveChessEvents", () => {
 
         it("should decode legal moves and update both stores", async () => {
             liveChessStore.setState({
-                latestMoveOptions: {
-                    legalMoves: new Map(),
-                    hasForcedMoves: false,
-                },
+                latestLegalMoves: new LegalMoves(),
             });
 
             chessboardStore.setState({
-                moveOptions: { legalMoves: new Map(), hasForcedMoves: false },
+                legalMoves: new LegalMoves(),
             });
 
             renderLiveChessEvents();
@@ -321,20 +312,16 @@ describe("useLiveChessEvents", () => {
             );
 
             const liveState = liveChessStore.getState();
-            expect(liveState.latestMoveOptions.hasForcedMoves).toBe(
+            expect(liveState.latestLegalMoves.hasForcedMoves).toBe(
                 hasForcedMoves,
             );
-            expect(liveState.latestMoveOptions.legalMoves.size).toBeGreaterThan(
-                0,
-            );
+            expect(liveState.latestLegalMoves.size).toBeGreaterThan(0);
 
             const chessboardState = chessboardStore.getState();
-            expect(chessboardState.moveOptions.hasForcedMoves).toBe(
+            expect(chessboardState.legalMoves.hasForcedMoves).toBe(
                 hasForcedMoves,
             );
-            expect(chessboardState.moveOptions.legalMoves.size).toBeGreaterThan(
-                0,
-            );
+            expect(chessboardState.legalMoves.size).toBeGreaterThan(0);
         });
     });
 
@@ -370,16 +357,10 @@ describe("useLiveChessEvents", () => {
         it("should update liveChessStore, disable chessboard movement, and set final clocks", async () => {
             liveChessStore.setState({
                 resultData: null,
-                latestMoveOptions: {
-                    legalMoves: createFakeLegalMoveMap(),
-                    hasForcedMoves: false,
-                },
+                latestLegalMoves: createFakeLegalMoves(),
             });
             chessboardStore.setState({
-                moveOptions: {
-                    legalMoves: createFakeLegalMoveMap(),
-                    hasForcedMoves: false,
-                },
+                legalMoves: createFakeLegalMoves(),
                 highlightedLegalMoves: [
                     createRandomPoint(),
                     createRandomPoint(),
@@ -413,7 +394,7 @@ describe("useLiveChessEvents", () => {
             const chessboardState = chessboardStore.getState();
             expect(chessboardState.highlightedLegalMoves).toHaveLength(0);
             expect(chessboardState.selectedPieceId).toBeNull();
-            expect(chessboardState.moveOptions.legalMoves.size).toBe(0);
+            expect(chessboardState.legalMoves.size).toBe(0);
         });
     });
 });

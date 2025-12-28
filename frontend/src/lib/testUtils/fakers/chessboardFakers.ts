@@ -1,11 +1,11 @@
 import { GameColor, PieceType } from "@/lib/apiClient";
 import { logicalPoint, pointToStr } from "@/features/point/pointUtils";
-import { LogicalPoint } from "@/features/point/types";
+import { LogicalPoint, StrPoint } from "@/features/point/types";
 import { Move } from "@/features/chessboard/lib/types";
-import { LegalMoveMap } from "@/features/chessboard/lib/types";
 import { Piece } from "@/features/chessboard/lib/types";
 import { faker } from "@faker-js/faker";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
+import LegalMoves from "@/features/chessboard/lib/legalMoves";
 
 export function createRandomPoint(): LogicalPoint {
     return logicalPoint({
@@ -48,30 +48,46 @@ export function createFakeBoardPieces(count = 5): BoardPieces {
     return boardPieces;
 }
 
-export function createFakeLegalMoveMap(count = 5): LegalMoveMap {
+export function createFakeLegalMoves({
+    count,
+    hasForcedMoves,
+}: {
+    count?: number;
+    hasForcedMoves?: boolean;
+} = {}): LegalMoves {
+    count ??= 5;
+
     const pieces: Piece[] = [];
     for (let i = 0; i < count; i++) pieces.push(createFakePiece());
 
-    return createFakeLegalMoveMapFromPieces(...pieces);
+    return createFakeLegalMovesFromPieces({ pieces, hasForcedMoves });
 }
 
-export function createFakeLegalMoveMapFromPieces(
-    ...pieces: Piece[]
-): LegalMoveMap {
-    const map: LegalMoveMap = new Map();
+export function createFakeLegalMovesFromPieces({
+    pieces,
+    hasForcedMoves,
+}: { pieces?: Piece[]; hasForcedMoves?: boolean } = {}): LegalMoves {
+    pieces ??= [];
+
+    const map = new Map<StrPoint, Move[]>();
     for (const piece of pieces) {
         map.set(pointToStr(piece.position), [
             createFakeMove({ from: piece.position }),
             createFakeMove({ from: piece.position }),
         ]);
     }
-    return map;
+    return new LegalMoves(map, hasForcedMoves);
 }
 
-export function createFakeLegalMoveMapFromMoves(moves: Move[]): LegalMoveMap {
-    const map: LegalMoveMap = new Map();
+export function createFakeLegalMovesFromMoves({
+    moves,
+    hasForcedMoves,
+}: { moves?: Move[]; hasForcedMoves?: boolean } = {}): LegalMoves {
+    moves ??= [];
+
+    const map = new Map<StrPoint, Move[]>();
     for (const move of moves) {
         map.set(pointToStr(move.from), [move]);
     }
-    return map;
+    return new LegalMoves(map, hasForcedMoves);
 }

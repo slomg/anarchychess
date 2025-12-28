@@ -1,6 +1,6 @@
 import type { ChessboardProps, ChessboardStore } from "./chessboardStore";
+import LegalMoves from "../lib/legalMoves";
 import { StateCreator } from "zustand";
-import { createMoveOptions } from "../lib/moveOptions";
 
 export interface CoreSlice {
     resetState(initState: ChessboardProps): void;
@@ -22,7 +22,7 @@ export const createCoreSlice: StateCreator<
 
     disableMovement(): void {
         set((state) => {
-            state.moveOptions = createMoveOptions();
+            state.legalMoves = new LegalMoves();
             state.highlightedLegalMoves = [];
             state.selectedPieceId = null;
         });

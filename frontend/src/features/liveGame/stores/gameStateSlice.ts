@@ -1,6 +1,5 @@
 import { StateCreator } from "zustand";
 
-import { createMoveOptions } from "@/features/chessboard/lib/moveOptions";
 import {
     Clocks,
     DrawState,
@@ -9,6 +8,7 @@ import {
     PoolKey,
 } from "@/lib/apiClient";
 import { LiveChessStore, LiveChessStoreProps } from "./liveChessStore";
+import LegalMoves from "@/features/chessboard/lib/legalMoves";
 
 export interface GameStateSliceProps {
     gameToken: string;
@@ -71,7 +71,7 @@ export function createGameStateSlice(
                 if (state.blackPlayer.rating && resultData.blackRatingChange)
                     state.blackPlayer.rating += resultData.blackRatingChange;
 
-                state.latestMoveOptions = createMoveOptions();
+                state.latestLegalMoves = new LegalMoves();
                 state.resultData = resultData;
             });
         },

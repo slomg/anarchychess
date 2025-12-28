@@ -16,7 +16,6 @@ import { CoreSlice, createCoreSlice } from "./coreSlice";
 import { GameColor } from "@/lib/apiClient";
 import constants from "@/lib/constants";
 import { createInteractionSlice, InteractionSlice } from "./interactionSlice";
-import { createMoveOptions } from "../lib/moveOptions";
 import { createPromotionSlice, PromotionSlice } from "./promotionSlice";
 import {
     createIntermediateSlice,
@@ -29,6 +28,7 @@ import {
 } from "./animationSlice";
 import { AudioSlice, AudioSliceProps, createAudioSlice } from "./audioSlice";
 import BoardPieces from "../lib/boardPieces";
+import LegalMoves from "../lib/legalMoves";
 
 export type ChessboardStore = BoardSlice &
     PiecesSlice &
@@ -46,21 +46,19 @@ export type ChessboardProps = BoardSliceProps &
     AnimationSliceProps &
     LegalMovesSliceProps;
 
-const defaultChessboardState: ChessboardProps = {
-    viewingFrom: GameColor.WHITE,
-    boardDimensions: {
-        width: constants.BOARD_WIDTH,
-        height: constants.BOARD_HEIGHT,
-    },
-    pieces: new BoardPieces(),
-    canDrag: true,
-    moveOptions: createMoveOptions(),
-    muteAudio: false,
-};
-
 enableMapSet();
 export function createChessboardStore(
-    initState: ChessboardProps = defaultChessboardState,
+    initState: ChessboardProps = {
+        viewingFrom: GameColor.WHITE,
+        boardDimensions: {
+            width: constants.BOARD_WIDTH,
+            height: constants.BOARD_HEIGHT,
+        },
+        pieces: new BoardPieces(),
+        canDrag: true,
+        legalMoves: new LegalMoves(),
+        muteAudio: false,
+    },
 ) {
     return createWithEqualityFn<ChessboardStore>()(
         devtools(

@@ -6,10 +6,14 @@ import {
     PieceType,
     SpecialMoveType,
 } from "@/lib/apiClient";
-import { decodeEncodedMovesIntoMap, decodePathIntoMap } from "../moveDecoder";
+import {
+    decodeEncodedMovesIntoMap,
+    decodeMovePathIntoLegalMoves,
+} from "../moveDecoder";
 import { Move } from "@/features/chessboard/lib/types";
 import { logicalPoint } from "@/features/point/pointUtils";
 import mockSequentialUUID from "@/lib/testUtils/mocks/mockUuids";
+import LegalMoves from "@/features/chessboard/lib/legalMoves";
 
 vi.mock("brotli/compress");
 
@@ -47,10 +51,14 @@ describe("decodePathIntoMap", () => {
         ];
 
         mockSequentialUUID();
-        const result = decodePathIntoMap(paths, 10);
+        const result = decodeMovePathIntoLegalMoves({
+            paths,
+            boardWidth: 10,
+            hasForcedMoves: false,
+        });
 
         expect(result.size).toBe(1);
-        const moves = result.get("0,0");
+        const moves = result.get(logicalPoint({ x: 0, y: 0 }));
         expect(moves).toBeDefined();
         expect(moves).toHaveLength(1);
 
@@ -90,10 +98,14 @@ describe("decodePathIntoMap", () => {
         ];
         const boardWidth = 10;
 
-        const result = decodePathIntoMap(paths, boardWidth);
+        const result = decodeMovePathIntoLegalMoves({
+            paths,
+            boardWidth,
+            hasForcedMoves: false,
+        });
 
         expect(result.size).toBe(1);
-        const moves = result.get("0,0");
+        const moves = result.get(logicalPoint({ x: 0, y: 0 }));
         expect(moves).toEqual([
             {
                 ...emptyMove,
@@ -111,8 +123,12 @@ describe("decodePathIntoMap", () => {
     });
 
     it("should return empty map when paths is empty", () => {
-        const result = decodePathIntoMap([], 10);
-        expect(result.size).toBe(0);
+        const result = decodeMovePathIntoLegalMoves({
+            paths: [],
+            boardWidth: 10,
+            hasForcedMoves: false,
+        });
+        expect(result).toEqual(new LegalMoves());
     });
 });
 
@@ -147,10 +163,14 @@ describe("decodeEncodedMovesIntoMap", () => {
         const encoded = Buffer.from(compressed).toString("base64");
 
         mockSequentialUUID();
-        const result = decodeEncodedMovesIntoMap(encoded, 10);
+        const result = decodeEncodedMovesIntoMap({
+            encoded,
+            boardWidth: 10,
+            hasForcedMoves: false,
+        });
 
         expect(result.size).toBe(2);
-        expect(result.get("0,0")).toEqual<Move[]>([
+        expect(result.get(logicalPoint({ x: 0, y: 0 }))).toEqual<Move[]>([
             {
                 from: logicalPoint({ x: 0, y: 0 }),
                 to: logicalPoint({ x: 1, y: 0 }),
@@ -181,7 +201,7 @@ describe("decodeEncodedMovesIntoMap", () => {
                 specialType: null,
             },
         ]);
-        expect(result.get("0,1")).toEqual<Move[]>([
+        expect(result.get(logicalPoint({ x: 0, y: 1 }))).toEqual<Move[]>([
             {
                 from: logicalPoint({ x: 0, y: 1 }),
                 to: logicalPoint({ x: 1, y: 1 }),
@@ -195,7 +215,11 @@ describe("decodeEncodedMovesIntoMap", () => {
         const compressed = brotliCompress(Buffer.from("[]"));
         const encoded = Buffer.from(compressed).toString("base64");
 
-        const result = decodeEncodedMovesIntoMap(encoded, 10);
-        expect(result).toEqual(new Map());
+        const result = decodeEncodedMovesIntoMap({
+            encoded,
+            boardWidth: 10,
+            hasForcedMoves: false,
+        });
+        expect(result).toEqual(new LegalMoves());
     });
 });

@@ -4,10 +4,10 @@ import createLiveChessStore, {
     LiveChessStoreProps,
 } from "../liveChessStore";
 import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
-import { ProcessedMoveOptions } from "@/features/chessboard/lib/types";
 import { DrawState, GameResult, GameResultData } from "@/lib/apiClient";
 import { createFakeDrawState } from "@/lib/testUtils/fakers/drawStateFaker";
 import { createFakeClock } from "@/lib/testUtils/fakers/clockFaker";
+import LegalMoves from "@/features/chessboard/lib/legalMoves";
 
 describe("GameStateSlice", () => {
     let store: StoreApi<LiveChessStore>;
@@ -88,10 +88,7 @@ describe("GameStateSlice", () => {
                     resultData.blackRatingChange!,
             );
             expect(state.resultData).toBe(resultData);
-            expect(state.latestMoveOptions).toEqual<ProcessedMoveOptions>({
-                legalMoves: new Map(),
-                hasForcedMoves: false,
-            });
+            expect(state.latestLegalMoves).toEqual(new LegalMoves());
             expect(state.clocks).toEqual(finalClocks);
         });
     });

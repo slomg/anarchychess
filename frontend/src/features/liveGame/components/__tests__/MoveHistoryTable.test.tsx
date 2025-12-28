@@ -14,31 +14,27 @@ import {
 } from "@/features/chessboard/stores/chessboardStore";
 import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardStoreContext";
 import userEvent from "@testing-library/user-event";
-import { createMoveOptions } from "@/features/chessboard/lib/moveOptions";
-import { createFakeLegalMoveMap } from "@/lib/testUtils/fakers/chessboardFakers";
+import { createFakeLegalMoves } from "@/lib/testUtils/fakers/chessboardFakers";
 import { Position } from "../../lib/types";
-import { ProcessedMoveOptions } from "@/features/chessboard/lib/types";
 import { mockScrollTo } from "@/lib/testUtils/mocks/mockDom";
+import LegalMoves from "@/features/chessboard/lib/legalMoves";
 
 describe("MoveHistoryTable", () => {
     let liveStore: StoreApi<LiveChessStore>;
     let chessboardStore: StoreApi<ChessboardStore>;
 
-    const emptyMoveOptions = createMoveOptions();
-    let latestMoveOptions: ProcessedMoveOptions;
+    const emptyLegalMoves = new LegalMoves();
+    let latestLegalMoves: LegalMoves;
 
     beforeEach(() => {
         mockScrollTo();
 
-        latestMoveOptions = {
-            legalMoves: createFakeLegalMoveMap(),
-            hasForcedMoves: false,
-        };
+        latestLegalMoves = createFakeLegalMoves();
 
         liveStore = createLiveChessStore(
             createFakeLiveChessStoreProps({
                 positionHistory: [],
-                latestMoveOptions,
+                latestLegalMoves: latestLegalMoves,
             }),
         );
         chessboardStore = createChessboardStore();
@@ -54,12 +50,9 @@ describe("MoveHistoryTable", () => {
         );
     }
 
-    function expectPosition(
-        position: Position,
-        moveOptions: ProcessedMoveOptions,
-    ) {
+    function expectPosition(position: Position, legalMoves: LegalMoves) {
         expect(chessboardStore.getState().pieces).toEqual(position.pieces);
-        expect(chessboardStore.getState().moveOptions).toEqual(moveOptions);
+        expect(chessboardStore.getState().legalMoves).toEqual(legalMoves);
     }
 
     it("should render an empty table when there are no moves", () => {
@@ -129,7 +122,7 @@ describe("MoveHistoryTable", () => {
         const move3 = createFakePosition();
 
         liveStore.setState({
-            latestMoveOptions: latestMoveOptions,
+            latestLegalMoves: latestLegalMoves,
             viewingMoveNumber: 0,
             positionHistory: [move1, move2, move3],
         });
@@ -139,23 +132,23 @@ describe("MoveHistoryTable", () => {
 
         // go to move 2
         await user.keyboard("{ArrowRight}");
-        expectPosition(move2, emptyMoveOptions);
+        expectPosition(move2, emptyLegalMoves);
 
         // go to move 3
         await user.keyboard("{ArrowRight}");
-        expectPosition(move3, latestMoveOptions);
+        expectPosition(move3, latestLegalMoves);
 
         // go back to move 2
         await user.keyboard("{ArrowLeft}");
-        expectPosition(move2, emptyMoveOptions);
+        expectPosition(move2, emptyLegalMoves);
 
         // jump to end
         await user.keyboard("{ArrowDown}");
-        expectPosition(move3, latestMoveOptions);
+        expectPosition(move3, latestLegalMoves);
 
         // jump to start
         await user.keyboard("{ArrowUp}");
-        expectPosition(move1, emptyMoveOptions);
+        expectPosition(move1, emptyLegalMoves);
     });
 
     it("should update position when clicking on a move", async () => {
@@ -172,13 +165,13 @@ describe("MoveHistoryTable", () => {
         renderWithCtx();
 
         await user.click(screen.getByText("e4"));
-        expectPosition(move2, emptyMoveOptions);
+        expectPosition(move2, emptyLegalMoves);
 
         await user.click(screen.getByText("e5"));
-        expectPosition(move3, emptyMoveOptions);
+        expectPosition(move3, emptyLegalMoves);
 
         await user.click(screen.getByText("e6"));
-        expectPosition(move4, latestMoveOptions);
+        expectPosition(move4, latestLegalMoves);
     });
 
     it("should call goToPosition with correct animateIntermediates for arrow keys", async () => {
@@ -188,7 +181,7 @@ describe("MoveHistoryTable", () => {
         const goToPositionMock = vi.fn();
 
         liveStore.setState({
-            latestMoveOptions,
+            latestLegalMoves: latestLegalMoves,
             viewingMoveNumber: 0,
             positionHistory: [move1, move2, move3],
         });

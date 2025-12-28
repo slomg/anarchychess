@@ -33,7 +33,7 @@ describe("HistorySlice", () => {
             expect(result?.state.pieces).toBe(
                 store.getState().positionHistory[0].pieces,
             );
-            expect(result?.state.moveOptions.legalMoves.size).toBe(0);
+            expect(result?.state.legalMoves.size).toBe(0);
             expect(result?.isOneStepForward).toBe(false);
         });
 
@@ -98,8 +98,8 @@ describe("HistorySlice", () => {
             const lastIndex = initialProps.positionHistory.length - 1;
             const result = store.getState().teleportToMove(lastIndex);
 
-            expect(result?.state.moveOptions).toEqual(
-                initialProps.latestMoveOptions,
+            expect(result?.state.legalMoves).toEqual(
+                initialProps.latestLegalMoves,
             );
             expect(result?.isOneStepForward).toBe(false);
         });

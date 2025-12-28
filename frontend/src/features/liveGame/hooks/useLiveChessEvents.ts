@@ -2,9 +2,8 @@ import { ChessboardStore } from "@/features/chessboard/stores/chessboardStore";
 import { Clocks, GameColor, MoveSnapshot } from "@/lib/apiClient";
 import { StoreApi, useStore } from "zustand";
 import { LiveChessStore } from "../stores/liveChessStore";
-import { decodePath, decodeEncodedMovesIntoMap } from "../lib/moveDecoder";
+import { decodeMovePath, decodeEncodedMovesIntoMap } from "../lib/moveDecoder";
 import { Position } from "../lib/types";
-import { ProcessedMoveOptions } from "@/features/chessboard/lib/types";
 import { refetchGame } from "../lib/gameStateProcessor";
 import { useGameEvent } from "./useGameHub";
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
@@ -63,7 +62,10 @@ export default function useLiveChessEvents(
                 resetLegalMovesForOpponentTurn();
             }
 
-            const decodedMove = decodePath(move.path, boardDimensions.width);
+            const decodedMove = decodeMovePath(
+                move.path,
+                boardDimensions.width,
+            );
             if (!isPendingMoveAck) {
                 await jumpForwards();
                 await applyMoveAnimated(decodedMove);
@@ -87,17 +89,14 @@ export default function useLiveChessEvents(
         gameToken,
         "LegalMovesChangedAsync",
         async (legalMoves, hasForcedMoves) => {
-            const decodedLegalMoves = decodeEncodedMovesIntoMap(
-                legalMoves,
-                boardDimensions.width,
-            );
+            const decodedLegalMoves = decodeEncodedMovesIntoMap({
+                encoded: legalMoves,
+                boardWidth: boardDimensions.width,
+                hasForcedMoves: hasForcedMoves,
+            });
 
-            const moveOptions: ProcessedMoveOptions = {
-                legalMoves: decodedLegalMoves,
-                hasForcedMoves,
-            };
-            liveChessStore.getState().receiveLegalMoves(moveOptions);
-            chessboardStore.getState().setLegalMoves(moveOptions);
+            liveChessStore.getState().receiveLegalMoves(decodedLegalMoves);
+            chessboardStore.getState().setLegalMoves(decodedLegalMoves);
         },
     );
 

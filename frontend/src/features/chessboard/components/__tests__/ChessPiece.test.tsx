@@ -14,11 +14,10 @@ import ChessboardLayout from "../ChessboardLayout";
 import { mockBoundingClientRect } from "@/lib/testUtils/mocks/mockDom";
 import { logicalPoint, pointToStr } from "@/features/point/pointUtils";
 import {
-    createFakeLegalMoveMapFromMoves,
+    createFakeLegalMovesFromMoves,
     createFakeMove,
     createFakePiece,
 } from "@/lib/testUtils/fakers/chessboardFakers";
-import { createMoveOptions } from "../../lib/moveOptions";
 import getPieceImage from "../../lib/pieceImage";
 import BoardPieces from "../../lib/boardPieces";
 
@@ -91,9 +90,7 @@ describe("ChessPiece", () => {
         const boardPieces = BoardPieces.fromPieces(pieceInfo);
         store.setState({
             pieces: boardPieces,
-            moveOptions: createMoveOptions({
-                legalMoves: createFakeLegalMoveMapFromMoves(legalMoves),
-            }),
+            legalMoves: createFakeLegalMovesFromMoves({ moves: legalMoves }),
         });
 
         const renderResults = render(

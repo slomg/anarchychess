@@ -6,13 +6,9 @@ import createLiveChessStore, {
 import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
 import { Clocks, GameColor } from "@/lib/apiClient";
 import { createFakePosition } from "@/lib/testUtils/fakers/positionFaker";
-import { createMoveOptions } from "@/features/chessboard/lib/moveOptions";
-import { createFakeLegalMoveMap } from "@/lib/testUtils/fakers/chessboardFakers";
-import {
-    LegalMoveMap,
-    ProcessedMoveOptions,
-} from "@/features/chessboard/lib/types";
+import { createFakeLegalMoves } from "@/lib/testUtils/fakers/chessboardFakers";
 import { createFakeClock } from "@/lib/testUtils/fakers/clockFaker";
+import LegalMoves from "@/features/chessboard/lib/legalMoves";
 
 describe("gamePlaySlice", () => {
     let store: StoreApi<LiveChessStore>;
@@ -74,29 +70,21 @@ describe("gamePlaySlice", () => {
 
     describe("resetLegalMovesForOpponentTurn", () => {
         it("should reset latestMoveOptions", () => {
-            const testMoveOptions = createMoveOptions({
-                legalMoves: createFakeLegalMoveMap(),
-            });
-            store.setState({ latestMoveOptions: testMoveOptions });
+            const testLegalMoves = createFakeLegalMoves();
+            store.setState({ latestLegalMoves: testLegalMoves });
 
             store.getState().resetLegalMovesForOpponentTurn();
 
-            expect(store.getState().latestMoveOptions).toEqual(
-                createMoveOptions(),
-            );
+            expect(store.getState().latestLegalMoves).toEqual(new LegalMoves());
         });
     });
 
     describe("receiveLegalMoves", () => {
         it("should update latestMoveOptions", () => {
-            const newMoves: LegalMoveMap = createFakeLegalMoveMap();
-            const moveOptions: ProcessedMoveOptions = {
-                legalMoves: newMoves,
-                hasForcedMoves: true,
-            };
+            const newMoves = createFakeLegalMoves({ hasForcedMoves: true });
 
-            store.getState().receiveLegalMoves(moveOptions);
-            expect(store.getState().latestMoveOptions).toBe(moveOptions);
+            store.getState().receiveLegalMoves(newMoves);
+            expect(store.getState().latestLegalMoves).toBe(newMoves);
         });
     });
 

@@ -1,17 +1,17 @@
 import { StoreApi } from "zustand";
 import { ChessboardStore, createChessboardStore } from "../chessboardStore";
 import {
-    createFakeLegalMoveMap,
+    createFakeLegalMoves,
     createFakeMove,
     createFakePiece,
     createRandomPoint,
 } from "@/lib/testUtils/fakers/chessboardFakers";
-import { IntermediateSquare, LegalMoveMap, Piece } from "../../lib/types";
+import { IntermediateSquare, Piece } from "../../lib/types";
 import { logicalPoint, pointToStr } from "@/features/point/pointUtils";
-import { createMoveOptions } from "../../lib/moveOptions";
 import { PieceType } from "@/lib/apiClient";
 import { waitFor } from "@testing-library/react";
 import BoardPieces from "../../lib/boardPieces";
+import LegalMoves from "../../lib/legalMoves";
 
 describe("LegalMovesSlice", () => {
     let store: StoreApi<ChessboardStore>;
@@ -30,7 +30,7 @@ describe("LegalMovesSlice", () => {
             const pieces = BoardPieces.fromPieces(piece);
 
             store.setState({
-                moveOptions: createMoveOptions({ legalMoves: new Map() }),
+                legalMoves: new LegalMoves(),
             });
 
             const result = await store
@@ -49,13 +49,8 @@ describe("LegalMovesSlice", () => {
                 from: origin,
                 to: logicalPoint({ x: 2, y: 2 }),
             });
-            const legalMoves: LegalMoveMap = new Map([
-                [pointToStr(origin), [move]],
-            ]);
-
-            store.setState({
-                moveOptions: createMoveOptions({ legalMoves }),
-            });
+            const legalMoves = new LegalMoves([[pointToStr(origin), [move]]]);
+            store.setState({ legalMoves });
 
             const result = await store
                 .getState()
@@ -70,13 +65,8 @@ describe("LegalMovesSlice", () => {
             const pieces = BoardPieces.fromPieces(piece);
 
             const move = createFakeMove({ from: origin, to: dest });
-            const legalMoves: LegalMoveMap = new Map([
-                [pointToStr(origin), [move]],
-            ]);
-
-            store.setState({
-                moveOptions: createMoveOptions({ legalMoves }),
-            });
+            const legalMoves = new LegalMoves([[pointToStr(origin), [move]]]);
+            store.setState({ legalMoves });
 
             const result = await store
                 .getState()
@@ -98,13 +88,11 @@ describe("LegalMovesSlice", () => {
             });
             const regularMove = createFakeMove({ from: origin, to: dest });
 
-            const legalMoves: LegalMoveMap = new Map([
+            const legalMoves = new LegalMoves([
                 [pointToStr(origin), [triggerMove, regularMove]],
             ]);
 
-            store.setState({
-                moveOptions: createMoveOptions({ legalMoves }),
-            });
+            store.setState({ legalMoves });
 
             const result = await store
                 .getState()
@@ -124,12 +112,10 @@ describe("LegalMovesSlice", () => {
                 to: dest,
                 triggers: [trigger],
             });
-            const legalMoves: LegalMoveMap = new Map([
+            const legalMoves = new LegalMoves([
                 [pointToStr(origin), [triggerMove]],
             ]);
-            store.setState({
-                moveOptions: createMoveOptions({ legalMoves }),
-            });
+            store.setState({ legalMoves });
 
             const result = await store
                 .getState()
@@ -154,12 +140,12 @@ describe("LegalMovesSlice", () => {
                 promotesTo: PieceType.ROOK,
             });
 
-            const legalMoves: LegalMoveMap = new Map([
+            const legalMoves = new LegalMoves([
                 [pointToStr(origin), [queenMove, rookMove]],
             ]);
 
             store.setState({
-                moveOptions: createMoveOptions({ legalMoves }),
+                legalMoves,
                 pendingPromotion: null,
                 resolvePromotion: null,
             });
@@ -198,13 +184,13 @@ describe("LegalMovesSlice", () => {
                 triggers: [],
             });
 
-            const legalMoves: LegalMoveMap = new Map([
+            const legalMoves = new LegalMoves([
                 [pointToStr(piece.position), [move1, move2]],
             ]);
 
             store.setState({
                 pieces: BoardPieces.fromPieces(piece),
-                moveOptions: createMoveOptions({ legalMoves }),
+                legalMoves,
             });
 
             store.getState().showLegalMoves(piece);
@@ -228,13 +214,13 @@ describe("LegalMovesSlice", () => {
                 intermediates: [intermediate],
             });
 
-            const legalMoves: LegalMoveMap = new Map([
+            const legalMoves = new LegalMoves([
                 [pointToStr(piece.position), [move]],
             ]);
 
             store.setState({
                 pieces: BoardPieces.fromPieces(piece),
-                moveOptions: createMoveOptions({ legalMoves }),
+                legalMoves,
             });
 
             store.getState().showLegalMoves(piece);
@@ -261,81 +247,12 @@ describe("LegalMovesSlice", () => {
         });
     });
 
-    describe("hasMovesFromTo", () => {
-        it("should return false if there are no moves from the given 'from' position", () => {
-            const move = createFakeMove({
-                from: logicalPoint({ x: 0, y: 0 }),
-                to: logicalPoint({ x: 2, y: 2 }),
-            });
-
-            store.setState({
-                moveOptions: {
-                    legalMoves: new Map([[pointToStr(move.from), [move]]]),
-                    hasForcedMoves: false,
-                },
-            });
-
-            const result = store
-                .getState()
-                .hasMovesFromTo(logicalPoint({ x: 1, y: 1 }), move.to);
-            expect(result).toBe(false);
-        });
-
-        it("should return false if there are moves from 'from' but none to the 'to' position", () => {
-            const move = createFakeMove({
-                from: logicalPoint({ x: 0, y: 0 }),
-                to: logicalPoint({ x: 2, y: 2 }),
-            });
-
-            store.setState({
-                moveOptions: {
-                    legalMoves: new Map([[pointToStr(move.from), [move]]]),
-                    hasForcedMoves: false,
-                },
-            });
-
-            const result = store
-                .getState()
-                .hasMovesFromTo(move.from, logicalPoint({ x: 1, y: 1 }));
-            expect(result).toBe(false);
-        });
-
-        it("should return true if there is at least one move from 'from' to 'to'", () => {
-            const move1 = createFakeMove({
-                from: logicalPoint({ x: 0, y: 0 }),
-                to: logicalPoint({ x: 1, y: 1 }),
-            });
-            const move2 = createFakeMove({
-                from: logicalPoint({ x: 0, y: 0 }),
-                to: logicalPoint({ x: 2, y: 2 }),
-            });
-
-            store.setState({
-                moveOptions: {
-                    legalMoves: new Map([
-                        [pointToStr(move1.from), [move1, move2]],
-                    ]),
-                    hasForcedMoves: false,
-                },
-            });
-
-            const result = store
-                .getState()
-                .hasMovesFromTo(
-                    logicalPoint({ x: 0, y: 0 }),
-                    logicalPoint({ x: 1, y: 1 }),
-                );
-            expect(result).toBe(true);
-        });
-    });
-
     describe("setLegalMoves", () => {
         it("should update moveOptions in the store", () => {
-            const legalMoves = createFakeLegalMoveMap();
-            const newMoveOptions = createMoveOptions({ legalMoves });
-            store.getState().setLegalMoves(newMoveOptions);
+            const legalMoves = createFakeLegalMoves();
+            store.getState().setLegalMoves(legalMoves);
 
-            expect(store.getState().moveOptions).toBe(newMoveOptions);
+            expect(store.getState().legalMoves).toBe(legalMoves);
         });
 
         it("should remove highlight legal moves", () => {
@@ -346,7 +263,7 @@ describe("LegalMovesSlice", () => {
                 ],
             });
 
-            store.getState().setLegalMoves(createMoveOptions());
+            store.getState().setLegalMoves(new LegalMoves());
 
             expect(store.getState().highlightedLegalMoves.length).toBe(0);
         });

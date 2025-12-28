@@ -12,8 +12,7 @@ import {
 import { decodeFen } from "../../chessboard/lib/fenDecoder";
 import { ClockSnapshot } from "./types";
 import { Position } from "./types";
-import { ProcessedMoveOptions } from "@/features/chessboard/lib/types";
-import { decodePath, decodePathIntoMap } from "./moveDecoder";
+import { decodeMovePath, decodeMovePathIntoLegalMoves } from "./moveDecoder";
 import { simulateMove } from "@/features/chessboard/lib/simulateMove";
 import constants from "@/lib/constants";
 import { StoreApi } from "zustand";
@@ -33,14 +32,12 @@ export function createStoreProps(
     const positionHistory = getPositionHistory(gameState);
     const boardWidth = constants.BOARD_WIDTH;
     const boardHeight = constants.BOARD_HEIGHT;
-    const legalMoves = decodePathIntoMap(
-        gameState.moveOptions.legalMoves,
+    const legalMoves = decodeMovePathIntoLegalMoves({
+        paths: gameState.moveOptions.legalMoves,
         boardWidth,
-    );
-    const latestMoveOptions: ProcessedMoveOptions = {
-        legalMoves,
         hasForcedMoves: gameState.moveOptions.hasForcedMoves,
-    };
+    });
+
     const lastPosition = positionHistory.at(-1);
 
     const viewerColor = getViewerColor(
@@ -66,7 +63,7 @@ export function createStoreProps(
 
         positionHistory,
         viewingMoveNumber: positionHistory.length - 1,
-        latestMoveOptions,
+        latestLegalMoves: legalMoves,
 
         drawState: gameState.drawState,
         clocks: gameState.clocks,
@@ -74,7 +71,7 @@ export function createStoreProps(
     };
     const board: ChessboardProps = {
         pieces: lastPosition?.pieces ?? new BoardPieces(),
-        moveOptions: latestMoveOptions,
+        legalMoves: legalMoves,
         lastMove: lastPosition?.move && {
             from: lastPosition.move.from,
             to: lastPosition.move.to,
@@ -121,7 +118,7 @@ function getPositionHistory(gameState: GameState): Position[] {
                 i % 2 !== 0 ? moveSnapshot.timeLeft : clockSnapshot.blackClock,
         };
 
-        const move = decodePath(moveSnapshot.path, constants.BOARD_WIDTH);
+        const move = decodeMovePath(moveSnapshot.path, constants.BOARD_WIDTH);
         const { newPieces } = simulateMove(pieces, move);
 
         const position: Position = {

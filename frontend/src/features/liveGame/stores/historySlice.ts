@@ -1,18 +1,15 @@
 import { StateCreator } from "zustand";
 
-import {
-    BoardState,
-    ProcessedMoveOptions,
-} from "@/features/chessboard/lib/types";
+import { BoardState } from "@/features/chessboard/lib/types";
 
-import { createMoveOptions } from "@/features/chessboard/lib/moveOptions";
+import LegalMoves from "@/features/chessboard/lib/legalMoves";
 import type { LiveChessStore } from "./liveChessStore";
 import { HistoryStep, Position } from "../lib/types";
 
 export interface HistorySliceProps {
     positionHistory: Position[];
     viewingMoveNumber: number;
-    latestMoveOptions: ProcessedMoveOptions;
+    latestLegalMoves: LegalMoves;
 }
 
 export interface HistorySlice extends HistorySliceProps {
@@ -35,8 +32,11 @@ export function createHistorySlice(
         ...initState,
 
         teleportToMove(number) {
-            const { positionHistory, latestMoveOptions, viewingMoveNumber } =
-                get();
+            const {
+                positionHistory,
+                latestLegalMoves: latestMoveOptions,
+                viewingMoveNumber,
+            } = get();
             if (number < 0 || number >= positionHistory.length) return;
 
             const isLatestPosition = number === positionHistory.length - 1;
@@ -48,9 +48,9 @@ export function createHistorySlice(
             });
 
             const state: BoardState = {
-                moveOptions: isLatestPosition
+                legalMoves: isLatestPosition
                     ? latestMoveOptions
-                    : createMoveOptions(),
+                    : new LegalMoves(),
                 pieces: position.pieces,
                 moveThatProducedPosition: position.move,
                 // the move that should be considered "last" from the perspective of the current viewed position.

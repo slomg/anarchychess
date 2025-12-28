@@ -1,20 +1,21 @@
 import { LogicalPoint } from "@/features/point/types";
-import { PieceID, ProcessedMoveOptions } from "../lib/types";
+import { PieceID } from "../lib/types";
 import { Move } from "../lib/types";
 import { StrPoint } from "@/features/point/types";
 import { Piece } from "../lib/types";
 import { StateCreator } from "zustand";
 import { ChessboardStore } from "./chessboardStore";
-import { pointEquals, pointToStr } from "@/features/point/pointUtils";
+import { pointToStr } from "@/features/point/pointUtils";
 import { PieceType } from "@/lib/apiClient";
 import BoardPieces from "../lib/boardPieces";
+import LegalMoves from "../lib/legalMoves";
 
 export interface LegalMovesSliceProps {
-    moveOptions: ProcessedMoveOptions;
+    legalMoves: LegalMoves;
 }
 
 export interface LegalMovesSlice {
-    moveOptions: ProcessedMoveOptions;
+    legalMoves: LegalMoves;
     highlightedLegalMoves: LogicalPoint[];
 
     getLegalMove(
@@ -27,9 +28,7 @@ export interface LegalMovesSlice {
     hideLegalMoves(): void;
     flashLegalMoves(): void;
 
-    hasMovesFromTo(from: LogicalPoint, to: LogicalPoint): boolean;
-
-    setLegalMoves(moveOptions: ProcessedMoveOptions): void;
+    setLegalMoves(legalMoves: LegalMoves): void;
 }
 
 export function createLegalMovesSlice(
@@ -45,7 +44,7 @@ export function createLegalMovesSlice(
         highlightedLegalMoves: [],
 
         async getLegalMove(dest, pieceId, pieces) {
-            const { moveOptions, promptPromotion, disambiguateDestination } =
+            const { legalMoves, promptPromotion, disambiguateDestination } =
                 get();
 
             const piece = pieces.getById(pieceId);
@@ -56,9 +55,7 @@ export function createLegalMovesSlice(
                 return null;
             }
 
-            const movesFromOrigin = moveOptions.legalMoves.get(
-                pointToStr(piece.position),
-            );
+            const movesFromOrigin = legalMoves.get(piece.position);
             if (!movesFromOrigin) return null;
 
             const movesToDest = await disambiguateDestination(
@@ -85,21 +82,10 @@ export function createLegalMovesSlice(
             return availablePromotions.get(promoteTo) ?? null;
         },
 
-        hasMovesFromTo(from, to) {
-            const { moveOptions } = get();
-            const movesFromOrigin = moveOptions.legalMoves.get(
-                pointToStr(from),
-            );
-            if (!movesFromOrigin) return false;
-
-            return movesFromOrigin.some((move) => pointEquals(move.to, to));
-        },
-
         showLegalMoves(piece) {
-            const { moveOptions } = get();
+            const { legalMoves } = get();
 
-            const positionStr = pointToStr(piece.position);
-            const moves = moveOptions.legalMoves.get(positionStr) ?? [];
+            const moves = legalMoves.get(piece.position) ?? [];
 
             const toHighlightPoints = new Map<StrPoint, LogicalPoint>();
             for (const move of moves) {
@@ -132,10 +118,9 @@ export function createLegalMovesSlice(
         },
 
         flashLegalMoves(): void {
-            const { moveOptions, logicalPointToViewPoint, flashOverlay } =
-                get();
+            const { legalMoves, logicalPointToViewPoint, flashOverlay } = get();
 
-            for (const movesPerPoint of moveOptions.legalMoves.values()) {
+            for (const movesPerPoint of legalMoves) {
                 for (const move of movesPerPoint) {
                     const from = logicalPointToViewPoint(move.from);
                     const to = logicalPointToViewPoint(move.to);
@@ -148,9 +133,9 @@ export function createLegalMovesSlice(
             }
         },
 
-        setLegalMoves(moveOptions): void {
+        setLegalMoves(legalMoves): void {
             set((state) => {
-                state.moveOptions = moveOptions;
+                state.legalMoves = legalMoves;
                 state.highlightedLegalMoves = [];
             });
         },

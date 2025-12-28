@@ -6,7 +6,6 @@ import {
     Piece,
 } from "@/features/chessboard/lib/types";
 import { Move } from "@/features/chessboard/lib/types";
-import { LegalMoveMap } from "@/features/chessboard/lib/types";
 import {
     IntermediateSquarePath,
     MovePath,
@@ -15,24 +14,32 @@ import {
 } from "@/lib/apiClient";
 import { idxToLogicalPoint, pointToStr } from "@/features/point/pointUtils";
 import { createPieceId } from "@/features/chessboard/lib/pieceUtils";
+import LegalMoves from "@/features/chessboard/lib/legalMoves";
+import { StrPoint } from "@/features/point/types";
 
-export function decodePathIntoMap(
-    paths: MovePath[],
-    boardWidth: number,
-): LegalMoveMap {
-    const moves: LegalMoveMap = new Map();
+export function decodeMovePathIntoLegalMoves({
+    paths,
+    boardWidth,
+    hasForcedMoves,
+}: {
+    paths: MovePath[];
+    boardWidth: number;
+    hasForcedMoves: boolean;
+}): LegalMoves {
+    const moves = new Map<StrPoint, Move[]>();
     for (const path of paths) {
-        const move = decodePath(path, boardWidth);
+        const move = decodeMovePath(path, boardWidth);
         const fromString = pointToStr(move.from);
         const movesFromPoint = moves.get(fromString) ?? [];
         movesFromPoint.push(move);
 
         moves.set(pointToStr(move.from), movesFromPoint);
     }
-    return moves;
+
+    return new LegalMoves(moves, hasForcedMoves);
 }
 
-export function decodePath(path: MovePath, boardWidth: number): Move {
+export function decodeMovePath(path: MovePath, boardWidth: number): Move {
     const from = idxToLogicalPoint(path.fromIdx, boardWidth);
     const to = idxToLogicalPoint(path.toIdx, boardWidth);
     const triggers =
@@ -97,13 +104,22 @@ function parseIntermediateSquares(
     };
 }
 
-export function decodeEncodedMovesIntoMap(
-    encoded: string,
-    boardWidth: number,
-): LegalMoveMap {
+export function decodeEncodedMovesIntoMap({
+    encoded,
+    boardWidth,
+    hasForcedMoves,
+}: {
+    encoded: string;
+    boardWidth: number;
+    hasForcedMoves: boolean;
+}): LegalMoves {
     const buffer = Buffer.from(encoded, "base64");
     const decompressed = brotliDecompress(buffer);
     const decoded = new TextDecoder().decode(decompressed);
-    const moves = decodePathIntoMap(JSON.parse(decoded), boardWidth);
+    const moves = decodeMovePathIntoLegalMoves({
+        paths: JSON.parse(decoded),
+        boardWidth,
+        hasForcedMoves,
+    });
     return moves;
 }

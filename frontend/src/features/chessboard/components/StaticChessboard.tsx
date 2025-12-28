@@ -12,12 +12,12 @@ import {
 } from "@/features/chessboard/stores/chessboardStore";
 import ChessboardLayout, { ChessboardLayoutProps } from "./ChessboardLayout";
 import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardStoreContext";
-import { createMoveOptions } from "../lib/moveOptions";
 import useConst from "@/hooks/useConst";
 import useBoardReplay from "../hooks/useBoardReplay";
 import { decodeFen } from "../lib/fenDecoder";
 import { useMemo } from "react";
 import BoardPieces from "../lib/boardPieces";
+import LegalMoves from "../lib/legalMoves";
 
 interface BaseChessboardProps {
     boardWidth?: number;
@@ -60,7 +60,7 @@ const StaticChessboard = ({
         createChessboardStore({
             pieces: initialPosition,
             boardDimensions: { width: boardWidth, height: boardHeight },
-            moveOptions: createMoveOptions(),
+            legalMoves: new LegalMoves(),
             viewingFrom,
             canDrag,
             muteAudio,

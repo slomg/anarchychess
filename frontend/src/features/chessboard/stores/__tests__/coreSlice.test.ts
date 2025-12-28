@@ -5,14 +5,14 @@ import {
     createChessboardStore,
 } from "../chessboardStore";
 import {
-    createFakeLegalMoveMap,
+    createFakeLegalMoves,
     createFakeBoardPieces,
 } from "@/lib/testUtils/fakers/chessboardFakers";
 import { GameColor } from "@/lib/apiClient";
-import { createMoveOptions } from "../../lib/moveOptions";
 import { LogicalPoint } from "@/features/point/types";
 import { PieceID } from "../../lib/types";
 import { logicalPoint } from "@/features/point/pointUtils";
+import LegalMoves from "../../lib/legalMoves";
 
 describe("CoreSlice", () => {
     let store: StoreApi<ChessboardStore>;
@@ -31,10 +31,7 @@ describe("CoreSlice", () => {
                     height: 9,
                 },
                 pieces: createFakeBoardPieces(),
-                moveOptions: createMoveOptions({
-                    legalMoves: createFakeLegalMoveMap(),
-                    hasForcedMoves: true,
-                }),
+                legalMoves: createFakeLegalMoves({ hasForcedMoves: true }),
                 canDrag: false,
                 muteAudio: true,
             };
@@ -52,17 +49,14 @@ describe("CoreSlice", () => {
     describe("disableMovement", () => {
         it("should clear moveOptions, highlightedLegalMoves, and selectedPieceId", () => {
             const selectedPieceId: PieceID = "0";
-            const moveOptions = createMoveOptions({
-                legalMoves: createFakeLegalMoveMap(),
-                hasForcedMoves: true,
-            });
+            const legalMoves = createFakeLegalMoves({ hasForcedMoves: true });
             const highlightedLegalMoves: LogicalPoint[] = [
                 logicalPoint({ x: 1, y: 2 }),
                 logicalPoint({ x: 2, y: 3 }),
             ];
 
             store.setState({
-                moveOptions,
+                legalMoves,
                 highlightedLegalMoves,
                 selectedPieceId,
             });
@@ -71,7 +65,7 @@ describe("CoreSlice", () => {
 
             const state = store.getState();
 
-            expect(state.moveOptions).toEqual(createMoveOptions()); // assuming this resets to empty
+            expect(state.legalMoves).toEqual(new LegalMoves());
             expect(state.highlightedLegalMoves).toEqual([]);
             expect(state.selectedPieceId).toBeNull();
         });

@@ -5,14 +5,11 @@ import { ChessboardProps } from "@/features/chessboard/stores/chessboardStore";
 import { LiveChessStoreProps } from "../../stores/liveChessStore";
 import { LogicalPoint } from "@/features/point/types";
 import { Position } from "../types";
-import {
-    MoveBounds,
-    ProcessedMoveOptions,
-} from "@/features/chessboard/lib/types";
+import { MoveBounds } from "@/features/chessboard/lib/types";
 import constants from "@/lib/constants";
 import { simulateMove } from "@/features/chessboard/lib/simulateMove";
 import { logicalPoint } from "@/features/point/pointUtils";
-import { decodePath, decodePathIntoMap } from "../moveDecoder";
+import { decodeMovePath, decodeMovePathIntoLegalMoves } from "../moveDecoder";
 import { LiveChessViewer } from "../../stores/gamePlaySlice";
 import mockSequentialUUID from "@/lib/testUtils/mocks/mockUuids";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
@@ -117,28 +114,28 @@ describe("createStoreProps", () => {
             {
                 from: logicalPoint({ x: 5, y: 1 }),
                 to: logicalPoint({ x: 5, y: 4 }),
-                decoded: decodePath(gameState.moveHistory[0].path, 10),
+                decoded: decodeMovePath(gameState.moveHistory[0].path, 10),
                 clocks: { whiteClock: 100, blackClock: baseMs },
                 san: "f5",
             },
             {
                 from: logicalPoint({ x: 5, y: 8 }),
                 to: logicalPoint({ x: 5, y: 5 }),
-                decoded: decodePath(gameState.moveHistory[1].path, 10),
+                decoded: decodeMovePath(gameState.moveHistory[1].path, 10),
                 clocks: { whiteClock: 100, blackClock: 100 },
                 san: "f6",
             },
             {
                 from: logicalPoint({ x: 8, y: 0 }),
                 to: logicalPoint({ x: 7, y: 2 }),
-                decoded: decodePath(gameState.moveHistory[2].path, 10),
+                decoded: decodeMovePath(gameState.moveHistory[2].path, 10),
                 clocks: { whiteClock: 50, blackClock: 100 },
                 san: "Hh3",
             },
             {
                 from: logicalPoint({ x: 1, y: 9 }),
                 to: logicalPoint({ x: 2, y: 7 }),
-                decoded: decodePath(gameState.moveHistory[3].path, 10),
+                decoded: decodeMovePath(gameState.moveHistory[3].path, 10),
                 clocks: { whiteClock: 50, blackClock: 50 },
                 san: "Hc8",
             },
@@ -160,14 +157,11 @@ describe("createStoreProps", () => {
             to: lastPosition.move!.to,
         };
 
-        const legalMoves = decodePathIntoMap(
-            gameState.moveOptions.legalMoves,
-            constants.BOARD_WIDTH,
-        );
-        const latestMoveOptions: ProcessedMoveOptions = {
-            legalMoves,
+        const legalMoves = decodeMovePathIntoLegalMoves({
+            paths: gameState.moveOptions.legalMoves,
+            boardWidth: constants.BOARD_WIDTH,
             hasForcedMoves: true,
-        };
+        });
 
         expect(result).toEqual<{
             live: LiveChessStoreProps;
@@ -188,7 +182,7 @@ describe("createStoreProps", () => {
                 },
 
                 viewingMoveNumber: 4,
-                latestMoveOptions,
+                latestLegalMoves: legalMoves,
 
                 drawState: gameState.drawState,
                 clocks: gameState.clocks,
@@ -196,7 +190,7 @@ describe("createStoreProps", () => {
             },
             board: {
                 pieces,
-                moveOptions: latestMoveOptions,
+                legalMoves: legalMoves,
                 boardDimensions: {
                     width: constants.BOARD_WIDTH,
                     height: constants.BOARD_HEIGHT,
