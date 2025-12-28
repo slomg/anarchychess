@@ -15,7 +15,7 @@ public record MovePath(
     IReadOnlyList<MoveSideEffectPath>? SideEffects,
     IReadOnlyList<PieceSpawnPath>? PieceSpawns,
     PieceType? PromotesTo,
-    SpecialMoveType? SpecialMoveType
+    SpecialMoveType? SpecialType
 )
 {
     public static MovePath FromMove(Move move, int boardWidth, MoveKey? moveKey = null)
@@ -59,9 +59,7 @@ public record MovePath(
             SideEffects: sideEffects,
             PromotesTo: move.PromotesTo,
             PieceSpawns: spawns,
-            SpecialMoveType: move.SpecialMoveType is GameLogic.Models.SpecialMoveType.None
-                ? null
-                : move.SpecialMoveType
+            SpecialType: move.SpecialMoveType is SpecialMoveType.None ? null : move.SpecialMoveType
         );
     }
 }

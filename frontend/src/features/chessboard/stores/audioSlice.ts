@@ -38,8 +38,8 @@ export function createAudioSlice(
             const { muteAudio } = get();
             if (muteAudio || step.movedPieceIds.length === 0) return;
 
-            const specialMoveAudio = step.specialMoveType
-                ? SPECIAL_MOVE_AUDIO_MAP[step.specialMoveType]
+            const specialMoveAudio = step.specialType
+                ? SPECIAL_MOVE_AUDIO_MAP[step.specialType]
                 : null;
             if (specialMoveAudio) {
                 await AudioPlayer.playAudio(specialMoveAudio);

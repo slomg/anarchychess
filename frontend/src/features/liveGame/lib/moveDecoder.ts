@@ -60,7 +60,7 @@ export function decodePath(path: MovePath, boardWidth: number): Move {
         sideEffects,
         pieceSpawns,
         promotesTo: path.promotesTo ?? null,
-        specialMoveType: path.specialMoveType ?? null,
+        specialType: path.specialType ?? null,
     };
 }
 

@@ -37,7 +37,7 @@ describe("simulateMove", () => {
             moveBounds: { from: move.from, to: move.to },
             isCapture: false,
             isPromotion: false,
-            specialMoveType: null,
+            specialType: null,
         };
         expect(result).toEqual(expectedResult);
     });
@@ -137,12 +137,12 @@ describe("simulateMove", () => {
         const move = createFakeMove({
             from: piece.position,
             to: logicalPoint({ x: 7, y: 6 }),
-            specialMoveType: SpecialMoveType.EN_PASSANT,
+            specialType: SpecialMoveType.EN_PASSANT,
         });
 
         const result = simulateMove(pieces, move);
 
-        expect(result.specialMoveType).toEqual(move.specialMoveType);
+        expect(result.specialType).toEqual(move.specialType);
     });
 });
 

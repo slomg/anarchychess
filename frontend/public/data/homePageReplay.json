@@ -122,7 +122,7 @@
                         "id": "5b295cf6-35e4-4cd1-aff6-11586b52a094"
                     }
                 ],
-                "specialMoveType": 6
+                "specialType": 6
             }
         ]
     },
@@ -153,7 +153,7 @@
                     { "x": 5, "y": 8 },
                     { "x": 5, "y": 7 }
                 ],
-                "specialMoveType": 5,
+                "specialType": 5,
                 "promotesTo": 6
             }
         ]
@@ -190,7 +190,7 @@
                         "id": "c579421a-d607-48ae-911e-55f10ca94243"
                     }
                 ],
-                "specialMoveType": 7
+                "specialType": 7
             }
         ]
     },
@@ -215,7 +215,7 @@
                         "to": { "x": 5, "y": 1 }
                     }
                 ],
-                "specialMoveType": 3
+                "specialType": 3
             },
             {
                 "from": { "x": 2, "y": 1 },

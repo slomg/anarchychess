@@ -24,6 +24,6 @@ public class MovePathFaker : RecordFaker<MovePath>
         );
         RuleFor(x => x.PieceSpawns, f => new PieceSpawnPathFaker().Generate(f.Random.Number(1, 5)));
         RuleFor(x => x.PromotesTo, f => f.PickRandom<PieceType>());
-        RuleFor(x => x.SpecialMoveType, f => f.PickRandom<SpecialMoveType>());
+        RuleFor(x => x.SpecialType, f => f.PickRandom<SpecialMoveType>());
     }
 }

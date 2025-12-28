@@ -22,7 +22,7 @@ export function simulateMoveWithIntermediates(
             newPieces: new BoardPieces(currentPieces),
             movedPieceIds: [fromPiece.id],
             isCapture: intermediate.isCapture,
-            specialMoveType: move.specialMoveType,
+            specialType: move.specialType,
         });
     }
 
@@ -61,7 +61,7 @@ function simulateMoveDetails(
             moveBounds: moveBounds,
             isCapture,
             isPromotion: move.promotesTo !== null,
-            specialMoveType: move.specialMoveType,
+            specialType: move.specialType,
         },
         removedPieceIds,
     };

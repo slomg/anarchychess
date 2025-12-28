@@ -20,7 +20,7 @@ const emptyMove = {
     sideEffects: [],
     pieceSpawns: [],
     promotesTo: null,
-    specialMoveType: null,
+    specialType: null,
 };
 
 describe("decodePathIntoMap", () => {
@@ -42,7 +42,7 @@ describe("decodePathIntoMap", () => {
                     },
                 ],
                 promotesTo: PieceType.BISHOP,
-                specialMoveType: SpecialMoveType.EN_PASSANT,
+                specialType: SpecialMoveType.EN_PASSANT,
             },
         ];
 
@@ -79,7 +79,7 @@ describe("decodePathIntoMap", () => {
                 },
             ],
             promotesTo: PieceType.BISHOP,
-            specialMoveType: SpecialMoveType.EN_PASSANT,
+            specialType: SpecialMoveType.EN_PASSANT,
         });
     });
 
@@ -178,7 +178,7 @@ describe("decodeEncodedMovesIntoMap", () => {
                     },
                 ],
                 promotesTo: null,
-                specialMoveType: null,
+                specialType: null,
             },
         ]);
         expect(result.get("0,1")).toEqual<Move[]>([

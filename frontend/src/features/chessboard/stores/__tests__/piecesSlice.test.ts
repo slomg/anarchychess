@@ -586,7 +586,7 @@ describe("PiecesSlice", () => {
                 }),
                 moveOptions: { legalMoves: new Map(), hasForcedMoves: false },
                 moveFromPreviousViewedPosition: createFakeMove({
-                    specialMoveType: SpecialMoveType.KNOOKLEAR_FUSION,
+                    specialType: SpecialMoveType.KNOOKLEAR_FUSION,
                 }),
             };
 

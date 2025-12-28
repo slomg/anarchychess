@@ -40,7 +40,6 @@ export default function useLiveChessEvents(
             move: MoveSnapshot,
             sideToMove: GameColor,
             moveNumber: number,
-            plyNumber: number,
             clocks: Clocks,
         ) => {
             const {

@@ -27,7 +27,7 @@ export interface Move {
     sideEffects: MoveSideEffect[];
     pieceSpawns: Piece[];
     promotesTo: PieceType | null;
-    specialMoveType: SpecialMoveType | null;
+    specialType: SpecialMoveType | null;
 }
 
 export type MinimalMove = Partial<Move> & {
@@ -66,7 +66,7 @@ export interface AnimationStep {
     initialSpawnPositions?: BoardPieces;
 
     moveBounds?: MoveBounds;
-    specialMoveType?: SpecialMoveType | null;
+    specialType?: SpecialMoveType | null;
     isCapture?: boolean;
     isPromotion?: boolean;
 }

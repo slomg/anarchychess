@@ -9,7 +9,7 @@ export default function expandMinimalMove(minimalMove: MinimalMove): Move {
         sideEffects: [],
         pieceSpawns: [],
         promotesTo: null,
-        specialMoveType: null,
+        specialType: null,
         ...minimalMove,
     };
 }

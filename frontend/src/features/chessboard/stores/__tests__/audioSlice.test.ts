@@ -50,7 +50,7 @@ describe("AudioSlice", () => {
             newPieces: new BoardPieces(),
             movedPieceIds: ["1"],
             isCapture: true,
-            specialMoveType: SpecialMoveType.KNOOKLEAR_FUSION,
+            specialType: SpecialMoveType.KNOOKLEAR_FUSION,
         };
 
         await store.getState().playAudioForAnimationStep(step);

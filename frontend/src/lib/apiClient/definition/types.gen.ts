@@ -328,7 +328,7 @@ export type MovePath = {
     sideEffects?: Array<MoveSideEffectPath> | null;
     pieceSpawns?: Array<PieceSpawnPath> | null;
     promotesTo?: PieceType | null;
-    specialMoveType?: SpecialMoveType | null;
+    specialType?: SpecialMoveType | null;
 };
 
 export type IntermediateSquarePath = {

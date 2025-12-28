@@ -258,8 +258,7 @@ export function createPiecesSlice(
                     moveBounds,
                     isCapture,
                     isPromotion,
-                    specialMoveType:
-                        moveFromPreviousViewedPosition?.specialMoveType,
+                    specialType: moveFromPreviousViewedPosition?.specialType,
                 });
             },
 
