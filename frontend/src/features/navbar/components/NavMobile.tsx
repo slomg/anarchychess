@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -16,9 +16,10 @@ const NavMobile = ({ hasAccessCookie }: { hasAccessCookie: boolean }) => {
     const pathname = usePathname();
 
     const toggle = () => setIsOpen((prev) => !prev);
+    const closeMenu = useEffectEvent(() => setIsOpen(false));
 
     useEffect(() => {
-        setIsOpen(false);
+        closeMenu();
     }, [pathname]);
 
     useEffect(() => {

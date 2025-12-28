@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import Button from "@/components/ui/Button";
 
 import useLocalPref from "@/hooks/useLocalPref";
@@ -17,12 +17,13 @@ import { useSessionUser } from "@/features/auth/hooks/useSessionUser";
 import { isAuthed } from "@/features/auth/lib/userGuard";
 
 const PlayOptions = () => {
-    const [showPoolToggle, setShowPoolToggle] = useState(false);
+    const user = useSessionUser();
+    const isLoggedIn = isAuthed(user);
+
     const [poolType, setPoolType] = useLocalPref(
         constants.LOCALSTORAGE.PREFERS_MATCHMAKING_POOL,
         PoolType.CASUAL,
     );
-    const user = useSessionUser();
 
     const isRated = poolType === PoolType.RATED;
 
@@ -31,20 +32,17 @@ const PlayOptions = () => {
     const numberOfOngoingGames = useLobbyStore((x) => x.ongoingGames.size);
 
     useEffect(() => {
-        const isLoggedIn = isAuthed(user);
-
-        setShowPoolToggle(isLoggedIn);
         if (!isLoggedIn) {
             setPoolType(PoolType.CASUAL);
         }
-    }, [setPoolType]);
+    }, [isLoggedIn, setPoolType]);
 
     return (
         <Card data-testid="playOptions" className="items-center gap-5 pt-10">
             <h1 className="text-center text-5xl">Play Anarchy Chess</h1>
 
             <div className="flex w-full flex-col">
-                {showPoolToggle && (
+                {isLoggedIn && (
                     <PoolToggle
                         isRated={isRated}
                         onToggle={(isRated) =>

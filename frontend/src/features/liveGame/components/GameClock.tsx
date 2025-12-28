@@ -1,6 +1,6 @@
 import { GameColor } from "@/lib/apiClient";
 import useLiveChessStore from "../hooks/useLiveChessStore";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import clsx from "clsx";
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
 
@@ -18,24 +18,19 @@ const GameClock = ({ color }: { color: GameColor }) => {
     const [timeLeft, setTimeLeft] = useState<number>(baseTimeLeft);
     const isInTimeTrouble = timeLeft < 20000;
 
-    const calculateTimeLeft = useCallback(() => {
-        if (!isTicking) return baseTimeLeft;
-
+    const updateTimeLeft = useEffectEvent(() => {
         const timePassed = new Date().valueOf() - clocks.lastUpdated;
-        return baseTimeLeft - timePassed;
-    }, [clocks.lastUpdated, baseTimeLeft, isTicking]);
+        setTimeLeft(baseTimeLeft - timePassed);
+    });
 
     useEffect(() => {
-        setTimeLeft(calculateTimeLeft());
         if (!isTicking) return;
 
-        const interval = setInterval(
-            () => setTimeLeft(calculateTimeLeft()),
-            100,
-        );
-
-        return () => clearInterval(interval);
-    }, [calculateTimeLeft, isTicking]);
+        const interval = setInterval(updateTimeLeft, 100);
+        return () => {
+            clearInterval(interval);
+        };
+    }, [isTicking]);
 
     useEffect(() => {
         if (

@@ -1,5 +1,5 @@
 import { useFloating, flip, shift, autoUpdate } from "@floating-ui/react-dom";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import clsx from "clsx";
 
 import {
@@ -34,6 +34,15 @@ const ProfileTooltip = ({
         middleware: [flip(), shift()],
         whileElementsMounted: autoUpdate,
     });
+
+    const referenceRef = useCallback(
+        (node: HTMLElement | null) => refs.setReference(node),
+        [refs],
+    );
+    const floatingRef = useCallback(
+        (node: HTMLElement | null) => refs.setFloating(node),
+        [refs],
+    );
 
     async function loadProfile() {
         setOpen((prev) => !prev);
@@ -85,7 +94,7 @@ const ProfileTooltip = ({
         <>
             <div
                 onClick={loadProfile}
-                ref={refs.setReference}
+                ref={referenceRef}
                 data-testid="profileTooltipChildren"
                 className="flex w-fit min-w-0 cursor-pointer items-center gap-3"
             >
@@ -94,7 +103,7 @@ const ProfileTooltip = ({
 
             {open && (
                 <Card
-                    ref={refs.setFloating}
+                    ref={floatingRef}
                     style={floatingStyles}
                     className={clsx(
                         `bg-background border-primary z-50 mt-2 min-h-32 w-max

@@ -50,14 +50,6 @@ const GameRow = ({
         return game.result === winResult ? "1" : "0";
     }
 
-    const GameLink = () => (
-        <Link
-            data-testid="gameRowLink"
-            className="absolute inset-0"
-            href={`/game/${game.gameToken}`}
-        />
-    );
-
     return (
         <tr
             data-testid={`gameRow-${game.gameToken}`}
@@ -67,7 +59,7 @@ const GameRow = ({
             )}
         >
             <td className="relative flex">
-                <GameLink />
+                <GameLink gameToken={game.gameToken} />
                 <div className="relative flex flex-col justify-center py-4 pl-4">
                     <ProfileTooltip userId={game.whitePlayer.userId}>
                         <p data-testid="gameRowWhiteUsername">
@@ -86,7 +78,7 @@ const GameRow = ({
             </td>
 
             <td className="relative p-4">
-                <GameLink />
+                <GameLink gameToken={game.gameToken} />
                 <div className="flex items-center gap-3">
                     <div className="flex w-3 flex-col justify-between">
                         <span data-testid="gameRowScoreWhite">
@@ -102,10 +94,18 @@ const GameRow = ({
             </td>
 
             <td className="relative p-4">
-                <GameLink />
+                <GameLink gameToken={game.gameToken} />
                 <span data-testid="gameRowDate">{formattedDate}</span>
             </td>
         </tr>
     );
 };
 export default GameRow;
+
+const GameLink = ({ gameToken }: { gameToken: string }) => (
+    <Link
+        data-testid="gameRowLink"
+        className="absolute inset-0"
+        href={`/game/${gameToken}`}
+    />
+);

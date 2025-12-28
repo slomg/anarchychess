@@ -1,12 +1,13 @@
 "use client";
 
+import { useEffect, useEffectEvent, useState } from "react";
 import dynamic from "next/dynamic";
+import clsx from "clsx";
 
-import Card from "@/components/ui/Card";
+import TimeControlIcon from "@/features/lobby/components/TimeControlIcon";
 import { RatingOverview } from "@/lib/apiClient";
 import constants from "@/lib/constants";
-import clsx from "clsx";
-import TimeControlIcon from "@/features/lobby/components/TimeControlIcon";
+import Card from "@/components/ui/Card";
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
@@ -24,21 +25,28 @@ const RatingCard = ({ overview }: { overview: RatingOverview }) => {
         current: currentRating,
     } = overview;
 
-    let formattedRatings: DataPoint[];
-    // if there are enough recent rating points, use them directly
-    if (ratings.length >= 2) {
-        formattedRatings = ratings.map(({ achievedAt, rating }) => ({
-            x: new Date(achievedAt).valueOf(),
-            y: rating,
-        }));
-    } else {
-        // otherwise show a flat line at the current rating over the last month
-        const monthAgo = Date.now() - 1000 * 60 * 60 * 24 * 30;
-        formattedRatings = [
+    const [flatRatings, setFlatRatings] = useState<DataPoint[]>([]);
+
+    const generateRatings = useEffectEvent(() => {
+        // if there are enough recent rating points, use them directly
+        if (ratings.length >= 2) {
+            setFlatRatings(
+                ratings.map(({ achievedAt, rating }) => ({
+                    x: new Date(achievedAt).valueOf(),
+                    y: rating,
+                })),
+            );
+            return;
+        }
+
+        const now = Date.now();
+        const monthAgo = now - 1000 * 60 * 60 * 24 * 30;
+        setFlatRatings([
             { x: monthAgo, y: currentRating },
-            { x: Date.now(), y: currentRating },
-        ];
-    }
+            { x: now, y: currentRating },
+        ]);
+    });
+    useEffect(() => generateRatings(), []);
 
     const earliestRating = ratings.at(0)?.rating ?? currentRating;
     const ratingChange = currentRating - earliestRating;
@@ -119,7 +127,7 @@ const RatingCard = ({ overview }: { overview: RatingOverview }) => {
                 series={[
                     {
                         name: "Rating",
-                        data: formattedRatings,
+                        data: flatRatings,
                     },
                 ]}
                 height="100"

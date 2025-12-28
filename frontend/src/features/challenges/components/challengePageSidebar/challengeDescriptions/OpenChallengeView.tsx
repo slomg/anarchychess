@@ -2,11 +2,11 @@ import { ClipboardIcon } from "@heroicons/react/24/outline";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import QRCode from "qrcode";
-
-import InputField from "@/components/ui/InputField";
 import clsx from "clsx";
+
 import useChallengeStore from "@/features/challenges/hooks/useChallengeStore";
 import ChallengeStatusText from "../ChallengeStatusText";
+import InputField from "@/components/ui/InputField";
 
 const OpenChallengeView = () => {
     const [currentUrl, setCurrentUrl] = useState<string>();
@@ -26,10 +26,15 @@ const OpenChallengeView = () => {
     useEffect(() => {
         if (typeof window === "undefined") return;
 
-        setCurrentUrl(window.location.href);
-        QRCode.toDataURL(window.location.href).then(setQrCodeB64);
-    }, []);
+        const loadUrlAndQr = async () => {
+            const url = window.location.href;
 
+            setCurrentUrl(url);
+            setQrCodeB64(await QRCode.toDataURL(url));
+        };
+
+        loadUrlAndQr();
+    }, []);
     return (
         <>
             <ChallengeStatusText
@@ -57,7 +62,8 @@ const OpenChallengeView = () => {
             {qrCodeB64 && (
                 <div
                     className={clsx(
-                        "bg-background flex w-full justify-center rounded-md border border-white/20 p-3",
+                        `bg-background flex w-full justify-center rounded-md
+                        border border-white/20 p-3`,
                         isOver && "cursor-not-allowed opacity-50",
                     )}
                 >

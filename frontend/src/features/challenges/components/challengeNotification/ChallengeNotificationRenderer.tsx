@@ -74,11 +74,6 @@ const ChallengeNotificationRenderer = () => {
         overflow: new Map<string, ChallengeRequest>(),
     });
 
-    useChallengeEvent("ChallengeReceivedAsync", addChallenge);
-    useChallengeEvent("ChallengeCancelledAsync", (_, challengeToken) =>
-        removeChallenge(challengeToken),
-    );
-
     function addChallenge(challenge: ChallengeRequest) {
         dispatch({ type: "add", challenge });
         setShow((prev) => {
@@ -100,13 +95,19 @@ const ChallengeNotificationRenderer = () => {
         dispatch({ type: "clear" });
     }
 
+    useChallengeEvent("ChallengeReceivedAsync", addChallenge);
+    useChallengeEvent("ChallengeCancelledAsync", (_, challengeToken) =>
+        removeChallenge(challengeToken),
+    );
+
     if (state.incoming.size === 0) return null;
 
     const totalCount = state.incoming.size + state.overflow.size;
     const notificationCount = totalCount > 9 ? "9+" : totalCount;
     return (
         <div
-            className="fixed right-10 bottom-10 z-50 flex flex-col items-end gap-y-1"
+            className="fixed right-10 bottom-10 z-50 flex flex-col items-end
+                gap-y-1"
             onMouseEnter={() => setShow(true)}
             onMouseLeave={() => setShow(false)}
             data-testid="challengeNotificationRenderer"
@@ -142,8 +143,9 @@ const ChallengeNotificationRenderer = () => {
                 <Card className="relative w-min cursor-pointer p-2">
                     <EyeDropperIcon className="h-6 w-6" />
                     <span
-                        className="absolute -right-1.5 -bottom-1.5 flex h-5 w-5 items-center justify-center
-                            rounded-full bg-red-500 text-sm"
+                        className="absolute -right-1.5 -bottom-1.5 flex h-5 w-5
+                            items-center justify-center rounded-full bg-red-500
+                            text-sm"
                         data-testid="challengeNotificationRendererCount"
                     >
                         {notificationCount}

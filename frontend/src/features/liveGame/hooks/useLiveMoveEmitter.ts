@@ -25,5 +25,5 @@ export default function useLiveMoveEmitter(
         return () => {
             pieceMovementEvent.unsubscribe(emitMove);
         };
-    }, [pieceMovementEvent]);
+    }, [pieceMovementEvent, gameToken, markPendingMoveAck, sendGameEvent]);
 }

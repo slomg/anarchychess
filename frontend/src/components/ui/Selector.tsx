@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
-import Button from "./Button";
+import { useMemo, useState } from "react";
 import clsx from "clsx";
+
+import Button from "./Button";
 
 type Option<T> = {
     label: string;
@@ -25,29 +26,19 @@ const Selector = <T,>({
     onChange,
     "data-testid": testId,
 }: SelectorProps<T>) => {
-    const initialIndex = useMemo(
-        () =>
-            value !== undefined
-                ? options.findIndex((o) => o.value === value)
-                : 0,
-        [options, value],
-    );
+    const [internalIndex, setInternalIndex] = useState(0);
 
-    const [selectedIndex, setSelectedIndex] = useState(
-        initialIndex === -1 ? 0 : initialIndex,
-    );
-
-    useEffect(() => {
-        if (value === undefined) return;
+    const selectedIndex = useMemo(() => {
+        if (value === undefined) return internalIndex;
 
         const idx = options.findIndex((o) => o.value === value);
-        if (idx !== -1 && idx !== selectedIndex) setSelectedIndex(idx);
-    }, [value, options, selectedIndex]);
+        return idx === -1 ? 0 : idx;
+    }, [value, options, internalIndex]);
 
     function select(index: number) {
-        setSelectedIndex(index);
-        const selectedValue = options[index].value;
+        setInternalIndex(index);
 
+        const selectedValue = options[index].value;
         onChange?.({
             target: {
                 name,

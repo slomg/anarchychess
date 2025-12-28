@@ -7,7 +7,6 @@ import {
     BoltSlashIcon,
     CalendarIcon,
     MagnifyingGlassIcon,
-    HomeIcon,
     ArrowLeftEndOnRectangleIcon,
     BookOpenIcon,
 } from "@heroicons/react/24/outline";

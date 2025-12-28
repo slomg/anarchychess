@@ -7,8 +7,8 @@ import {
     GameResultData,
     PoolKey,
 } from "@/lib/apiClient";
+
 import { LiveChessStore, LiveChessStoreProps } from "./liveChessStore";
-import LegalMoves from "@/features/chessboard/lib/legalMoves";
 
 export interface GameStateSliceProps {
     gameToken: string;

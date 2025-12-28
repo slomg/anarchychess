@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useEffectEvent, useState } from "react";
 
 export default function useLocalPref<T>(
     localStorageName: string,
@@ -6,12 +6,12 @@ export default function useLocalPref<T>(
 ): [T, (newValue: T) => void] {
     const [value, setValue] = useState<T>(defaultValue);
 
-    useEffect(() => {
+    const setValueFromStorage = useEffectEvent(() => {
         const storageValue = localStorage.getItem(localStorageName);
         if (!storageValue) return;
-
         setValue(JSON.parse(storageValue));
-    }, [localStorageName]);
+    });
+    useEffect(() => setValueFromStorage(), []);
 
     function setNewValue(newValue: T) {
         setValue(newValue);

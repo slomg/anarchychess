@@ -32,7 +32,7 @@ describe("RatingsCard", () => {
 
         render(<RatingCard overview={ratingMock} />);
 
-        const callArgs = chartMock.mock.calls[0][0];
+        const callArgs = chartMock.mock.calls.at(-1)![0];
         expect(callArgs.series).toEqual([
             {
                 name: "Rating",
