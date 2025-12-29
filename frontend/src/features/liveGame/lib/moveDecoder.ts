@@ -104,7 +104,7 @@ function parseIntermediateSquares(
     };
 }
 
-export function decodeEncodedMovesIntoMap({
+export function decodeLegalMoves({
     encoded,
     boardWidth,
     hasForcedMoves,

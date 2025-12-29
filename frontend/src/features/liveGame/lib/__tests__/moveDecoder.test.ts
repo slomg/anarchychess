@@ -6,10 +6,7 @@ import {
     PieceType,
     SpecialMoveType,
 } from "@/lib/apiClient";
-import {
-    decodeEncodedMovesIntoMap,
-    decodeMovePathIntoLegalMoves,
-} from "../moveDecoder";
+import { decodeLegalMoves, decodeMovePathIntoLegalMoves } from "../moveDecoder";
 import { Move } from "@/features/chessboard/lib/types";
 import { logicalPoint } from "@/features/point/pointUtils";
 import mockSequentialUUID from "@/lib/testUtils/mocks/mockUuids";
@@ -27,7 +24,7 @@ const emptyMove = {
     specialType: null,
 };
 
-describe("decodePathIntoMap", () => {
+describe("decodeMovePathIntoLegalMoves", () => {
     it("should decode single path into correct LegalMoveMap entry", () => {
         const paths: MovePath[] = [
             {
@@ -132,7 +129,7 @@ describe("decodePathIntoMap", () => {
     });
 });
 
-describe("decodeEncodedMovesIntoMap", () => {
+describe("decodeLegalMoves", () => {
     it("should decode a valid base64 gzipped encoded move string", () => {
         const moves: MovePath[] = [
             {
@@ -163,7 +160,7 @@ describe("decodeEncodedMovesIntoMap", () => {
         const encoded = Buffer.from(compressed).toString("base64");
 
         mockSequentialUUID();
-        const result = decodeEncodedMovesIntoMap({
+        const result = decodeLegalMoves({
             encoded,
             boardWidth: 10,
             hasForcedMoves: false,
@@ -215,7 +212,7 @@ describe("decodeEncodedMovesIntoMap", () => {
         const compressed = brotliCompress(Buffer.from("[]"));
         const encoded = Buffer.from(compressed).toString("base64");
 
-        const result = decodeEncodedMovesIntoMap({
+        const result = decodeLegalMoves({
             encoded,
             boardWidth: 10,
             hasForcedMoves: false,

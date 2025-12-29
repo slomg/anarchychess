@@ -2,7 +2,7 @@ import { ChessboardStore } from "@/features/chessboard/stores/chessboardStore";
 import { Clocks, GameColor, MoveSnapshot } from "@/lib/apiClient";
 import { StoreApi, useStore } from "zustand";
 import { LiveChessStore } from "../stores/liveChessStore";
-import { decodeMovePath, decodeEncodedMovesIntoMap } from "../lib/moveDecoder";
+import { decodeMovePath, decodeLegalMoves } from "../lib/moveDecoder";
 import { refetchGame } from "../lib/gameStateProcessor";
 import { useGameEvent } from "./useGameHub";
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
@@ -77,9 +77,9 @@ export default function useLiveChessEvents(
     useGameEvent(
         gameToken,
         "LegalMovesChangedAsync",
-        async (legalMoves, hasForcedMoves) => {
-            const decodedLegalMoves = decodeEncodedMovesIntoMap({
-                encoded: legalMoves,
+        async (encodedLegalMoves, hasForcedMoves) => {
+            const decodedLegalMoves = decodeLegalMoves({
+                encoded: encodedLegalMoves,
                 boardWidth: boardDimensions.width,
                 hasForcedMoves: hasForcedMoves,
             });
