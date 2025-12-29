@@ -74,3 +74,5 @@ export interface Position {
 }
 
 export type PositionHistory = [Position, ...Position[]];
+
+export type PositionId = string & { __brand: "PositionId" };
