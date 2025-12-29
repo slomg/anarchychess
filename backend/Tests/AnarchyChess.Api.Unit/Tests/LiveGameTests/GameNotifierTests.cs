@@ -62,7 +62,7 @@ public class GameNotifierTests
         MoveNotification notification = new(
             GameToken: _gameToken,
             Move: new MoveSnapshotFaker().Generate(),
-            PlyNumber: 5,
+            PlyIdx: 5,
             Clocks: new ClockSnapshot(
                 WhiteClock: 10,
                 BlackClock: 20,
@@ -80,14 +80,18 @@ public class GameNotifierTests
         await _clientGameGroupProxyMock
             .Received(1)
             .MoveMadeAsync(
-                notification.Move,
-                notification.SideToMove,
-                notification.PlyNumber,
-                notification.Clocks
+                move: notification.Move,
+                sideToMove: notification.SideToMove,
+                plyIdx: notification.PlyIdx,
+                clock: notification.Clocks
             );
         await _clientUserGameGroupProxyMock
             .Received(1)
-            .LegalMovesChangedAsync(notification.LegalMoves, notification.HasForcedMoves);
+            .LegalMovesChangedAsync(
+                encodedLegalMoves: notification.LegalMoves,
+                hasForcedMoves: notification.HasForcedMoves,
+                plyIdx: notification.PlyIdx
+            );
         state.Revision.Should().Be(1);
     }
 

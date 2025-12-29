@@ -80,7 +80,7 @@ describe("useLiveChessEvents", () => {
     async function triggerMoveMade(
         sideToMove: GameColor,
         clocks: Clocks,
-        moveNumber = 1,
+        plyIdx = 0,
     ): Promise<MoveSnapshot> {
         const move = createFakeMoveSnapshot({
             san: "test san",
@@ -90,7 +90,7 @@ describe("useLiveChessEvents", () => {
             await gameEventHandlers.MoveMadeAsync?.(
                 move,
                 sideToMove,
-                moveNumber,
+                plyIdx,
                 clocks,
             );
         });
@@ -135,7 +135,7 @@ describe("useLiveChessEvents", () => {
     });
 
     describe("MoveMadeAsync", () => {
-        it("should trigger a refetch when moveNumber is out of sync", async () => {
+        it("should trigger a refetch when plyIdx is out of sync", async () => {
             chessboardStore.setState({
                 positionHistory: [createFakePosition()],
             });
@@ -149,7 +149,7 @@ describe("useLiveChessEvents", () => {
                 gameEventHandlers.MoveMadeAsync?.(
                     move,
                     GameColor.WHITE,
-                    0,
+                    2,
                     clocks,
                 ),
             );

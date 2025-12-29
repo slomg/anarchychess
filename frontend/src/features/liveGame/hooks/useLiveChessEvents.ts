@@ -28,7 +28,7 @@ export default function useLiveChessEvents(
         async (
             move: MoveSnapshot,
             sideToMove: GameColor,
-            moveNumber: number,
+            plyIdx: number,
             clocks: Clocks,
         ) => {
             const { isPendingMoveAck, viewer, receiveMove } =
@@ -41,7 +41,7 @@ export default function useLiveChessEvents(
             } = chessboardStore.getState();
 
             // we missed a move... we need to refetch the state
-            if (moveNumber != positionHistory.length) {
+            if (plyIdx != positionHistory.length - 1) {
                 await refetchGame(liveChessStore, chessboardStore);
                 return;
             }

@@ -15,7 +15,7 @@ export type GameClientEvents = {
     MoveMadeAsync: [
         move: MoveSnapshot,
         sideToMove: GameColor,
-        plyNumber: number,
+        plyIdx: number,
         clocks: Clocks,
     ];
     LegalMovesChangedAsync: [

@@ -29,7 +29,7 @@ public interface IGameNotifier
 public record MoveNotification(
     GameToken GameToken,
     MoveSnapshot Move,
-    int PlyNumber,
+    int PlyIdx,
     ClockSnapshot Clocks,
     GameColor SideToMove,
     UserId SideToMoveUserId,
@@ -63,12 +63,16 @@ public class GameNotifier(IHubContext<GameHub, IGameHubClient> hub) : IGameNotif
             .MoveMadeAsync(
                 move: notification.Move,
                 sideToMove: notification.SideToMove,
-                plyNumber: notification.PlyNumber,
+                plyIdx: notification.PlyIdx,
                 clock: notification.Clocks
             );
         await _hub
             .Clients.Group(UserGameGroup(notification.GameToken, notification.SideToMoveUserId))
-            .LegalMovesChangedAsync(notification.LegalMoves, notification.HasForcedMoves);
+            .LegalMovesChangedAsync(
+                notification.LegalMoves,
+                notification.HasForcedMoves,
+                plyIdx: notification.PlyIdx
+            );
     }
 
     public Task NotifyDrawStateChangeAsync(
