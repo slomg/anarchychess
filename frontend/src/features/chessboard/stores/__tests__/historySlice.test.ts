@@ -50,6 +50,15 @@ describe("HistorySlice", () => {
             expect(applyHistoryPositionMock).not.toHaveBeenCalled();
         });
 
+        it("should hide legal moves", async () => {
+            const hideLegalMovesMock = vi.fn();
+            store.setState({ hideLegalMoves: hideLegalMovesMock });
+
+            await store.getState().teleportToPosition(1);
+
+            expect(hideLegalMovesMock).toHaveBeenCalledOnce();
+        });
+
         it("should call applyMoveAnimated for exactly one step forward", async () => {
             await store.getState().teleportToPosition(1);
 

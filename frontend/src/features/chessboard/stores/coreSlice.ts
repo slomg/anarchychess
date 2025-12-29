@@ -21,8 +21,8 @@ export const createCoreSlice: StateCreator<
     },
 
     disableMovement(): void {
-        const { setLegalMoves, unselectPiece } = get();
-        setLegalMoves(new LegalMoves());
+        const { setLatestLegalMoves, unselectPiece } = get();
+        setLatestLegalMoves(new LegalMoves());
         unselectPiece();
     },
 });

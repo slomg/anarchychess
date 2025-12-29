@@ -21,6 +21,7 @@ export type GameClientEvents = {
     LegalMovesChangedAsync: [
         encodedLegalMoves: string,
         hasForcedMoves: boolean,
+        plyIdx: number,
     ];
     GameEndedAsync: [result: GameResultData, finalClocks: Clocks];
 

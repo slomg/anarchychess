@@ -1,23 +1,22 @@
 "use client";
 
 import { StoreApi } from "zustand";
+import { useMemo } from "react";
 
-import constants from "@/lib/constants";
-import { GameReplay } from "../lib/types";
-
-import { GameColor } from "@/lib/apiClient";
 import {
     ChessboardStore,
     createChessboardStore,
 } from "@/features/chessboard/stores/chessboardStore";
-import ChessboardLayout, { ChessboardLayoutProps } from "./ChessboardLayout";
+
 import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardStoreContext";
-import useConst from "@/hooks/useConst";
+import ChessboardLayout, { ChessboardLayoutProps } from "./ChessboardLayout";
 import useBoardReplay from "../hooks/useBoardReplay";
 import { decodeFen } from "../lib/fenDecoder";
-import { useMemo } from "react";
 import BoardPieces from "../lib/boardPieces";
-import LegalMoves from "../lib/legalMoves";
+import { GameColor } from "@/lib/apiClient";
+import { GameReplay } from "../lib/types";
+import constants from "@/lib/constants";
+import useConst from "@/hooks/useConst";
 
 interface BaseChessboardProps {
     boardWidth?: number;
@@ -60,7 +59,7 @@ const StaticChessboard = ({
         createChessboardStore({
             pieces: initialPosition,
             boardDimensions: { width: boardWidth, height: boardHeight },
-            legalMoves: new LegalMoves(),
+            legalMovesByPly: new Map(),
             viewingFrom,
             canDrag,
             muteAudio,

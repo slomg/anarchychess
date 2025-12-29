@@ -88,10 +88,12 @@ describe("ChessPiece", () => {
             id: CREATED_PIECE_ID,
         });
         const boardPieces = BoardPieces.fromPieces(pieceInfo);
-        store.setState({
-            pieces: boardPieces,
-            legalMoves: createFakeLegalMovesFromMoves({ moves: legalMoves }),
-        });
+        store.setState({ pieces: boardPieces });
+        store.getState().setLatestLegalMoves(
+            createFakeLegalMovesFromMoves({
+                moves: legalMoves,
+            }),
+        );
 
         const renderResults = render(
             <ChessboardStoreContext.Provider value={store}>

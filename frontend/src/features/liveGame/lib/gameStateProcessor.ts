@@ -71,7 +71,7 @@ export function createStoreProps(
         pieces: lastPosition?.pieces ?? new BoardPieces(),
         positionHistory,
 
-        legalMoves: legalMoves,
+        legalMovesByPly: new Map([[positionHistory.length - 1, legalMoves]]),
         lastMove: lastPosition?.move && {
             from: lastPosition.move.from,
             to: lastPosition.move.to,

@@ -4,36 +4,36 @@ import { devtools } from "zustand/middleware";
 import { shallow } from "zustand/shallow";
 import { enableMapSet } from "immer";
 
-import { createPiecesSlice, PieceSliceProps, PiecesSlice } from "./piecesSlice";
-import { BoardSlice, BoardSliceProps, createBoardSlice } from "./boardSlice";
-import {
-    createLegalMovesSlice,
-    LegalMovesSlice,
-    LegalMovesSliceProps,
-} from "./legalMovesSlice";
-import { OverlaySlice, createOverlaySlice } from "./overlaySlice";
-import { CoreSlice, createCoreSlice } from "./coreSlice";
-import { GameColor } from "@/lib/apiClient";
-import constants from "@/lib/constants";
-import { createInteractionSlice, InteractionSlice } from "./interactionSlice";
-import { createPromotionSlice, PromotionSlice } from "./promotionSlice";
 import {
     createIntermediateSlice,
     IntermediateSlice,
 } from "./intermediateSlice";
 import {
+    createLegalMovesSlice,
+    LegalMovesSlice,
+    LegalMovesSliceProps,
+} from "./legalMovesSlice";
+import {
     AnimationSlice,
     AnimationSliceProps,
     createAnimationSlice,
 } from "./animationSlice";
-import { AudioSlice, AudioSliceProps, createAudioSlice } from "./audioSlice";
-import BoardPieces from "../lib/boardPieces";
-import LegalMoves from "../lib/legalMoves";
 import {
     createHistorySlice,
     HistorySlice,
     HistorySliceProps,
 } from "./historySlice";
+
+import { createPiecesSlice, PieceSliceProps, PiecesSlice } from "./piecesSlice";
+import { createInteractionSlice, InteractionSlice } from "./interactionSlice";
+import { BoardSlice, BoardSliceProps, createBoardSlice } from "./boardSlice";
+import { AudioSlice, AudioSliceProps, createAudioSlice } from "./audioSlice";
+import { createPromotionSlice, PromotionSlice } from "./promotionSlice";
+import { OverlaySlice, createOverlaySlice } from "./overlaySlice";
+import { CoreSlice, createCoreSlice } from "./coreSlice";
+import BoardPieces from "../lib/boardPieces";
+import { GameColor } from "@/lib/apiClient";
+import constants from "@/lib/constants";
 
 export type ChessboardStore = BoardSlice &
     PiecesSlice &
@@ -63,7 +63,7 @@ export function createChessboardStore(
         },
         pieces: new BoardPieces(),
         canDrag: true,
-        legalMoves: new LegalMoves(),
+        legalMovesByPly: new Map(),
         muteAudio: false,
     },
 ) {

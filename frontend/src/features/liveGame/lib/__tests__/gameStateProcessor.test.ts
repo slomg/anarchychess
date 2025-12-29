@@ -185,7 +185,9 @@ describe("createStoreProps", () => {
             },
             board: {
                 pieces,
-                legalMoves: legalMoves,
+                legalMovesByPly: new Map([
+                    [positionHistory.length - 1, legalMoves],
+                ]),
                 boardDimensions: {
                     width: constants.BOARD_WIDTH,
                     height: constants.BOARD_HEIGHT,

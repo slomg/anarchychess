@@ -64,12 +64,13 @@ export function createPiecesSlice(
         }
 
         function detectNeedsDoubleClick(dest: LogicalPoint): boolean {
-            const { selectedPieceId, pieces, legalMoves } = get();
+            const { selectedPieceId, pieces, getLegalMoves } = get();
             if (!selectedPieceId) return false;
 
             const piece = pieces.getById(selectedPieceId);
             if (!piece) return false;
 
+            const legalMoves = getLegalMoves();
             return (
                 pointEquals(piece.position, dest) &&
                 legalMoves.hasMovesFromTo(piece.position, dest)
@@ -96,7 +97,7 @@ export function createPiecesSlice(
             pieceMovementEvent: new EventBus(),
 
             selectPiece(pieceId) {
-                const { showLegalMoves, pieces, selectedPieceId } = get();
+                const { highlightLegalMoves, pieces, selectedPieceId } = get();
                 const piece = pieces.getById(pieceId);
                 if (!piece) {
                     console.warn(
@@ -106,7 +107,7 @@ export function createPiecesSlice(
                 }
                 if (pieceId === selectedPieceId) return false;
 
-                const hasLegalMoves = showLegalMoves(piece);
+                const hasLegalMoves = highlightLegalMoves(piece);
                 set((state) => {
                     state.selectedPieceId = hasLegalMoves ? pieceId : null;
                 });
@@ -150,7 +151,7 @@ export function createPiecesSlice(
                     screenToLogicalPoint,
                     flashLegalMoves,
                     clearAnimation,
-                    legalMoves,
+                    getLegalMoves,
                     isProcessingMove,
                 } = get();
                 if (isProcessingMove) return { success: false };
@@ -173,6 +174,7 @@ export function createPiecesSlice(
                     }
                     clearAnimation();
 
+                    const legalMoves = getLegalMoves();
                     if (
                         legalMoves.hasForcedMoves &&
                         isDrag // player tried to phyically move the piece, not just click and click somewhere else

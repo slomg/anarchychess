@@ -1,6 +1,5 @@
 import { StateCreator } from "zustand";
 
-import { ChessboardStore } from "./chessboardStore";
 import {
     Move,
     MoveBounds,
@@ -8,14 +7,14 @@ import {
     Position,
     PositionHistory,
 } from "../lib/types";
-import BoardPieces from "../lib/boardPieces";
+
+import { ChessboardStore } from "./chessboardStore";
 import { pointEquals } from "@/features/point/pointUtils";
-import LegalMoves from "../lib/legalMoves";
+import BoardPieces from "../lib/boardPieces";
 
 export interface HistorySliceProps {
     positionHistory?: PositionHistory;
     pieces: BoardPieces;
-    legalMoves: LegalMoves;
 }
 
 export interface HistorySlice {
@@ -26,7 +25,6 @@ export interface HistorySlice {
     shiftMoveViewBy(amount: number): Promise<void>;
     teleportToLatestPosition(): Promise<void>;
 
-    getLatestPosition(): Position;
     applyHistoryPosition({
         moveFromPreviousViewedPosition,
         position,
@@ -74,6 +72,7 @@ export function createHistorySlice(
                 viewingPlyIdx,
                 applyMoveAnimated,
                 applyHistoryPosition,
+                hideLegalMoves,
             } = get();
             if (
                 plyIdx < 0 ||
@@ -88,8 +87,8 @@ export function createHistorySlice(
 
             set((state) => {
                 state.viewingPlyIdx = plyIdx;
-                state.positionHistory.splice(0, state.positionHistory.length);
             });
+            hideLegalMoves();
 
             const moveThatProducedPosition = position.move;
             if (isOneStepForward && moveThatProducedPosition) {
@@ -121,13 +120,6 @@ export function createHistorySlice(
             const lastIndex = positionHistory.length - 1;
             if (lastIndex < 0) throw new Error("positionHistory is empty");
             await teleportToPosition(lastIndex)!;
-        },
-
-        getLatestPosition() {
-            const { positionHistory } = get();
-            const latestPosition = positionHistory.at(-1);
-            if (!latestPosition) throw new Error("positionHistory is empty");
-            return latestPosition;
         },
 
         async applyHistoryPosition({

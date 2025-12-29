@@ -77,11 +77,11 @@ describe("PiecesSlice", () => {
             const piece = createFakePiece({
                 position: logicalPoint({ x: 0, y: 0 }),
             });
-            const showLegalMovesMock = vi.fn(() => true);
+            const highlightLegalMovesMock = vi.fn(() => true);
 
             store.setState({
                 pieces: BoardPieces.fromPieces(piece),
-                showLegalMoves: showLegalMovesMock,
+                highlightLegalMoves: highlightLegalMovesMock,
                 selectedPieceId: null,
             });
 
@@ -89,18 +89,18 @@ describe("PiecesSlice", () => {
 
             expect(result).toBe(true);
             expect(store.getState().selectedPieceId).toBe(piece.id);
-            expect(showLegalMovesMock).toHaveBeenCalledWith(piece);
+            expect(highlightLegalMovesMock).toHaveBeenCalledWith(piece);
         });
 
         it("should not select a piece if it has no legal moves", () => {
             const piece = createFakePiece({
                 position: logicalPoint({ x: 0, y: 0 }),
             });
-            const showLegalMovesMock = vi.fn(() => false);
+            const highlightLegalMovesMock = vi.fn(() => false);
 
             store.setState({
                 pieces: BoardPieces.fromPieces(piece),
-                showLegalMoves: showLegalMovesMock,
+                highlightLegalMoves: highlightLegalMovesMock,
                 selectedPieceId: null,
             });
 
@@ -108,7 +108,7 @@ describe("PiecesSlice", () => {
 
             expect(result).toBe(false);
             expect(store.getState().selectedPieceId).toBeNull();
-            expect(showLegalMovesMock).toHaveBeenCalledWith(piece);
+            expect(highlightLegalMovesMock).toHaveBeenCalledWith(piece);
         });
     });
 
@@ -228,15 +228,17 @@ describe("PiecesSlice", () => {
                     [pointToStr(piece.position), [move]],
                 ]);
 
+                const {
+                    handleMousePieceDrop,
+                    setLatestLegalMoves,
+                    pieceMovementEvent,
+                } = store.getState();
                 store.setState({
                     selectedPieceId: piece.id,
                     pieces,
                     viewingFrom,
-                    legalMoves,
                 });
-
-                const { handleMousePieceDrop, pieceMovementEvent } =
-                    store.getState();
+                setLatestLegalMoves(legalMoves);
 
                 let emittedMove: Move | null = null;
                 pieceMovementEvent.subscribe(
@@ -269,14 +271,16 @@ describe("PiecesSlice", () => {
                 [pointToStr(piece.position), [move]],
             ]);
 
+            const { handleMousePieceDrop, setLatestLegalMoves } =
+                store.getState();
             store.setState({
                 isProcessingMove: true,
                 selectedPieceId: piece.id,
                 pieces,
-                legalMoves,
             });
+            setLatestLegalMoves(legalMoves);
 
-            const result = await store.getState().handleMousePieceDrop({
+            const result = await handleMousePieceDrop({
                 mousePoint: screenPoint({ x: 10, y: 80 }),
                 isDrag: false,
                 isDoubleClick: false,
@@ -300,13 +304,15 @@ describe("PiecesSlice", () => {
                 [pointToStr(piece.position), [move]],
             ]);
 
+            const { handleMousePieceDrop, setLatestLegalMoves } =
+                store.getState();
             store.setState({
                 selectedPieceId: piece.id,
                 pieces,
-                legalMoves,
             });
+            setLatestLegalMoves(legalMoves);
 
-            const movePromise = store.getState().handleMousePieceDrop({
+            const movePromise = handleMousePieceDrop({
                 mousePoint: screenPoint({ x: 10, y: 80 }),
                 isDrag: false,
                 isDoubleClick: false,
@@ -322,7 +328,7 @@ describe("PiecesSlice", () => {
             const clearAnimationMock = vi.fn();
             store.setState({
                 pieces,
-                legalMoves: new LegalMoves(),
+                legalMovesByPly: new Map(),
                 clearAnimation: clearAnimationMock,
             });
 
@@ -337,15 +343,17 @@ describe("PiecesSlice", () => {
         });
 
         it("should flash legal moves if no move is found and hasForcedMoves is true and isDrag is true", async () => {
+            const { handleMousePieceDrop, setLatestLegalMoves } =
+                store.getState();
             const pieces = BoardPieces.fromPieces(createFakePiece());
             const flashLegalMovesMock = vi.fn();
             store.setState({
                 pieces,
-                legalMoves: new LegalMoves([], true),
                 flashLegalMoves: flashLegalMovesMock,
             });
+            setLatestLegalMoves(new LegalMoves([], true));
 
-            const result = await store.getState().handleMousePieceDrop({
+            const result = await handleMousePieceDrop({
                 mousePoint: screenPoint({ x: 10, y: 10 }),
                 isDrag: true,
                 isDoubleClick: false,
@@ -359,15 +367,17 @@ describe("PiecesSlice", () => {
         });
 
         it("should not flash legal moves if no move is found and isDrag is false", async () => {
+            const { handleMousePieceDrop, setLatestLegalMoves } =
+                store.getState();
             const pieces = BoardPieces.fromPieces(createFakePiece());
             const flashLegalMovesMock = vi.fn();
             store.setState({
                 pieces,
-                legalMoves: new LegalMoves([], true),
                 flashLegalMoves: flashLegalMovesMock,
             });
+            setLatestLegalMoves(new LegalMoves([], true));
 
-            const result = await store.getState().handleMousePieceDrop({
+            const result = await handleMousePieceDrop({
                 mousePoint: screenPoint({ x: 10, y: 10 }),
                 isDrag: false,
                 isDoubleClick: false,
@@ -382,7 +392,7 @@ describe("PiecesSlice", () => {
             const flashLegalMovesMock = vi.fn();
             store.setState({
                 pieces,
-                legalMoves: new LegalMoves(),
+                legalMovesByPly: new Map(),
                 flashLegalMoves: flashLegalMovesMock,
             });
 
@@ -409,13 +419,15 @@ describe("PiecesSlice", () => {
                 [pointToStr(piece.position), [move]],
             ]);
 
+            const { handleMousePieceDrop, setLatestLegalMoves } =
+                store.getState();
             store.setState({
                 selectedPieceId: piece.id,
                 pieces,
-                legalMoves,
             });
+            setLatestLegalMoves(legalMoves);
 
-            const result = await store.getState().handleMousePieceDrop({
+            const result = await handleMousePieceDrop({
                 mousePoint: screenPoint({ x: 0, y: 90 }),
                 isDrag: false,
                 isDoubleClick: false,
@@ -437,13 +449,15 @@ describe("PiecesSlice", () => {
                 [pointToStr(piece.position), [move]],
             ]);
 
+            const { handleMousePieceDrop, setLatestLegalMoves } =
+                store.getState();
             store.setState({
                 selectedPieceId: piece.id,
                 pieces,
-                legalMoves,
             });
+            setLatestLegalMoves(legalMoves);
 
-            const result = await store.getState().handleMousePieceDrop({
+            const result = await handleMousePieceDrop({
                 mousePoint: screenPoint({ x: 0, y: 90 }),
                 isDrag: false,
                 isDoubleClick: false,

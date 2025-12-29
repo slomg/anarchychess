@@ -77,14 +77,16 @@ export default function useLiveChessEvents(
     useGameEvent(
         gameToken,
         "LegalMovesChangedAsync",
-        async (encodedLegalMoves, hasForcedMoves) => {
+        async (encodedLegalMoves, hasForcedMoves, plyIdx) => {
             const decodedLegalMoves = decodeLegalMoves({
                 encoded: encodedLegalMoves,
                 boardWidth: boardDimensions.width,
                 hasForcedMoves: hasForcedMoves,
             });
 
-            chessboardStore.getState().setLegalMoves(decodedLegalMoves);
+            chessboardStore
+                .getState()
+                .addLegalMoves(decodedLegalMoves, plyIdx + 1); // plyIdx + 1 because our history includes the starting position
         },
     );
 

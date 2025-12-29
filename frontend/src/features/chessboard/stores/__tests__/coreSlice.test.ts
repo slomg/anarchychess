@@ -31,7 +31,9 @@ describe("CoreSlice", () => {
                     height: 9,
                 },
                 pieces: createFakeBoardPieces(),
-                legalMoves: createFakeLegalMoves({ hasForcedMoves: true }),
+                legalMovesByPly: new Map([
+                    [0, createFakeLegalMoves({ hasForcedMoves: true })],
+                ]),
                 canDrag: false,
                 muteAudio: true,
             };
@@ -47,7 +49,7 @@ describe("CoreSlice", () => {
     });
 
     describe("disableMovement", () => {
-        it("should clear moveOptions, highlightedLegalMoves, and selectedPieceId", () => {
+        it("should clear latest legal moves, highlightedLegalMoves, and selectedPieceId", () => {
             const selectedPieceId: PieceID = "0";
             const legalMoves = createFakeLegalMoves({ hasForcedMoves: true });
             const highlightedLegalMoves: LogicalPoint[] = [
@@ -55,17 +57,20 @@ describe("CoreSlice", () => {
                 logicalPoint({ x: 2, y: 3 }),
             ];
 
+            const { disableMovement, setLatestLegalMoves } = store.getState();
             store.setState({
-                legalMoves,
                 highlightedLegalMoves,
                 selectedPieceId,
             });
+            setLatestLegalMoves(legalMoves);
 
-            store.getState().disableMovement();
+            disableMovement();
 
             const state = store.getState();
 
-            expect(state.legalMoves).toEqual(new LegalMoves());
+            expect(state.legalMovesByPly.get(state.viewingPlyIdx)).toEqual(
+                new LegalMoves(),
+            );
             expect(state.highlightedLegalMoves).toEqual([]);
             expect(state.selectedPieceId).toBeNull();
         });

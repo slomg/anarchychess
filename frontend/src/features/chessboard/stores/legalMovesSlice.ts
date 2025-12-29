@@ -11,12 +11,16 @@ import BoardPieces from "../lib/boardPieces";
 import LegalMoves from "../lib/legalMoves";
 
 export interface LegalMovesSliceProps {
-    legalMoves: LegalMoves;
+    legalMovesByPly: Map<number, LegalMoves>;
+    allowHistoryChanges?: boolean;
 }
 
 export interface LegalMovesSlice {
-    legalMoves: LegalMoves;
+    legalMovesByPly: Map<number, LegalMoves>;
     highlightedLegalMoves: LogicalPoint[];
+    allowHistoryChanges: boolean;
+
+    getLegalMoves(): LegalMoves;
 
     getLegalMove(
         dest: LogicalPoint,
@@ -24,11 +28,12 @@ export interface LegalMovesSlice {
         pieces: BoardPieces,
     ): Promise<Move | null>;
 
-    showLegalMoves(piece: Piece): boolean;
+    highlightLegalMoves(piece: Piece): boolean;
     hideLegalMoves(): void;
     flashLegalMoves(): void;
 
-    setLegalMoves(legalMoves: LegalMoves): void;
+    addLegalMoves(legalMoves: LegalMoves, plyIdx: number): void;
+    setLatestLegalMoves(legalMoves: LegalMoves): void;
 }
 
 export function createLegalMovesSlice(
@@ -41,10 +46,28 @@ export function createLegalMovesSlice(
 > {
     return (set, get) => ({
         ...initState,
+        allowHistoryChanges: initState.allowHistoryChanges ?? false,
         highlightedLegalMoves: [],
 
+        getLegalMoves() {
+            const {
+                legalMovesByPly,
+                allowHistoryChanges,
+                viewingPlyIdx,
+                positionHistory,
+            } = get();
+
+            const isLatestPosition =
+                viewingPlyIdx === positionHistory.length - 1;
+            if (!allowHistoryChanges && !isLatestPosition) {
+                return new LegalMoves();
+            }
+
+            return legalMovesByPly.get(viewingPlyIdx) ?? new LegalMoves();
+        },
+
         async getLegalMove(dest, pieceId, pieces) {
-            const { legalMoves, promptPromotion, disambiguateDestination } =
+            const { getLegalMoves, promptPromotion, disambiguateDestination } =
                 get();
 
             const piece = pieces.getById(pieceId);
@@ -55,6 +78,7 @@ export function createLegalMovesSlice(
                 return null;
             }
 
+            const legalMoves = getLegalMoves();
             const movesFromOrigin = legalMoves.get(piece.position);
             if (!movesFromOrigin) return null;
 
@@ -82,9 +106,10 @@ export function createLegalMovesSlice(
             return availablePromotions.get(promoteTo) ?? null;
         },
 
-        showLegalMoves(piece) {
-            const { legalMoves } = get();
+        highlightLegalMoves(piece) {
+            const { getLegalMoves } = get();
 
+            const legalMoves = getLegalMoves();
             const moves = legalMoves.get(piece.position) ?? [];
 
             const toHighlightPoints = new Map<StrPoint, LogicalPoint>();
@@ -117,9 +142,11 @@ export function createLegalMovesSlice(
             });
         },
 
-        flashLegalMoves(): void {
-            const { legalMoves, logicalPointToViewPoint, flashOverlay } = get();
+        flashLegalMoves() {
+            const { getLegalMoves, logicalPointToViewPoint, flashOverlay } =
+                get();
 
+            const legalMoves = getLegalMoves();
             for (const movesPerPoint of legalMoves) {
                 for (const move of movesPerPoint) {
                     const from = logicalPointToViewPoint(move.from);
@@ -133,11 +160,15 @@ export function createLegalMovesSlice(
             }
         },
 
-        setLegalMoves(legalMoves): void {
+        addLegalMoves(legalMoves, plyIdx) {
             set((state) => {
-                state.legalMoves = legalMoves;
+                state.legalMovesByPly.set(plyIdx, legalMoves);
                 state.highlightedLegalMoves = [];
             });
+        },
+        setLatestLegalMoves(legalMoves) {
+            const { viewingPlyIdx, addLegalMoves } = get();
+            addLegalMoves(legalMoves, viewingPlyIdx);
         },
     });
 }
