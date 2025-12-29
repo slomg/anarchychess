@@ -24,10 +24,10 @@ import useLiveMoveEmitter from "../hooks/useLiveMoveEmitter";
 import useLiveChessEvents from "../hooks/useLiveChessEvents";
 import useGameStartAudio from "../hooks/useGameStartAudio";
 import { GameState, Preferences } from "@/lib/apiClient";
-import MoveHistoryTable from "./MoveHistoryTable";
 import GameOverPopup from "./GameOverPopup";
 import useConst from "@/hooks/useConst";
 import GameChat from "./GameChat";
+import MoveHistoryTable from "@/features/chessboard/components/MoveHistoryTable";
 
 const LiveChessboard = ({
     gameToken,

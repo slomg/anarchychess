@@ -13,6 +13,7 @@ import {
 import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardStoreContext";
 import userEvent from "@testing-library/user-event";
 import { mockScrollTo } from "@/lib/testUtils/mocks/mockDom";
+import { GameColor } from "@/lib/apiClient";
 
 describe("MoveHistoryTable", () => {
     let chessboardStore: StoreApi<ChessboardStore>;
@@ -148,8 +149,15 @@ describe("MoveHistoryTable", () => {
         expect(chessboardStore.getState().pieces).toEqual(position4.pieces);
     });
 
-    it("should render game actions", () => {
+    it("should call flipBoard when the flip board icon is clicked", async () => {
+        chessboardStore.setState({ viewingFrom: GameColor.WHITE });
+        const user = userEvent.setup();
+
         renderWithCtx();
-        expect(screen.getByTestId("gameActions")).toBeInTheDocument();
+
+        const flipIcon = screen.getByTitle("Flip Board");
+        await user.click(flipIcon);
+
+        expect(chessboardStore.getState().viewingFrom).toBe(GameColor.BLACK);
     });
 });

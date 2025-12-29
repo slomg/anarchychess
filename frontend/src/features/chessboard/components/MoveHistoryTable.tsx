@@ -1,19 +1,24 @@
+import { ArrowsUpDownIcon } from "@heroicons/react/24/solid";
 import React, { useEffect, useMemo, useRef } from "react";
 import clsx from "clsx";
 
 import { useChessboardStore } from "@/features/chessboard/hooks/useChessboard";
 import useAutoScroll from "@/hooks/useAutoScroll";
 import Card from "@/components/ui/Card";
-import GameActions from "./GameActions";
 
 const MoveHistoryTable = () => {
     const positionHistory = useChessboardStore((x) => x.positionHistory);
-    const { shiftMoveViewBy, teleportToPosition, teleportToLatestPosition } =
-        useChessboardStore((x) => ({
-            shiftMoveViewBy: x.shiftMoveViewBy,
-            teleportToPosition: x.teleportToPosition,
-            teleportToLatestPosition: x.teleportToLatestPosition,
-        }));
+    const {
+        shiftMoveViewBy,
+        teleportToPosition,
+        teleportToLatestPosition,
+        flipBoard,
+    } = useChessboardStore((x) => ({
+        shiftMoveViewBy: x.shiftMoveViewBy,
+        teleportToPosition: x.teleportToPosition,
+        teleportToLatestPosition: x.teleportToLatestPosition,
+        flipBoard: x.flipBoard,
+    }));
 
     const tableRef = useRef<HTMLDivElement | null>(null);
     useAutoScroll(tableRef, [positionHistory]);
@@ -69,7 +74,13 @@ const MoveHistoryTable = () => {
                 </table>
             </div>
 
-            <GameActions />
+            <div className="absolute right-0 bottom-0 flex w-fit gap-3 p-3">
+                <ArrowsUpDownIcon
+                    className="text-secondary h-6 w-6 cursor-pointer"
+                    title="Flip Board"
+                    onClick={flipBoard}
+                />
+            </div>
         </Card>
     );
 };
