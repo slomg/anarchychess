@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { StoreApi } from "zustand";
 
 import {
@@ -19,11 +18,11 @@ import createLiveChessStore, { LiveChessStore } from "../stores/liveChessStore";
 import LiveChessboardProfile, { ProfileSide } from "./LiveChessboardProfile";
 import { useSessionUser } from "@/features/auth/hooks/useSessionUser";
 import useInvalidateOnNavigate from "@/hooks/useInvalidateOnNavigate";
-import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
 import LiveChessStoreContext from "../contexts/liveChessContext";
 import GameControlsCard from "./GameControls/GameControlsCard";
 import useLiveMoveEmitter from "../hooks/useLiveMoveEmitter";
 import useLiveChessEvents from "../hooks/useLiveChessEvents";
+import useGameStartAudio from "../hooks/useGameStartAudio";
 import { GameState, Preferences } from "@/lib/apiClient";
 import MoveHistoryTable from "./MoveHistoryTable";
 import GameOverPopup from "./GameOverPopup";
@@ -49,17 +48,11 @@ const LiveChessboard = ({
         createLiveChessStore(storeProps.live),
     );
 
-    useEffect(() => {
-        if (gameState.moveHistory.length === 0 && !gameState.resultData) {
-            AudioPlayer.playAudio(AudioType.GAME_START);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps -- only play sound once
-    }, []);
-
     const chessboardStore = useConst<StoreApi<ChessboardStore>>(() =>
         createChessboardStore(storeProps.board),
     );
 
+    useGameStartAudio(gameState);
     useLiveChessEvents(liveChessStore, chessboardStore);
     useLiveMoveEmitter(liveChessStore, chessboardStore);
     useInvalidateOnNavigate();
