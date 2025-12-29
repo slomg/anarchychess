@@ -72,3 +72,5 @@ export interface Position {
     move?: Move;
     san?: string;
 }
+
+export type PositionHistory = [Position, ...Position[]];

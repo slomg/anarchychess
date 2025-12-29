@@ -1,23 +1,25 @@
+import { StoreApi } from "zustand";
+
+import {
+    ChessboardProps,
+    ChessboardStore,
+} from "@/features/chessboard/stores/chessboardStore";
 import {
     GameColor,
     GamePlayer,
     getGame,
     type GameState,
 } from "@/lib/apiClient";
+
 import { LiveChessStore, LiveChessStoreProps } from "../stores/liveChessStore";
-import {
-    ChessboardProps,
-    ChessboardStore,
-} from "@/features/chessboard/stores/chessboardStore";
-import { decodeFen } from "../../chessboard/lib/fenDecoder";
-import { ClockSnapshot } from "./types";
 import { decodeMovePath, decodeMovePathIntoLegalMoves } from "./moveDecoder";
+import { Position, PositionHistory } from "@/features/chessboard/lib/types";
 import { simulateMove } from "@/features/chessboard/lib/simulateMove";
-import constants from "@/lib/constants";
-import { StoreApi } from "zustand";
-import { LiveChessViewer } from "../stores/gamePlaySlice";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
-import { Position } from "@/features/chessboard/lib/types";
+import { decodeFen } from "../../chessboard/lib/fenDecoder";
+import { LiveChessViewer } from "../stores/gamePlaySlice";
+import { ClockSnapshot } from "./types";
+import constants from "@/lib/constants";
 
 export interface ProcessedGameState {
     live: LiveChessStoreProps;
@@ -94,7 +96,7 @@ function getViewerColor(
     return null;
 }
 
-function getPositionHistory(gameState: GameState): Position[] {
+function getPositionHistory(gameState: GameState): PositionHistory {
     let pieces = decodeFen(gameState.initialFen);
 
     const baseClock = gameState.pool.timeControl.baseSeconds * 1000;
@@ -102,7 +104,7 @@ function getPositionHistory(gameState: GameState): Position[] {
         whiteClock: baseClock,
         blackClock: baseClock,
     };
-    const positionHistory: Position[] = [
+    const positionHistory: PositionHistory = [
         {
             pieces,
             // clocks: { ...clockSnapshot },

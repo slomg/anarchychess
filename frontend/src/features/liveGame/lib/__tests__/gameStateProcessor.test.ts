@@ -1,17 +1,17 @@
-import { GameColor } from "@/lib/apiClient";
-import { createStoreProps } from "../gameStateProcessor";
-import { createFakeGameState } from "@/lib/testUtils/fakers/gameStateFaker";
 import { ChessboardProps } from "@/features/chessboard/stores/chessboardStore";
-import { LiveChessStoreProps } from "../../stores/liveChessStore";
-import { LogicalPoint } from "@/features/point/types";
-import { MoveBounds, Position } from "@/features/chessboard/lib/types";
-import constants from "@/lib/constants";
-import { simulateMove } from "@/features/chessboard/lib/simulateMove";
-import { logicalPoint } from "@/features/point/pointUtils";
+import { MoveBounds, PositionHistory } from "@/features/chessboard/lib/types";
 import { decodeMovePath, decodeMovePathIntoLegalMoves } from "../moveDecoder";
-import { LiveChessViewer } from "../../stores/gamePlaySlice";
+import { createFakeGameState } from "@/lib/testUtils/fakers/gameStateFaker";
+import { simulateMove } from "@/features/chessboard/lib/simulateMove";
+import { LiveChessStoreProps } from "../../stores/liveChessStore";
 import mockSequentialUUID from "@/lib/testUtils/mocks/mockUuids";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
+import { LiveChessViewer } from "../../stores/gamePlaySlice";
+import { logicalPoint } from "@/features/point/pointUtils";
+import { createStoreProps } from "../gameStateProcessor";
+import { LogicalPoint } from "@/features/point/types";
+import { GameColor } from "@/lib/apiClient";
+import constants from "@/lib/constants";
 
 describe("createStoreProps", () => {
     it("should return the complete and correct store props object", () => {
@@ -98,7 +98,7 @@ describe("createStoreProps", () => {
         }
 
         // starting with initial position
-        const positionHistory: Position[] = [
+        const positionHistory: PositionHistory = [
             {
                 pieces: new BoardPieces(pieces),
                 // clocks: {

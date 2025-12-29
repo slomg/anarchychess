@@ -4,16 +4,16 @@ import {
     createFakeMove,
     createFakePiece,
 } from "@/lib/testUtils/fakers/chessboardFakers";
-
-import { ChessboardStore, createChessboardStore } from "../chessboardStore";
 import {
     createFakePosition,
     createFakeStartingPosition,
 } from "@/lib/testUtils/fakers/positionFaker";
+
+import { ChessboardStore, createChessboardStore } from "../chessboardStore";
+import { AnimationStep, PositionHistory } from "../../lib/types";
 import { PieceType, SpecialMoveType } from "@/lib/apiClient";
 import { logicalPoint } from "@/features/point/pointUtils";
 import BoardPieces from "../../lib/boardPieces";
-import { AnimationStep, Position } from "../../lib/types";
 
 describe("HistorySlice", () => {
     let store: StoreApi<ChessboardStore>;
@@ -23,7 +23,7 @@ describe("HistorySlice", () => {
     });
 
     describe("teleportToPosition", () => {
-        let positionHistory: Position[];
+        let positionHistory: PositionHistory;
         const applyMoveAnimatedMock = vi.fn();
         const applyHistoryPositionMock = vi.fn();
 
@@ -306,7 +306,7 @@ describe("HistorySlice", () => {
     describe("teleportToLatestPosition", () => {
         it("should call teleportToPosition with the last index", async () => {
             const teleportMock = vi.fn();
-            const positionHistory = [
+            const positionHistory: PositionHistory = [
                 createFakeStartingPosition(),
                 createFakePosition(),
                 createFakePosition(),
@@ -324,7 +324,7 @@ describe("HistorySlice", () => {
 
         it("should throw if positionHistory is empty", async () => {
             store.setState({
-                positionHistory: [],
+                positionHistory: [] as unknown as PositionHistory,
                 teleportToPosition: vi.fn(),
             });
 
