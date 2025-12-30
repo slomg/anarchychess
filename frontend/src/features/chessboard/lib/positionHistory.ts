@@ -121,10 +121,7 @@ export default class PositionHistory {
         return node;
     }
 
-    private _addToNode(
-        parent: PositionNode,
-        position: PositionProps,
-    ): PositionNode {
+    _addToNode(parent: PositionNode, position: PositionProps): PositionNode {
         const node = parent.createChild(position);
 
         // if parent is the tail, it cannot possibly have a sub variation already
