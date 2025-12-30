@@ -49,6 +49,10 @@ export default class PositionHistory {
         return this._plyCount;
     }
 
+    get isViewingLatestPosition(): boolean {
+        return this._viewingPosition === this._tail;
+    }
+
     goToPosition(
         positionId: PositionId,
     ): { position: Position; isOneStepForward: boolean } | null {

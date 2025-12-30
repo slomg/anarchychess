@@ -21,6 +21,27 @@ describe("PositionHistory", () => {
         });
     });
 
+    describe("isViewingLatestPosition", () => {
+        it("should return true when viewingPosition is the tail", () => {
+            history.addNextPosition(createFakePositionProps());
+            history.addNextPosition(createFakePositionProps());
+
+            expect(history.isViewingLatestPosition).toBe(true);
+        });
+
+        it("should return false when viewingPosition is not the tail", () => {
+            history.addNextPosition(createFakePositionProps());
+            history.addNextPosition(createFakePositionProps());
+
+            history.goToStart();
+            expect(history.isViewingLatestPosition).toBe(false);
+        });
+
+        it("should return true when history is empty", () => {
+            expect(history.isViewingLatestPosition).toBe(true);
+        });
+    });
+
     describe("goToPosition", () => {
         it("should return null if positionId does not exist", () => {
             expect(
