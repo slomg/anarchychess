@@ -23,6 +23,8 @@ export default class PositionHistory {
     _head: PositionNode | null = null;
     _tail: PositionNode | null = null;
 
+    _viewingPosition: PositionNode | null = null;
+
     constructor(rootPieces: BoardPieces) {
         this._rootPieces = rootPieces;
     }
@@ -31,15 +33,36 @@ export default class PositionHistory {
         return this._rootPieces;
     }
 
+    get viewingPosition(): Position | null {
+        return this._viewingPosition;
+    }
+
     get plyCount(): number {
         return this._plyCount;
     }
 
-    getByPositionId(positionId: PositionId): Position | undefined {
-        return this._byPositionId.get(positionId);
+    goToPosition(positionId: PositionId): boolean {
+        const node = this._byPositionId.get(positionId);
+        if (!node) return false;
+
+        this._viewingPosition = node;
+        return true;
     }
 
-    createMainPosition(pieces: BoardPieces, move: Move, san: string): Position {
+    addNextPosition(pieces: BoardPieces, move: Move, san: string): Position {
+        // we're already viewing a position, add to it
+        if (this._viewingPosition) {
+            const node = this._addToNode(
+                this._viewingPosition,
+                pieces,
+                move,
+                san,
+            );
+            this._viewingPosition = node;
+            return node;
+        }
+
+        // we're empty, start the tree
         if (!this._head || !this._tail) {
             const node = new PositionNode(pieces, move, san);
             this._head = node;
@@ -47,43 +70,33 @@ export default class PositionHistory {
             this._plyCount = 1;
 
             this._byPositionId.set(node.positionId, node);
+            this._viewingPosition = node;
             return node;
         }
 
-        const node = this._tail.createChild(pieces, move, san);
-        this._setTail(node);
-
+        // we're not viewing anything, but we're not empty, expand tail
+        const node = this._addToNode(this._tail, pieces, move, san);
+        this._viewingPosition = node;
         return node;
     }
 
-    addVariationToPosition(
-        parent: Position,
+    private _addToNode(
+        parent: PositionNode,
         pieces: BoardPieces,
         move: Move,
         san: string,
-    ): Position | undefined {
-        const parentNode = this._byPositionId.get(parent.positionId);
-        if (!parentNode) {
-            console.warn(
-                `Could not find parent node ${parent.positionId} in position history`,
-            );
-            return;
-        }
+    ): PositionNode {
+        const node = parent.createChild(pieces, move, san);
 
-        const node = parentNode.createChild(pieces, move, san);
-        if (parentNode === this._tail) {
-            this._setTail(node);
-            return node;
+        // if parent is the tail, it cannot possibly have a sub variation already
+        // which means this is a main variation, increment ply count
+        if (parent === this._tail) {
+            this._tail = node;
+            this._plyCount++;
         }
 
         this._byPositionId.set(node.positionId, node);
         return node;
-    }
-
-    private _setTail(node: PositionNode) {
-        this._tail = node;
-        this._byPositionId.set(node.positionId, node);
-        this._plyCount++;
     }
 
     *[Symbol.iterator](): IterableIterator<Position> {
