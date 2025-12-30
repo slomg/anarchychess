@@ -14,25 +14,10 @@ describe("PositionHistory", () => {
 
     describe("constructor", () => {
         it("should initialize with the given root pieces", () => {
+            expect(history.rootPieces).toBe(rootPieces);
             expect(history.plyCount).toBe(0);
             expect(history.viewingPosition).toBeNull();
             expect([...history].length).toBe(0);
-        });
-    });
-
-    describe("viewingPieces", () => {
-        it("should return the root pieces when history is empty", () => {
-            expect(history.viewingPieces).toEqual(rootPieces);
-        });
-
-        it("should return the vieweing position pieces", () => {
-            history.addNextPosition(createFakePositionProps());
-            const pos = history.addNextPosition(createFakePositionProps());
-            history.addNextPosition(createFakePositionProps());
-
-            history.goToPosition(pos.positionId);
-
-            expect(history.viewingPieces).toEqual(pos.pieces);
         });
     });
 
@@ -279,38 +264,6 @@ describe("PositionHistory", () => {
 
             expect(variation1).toBe(variation2);
             expect(pos2).not.toBe(variation1);
-        });
-    });
-
-    describe("replaceCurrentPosition", () => {
-        it("should replace the props of the current viewing position", () => {
-            history.addNextPosition(createFakePositionProps({ san: "e4" }));
-            const newProps = createFakePositionProps({ san: "d4" });
-
-            history.replaceCurrentPosition(newProps);
-
-            const viewing = history.viewingPosition!;
-            expect(viewing.pieces).toBe(newProps.pieces);
-            expect(viewing.move).toBe(newProps.move);
-            expect(viewing.san).toBe(newProps.san);
-
-            expect(history.plyCount).toBe(1);
-            expect(history.isViewingLatestPosition).toBe(true);
-        });
-
-        it("should add a new position if no viewingPosition exists", () => {
-            const newProps = createFakePositionProps({ san: "e4" });
-            expect(history.viewingPosition).toBeNull();
-
-            history.replaceCurrentPosition(newProps);
-
-            const viewing = history.viewingPosition!;
-            expect(viewing.pieces).toBe(newProps.pieces);
-            expect(viewing.move).toBe(newProps.move);
-            expect(viewing.san).toBe(newProps.san);
-
-            expect(history.plyCount).toBe(1);
-            expect(history.isViewingLatestPosition).toBe(true);
         });
     });
 
