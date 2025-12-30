@@ -23,16 +23,17 @@ describe("PositionHistory", () => {
     });
 
     describe("goToPosition", () => {
-        it("should return false if positionId does not exist", () => {
-            expect(history.goToPosition("nonexistent-id" as PositionId)).toBe(
-                false,
-            );
+        it("should return null if positionId does not exist", () => {
+            expect(
+                history.goToPosition("nonexistent-id" as PositionId),
+            ).toBeNull();
         });
 
         it("should set the viewing position to the correct position after it is added", () => {
             const pos = history.addNextPosition(createFakePositionProps());
 
-            expect(history.goToPosition(pos.positionId)).toBe(true);
+            const result = history.goToPosition(pos.positionId);
+            expect(result).toBe(pos);
             expect(history.viewingPosition).toBe(pos);
         });
     });
@@ -82,19 +83,19 @@ describe("PositionHistory", () => {
             history.goToEnd();
             expect(history.viewingPosition).toBe(pos3);
 
-            expect(history.stepBackward()).toBe(true);
+            expect(history.stepBackward()).toBe(pos2);
             expect(history.viewingPosition).toBe(pos2);
 
-            expect(history.stepBackward()).toBe(true);
+            expect(history.stepBackward()).toBe(pos1);
             expect(history.viewingPosition).toBe(pos1);
 
             // cannot go past head
-            expect(history.stepBackward()).toBe(false);
+            expect(history.stepBackward()).toBeNull();
             expect(history.viewingPosition).toBe(pos1);
         });
 
-        it("should return false if history is empty", () => {
-            expect(history.stepBackward()).toBe(false);
+        it("should return null if history is empty", () => {
+            expect(history.stepBackward()).toBeNull();
         });
     });
 
@@ -107,19 +108,19 @@ describe("PositionHistory", () => {
             history.goToStart();
             expect(history.viewingPosition).toBe(pos1);
 
-            expect(history.stepForward()).toBe(true);
+            expect(history.stepForward()).toBe(pos2);
             expect(history.viewingPosition).toBe(pos2);
 
-            expect(history.stepForward()).toBe(true);
+            expect(history.stepForward()).toBe(pos3);
             expect(history.viewingPosition).toBe(pos3);
 
             // cannot go past tail
-            expect(history.stepForward()).toBe(false);
+            expect(history.stepForward()).toBeNull();
             expect(history.viewingPosition).toBe(pos3);
         });
 
-        it("should return false if history is empty", () => {
-            expect(history.stepForward()).toBe(false);
+        it("should return null if history is empty", () => {
+            expect(history.stepForward()).toBeNull();
         });
     });
 

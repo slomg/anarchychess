@@ -47,40 +47,42 @@ export default class PositionHistory {
         return this._plyCount;
     }
 
-    goToPosition(positionId: PositionId): boolean {
+    goToPosition(positionId: PositionId): Position | null {
         const node = this._byPositionId.get(positionId);
-        if (!node) return false;
+        if (!node) return null;
 
         this._viewingPosition = node;
-        return true;
+        return node;
     }
 
-    goToStart(): void {
+    goToStart(): Position | null {
         this._viewingPosition = this._head;
+        return this._head;
     }
 
-    goToEnd(): void {
+    goToEnd(): Position | null {
         this._viewingPosition = this._tail;
+        return this._tail;
     }
 
-    stepBackward(): boolean {
-        if (!this._viewingPosition) return false;
+    stepBackward(): Position | null {
+        if (!this._viewingPosition) return null;
 
         const prev = this._viewingPosition.prev;
-        if (!prev) return false;
+        if (!prev) return null;
 
         this._viewingPosition = prev;
-        return true;
+        return prev;
     }
 
-    stepForward(): boolean {
-        if (!this._viewingPosition) return false;
+    stepForward(): Position | null {
+        if (!this._viewingPosition) return null;
 
         const next = this._viewingPosition.next;
-        if (!next) return false;
+        if (!next) return null;
 
         this._viewingPosition = next;
-        return true;
+        return next;
     }
 
     addNextPosition(props: PositionProps): Position {
