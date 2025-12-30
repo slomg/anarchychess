@@ -64,9 +64,8 @@ export default class PositionHistory {
         return { position: node, isOneStepForward };
     }
 
-    goToStart(): Position | null {
-        this._viewingPosition = this._head;
-        return this._head;
+    goToStart(): void {
+        this._viewingPosition = null;
     }
 
     goToEnd(): Position | null {

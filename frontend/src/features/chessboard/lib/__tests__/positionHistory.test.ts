@@ -74,18 +74,13 @@ describe("PositionHistory", () => {
     });
 
     describe("goToStart", () => {
-        it("should set viewingPosition to head", () => {
-            const pos1 = history.addNextPosition(createFakePositionProps());
+        it("should set viewingPosition to null", () => {
+            history.addNextPosition(createFakePositionProps());
             const pos2 = history.addNextPosition(createFakePositionProps());
 
             history.goToEnd();
             expect(history.viewingPosition).toBe(pos2);
 
-            history.goToStart();
-            expect(history.viewingPosition).toBe(pos1);
-        });
-
-        it("should do nothing if history is empty", () => {
             history.goToStart();
             expect(history.viewingPosition).toBeNull();
         });
