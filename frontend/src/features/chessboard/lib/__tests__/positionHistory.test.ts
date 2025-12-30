@@ -1,8 +1,7 @@
-import { createFakeBoardPieces } from "@/lib/testUtils/fakers/chessboardFakers";
 import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
-import PositionHistory from "../positionHistory";
+import { createFakeBoardPieces } from "@/lib/testUtils/fakers/chessboardFakers";
+import PositionHistory, { PositionId } from "../positionHistory";
 import BoardPieces from "../boardPieces";
-import { PositionId } from "../types";
 
 describe("PositionHistory", () => {
     let rootPieces: BoardPieces;

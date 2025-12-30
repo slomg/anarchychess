@@ -1,7 +1,9 @@
 import { immerable } from "immer";
 
-import { Move, PositionId } from "./types";
 import BoardPieces from "./boardPieces";
+import { Move } from "./types";
+
+export type PositionId = string & { __brand: "PositionId" };
 
 export interface Position {
     pieces: BoardPieces;

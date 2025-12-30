@@ -66,13 +66,3 @@ export interface GameReplay {
     startingFen: string;
     moves: MinimalMove[];
 }
-
-export interface Position {
-    pieces: BoardPieces;
-    move?: Move;
-    san?: string;
-}
-
-export type PositionHistory = [Position, ...Position[]];
-
-export type PositionId = string & { __brand: "PositionId" };
