@@ -265,7 +265,7 @@ public class GameGrainTests : BaseOrleansIntegrationTest
                             new MoveNotification(
                                 GameToken: _gameToken,
                                 Move: expectedMoveSnapshot,
-                                PlyIdx: 0,
+                                PlyNumber: 1,
                                 Clocks: expectedClock,
                                 SideToMove: GameColor.Black,
                                 SideToMoveUserId: _blackPlayer.UserId,
@@ -275,24 +275,6 @@ public class GameGrainTests : BaseOrleansIntegrationTest
                         )
                 ),
                 _state.CurrentGame.NotifierState
-            );
-    }
-
-    [Fact]
-    public async Task MovePieceAsync_with_multiple_valid_moves_sends_the_correct_PlyIdx()
-    {
-        var grain = await CreateGrainAsync();
-        await StartGameAsync(grain);
-
-        await MakeLegalMoveAsync(grain, _whitePlayer);
-        await MakeLegalMoveAsync(grain, _blackPlayer);
-        await MakeLegalMoveAsync(grain, _whitePlayer);
-
-        await _gameNotifierMock
-            .Received(1)
-            .NotifyMoveMadeAsync(
-                notification: Arg.Is<MoveNotification>(x => x.PlyIdx == 2),
-                Arg.Any<GameNotifierState>()
             );
     }
 

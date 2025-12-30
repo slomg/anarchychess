@@ -25,12 +25,7 @@ export default function useLiveChessEvents(
     useGameEvent(
         gameToken,
         "MoveMadeAsync",
-        async (
-            move: MoveSnapshot,
-            sideToMove: GameColor,
-            plyIdx: number,
-            clocks: Clocks,
-        ) => {
+        async (move, sideToMove, plyNumber, clocks) => {
             const { isPendingMoveAck, viewer, receiveMove } =
                 liveChessStore.getState();
             const {
