@@ -12,6 +12,12 @@ export interface Position {
     positionId: PositionId;
 }
 
+export interface PositionProps {
+    pieces: BoardPieces;
+    move: Move;
+    san: string;
+}
+
 export default class PositionHistory {
     [immerable] = true;
 
@@ -49,22 +55,45 @@ export default class PositionHistory {
         return true;
     }
 
-    addNextPosition(pieces: BoardPieces, move: Move, san: string): Position {
+    goToStart(): void {
+        this._viewingPosition = this._head;
+    }
+
+    goToEnd(): void {
+        this._viewingPosition = this._tail;
+    }
+
+    stepBackward(): boolean {
+        if (!this._viewingPosition) return false;
+
+        const prev = this._viewingPosition.prev;
+        if (!prev) return false;
+
+        this._viewingPosition = prev;
+        return true;
+    }
+
+    stepForward(): boolean {
+        if (!this._viewingPosition) return false;
+
+        const next = this._viewingPosition.next;
+        if (!next) return false;
+
+        this._viewingPosition = next;
+        return true;
+    }
+
+    addNextPosition(props: PositionProps): Position {
         // we're already viewing a position, add to it
         if (this._viewingPosition) {
-            const node = this._addToNode(
-                this._viewingPosition,
-                pieces,
-                move,
-                san,
-            );
+            const node = this._addToNode(this._viewingPosition, props);
             this._viewingPosition = node;
             return node;
         }
 
         // we're empty, start the tree
         if (!this._head || !this._tail) {
-            const node = new PositionNode(pieces, move, san);
+            const node = new PositionNode(props);
             this._head = node;
             this._tail = node;
             this._plyCount = 1;
@@ -75,18 +104,16 @@ export default class PositionHistory {
         }
 
         // we're not viewing anything, but we're not empty, expand tail
-        const node = this._addToNode(this._tail, pieces, move, san);
+        const node = this._addToNode(this._tail, props);
         this._viewingPosition = node;
         return node;
     }
 
     private _addToNode(
         parent: PositionNode,
-        pieces: BoardPieces,
-        move: Move,
-        san: string,
+        position: PositionProps,
     ): PositionNode {
-        const node = parent.createChild(pieces, move, san);
+        const node = parent.createChild(position);
 
         // if parent is the tail, it cannot possibly have a sub variation already
         // which means this is a main variation, increment ply count
@@ -113,13 +140,15 @@ class PositionNode implements Position {
 
     _positionId: PositionId = crypto.randomUUID() as PositionId;
 
+    _parent: PositionNode | null = null;
     _mainVariation: PositionNode | null = null;
     _subVariationBySan: Map<string, PositionNode> = new Map();
 
-    constructor(pieces: BoardPieces, move: Move, san: string) {
-        this._pieces = pieces;
-        this._move = move;
-        this._san = san;
+    constructor(props: PositionProps, parent: PositionNode | null = null) {
+        this._parent = parent;
+        this._pieces = props.pieces;
+        this._move = props.move;
+        this._san = props.san;
     }
 
     get move(): Move {
@@ -138,6 +167,13 @@ class PositionNode implements Position {
         return this._positionId;
     }
 
+    get prev(): PositionNode | null {
+        return this._parent;
+    }
+    get next(): PositionNode | null {
+        return this._mainVariation;
+    }
+
     get variations(): readonly PositionNode[] {
         const allVariations = [...this._subVariationBySan.values()];
         if (this._mainVariation) allVariations.unshift(this._mainVariation);
@@ -145,19 +181,19 @@ class PositionNode implements Position {
         return allVariations;
     }
 
-    createChild(pieces: BoardPieces, move: Move, san: string): PositionNode {
-        const child = new PositionNode(pieces, move, san);
+    createChild(props: PositionProps): PositionNode {
+        const child = new PositionNode(props, this);
 
         if (!this._mainVariation) {
             this._mainVariation = child;
             return child;
         }
 
-        if (this._mainVariation.san === san) {
+        if (this._mainVariation.san === props.san) {
             return this._mainVariation;
         }
 
-        const existingSubWithSan = this._subVariationBySan.get(san);
+        const existingSubWithSan = this._subVariationBySan.get(props.san);
         if (existingSubWithSan) return existingSubWithSan;
 
         this._subVariationBySan.set(child.san, child);

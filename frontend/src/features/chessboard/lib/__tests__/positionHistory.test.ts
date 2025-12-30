@@ -1,8 +1,5 @@
-import {
-    createFakeBoardPieces,
-    createFakeMove,
-} from "@/lib/testUtils/fakers/chessboardFakers";
-
+import { createFakeBoardPieces } from "@/lib/testUtils/fakers/chessboardFakers";
+import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
 import PositionHistory from "../positionHistory";
 import BoardPieces from "../boardPieces";
 import { PositionId } from "../types";
@@ -21,6 +18,7 @@ describe("PositionHistory", () => {
             expect(history.rootPieces).toBe(rootPieces);
             expect(history.plyCount).toBe(0);
             expect(history.viewingPosition).toBeNull();
+            expect([...history].length).toBe(0);
         });
     });
 
@@ -32,36 +30,114 @@ describe("PositionHistory", () => {
         });
 
         it("should set the viewing position to the correct position after it is added", () => {
-            const pieces = createFakeBoardPieces();
-            const move = createFakeMove();
-            const pos = history.addNextPosition(pieces, move, "e4");
+            const pos = history.addNextPosition(createFakePositionProps());
 
             expect(history.goToPosition(pos.positionId)).toBe(true);
             expect(history.viewingPosition).toBe(pos);
         });
     });
 
+    describe("goToStart", () => {
+        it("should set viewingPosition to head", () => {
+            const pos1 = history.addNextPosition(createFakePositionProps());
+            const pos2 = history.addNextPosition(createFakePositionProps());
+
+            history.goToEnd();
+            expect(history.viewingPosition).toBe(pos2);
+
+            history.goToStart();
+            expect(history.viewingPosition).toBe(pos1);
+        });
+
+        it("should do nothing if history is empty", () => {
+            history.goToStart();
+            expect(history.viewingPosition).toBeNull();
+        });
+    });
+
+    describe("goToEnd", () => {
+        it("should set viewingPosition to tail", () => {
+            const pos1 = history.addNextPosition(createFakePositionProps());
+            const pos2 = history.addNextPosition(createFakePositionProps());
+
+            history.goToStart();
+            expect(history.viewingPosition).toBe(pos1);
+
+            history.goToEnd();
+            expect(history.viewingPosition).toBe(pos2);
+        });
+
+        it("should do nothing if history is empty", () => {
+            history.goToStart();
+            expect(history.viewingPosition).toBeNull();
+        });
+    });
+
+    describe("stepBackward", () => {
+        it("should move viewingPosition backward along mainline", () => {
+            const pos1 = history.addNextPosition(createFakePositionProps());
+            const pos2 = history.addNextPosition(createFakePositionProps());
+            const pos3 = history.addNextPosition(createFakePositionProps());
+
+            history.goToEnd();
+            expect(history.viewingPosition).toBe(pos3);
+
+            expect(history.stepBackward()).toBe(true);
+            expect(history.viewingPosition).toBe(pos2);
+
+            expect(history.stepBackward()).toBe(true);
+            expect(history.viewingPosition).toBe(pos1);
+
+            // cannot go past head
+            expect(history.stepBackward()).toBe(false);
+            expect(history.viewingPosition).toBe(pos1);
+        });
+
+        it("should return false if history is empty", () => {
+            expect(history.stepBackward()).toBe(false);
+        });
+    });
+
+    describe("stepForward", () => {
+        it("should move viewingPosition forward along mainline", () => {
+            const pos1 = history.addNextPosition(createFakePositionProps());
+            const pos2 = history.addNextPosition(createFakePositionProps());
+            const pos3 = history.addNextPosition(createFakePositionProps());
+
+            history.goToStart();
+            expect(history.viewingPosition).toBe(pos1);
+
+            expect(history.stepForward()).toBe(true);
+            expect(history.viewingPosition).toBe(pos2);
+
+            expect(history.stepForward()).toBe(true);
+            expect(history.viewingPosition).toBe(pos3);
+
+            // cannot go past tail
+            expect(history.stepForward()).toBe(false);
+            expect(history.viewingPosition).toBe(pos3);
+        });
+
+        it("should return false if history is empty", () => {
+            expect(history.stepForward()).toBe(false);
+        });
+    });
+
     describe("addNextPosition", () => {
         it("should create the first position and set it as head, tail, and viewing position", () => {
-            const pieces = createFakeBoardPieces();
-            const move = createFakeMove();
-            const pos = history.addNextPosition(pieces, move, "e4");
+            const props = createFakePositionProps();
+            const pos = history.addNextPosition(props);
 
-            expect(pos.pieces).toBe(pieces);
-            expect(pos.move).toBe(move);
-            expect(pos.san).toBe("e4");
+            expect(pos.pieces).toBe(props.pieces);
+            expect(pos.move).toBe(props.move);
+            expect(pos.san).toBe(props.san);
             expect(history.plyCount).toBe(1);
             expect(history.viewingPosition).toBe(pos);
         });
 
         it("should append to the main line for subsequent positions", () => {
-            const pieces1 = createFakeBoardPieces();
-            const pieces2 = createFakeBoardPieces();
-            const move1 = createFakeMove();
-            const move2 = createFakeMove();
-
-            const pos1 = history.addNextPosition(pieces1, move1, "e4");
-            const pos2 = history.addNextPosition(pieces2, move2, "d4");
+            const pos1 = history.addNextPosition(createFakePositionProps());
+            const pos2 = history.addNextPosition(createFakePositionProps());
 
             expect(history.plyCount).toBe(2);
             expect([...history]).toEqual([pos1, pos2]);
@@ -69,19 +145,14 @@ describe("PositionHistory", () => {
         });
 
         it("should add a variation when viewing a non tail position", () => {
-            const pieces1 = createFakeBoardPieces();
-            const pieces2 = createFakeBoardPieces();
-            const pieces3 = createFakeBoardPieces();
-            const move1 = createFakeMove();
-            const move2 = createFakeMove();
-            const move3 = createFakeMove();
-
-            const pos1 = history.addNextPosition(pieces1, move1, "e4");
-            const pos2 = history.addNextPosition(pieces2, move2, "d4");
+            const pos1 = history.addNextPosition(createFakePositionProps());
+            const pos2 = history.addNextPosition(createFakePositionProps());
 
             // go back to first position to add a variation
             history.goToPosition(pos1.positionId);
-            const pos1Variation = history.addNextPosition(pieces3, move3, "c4");
+            const pos1Variation = history.addNextPosition(
+                createFakePositionProps(),
+            );
 
             expect(pos1Variation).toBeDefined();
             expect(pos1.variations).toEqual([pos2, pos1Variation]);
@@ -89,32 +160,33 @@ describe("PositionHistory", () => {
         });
 
         it("should return the existing variation if SAN already exists as main variation", () => {
-            const pieces1 = createFakeBoardPieces();
-            const pieces2 = createFakeBoardPieces();
-            const move1 = createFakeMove();
+            const pos = history.addNextPosition(createFakePositionProps());
 
-            const pos = history.addNextPosition(pieces1, move1, "e4");
+            const variation1 = history.addNextPosition(
+                createFakePositionProps({ san: "d4" }),
+            );
 
-            const variation1 = history.addNextPosition(pieces2, move1, "d4");
             history.goToPosition(pos.positionId);
-            const variation2 = history.addNextPosition(pieces2, move1, "d4");
+            const variation2 = history.addNextPosition(
+                createFakePositionProps({ san: "d4" }),
+            );
 
             expect(variation1).toBe(variation2);
         });
 
         it("should return the existing variation if SAN already exists as sub variation", () => {
-            const pieces1 = createFakeBoardPieces();
-            const pieces2 = createFakeBoardPieces();
-            const pieces3 = createFakeBoardPieces();
-            const move1 = createFakeMove();
-
-            const pos1 = history.addNextPosition(pieces1, move1, "e4");
-            const pos2 = history.addNextPosition(pieces2, move1, "d4");
+            const pos1 = history.addNextPosition(createFakePositionProps());
+            const pos2 = history.addNextPosition(createFakePositionProps());
 
             history.goToPosition(pos1.positionId);
-            const variation1 = history.addNextPosition(pieces3, move1, "c4");
+            const variation1 = history.addNextPosition(
+                createFakePositionProps({ san: "c4" }),
+            );
+
             history.goToPosition(pos1.positionId);
-            const variation2 = history.addNextPosition(pieces3, move1, "c4");
+            const variation2 = history.addNextPosition(
+                createFakePositionProps({ san: "c4" }),
+            );
 
             expect(variation1).toBe(variation2);
             expect(pos2).not.toBe(variation1);
@@ -123,19 +195,12 @@ describe("PositionHistory", () => {
 
     describe("iterator", () => {
         it("should iterate over the main line only", () => {
-            const pieces1 = createFakeBoardPieces();
-            const pieces2 = createFakeBoardPieces();
-            const pieces3 = createFakeBoardPieces();
-            const move1 = createFakeMove();
-            const move2 = createFakeMove();
-            const move3 = createFakeMove();
-
-            const pos1 = history.addNextPosition(pieces1, move1, "e4");
-            const pos2 = history.addNextPosition(pieces2, move2, "d4");
+            const pos1 = history.addNextPosition(createFakePositionProps());
+            const pos2 = history.addNextPosition(createFakePositionProps());
 
             // go back to first position to add a variation
             history.goToPosition(pos1.positionId);
-            history.addNextPosition(pieces3, move3, "c4");
+            history.addNextPosition(createFakePositionProps());
 
             const positions = [...history];
             expect(positions).toEqual([pos1, pos2]);
