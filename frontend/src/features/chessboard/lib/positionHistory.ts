@@ -37,8 +37,8 @@ export default class PositionHistory {
         this._rootPieces = rootPieces;
     }
 
-    get rootPieces(): BoardPieces {
-        return this._rootPieces;
+    get viewingPieces(): BoardPieces {
+        return this._viewingPosition?.pieces ?? this._rootPieces;
     }
 
     get viewingPosition(): Position | null {

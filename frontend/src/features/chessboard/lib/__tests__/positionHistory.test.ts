@@ -14,10 +14,25 @@ describe("PositionHistory", () => {
 
     describe("constructor", () => {
         it("should initialize with the given root pieces", () => {
-            expect(history.rootPieces).toBe(rootPieces);
             expect(history.plyCount).toBe(0);
             expect(history.viewingPosition).toBeNull();
             expect([...history].length).toBe(0);
+        });
+    });
+
+    describe("viewingPieces", () => {
+        it("should return the root pieces when history is empty", () => {
+            expect(history.viewingPieces).toEqual(rootPieces);
+        });
+
+        it("should return the vieweing position pieces", () => {
+            history.addNextPosition(createFakePositionProps());
+            const pos = history.addNextPosition(createFakePositionProps());
+            history.addNextPosition(createFakePositionProps());
+
+            history.goToPosition(pos.positionId);
+
+            expect(history.viewingPieces).toEqual(pos.pieces);
         });
     });
 
@@ -131,11 +146,11 @@ describe("PositionHistory", () => {
 
     describe("goToEnd", () => {
         it("should set viewingPosition to tail", () => {
-            const pos1 = history.addNextPosition(createFakePositionProps());
+            history.addNextPosition(createFakePositionProps());
             const pos2 = history.addNextPosition(createFakePositionProps());
 
             history.goToStart();
-            expect(history.viewingPosition).toBe(pos1);
+            expect(history.viewingPosition).toBeNull();
 
             history.goToEnd();
             expect(history.viewingPosition).toBe(pos2);
