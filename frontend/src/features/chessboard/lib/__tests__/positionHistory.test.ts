@@ -29,6 +29,29 @@ describe("PositionHistory", () => {
             ).toBeNull();
         });
 
+        it("should set the viewing position to the correct position", () => {
+            const pos1 = history.addNextPosition(createFakePositionProps());
+            history.addNextPosition(createFakePositionProps());
+            history.addNextPosition(createFakePositionProps());
+
+            const result = history.goToPosition(pos1.positionId);
+
+            expect(result).not.toBeNull();
+            expect(result?.position).toBe(pos1);
+            expect(result?.isOneStepForward).toBe(false);
+            expect(history.viewingPosition).toBe(pos1);
+        });
+
+        it("should detect one step forward when viewingPosition is null", () => {
+            const pos1 = history.addNextPosition(createFakePositionProps());
+            history.addNextPosition(createFakePositionProps());
+            history.goToStart();
+
+            const result = history.goToPosition(pos1.positionId);
+
+            expect(result!.isOneStepForward).toBe(true);
+        });
+
         it("should correctly detect one step forward along the main line", () => {
             const pos1 = history.addNextPosition(createFakePositionProps());
             const pos2 = history.addNextPosition(createFakePositionProps());
