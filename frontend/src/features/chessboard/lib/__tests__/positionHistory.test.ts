@@ -46,7 +46,7 @@ describe("PositionHistory", () => {
         it("should return null if positionId does not exist", () => {
             expect(
                 history.goToPosition("nonexistent-id" as PositionId),
-            ).toBeNull();
+            ).toEqual({ success: false, isOneStepForward: false });
         });
 
         it("should set the viewing position to the correct position", () => {
@@ -56,9 +56,8 @@ describe("PositionHistory", () => {
 
             const result = history.goToPosition(pos1.positionId);
 
-            expect(result).not.toBeNull();
-            expect(result?.position).toBe(pos1);
-            expect(result?.isOneStepForward).toBe(false);
+            expect(result.success).toBe(true);
+            expect(result.isOneStepForward).toBe(false);
             expect(history.viewingPosition).toBe(pos1);
         });
 
@@ -69,7 +68,7 @@ describe("PositionHistory", () => {
 
             const result = history.goToPosition(pos1.positionId);
 
-            expect(result!.isOneStepForward).toBe(true);
+            expect(result.isOneStepForward).toBe(true);
         });
 
         it("should correctly detect one step forward along the main line", () => {
@@ -78,7 +77,7 @@ describe("PositionHistory", () => {
 
             history.goToPosition(pos1.positionId);
             const result = history.goToPosition(pos2.positionId);
-            expect(result!.isOneStepForward).toBe(true);
+            expect(result.isOneStepForward).toBe(true);
         });
 
         it("should correctly detect one step forward along a sub variation", () => {
@@ -91,7 +90,7 @@ describe("PositionHistory", () => {
             history.goToPosition(pos1.positionId);
 
             const result = history.goToPosition(pos1Variation.positionId);
-            expect(result!.isOneStepForward).toBe(true);
+            expect(result.isOneStepForward).toBe(true);
         });
 
         it("should return false for isOneStepForward when jumping multiple steps forward", () => {
@@ -102,7 +101,7 @@ describe("PositionHistory", () => {
             history.goToPosition(pos1.positionId);
             const result = history.goToPosition(pos3.positionId);
 
-            expect(result!.isOneStepForward).toBe(false);
+            expect(result.isOneStepForward).toBe(false);
         });
 
         it("should return false for isOneStepForward when jumping backward", () => {
@@ -112,7 +111,7 @@ describe("PositionHistory", () => {
             history.goToPosition(pos2.positionId);
             const result = history.goToPosition(pos1.positionId);
 
-            expect(result!.isOneStepForward).toBe(false);
+            expect(result.isOneStepForward).toBe(false);
         });
     });
 
@@ -156,19 +155,18 @@ describe("PositionHistory", () => {
             history.goToEnd();
             expect(history.viewingPosition).toBe(pos3);
 
-            expect(history.stepBackward()).toBe(pos2);
+            expect(history.stepBackward()).toBe(true);
             expect(history.viewingPosition).toBe(pos2);
 
-            expect(history.stepBackward()).toBe(pos1);
+            expect(history.stepBackward()).toBe(true);
             expect(history.viewingPosition).toBe(pos1);
 
-            // cannot go past head
-            expect(history.stepBackward()).toBeNull();
-            expect(history.viewingPosition).toBe(pos1);
+            expect(history.stepBackward()).toBe(true);
+            expect(history.viewingPosition).toBe(null);
         });
 
-        it("should return null if history is empty", () => {
-            expect(history.stepBackward()).toBeNull();
+        it("should return false if history is empty", () => {
+            expect(history.stepBackward()).toBe(false);
         });
     });
 
@@ -178,22 +176,30 @@ describe("PositionHistory", () => {
             const pos2 = history.addNextPosition(createFakePositionProps());
             const pos3 = history.addNextPosition(createFakePositionProps());
 
-            history.goToStart();
+            history.goToPosition(pos1.positionId);
             expect(history.viewingPosition).toBe(pos1);
 
-            expect(history.stepForward()).toBe(pos2);
+            expect(history.stepForward()).toBe(true);
             expect(history.viewingPosition).toBe(pos2);
 
-            expect(history.stepForward()).toBe(pos3);
+            expect(history.stepForward()).toBe(true);
             expect(history.viewingPosition).toBe(pos3);
 
             // cannot go past tail
-            expect(history.stepForward()).toBeNull();
+            expect(history.stepForward()).toBe(false);
             expect(history.viewingPosition).toBe(pos3);
         });
 
+        it("should go to head if viewingPosition is null", () => {
+            const head = history.addNextPosition(createFakePositionProps());
+            history.goToStart();
+
+            expect(history.stepForward()).toBe(true);
+            expect(history.viewingPosition).toBe(head);
+        });
+
         it("should return null if history is empty", () => {
-            expect(history.stepForward()).toBeNull();
+            expect(history.stepForward()).toBe(false);
         });
     });
 

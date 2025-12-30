@@ -53,11 +53,12 @@ export default class PositionHistory {
         return this._viewingPosition === this._tail;
     }
 
-    goToPosition(
-        positionId: PositionId,
-    ): { position: Position; isOneStepForward: boolean } | null {
+    goToPosition(positionId: PositionId): {
+        success: boolean;
+        isOneStepForward: boolean;
+    } {
         const node = this._byPositionId.get(positionId);
-        if (!node) return null;
+        if (!node) return { success: false, isOneStepForward: false };
 
         let isOneStepForward = true;
         if (this._viewingPosition) {
@@ -67,36 +68,43 @@ export default class PositionHistory {
         }
 
         this._viewingPosition = node;
-        return { position: node, isOneStepForward };
+        return { success: true, isOneStepForward };
     }
 
     goToStart(): void {
         this._viewingPosition = null;
     }
 
-    goToEnd(): Position | null {
+    goToEnd(): void {
         this._viewingPosition = this._tail;
-        return this._tail;
     }
 
-    stepBackward(): Position | null {
-        if (!this._viewingPosition) return null;
+    stepBackward(): boolean {
+        if (!this._viewingPosition) return false;
 
         const prev = this._viewingPosition.prev;
-        if (!prev) return null;
+        console.log(prev);
+        if (!prev) {
+            this._viewingPosition = null;
+            return true;
+        }
 
         this._viewingPosition = prev;
-        return prev;
+        return true;
     }
 
-    stepForward(): Position | null {
-        if (!this._viewingPosition) return null;
+    stepForward(): boolean {
+        if (!this._viewingPosition && !this._head) return false;
+        if (!this._viewingPosition) {
+            this._viewingPosition = this._head;
+            return true;
+        }
 
         const next = this._viewingPosition.next;
-        if (!next) return null;
+        if (!next) return false;
 
         this._viewingPosition = next;
-        return next;
+        return true;
     }
 
     addNextPosition(props: PositionProps): Position {
