@@ -282,6 +282,38 @@ describe("PositionHistory", () => {
         });
     });
 
+    describe("replaceCurrentPosition", () => {
+        it("should replace the props of the current viewing position", () => {
+            history.addNextPosition(createFakePositionProps({ san: "e4" }));
+            const newProps = createFakePositionProps({ san: "d4" });
+
+            history.replaceCurrentPosition(newProps);
+
+            const viewing = history.viewingPosition!;
+            expect(viewing.pieces).toBe(newProps.pieces);
+            expect(viewing.move).toBe(newProps.move);
+            expect(viewing.san).toBe(newProps.san);
+
+            expect(history.plyCount).toBe(1);
+            expect(history.isViewingLatestPosition).toBe(true);
+        });
+
+        it("should add a new position if no viewingPosition exists", () => {
+            const newProps = createFakePositionProps({ san: "e4" });
+            expect(history.viewingPosition).toBeNull();
+
+            history.replaceCurrentPosition(newProps);
+
+            const viewing = history.viewingPosition!;
+            expect(viewing.pieces).toBe(newProps.pieces);
+            expect(viewing.move).toBe(newProps.move);
+            expect(viewing.san).toBe(newProps.san);
+
+            expect(history.plyCount).toBe(1);
+            expect(history.isViewingLatestPosition).toBe(true);
+        });
+    });
+
     describe("iterator", () => {
         it("should iterate over the main line only", () => {
             const pos1 = history.addNextPosition(createFakePositionProps());

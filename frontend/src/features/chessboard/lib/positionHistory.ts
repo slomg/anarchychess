@@ -125,6 +125,14 @@ export default class PositionHistory {
         return node;
     }
 
+    replaceCurrentPosition(props: PositionProps): void {
+        if (!this._viewingPosition) {
+            this.addNextPosition(props);
+        } else {
+            this._viewingPosition.replaceProps(props);
+        }
+    }
+
     _addToNode(parent: PositionNode, position: PositionProps): PositionNode {
         const node = parent.createChild(position);
 
@@ -196,6 +204,12 @@ class PositionNode implements Position {
         if (this._mainVariation) allVariations.unshift(this._mainVariation);
 
         return allVariations;
+    }
+
+    replaceProps(props: PositionProps): void {
+        this._pieces = props.pieces;
+        this._move = props.move;
+        this._san = props.san;
     }
 
     createChild(props: PositionProps): PositionNode {
