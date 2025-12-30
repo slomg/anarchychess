@@ -29,12 +29,47 @@ describe("PositionHistory", () => {
             ).toBeNull();
         });
 
-        it("should set the viewing position to the correct position after it is added", () => {
-            const pos = history.addNextPosition(createFakePositionProps());
+        it("should correctly detect one step forward along the main line", () => {
+            const pos1 = history.addNextPosition(createFakePositionProps());
+            const pos2 = history.addNextPosition(createFakePositionProps());
 
-            const result = history.goToPosition(pos.positionId);
-            expect(result).toBe(pos);
-            expect(history.viewingPosition).toBe(pos);
+            history.goToPosition(pos1.positionId);
+            const result = history.goToPosition(pos2.positionId);
+            expect(result!.isOneStepForward).toBe(true);
+        });
+
+        it("should correctly detect one step forward along a sub variation", () => {
+            const pos1 = history.addNextPosition(createFakePositionProps());
+            history.addNextPosition(createFakePositionProps());
+            history.goToPosition(pos1.positionId);
+            const pos1Variation = history.addNextPosition(
+                createFakePositionProps({ san: "c4" }),
+            );
+            history.goToPosition(pos1.positionId);
+
+            const result = history.goToPosition(pos1Variation.positionId);
+            expect(result!.isOneStepForward).toBe(true);
+        });
+
+        it("should return false for isOneStepForward when jumping multiple steps forward", () => {
+            const pos1 = history.addNextPosition(createFakePositionProps());
+            history.addNextPosition(createFakePositionProps());
+            const pos3 = history.addNextPosition(createFakePositionProps());
+
+            history.goToPosition(pos1.positionId);
+            const result = history.goToPosition(pos3.positionId);
+
+            expect(result!.isOneStepForward).toBe(false);
+        });
+
+        it("should return false for isOneStepForward when jumping backward", () => {
+            const pos1 = history.addNextPosition(createFakePositionProps());
+            const pos2 = history.addNextPosition(createFakePositionProps());
+
+            history.goToPosition(pos2.positionId);
+            const result = history.goToPosition(pos1.positionId);
+
+            expect(result!.isOneStepForward).toBe(false);
         });
     });
 

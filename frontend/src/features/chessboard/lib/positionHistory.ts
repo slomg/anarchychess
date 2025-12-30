@@ -47,12 +47,21 @@ export default class PositionHistory {
         return this._plyCount;
     }
 
-    goToPosition(positionId: PositionId): Position | null {
+    goToPosition(
+        positionId: PositionId,
+    ): { position: Position; isOneStepForward: boolean } | null {
         const node = this._byPositionId.get(positionId);
         if (!node) return null;
 
+        let isOneStepForward = true;
+        if (this._viewingPosition) {
+            isOneStepForward =
+                this._viewingPosition.next === node ||
+                this._viewingPosition.subVariationBySan.get(node.san) === node;
+        }
+
         this._viewingPosition = node;
-        return node;
+        return { position: node, isOneStepForward };
     }
 
     goToStart(): Position | null {
@@ -174,6 +183,10 @@ class PositionNode implements Position {
     }
     get next(): PositionNode | null {
         return this._mainVariation;
+    }
+
+    get subVariationBySan(): ReadonlyMap<string, PositionNode> {
+        return this._subVariationBySan;
     }
 
     get variations(): readonly PositionNode[] {
