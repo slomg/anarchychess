@@ -6,7 +6,7 @@ import { decodeMovePath, decodeLegalMoves } from "../lib/moveDecoder";
 import { refetchGame } from "../lib/gameStateProcessor";
 import { useGameEvent } from "./useGameHub";
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
-import { Position } from "@/features/chessboard/lib/types";
+import { PositionProps } from "@/features/chessboard/lib/positionHistory";
 
 export default function useLiveChessEvents(
     liveChessStore: StoreApi<LiveChessStore>,
@@ -30,13 +30,13 @@ export default function useLiveChessEvents(
                 liveChessStore.getState();
             const {
                 positionHistory,
-                addPosition,
+                addLatestPosition,
                 applyMoveAnimated,
                 disableMovement,
             } = chessboardStore.getState();
 
             // we missed a move... we need to refetch the state
-            if (plyIdx != positionHistory.length - 1) {
+            if (plyNumber - 1 != positionHistory.mainPlyCount) {
                 await refetchGame(liveChessStore, chessboardStore);
                 return;
             }
@@ -54,7 +54,7 @@ export default function useLiveChessEvents(
             }
 
             const pieces = chessboardStore.getState().pieces;
-            const position: Position = {
+            const position: PositionProps = {
                 pieces,
                 san: move.san,
                 move: decodedMove,
@@ -64,7 +64,7 @@ export default function useLiveChessEvents(
                 // },
             };
 
-            addPosition(position);
+            addLatestPosition(position);
             receiveMove(clocks, sideToMove);
         },
     );
@@ -79,9 +79,9 @@ export default function useLiveChessEvents(
                 hasForcedMoves: hasForcedMoves,
             });
 
-            chessboardStore
-                .getState()
-                .addLegalMoves(decodedLegalMoves, plyIdx + 1); // plyIdx + 1 because our history includes the starting position
+            // chessboardStore
+            //     .getState()
+            //     .addLegalMoves(decodedLegalMoves, plyIdx + 1); // plyIdx + 1 because our history includes the starting position
         },
     );
 

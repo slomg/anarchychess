@@ -1,15 +1,11 @@
 import { StateCreator } from "zustand";
 
-import {
-    Move,
-    MoveBounds,
-    PieceID,
-    Position,
-    PositionHistory,
-} from "../lib/types";
+import PositionHistory, {
+    PositionId,
+    PositionProps,
+} from "../lib/positionHistory";
 
 import { ChessboardStore } from "./chessboardStore";
-import { pointEquals } from "@/features/point/pointUtils";
 import BoardPieces from "../lib/boardPieces";
 
 export interface HistorySliceProps {
@@ -18,21 +14,16 @@ export interface HistorySliceProps {
 }
 
 export interface HistorySlice {
-    viewingPlyIdx: number;
     positionHistory: PositionHistory;
 
-    teleportToPosition(plyIdx: number): Promise<void>;
-    shiftMoveViewBy(amount: number): Promise<void>;
-    teleportToLatestPosition(): Promise<void>;
+    goToPosition(positionId: PositionId): Promise<void>;
 
-    applyHistoryPosition({
-        moveFromPreviousViewedPosition,
-        position,
-    }: {
-        moveFromPreviousViewedPosition?: Move;
-        position: Position;
-    }): Promise<void>;
-    addPosition(newPosition: Position): void;
+    stepPositionForward(): Promise<void>;
+    stepPositionBackward(): Promise<void>;
+    goToStartPosition(): Promise<void>;
+    goToLatestPosition(): Promise<void>;
+
+    addLatestPosition(newPosition: PositionProps): void;
 }
 
 export function createHistorySlice(
@@ -43,132 +34,82 @@ export function createHistorySlice(
     [],
     HistorySlice
 > {
-    function findMovedPiecesBetween(
-        oldPieces: BoardPieces,
-        newPieces: BoardPieces,
-    ): PieceID[] {
-        const movedPieceIds: PieceID[] = [];
-        for (const newPiece of oldPieces) {
-            const piece = newPieces.getById(newPiece.id);
-            if (!piece) continue;
-            if (!pointEquals(piece.position, newPiece.position))
-                movedPieceIds.push(newPiece.id);
-        }
-
-        return movedPieceIds;
-    }
-
     return (set, get) => ({
-        viewingPlyIdx: initState.positionHistory
-            ? initState.positionHistory.length - 1
-            : 0,
-        positionHistory: initState.positionHistory?.length
-            ? initState.positionHistory
-            : [{ pieces: initState.pieces }],
+        positionHistory:
+            initState.positionHistory ?? new PositionHistory(initState.pieces),
 
-        async teleportToPosition(plyIdx): Promise<void> {
-            const {
-                positionHistory,
-                viewingPlyIdx,
-                applyMoveAnimated,
-                applyHistoryPosition,
-                hideLegalMoves,
-            } = get();
-            if (
-                plyIdx < 0 ||
-                plyIdx >= positionHistory.length ||
-                plyIdx === viewingPlyIdx
-            ) {
+        async goToPosition(positionId) {
+            const { applyMoveAnimated, updatePiecesFromPosition } = get();
+
+            let success = false;
+            let isOneStepForward = false;
+            set((state) => {
+                ({ success, isOneStepForward } =
+                    state.positionHistory.goToPosition(positionId));
+            });
+            const { positionHistory } = get();
+            if (!success || !positionHistory.viewingPosition) return;
+
+            if (isOneStepForward) {
+                await applyMoveAnimated(positionHistory.viewingPosition.move);
                 return;
             }
 
-            const position = positionHistory[plyIdx];
-            const isOneStepForward = plyIdx === viewingPlyIdx + 1;
+            await updatePiecesFromPosition(positionHistory.viewingPosition);
+        },
 
+        async stepPositionForward() {
+            const { applyMoveAnimated } = get();
+
+            let success: boolean | undefined;
             set((state) => {
-                state.viewingPlyIdx = plyIdx;
+                success = state.positionHistory.stepForward();
             });
-            hideLegalMoves();
 
-            const moveThatProducedPosition = position.move;
-            if (isOneStepForward && moveThatProducedPosition) {
-                await applyMoveAnimated(moveThatProducedPosition);
-                return;
+            const { positionHistory } = get();
+            if (success && positionHistory.viewingPosition) {
+                await applyMoveAnimated(positionHistory.viewingPosition.move);
             }
-
-            // the move that should be considered "last" from the perspective of the current viewed position.
-            // if moving forward in history (plyIdx > viewingPlyIdx), this is the move that produced the current position (position.move).
-            // if moving backward in history (plyIdx < viewingPlyIdx), this is the move in the next position,
-            // because that was the move that brought us to the current position from the previous step.
-            const moveFromPreviousViewedPosition =
-                plyIdx > viewingPlyIdx
-                    ? position.move
-                    : positionHistory[plyIdx + 1]?.move;
-            applyHistoryPosition({
-                moveFromPreviousViewedPosition,
-                position,
-            });
         },
 
-        async shiftMoveViewBy(amount) {
-            const { teleportToPosition, viewingPlyIdx } = get();
-            await teleportToPosition(viewingPlyIdx + amount);
-        },
+        async stepPositionBackward() {
+            const { updatePiecesFromPosition, updatePieces } = get();
 
-        async teleportToLatestPosition() {
-            const { positionHistory, teleportToPosition } = get();
-            const lastIndex = positionHistory.length - 1;
-            if (lastIndex < 0) throw new Error("positionHistory is empty");
-            await teleportToPosition(lastIndex)!;
-        },
-
-        async applyHistoryPosition({
-            moveFromPreviousViewedPosition,
-            position,
-        }): Promise<void> {
-            const { pieces, playAnimation } = get();
-
-            const movedPieceIds = findMovedPiecesBetween(
-                pieces,
-                position.pieces,
-            );
-
+            let success: boolean | undefined;
             set((state) => {
-                state.pieces = position.pieces;
-                state.selectedPieceId = null;
+                success = state.positionHistory.stepBackward();
             });
+            if (!success) return;
 
-            const moveBounds: MoveBounds | undefined = position.move
-                ? {
-                      from: position.move.from,
-                      to: position.move.to,
-                  }
-                : undefined;
-            const isCapture = moveFromPreviousViewedPosition
-                ? moveFromPreviousViewedPosition.captures.length > 0
-                : false;
-            const isPromotion = moveFromPreviousViewedPosition
-                ? moveFromPreviousViewedPosition.promotesTo !== null
-                : false;
-
-            await playAnimation({
-                newPieces: position.pieces,
-                movedPieceIds,
-
-                moveBounds,
-                isCapture,
-                isPromotion,
-                specialType: moveFromPreviousViewedPosition?.specialType,
-            });
+            const { positionHistory } = get();
+            if (positionHistory.viewingPosition) {
+                await updatePiecesFromPosition(positionHistory.viewingPosition);
+            } else {
+                await updatePieces(positionHistory.rootPieces);
+            }
         },
 
-        addPosition(newPosition: Position) {
-            const { teleportToLatestPosition } = get();
+        async goToStartPosition() {
+            const { positionHistory, updatePieces } = get();
 
-            teleportToLatestPosition();
+            set((state) => state.positionHistory.goToStart());
+            await updatePieces(positionHistory.rootPieces);
+        },
+
+        async goToLatestPosition() {
+            const { updatePiecesFromPosition } = get();
+            set((state) => state.positionHistory.goToEnd());
+
+            const { positionHistory } = get();
+            if (positionHistory.viewingPosition) {
+                await updatePiecesFromPosition(positionHistory.viewingPosition);
+            }
+        },
+
+        addLatestPosition(newPosition) {
             set((state) => {
-                state.positionHistory.push(newPosition);
-                state.viewingPlyIdx = state.positionHistory.length - 1;
+                state.positionHistory.goToEnd();
+                state.positionHistory.addNextPosition(newPosition);
             });
         },
     });

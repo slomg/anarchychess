@@ -11,6 +11,7 @@ import {
 import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardStoreContext";
 import ChessboardLayout, { ChessboardLayoutProps } from "./ChessboardLayout";
 import useBoardReplay from "../hooks/useBoardReplay";
+import PositionHistory from "../lib/positionHistory";
 import { decodeFen } from "../lib/fenDecoder";
 import BoardPieces from "../lib/boardPieces";
 import { GameColor } from "@/lib/apiClient";
@@ -59,7 +60,8 @@ const StaticChessboard = ({
         createChessboardStore({
             pieces: initialPosition,
             boardDimensions: { width: boardWidth, height: boardHeight },
-            legalMovesByPly: new Map(),
+            legalMovesByPosition: new Map(),
+            positionHistory: new PositionHistory(initialPosition),
             viewingFrom,
             canDrag,
             muteAudio,

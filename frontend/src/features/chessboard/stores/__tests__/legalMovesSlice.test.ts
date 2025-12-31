@@ -1,17 +1,21 @@
 import { StoreApi } from "zustand";
-import { ChessboardStore, createChessboardStore } from "../chessboardStore";
+
 import {
     createFakeLegalMoves,
     createFakeMove,
     createFakePiece,
     createRandomPoint,
 } from "@/lib/testUtils/fakers/chessboardFakers";
-import { IntermediateSquare, Piece } from "../../lib/types";
+
+import { createNFakePositionHistory } from "@/lib/testUtils/fakers/positionHistoryFaker";
+import { ChessboardStore, createChessboardStore } from "../chessboardStore";
 import { logicalPoint, pointToStr } from "@/features/point/pointUtils";
-import { PieceType } from "@/lib/apiClient";
+import { IntermediateSquare, Piece } from "../../lib/types";
+import { PositionId } from "../../lib/positionHistory";
 import { waitFor } from "@testing-library/react";
 import BoardPieces from "../../lib/boardPieces";
 import LegalMoves from "../../lib/legalMoves";
+import { PieceType } from "@/lib/apiClient";
 
 describe("LegalMovesSlice", () => {
     let store: StoreApi<ChessboardStore>;
@@ -30,7 +34,7 @@ describe("LegalMovesSlice", () => {
             const pieces = BoardPieces.fromPieces(piece);
 
             store.setState({
-                legalMovesByPly: new Map(),
+                legalMovesByPosition: new Map(),
             });
 
             const result = await store
@@ -243,35 +247,37 @@ describe("LegalMovesSlice", () => {
     });
 
     describe("addLegalMoves", () => {
-        it("should store legal moves for a given ply index and clear highlighted moves", () => {
+        it("should store legal moves for a given position id and clear highlighted moves", () => {
             const legalMoves = createFakeLegalMoves();
-            const plyIdx = 3;
+            const positionId = "3" as PositionId;
 
-            const legalMovesByPly = new Map<number, LegalMoves>([
-                [1, createFakeLegalMoves()],
+            const legalMovesByPosition = new Map<PositionId, LegalMoves>([
+                ["1" as PositionId, createFakeLegalMoves()],
             ]);
             store.setState({
                 highlightedLegalMoves: [
                     createRandomPoint(),
                     createRandomPoint(),
                 ],
-                legalMovesByPly,
+                legalMovesByPosition,
             });
 
-            store.getState().addLegalMoves(legalMoves, plyIdx);
+            store.getState().addLegalMoves(legalMoves, positionId);
 
             const state = store.getState();
-            const expectedLegalMovesByPly = new Map(legalMovesByPly);
-            expectedLegalMovesByPly.set(plyIdx, legalMoves);
-            expect(state.legalMovesByPly).toEqual(expectedLegalMovesByPly);
+            const expectedlegalMovesByPosition = new Map(legalMovesByPosition);
+            expectedlegalMovesByPosition.set(positionId, legalMoves);
+            expect(state.legalMovesByPosition).toEqual(
+                expectedlegalMovesByPosition,
+            );
             expect(state.highlightedLegalMoves).toHaveLength(0);
         });
     });
 
     describe("setLatestLegalMoves", () => {
-        it("should store legal moves at the current viewingPlyIdx", () => {
+        it("should store legal moves at the current viewing position id", () => {
             const legalMoves = createFakeLegalMoves();
-            const viewingPlyIdx = 2;
+            const positionHistory = createNFakePositionHistory(2);
 
             store.setState({
                 highlightedLegalMoves: [
@@ -279,15 +285,17 @@ describe("LegalMovesSlice", () => {
                     createRandomPoint(),
                     createRandomPoint(),
                 ],
-                viewingPlyIdx,
+                positionHistory,
             });
 
             store.getState().setLatestLegalMoves(legalMoves);
 
             const state = store.getState();
-            expect(state.legalMovesByPly.get(viewingPlyIdx)).toEqual(
-                legalMoves,
-            );
+            expect(
+                state.legalMovesByPosition.get(
+                    positionHistory.viewingPosition?.positionId,
+                ),
+            ).toEqual(legalMoves);
             expect(state.highlightedLegalMoves).toHaveLength(0);
         });
     });

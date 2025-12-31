@@ -14,13 +14,14 @@ import {
 import { ChessboardStore, createChessboardStore } from "../chessboardStore";
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
 import flushMicrotasks from "@/lib/testUtils/flushMicrotasks";
-import { IntermediateSquare, Move } from "../../lib/types";
+import { AnimationStep, IntermediateSquare, Move } from "../../lib/types";
 import { LogicalPoint } from "@/features/point/types";
 import { ScreenPoint } from "@/features/point/types";
 import BoardPieces from "../../lib/boardPieces";
 import LegalMoves from "../../lib/legalMoves";
-import { GameColor } from "@/lib/apiClient";
+import { GameColor, PieceType, SpecialMoveType } from "@/lib/apiClient";
 import { Piece } from "../../lib/types";
+import { createFakePosition } from "@/lib/testUtils/fakers/positionFaker";
 
 vi.mock("@/features/audio/audioPlayer");
 
@@ -328,7 +329,7 @@ describe("PiecesSlice", () => {
             const clearAnimationMock = vi.fn();
             store.setState({
                 pieces,
-                legalMovesByPly: new Map(),
+                legalMovesByPosition: new Map(),
                 clearAnimation: clearAnimationMock,
             });
 
@@ -392,7 +393,7 @@ describe("PiecesSlice", () => {
             const flashLegalMovesMock = vi.fn();
             store.setState({
                 pieces,
-                legalMovesByPly: new Map(),
+                legalMovesByPosition: new Map(),
                 flashLegalMoves: flashLegalMovesMock,
             });
 
@@ -476,6 +477,143 @@ describe("PiecesSlice", () => {
             store.getState().setImmediatePieces(newPieces);
 
             expect(store.getState().pieces).toEqual(newPieces);
+        });
+    });
+
+    describe("updatePiecesFromPosition", () => {
+        const playAnimationMock = vi.fn();
+        let piece: Piece;
+        let pieces: BoardPieces;
+
+        beforeEach(() => {
+            piece = createFakePiece({
+                position: logicalPoint({ x: 0, y: 0 }),
+            });
+            pieces = BoardPieces.fromPieces(piece);
+            store.setState({ playAnimation: playAnimationMock, pieces });
+        });
+
+        it("should set pieces with playAnimation", async () => {
+            const newPos = logicalPoint({ x: 1, y: 1 });
+            const position = createFakePosition({
+                pieces: BoardPieces.fromPieces({ ...piece, position: newPos }),
+            });
+
+            await store.getState().updatePiecesFromPosition(position);
+
+            expect(playAnimationMock).toHaveBeenCalledExactlyOnceWith<
+                [AnimationStep]
+            >({
+                newPieces: position.pieces,
+                movedPieceIds: [piece.id],
+                isCapture: false,
+                isPromotion: false,
+                moveBounds: { from: position.move.from, to: position.move.to },
+                specialType: null,
+            });
+        });
+
+        it("should set isCapture to true if position move is a capture", async () => {
+            const newPos = logicalPoint({ x: 1, y: 1 });
+            const position = createFakePosition({
+                pieces: BoardPieces.fromPieces({
+                    ...piece,
+                    position: newPos,
+                }),
+                move: createFakeMove({
+                    captures: [logicalPoint({ x: 1, y: 1 })],
+                }),
+            });
+
+            await store.getState().updatePiecesFromPosition(position);
+
+            expect(playAnimationMock).toHaveBeenCalledExactlyOnceWith<
+                [AnimationStep]
+            >({
+                newPieces: position.pieces,
+                movedPieceIds: [piece.id],
+                isCapture: true,
+                isPromotion: false,
+                moveBounds: { from: position.move.from, to: position.move.to },
+                specialType: null,
+            });
+        });
+
+        it("should pass specialType to playAnimation when present", async () => {
+            const newPos = logicalPoint({ x: 2, y: 2 });
+            const position = createFakePosition({
+                pieces: BoardPieces.fromPieces({
+                    ...piece,
+                    position: newPos,
+                }),
+                move: createFakeMove({
+                    specialType: SpecialMoveType.KNOOKLEAR_FUSION,
+                }),
+            });
+
+            await store.getState().updatePiecesFromPosition(position);
+
+            expect(playAnimationMock).toHaveBeenCalledExactlyOnceWith<
+                [AnimationStep]
+            >({
+                newPieces: position.pieces,
+                movedPieceIds: [piece.id],
+                isCapture: false,
+                isPromotion: false,
+                moveBounds: { from: position.move.from, to: position.move.to },
+                specialType: SpecialMoveType.KNOOKLEAR_FUSION,
+            });
+        });
+
+        it("should set isPromotion=true when promotesTo is defined", async () => {
+            const newPos = logicalPoint({ x: 0, y: 7 });
+            const position = createFakePosition({
+                pieces: BoardPieces.fromPieces({
+                    ...piece,
+                    position: newPos,
+                }),
+                move: createFakeMove({
+                    promotesTo: PieceType.QUEEN,
+                }),
+            });
+
+            await store.getState().updatePiecesFromPosition(position);
+
+            expect(playAnimationMock).toHaveBeenCalledExactlyOnceWith<
+                [AnimationStep]
+            >({
+                newPieces: position.pieces,
+                movedPieceIds: [piece.id],
+                isCapture: false,
+                isPromotion: true,
+                moveBounds: { from: position.move.from, to: position.move.to },
+                specialType: null,
+            });
+        });
+    });
+
+    describe("updatePieces", () => {
+        it("should animate the pieces with minimal animation", () => {
+            const piece = createFakePiece({
+                position: logicalPoint({ x: 0, y: 0 }),
+            });
+            const newPos = logicalPoint({ x: 1, y: 1 });
+            const playAnimationMock = vi.fn();
+            store.setState({
+                playAnimation: playAnimationMock,
+                pieces: BoardPieces.fromPieces(piece),
+            });
+
+            const newPieces = BoardPieces.fromPieces({
+                ...piece,
+                position: newPos,
+            });
+            store.getState().updatePieces(newPieces);
+
+            expect(playAnimationMock).toHaveBeenCalledExactlyOnceWith({
+                newPieces,
+                movedPieceIds: [piece.id],
+            });
         });
     });
 });

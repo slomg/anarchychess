@@ -1,6 +1,6 @@
 import { LogicalPoint } from "@/features/point/types";
 import { ScreenPoint } from "@/features/point/types";
-import { PieceID } from "../lib/types";
+import { MoveBounds, PieceID } from "../lib/types";
 import { Move } from "../lib/types";
 import type { ChessboardStore } from "./chessboardStore";
 import { StateCreator } from "zustand";
@@ -12,6 +12,7 @@ import {
 import BoardPieces from "../lib/boardPieces";
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
 import { EventBus } from "@/lib/eventBus";
+import { Position } from "../lib/positionHistory";
 
 export interface PieceSliceProps {
     pieces: BoardPieces;
@@ -37,6 +38,8 @@ export interface PiecesSlice {
     applyMoveAnimated(move: Move): Promise<void>;
     applyMoveImmediate(move: Move): Promise<void>;
 
+    updatePiecesFromPosition(position: Position): Promise<void>;
+    updatePieces(newPieces: BoardPieces): Promise<void>;
     setImmediatePieces(pieces: BoardPieces): void;
 
     screenPointToPiece(position: ScreenPoint): PieceID | undefined;
@@ -85,6 +88,21 @@ export function createPiecesSlice(
 
             const move = await getLegalMove(dest, selectedPieceId, pieces);
             return move;
+        }
+
+        function findMovedPiecesBetween(
+            oldPieces: BoardPieces,
+            newPieces: BoardPieces,
+        ): PieceID[] {
+            const movedPieceIds: PieceID[] = [];
+            for (const newPiece of oldPieces) {
+                const piece = newPieces.getById(newPiece.id);
+                if (!piece) continue;
+                if (!pointEquals(piece.position, newPiece.position))
+                    movedPieceIds.push(newPiece.id);
+            }
+
+            return movedPieceIds;
         }
 
         return {
@@ -195,6 +213,47 @@ export function createPiecesSlice(
                 set((state) => {
                     state.pieces = pieces;
                 });
+            },
+
+            async updatePiecesFromPosition(position) {
+                const { pieces, playAnimation } = get();
+
+                const movedPieceIds = findMovedPiecesBetween(
+                    pieces,
+                    position.pieces,
+                );
+
+                set((state) => {
+                    state.pieces = position.pieces;
+                    state.selectedPieceId = null;
+                });
+
+                const moveBounds: MoveBounds = {
+                    from: position.move.from,
+                    to: position.move.to,
+                };
+                const isCapture = position.move.captures.length > 0;
+                const isPromotion = position.move.promotesTo !== null;
+
+                await playAnimation({
+                    newPieces: position.pieces,
+                    movedPieceIds,
+
+                    moveBounds,
+                    isCapture,
+                    isPromotion,
+                    specialType: position.move.specialType,
+                });
+            },
+            async updatePieces(newPieces) {
+                const { pieces, playAnimation } = get();
+
+                const movedPieceIds = findMovedPiecesBetween(pieces, newPieces);
+                set((state) => {
+                    state.pieces = newPieces;
+                    state.selectedPieceId = null;
+                });
+                await playAnimation({ newPieces, movedPieceIds });
             },
 
             screenPointToPiece(point) {

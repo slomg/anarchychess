@@ -14,7 +14,9 @@ const LiveGameControls = () => {
         playerColor: x.viewer.playerColor,
     }));
     const canAbort = useChessboardStore(
-        (x) => x.positionHistory.length <= constants.ALLOW_ABORTION_UNTIL_MOVE,
+        (x) =>
+            x.positionHistory.mainPlyCount <=
+            constants.ALLOW_ABORTION_UNTIL_MOVE,
     );
     const drawState = useLiveChessStore((x) => x.drawState);
 

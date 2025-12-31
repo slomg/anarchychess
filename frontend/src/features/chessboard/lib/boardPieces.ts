@@ -138,6 +138,10 @@ export default class BoardPieces {
         return this._byId.keys();
     }
 
+    get size(): number {
+        return this._byId.size;
+    }
+
     *[Symbol.iterator](): IterableIterator<Piece> {
         yield* this._byId.values();
     }

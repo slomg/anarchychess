@@ -9,14 +9,15 @@ import { pointToStr } from "@/features/point/pointUtils";
 import { PieceType } from "@/lib/apiClient";
 import BoardPieces from "../lib/boardPieces";
 import LegalMoves from "../lib/legalMoves";
+import { PositionId } from "../lib/positionHistory";
 
 export interface LegalMovesSliceProps {
-    legalMovesByPly: Map<number, LegalMoves>;
+    legalMovesByPosition: Map<PositionId | undefined, LegalMoves>;
     allowHistoryChanges?: boolean;
 }
 
 export interface LegalMovesSlice {
-    legalMovesByPly: Map<number, LegalMoves>;
+    legalMovesByPosition: Map<PositionId | undefined, LegalMoves>;
     highlightedLegalMoves: LogicalPoint[];
     allowHistoryChanges: boolean;
 
@@ -32,7 +33,7 @@ export interface LegalMovesSlice {
     hideLegalMoves(): void;
     flashLegalMoves(): void;
 
-    addLegalMoves(legalMoves: LegalMoves, plyIdx: number): void;
+    addLegalMoves(legalMoves: LegalMoves, positionId?: PositionId): void;
     setLatestLegalMoves(legalMoves: LegalMoves): void;
 }
 
@@ -51,19 +52,23 @@ export function createLegalMovesSlice(
 
         getLegalMoves() {
             const {
-                legalMovesByPly,
+                legalMovesByPosition,
                 allowHistoryChanges,
-                viewingPlyIdx,
                 positionHistory,
             } = get();
 
-            const isLatestPosition =
-                viewingPlyIdx === positionHistory.length - 1;
-            if (!allowHistoryChanges && !isLatestPosition) {
+            if (
+                !allowHistoryChanges &&
+                !positionHistory.isViewingLatestPosition
+            ) {
                 return new LegalMoves();
             }
 
-            return legalMovesByPly.get(viewingPlyIdx) ?? new LegalMoves();
+            return (
+                legalMovesByPosition.get(
+                    positionHistory.viewingPosition?.positionId,
+                ) ?? new LegalMoves()
+            );
         },
 
         async getLegalMove(dest, pieceId, pieces) {
@@ -160,15 +165,19 @@ export function createLegalMovesSlice(
             }
         },
 
-        addLegalMoves(legalMoves, plyIdx) {
+        addLegalMoves(legalMoves, positionId) {
             set((state) => {
-                state.legalMovesByPly.set(plyIdx, legalMoves);
+                state.legalMovesByPosition.set(positionId, legalMoves);
                 state.highlightedLegalMoves = [];
             });
         },
         setLatestLegalMoves(legalMoves) {
-            const { viewingPlyIdx, addLegalMoves } = get();
-            addLegalMoves(legalMoves, viewingPlyIdx);
+            const { positionHistory, addLegalMoves } = get();
+
+            addLegalMoves(
+                legalMoves,
+                positionHistory.viewingPosition?.positionId,
+            );
         },
     });
 }

@@ -13,6 +13,7 @@ import { LogicalPoint } from "@/features/point/types";
 import { PieceID } from "../../lib/types";
 import { logicalPoint } from "@/features/point/pointUtils";
 import LegalMoves from "../../lib/legalMoves";
+import { PositionId } from "../../lib/positionHistory";
 
 describe("CoreSlice", () => {
     let store: StoreApi<ChessboardStore>;
@@ -31,8 +32,11 @@ describe("CoreSlice", () => {
                     height: 9,
                 },
                 pieces: createFakeBoardPieces(),
-                legalMovesByPly: new Map([
-                    [0, createFakeLegalMoves({ hasForcedMoves: true })],
+                legalMovesByPosition: new Map([
+                    [
+                        "asd" as PositionId,
+                        createFakeLegalMoves({ hasForcedMoves: true }),
+                    ],
                 ]),
                 canDrag: false,
                 muteAudio: true,
@@ -57,7 +61,8 @@ describe("CoreSlice", () => {
                 logicalPoint({ x: 2, y: 3 }),
             ];
 
-            const { disableMovement, setLatestLegalMoves } = store.getState();
+            const { positionHistory, disableMovement, setLatestLegalMoves } =
+                store.getState();
             store.setState({
                 highlightedLegalMoves,
                 selectedPieceId,
@@ -68,9 +73,11 @@ describe("CoreSlice", () => {
 
             const state = store.getState();
 
-            expect(state.legalMovesByPly.get(state.viewingPlyIdx)).toEqual(
-                new LegalMoves(),
-            );
+            expect(
+                state.legalMovesByPosition.get(
+                    positionHistory.viewingPosition?.positionId,
+                ),
+            ).toEqual(new LegalMoves());
             expect(state.highlightedLegalMoves).toEqual([]);
             expect(state.selectedPieceId).toBeNull();
         });

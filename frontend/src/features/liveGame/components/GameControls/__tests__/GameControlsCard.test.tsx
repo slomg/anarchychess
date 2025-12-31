@@ -9,16 +9,14 @@ import LiveChessStoreContext from "@/features/liveGame/contexts/liveChessContext
 import { StoreApi } from "zustand";
 import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
 import { GameResult } from "@/lib/apiClient";
-import {
-    createFakePosition,
-    createFakeStartingPosition,
-} from "@/lib/testUtils/fakers/positionFaker";
+
 import { useGameEmitter } from "@/features/liveGame/hooks/useGameHub";
 import {
     ChessboardStore,
     createChessboardStore,
 } from "@/features/chessboard/stores/chessboardStore";
 import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardStoreContext";
+import { createNFakePositionHistory } from "@/lib/testUtils/fakers/positionHistoryFaker";
 
 vi.mock("@/features/liveGame/hooks/useGameHub");
 vi.mock("@/features/lobby/hooks/useLobbyHub");
@@ -49,7 +47,7 @@ describe("GameControlsCard", () => {
 
     it("should first render LiveGameControls with Abort", () => {
         chessboardStore.setState({
-            positionHistory: [createFakeStartingPosition()],
+            positionHistory: createNFakePositionHistory(0),
         });
 
         renderWithCtx();
@@ -60,10 +58,7 @@ describe("GameControlsCard", () => {
 
     it("should render Resign if moveHistory has 2+ moves", () => {
         chessboardStore.setState({
-            positionHistory: [
-                createFakeStartingPosition(),
-                createFakePosition(),
-            ],
+            positionHistory: createNFakePositionHistory(2),
         });
 
         renderWithCtx();
@@ -90,7 +85,7 @@ describe("GameControlsCard", () => {
         const user = userEvent.setup();
 
         chessboardStore.setState({
-            positionHistory: [createFakeStartingPosition()],
+            positionHistory: createNFakePositionHistory(1),
         });
 
         renderWithCtx();

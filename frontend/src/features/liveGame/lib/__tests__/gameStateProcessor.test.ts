@@ -1,5 +1,4 @@
 import { ChessboardProps } from "@/features/chessboard/stores/chessboardStore";
-import { MoveBounds, PositionHistory } from "@/features/chessboard/lib/types";
 import { decodeMovePath, decodeMovePathIntoLegalMoves } from "../moveDecoder";
 import { createFakeGameState } from "@/lib/testUtils/fakers/gameStateFaker";
 import { simulateMove } from "@/features/chessboard/lib/simulateMove";
@@ -7,11 +6,13 @@ import { LiveChessStoreProps } from "../../stores/liveChessStore";
 import mockSequentialUUID from "@/lib/testUtils/mocks/mockUuids";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
 import { LiveChessViewer } from "../../stores/gamePlaySlice";
+import { MoveBounds } from "@/features/chessboard/lib/types";
 import { logicalPoint } from "@/features/point/pointUtils";
 import { createStoreProps } from "../gameStateProcessor";
 import { LogicalPoint } from "@/features/point/types";
 import { GameColor } from "@/lib/apiClient";
 import constants from "@/lib/constants";
+import PositionHistory from "@/features/chessboard/lib/positionHistory";
 
 describe("createStoreProps", () => {
     it("should return the complete and correct store props object", () => {
@@ -97,16 +98,13 @@ describe("createStoreProps", () => {
             pieces = newPieces;
         }
 
-        // starting with initial position
-        const positionHistory: PositionHistory = [
-            {
-                pieces: new BoardPieces(pieces),
-                // clocks: {
-                //     whiteClock: baseMs,
-                //     blackClock: baseMs,
-                // },
-            },
-        ];
+        // start position history ids after piece ids
+        mockSequentialUUID({ startAt: constants.DEFAULT_CHESS_BOARD.size });
+        const positionHistory = new PositionHistory(new BoardPieces(pieces));
+        // clocks: {
+        //     whiteClock: baseMs,
+        //     blackClock: baseMs,
+        // },
 
         // moves and clocks from the test setup
         const moves = [
@@ -142,7 +140,7 @@ describe("createStoreProps", () => {
 
         for (const move of moves) {
             applyMove(move.from, move.to);
-            positionHistory.push({
+            positionHistory.addNextPosition({
                 pieces,
                 move: move.decoded,
                 // clocks: move.clocks,
@@ -150,10 +148,10 @@ describe("createStoreProps", () => {
             });
         }
 
-        const lastPosition = positionHistory.at(-1)!;
+        const lastPosition = positionHistory.viewingPosition!;
         const lastMove: MoveBounds = {
-            from: lastPosition.move!.from,
-            to: lastPosition.move!.to,
+            from: lastPosition.move.from,
+            to: lastPosition.move.to,
         };
 
         const legalMoves = decodeMovePathIntoLegalMoves({
@@ -185,8 +183,8 @@ describe("createStoreProps", () => {
             },
             board: {
                 pieces,
-                legalMovesByPly: new Map([
-                    [positionHistory.length - 1, legalMoves],
+                legalMovesByPosition: new Map([
+                    [lastPosition.positionId, legalMoves],
                 ]),
                 boardDimensions: {
                     width: constants.BOARD_WIDTH,

@@ -1,18 +1,23 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { StoreApi } from "zustand";
 
-import MoveHistoryTable from "../MoveHistoryTable";
-import {
-    createFakePosition,
-    createFakeStartingPosition,
-} from "@/lib/testUtils/fakers/positionFaker";
 import {
     ChessboardStore,
     createChessboardStore,
 } from "@/features/chessboard/stores/chessboardStore";
+import {
+    createFakeMove,
+    createFakePiece,
+} from "@/lib/testUtils/fakers/chessboardFakers";
+
 import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardStoreContext";
-import userEvent from "@testing-library/user-event";
+import { createFakePositionHistory } from "@/lib/testUtils/fakers/positionHistoryFaker";
+import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
 import { mockScrollTo } from "@/lib/testUtils/mocks/mockDom";
+import { logicalPoint } from "@/features/point/pointUtils";
+import MoveHistoryTable from "../MoveHistoryTable";
+import BoardPieces from "../../lib/boardPieces";
 import { GameColor } from "@/lib/apiClient";
 
 describe("MoveHistoryTable", () => {
@@ -39,10 +44,9 @@ describe("MoveHistoryTable", () => {
 
     it("should render a single row when there is one move", () => {
         chessboardStore.setState({
-            positionHistory: [
-                createFakeStartingPosition(),
-                createFakePosition({ san: "e4" }),
-            ],
+            positionHistory: createFakePositionHistory({
+                pos: [createFakePositionProps({ san: "e4" })],
+            }),
         });
 
         renderWithCtx();
@@ -53,13 +57,14 @@ describe("MoveHistoryTable", () => {
 
     it("should render multiple rows for multiple moves", () => {
         chessboardStore.setState({
-            positionHistory: [
-                createFakeStartingPosition(),
-                createFakePosition({ san: "e4" }),
-                createFakePosition({ san: "e5" }),
-                createFakePosition({ san: "Nf3" }),
-                createFakePosition({ san: "Nc6" }),
-            ],
+            positionHistory: createFakePositionHistory({
+                pos: [
+                    createFakePositionProps({ san: "e4" }),
+                    createFakePositionProps({ san: "e5" }),
+                    createFakePositionProps({ san: "Nf3" }),
+                    createFakePositionProps({ san: "Nc6" }),
+                ],
+            }),
         });
 
         renderWithCtx();
@@ -74,13 +79,14 @@ describe("MoveHistoryTable", () => {
 
     it("should apply alternating background color class for odd rows", () => {
         chessboardStore.setState({
-            positionHistory: [
-                createFakeStartingPosition(),
-                createFakePosition({ san: "e4" }),
-                createFakePosition({ san: "e5" }),
-                createFakePosition({ san: "Nf3" }),
-                createFakePosition({ san: "Nf6" }),
-            ],
+            positionHistory: createFakePositionHistory({
+                pos: [
+                    createFakePositionProps({ san: "e4" }),
+                    createFakePositionProps({ san: "e5" }),
+                    createFakePositionProps({ san: "Nf3" }),
+                    createFakePositionProps({ san: "Nf6" }),
+                ],
+            }),
         });
 
         renderWithCtx();
@@ -93,63 +99,125 @@ describe("MoveHistoryTable", () => {
     });
 
     it("should update position using arrow keys", async () => {
-        const position1 = createFakeStartingPosition();
-        const position2 = createFakePosition();
-        const position3 = createFakePosition();
+        const piece = createFakePiece({
+            position: logicalPoint({ x: 0, y: 0 }),
+        });
+
+        const rootPieces = BoardPieces.fromPieces(piece);
+        const position1 = createFakePositionProps({
+            pieces: BoardPieces.fromPieces({
+                ...piece,
+                position: logicalPoint({ x: 1, y: 0 }),
+            }),
+            move: createFakeMove({
+                from: logicalPoint({ x: 0, y: 0 }),
+                to: logicalPoint({ x: 1, y: 0 }),
+            }),
+        });
+        const position2 = createFakePositionProps({
+            pieces: BoardPieces.fromPieces({
+                ...piece,
+                position: logicalPoint({ x: 2, y: 0 }),
+            }),
+            move: createFakeMove({
+                from: logicalPoint({ x: 1, y: 0 }),
+                to: logicalPoint({ x: 2, y: 0 }),
+            }),
+        });
 
         chessboardStore.setState({
-            viewingPlyIdx: 0,
-            positionHistory: [position1, position2, position3],
+            pieces: rootPieces,
+            positionHistory: createFakePositionHistory({
+                rootPieces,
+                pos: [position1, position2],
+            }),
         });
 
         const user = userEvent.setup();
         renderWithCtx();
 
-        // go to move 2
-        await user.keyboard("{ArrowRight}");
-        expect(chessboardStore.getState().pieces).toEqual(position2.pieces);
-
-        // go to move 3
-        await user.keyboard("{ArrowRight}");
-        expect(chessboardStore.getState().pieces).toEqual(position3.pieces);
-
-        // go back to move 2
+        // step backward 2 -> 1
         await user.keyboard("{ArrowLeft}");
-        expect(chessboardStore.getState().pieces).toEqual(position2.pieces);
+        expect(chessboardStore.getState().pieces).toEqual(position1.pieces);
+
+        // step backward 1 -> root
+        await user.keyboard("{ArrowLeft}");
+        expect(chessboardStore.getState().pieces).toEqual(rootPieces);
+
+        // step forward root -> 1
+        await user.keyboard("{ArrowRight}");
+        expect(chessboardStore.getState().pieces).toEqual(position1.pieces);
 
         // jump to end
         await user.keyboard("{ArrowDown}");
-        expect(chessboardStore.getState().pieces).toEqual(position3.pieces);
+        expect(chessboardStore.getState().pieces).toEqual(position2.pieces);
 
         // jump to start
         await user.keyboard("{ArrowUp}");
-        expect(chessboardStore.getState().pieces).toEqual(position1.pieces);
+        expect(chessboardStore.getState().pieces).toEqual(rootPieces);
     });
 
     it("should update position when clicking on a move", async () => {
-        const position1 = createFakeStartingPosition();
-        const position2 = createFakePosition({ san: "e4" });
-        const position3 = createFakePosition({ san: "e5" });
-        const position4 = createFakePosition({ san: "e6" });
+        const piece = createFakePiece({
+            position: logicalPoint({ x: 0, y: 0 }),
+        });
+
+        const rootPieces = BoardPieces.fromPieces(piece);
+        const position1 = createFakePositionProps({
+            san: "e4",
+            pieces: BoardPieces.fromPieces({
+                ...piece,
+                position: logicalPoint({ x: 1, y: 0 }),
+            }),
+            move: createFakeMove({
+                from: logicalPoint({ x: 0, y: 0 }),
+                to: logicalPoint({ x: 1, y: 0 }),
+            }),
+        });
+        const position2 = createFakePositionProps({
+            san: "e5",
+            pieces: BoardPieces.fromPieces({
+                ...piece,
+                position: logicalPoint({ x: 2, y: 0 }),
+            }),
+            move: createFakeMove({
+                from: logicalPoint({ x: 1, y: 0 }),
+                to: logicalPoint({ x: 2, y: 0 }),
+            }),
+        });
+        const position3 = createFakePositionProps({
+            san: "e6",
+            pieces: BoardPieces.fromPieces({
+                ...piece,
+                position: logicalPoint({ x: 3, y: 0 }),
+            }),
+            move: createFakeMove({
+                from: logicalPoint({ x: 2, y: 0 }),
+                to: logicalPoint({ x: 3, y: 0 }),
+            }),
+        });
 
         chessboardStore.setState({
-            positionHistory: [position1, position2, position3, position4],
+            positionHistory: createFakePositionHistory({
+                rootPieces,
+                pos: [position1, position2, position3],
+            }),
         });
 
         const user = userEvent.setup();
         renderWithCtx();
 
         await user.click(screen.getByText("e4"));
-        expect(chessboardStore.getState().pieces).toEqual(position2.pieces);
+        expect(chessboardStore.getState().pieces).toEqual(position1.pieces);
 
         await user.click(screen.getByText("e5"));
-        expect(chessboardStore.getState().pieces).toEqual(position3.pieces);
+        expect(chessboardStore.getState().pieces).toEqual(position2.pieces);
 
         await user.click(screen.getByText("e6"));
-        expect(chessboardStore.getState().pieces).toEqual(position4.pieces);
+        expect(chessboardStore.getState().pieces).toEqual(position3.pieces);
     });
 
-    it("should call flipBoard when the flip board icon is clicked", async () => {
+    it("should flip the board when the flip board icon is clicked", async () => {
         chessboardStore.setState({ viewingFrom: GameColor.WHITE });
         const user = userEvent.setup();
 

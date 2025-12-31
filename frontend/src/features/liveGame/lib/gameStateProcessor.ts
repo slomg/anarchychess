@@ -13,9 +13,8 @@ import {
 
 import { LiveChessStore, LiveChessStoreProps } from "../stores/liveChessStore";
 import { decodeMovePath, decodeMovePathIntoLegalMoves } from "./moveDecoder";
-import { Position, PositionHistory } from "@/features/chessboard/lib/types";
+import PositionHistory from "@/features/chessboard/lib/positionHistory";
 import { simulateMove } from "@/features/chessboard/lib/simulateMove";
-import BoardPieces from "@/features/chessboard/lib/boardPieces";
 import { decodeFen } from "../../chessboard/lib/fenDecoder";
 import { LiveChessViewer } from "../stores/gamePlaySlice";
 import { ClockSnapshot } from "./types";
@@ -32,6 +31,7 @@ export function createStoreProps(
     gameState: GameState,
 ): ProcessedGameState {
     const positionHistory = getPositionHistory(gameState);
+    const lastPosition = positionHistory.viewingPosition;
     const boardWidth = constants.BOARD_WIDTH;
     const boardHeight = constants.BOARD_HEIGHT;
     const legalMoves = decodeMovePathIntoLegalMoves({
@@ -39,8 +39,6 @@ export function createStoreProps(
         boardWidth,
         hasForcedMoves: gameState.moveOptions.hasForcedMoves,
     });
-
-    const lastPosition = positionHistory.at(-1);
 
     const viewerColor = getViewerColor(
         gameState.whitePlayer,
@@ -68,10 +66,12 @@ export function createStoreProps(
         resultData: gameState.resultData ?? null,
     };
     const board: ChessboardProps = {
-        pieces: lastPosition?.pieces ?? new BoardPieces(),
+        pieces: lastPosition?.pieces ?? positionHistory.rootPieces,
         positionHistory,
 
-        legalMovesByPly: new Map([[positionHistory.length - 1, legalMoves]]),
+        legalMovesByPosition: new Map([
+            [positionHistory.viewingPosition?.positionId, legalMoves],
+        ]),
         lastMove: lastPosition?.move && {
             from: lastPosition.move.from,
             to: lastPosition.move.to,
@@ -104,12 +104,9 @@ function getPositionHistory(gameState: GameState): PositionHistory {
         whiteClock: baseClock,
         blackClock: baseClock,
     };
-    const positionHistory: PositionHistory = [
-        {
-            pieces,
-            // clocks: { ...clockSnapshot },
-        },
-    ];
+    const positionHistory = new PositionHistory(pieces);
+    // clocks: { ...clockSnapshot }
+
     for (const [i, moveSnapshot] of gameState.moveHistory.entries()) {
         clockSnapshot = {
             whiteClock:
@@ -121,13 +118,12 @@ function getPositionHistory(gameState: GameState): PositionHistory {
         const move = decodeMovePath(moveSnapshot.path, constants.BOARD_WIDTH);
         const { newPieces } = simulateMove(pieces, move);
 
-        const position: Position = {
+        // clocks: { ...clockSnapshot }
+        positionHistory.addNextPosition({
+            pieces: newPieces,
             move,
             san: moveSnapshot.san,
-            pieces: newPieces,
-            // clocks: { ...clockSnapshot },
-        };
-        positionHistory.push(position);
+        });
         pieces = newPieces;
     }
     return positionHistory;
