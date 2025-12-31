@@ -223,33 +223,6 @@ describe("useLiveChessEvents", () => {
             );
         });
 
-        it.each([
-            [GameColor.WHITE, GameColor.BLACK],
-            [GameColor.WHITE, GameColor.WHITE],
-        ])(
-            "should only disable movement if the side to move !== us",
-            async (ourColor, newSideToMove) => {
-                liveChessStore.setState({
-                    viewer: { userId: "test id", playerColor: ourColor },
-                });
-                const disableMovementMock = vi.fn();
-                chessboardStore.setState({
-                    disableMovement: disableMovementMock,
-                });
-
-                setupStandardStoresForMove();
-                renderLiveChessEvents();
-
-                await triggerMoveMade({ sideToMove: newSideToMove });
-
-                if (ourColor !== newSideToMove) {
-                    expect(disableMovementMock).toHaveBeenCalledOnce();
-                } else {
-                    expect(disableMovementMock).not.toHaveBeenCalledOnce();
-                }
-            },
-        );
-
         it("should do nothing if it's our turn next", async () => {
             const addPositionMock = vi.fn();
             chessboardStore.setState({ addPosition: addPositionMock });

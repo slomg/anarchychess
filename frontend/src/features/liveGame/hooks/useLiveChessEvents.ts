@@ -67,10 +67,8 @@ export default function useLiveChessEvents(
         gameToken,
         "MoveMadeAsync",
         async (move, plyNumber, sideToMove, clocks) => {
-            const { disableMovement } = chessboardStore.getState();
             const { viewer } = liveChessStore.getState();
             if (viewer.playerColor !== sideToMove) {
-                disableMovement();
                 await handleMoveUpdate(move, plyNumber, sideToMove, clocks);
             }
         },
