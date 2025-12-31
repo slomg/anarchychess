@@ -215,13 +215,47 @@ describe("PositionHistory", () => {
             expect(history.viewingPosition).toBe(pos);
         });
 
-        it("should append to the main line for subsequent positions", () => {
+        it("should append to the main line for next positions", () => {
             const pos1 = history.addNextPosition(createFakePositionProps());
             const pos2 = history.addNextPosition(createFakePositionProps());
 
             expect(history.plyCount).toBe(2);
             expect([...history]).toEqual([pos1, pos2]);
             expect(history.viewingPosition).toBe(pos2);
+        });
+
+        it("should return the existing head variation if SAN is the same as head when viewing root", () => {
+            const props = createFakePositionProps({ san: "e4" });
+            const pos = history.addNextPosition(props);
+
+            history.goToStart();
+            const duplicatePos = history.addNextPosition(props);
+
+            expect(duplicatePos).toBe(pos);
+            expect(history.viewingPosition).toBe(pos);
+            expect([...history]).toEqual([pos]);
+        });
+
+        it("should add a new head variation if SAN does not exist", () => {
+            const head = history.addNextPosition(
+                createFakePositionProps({ san: "e4" }),
+            );
+
+            history.goToStart(); // viewing root
+            const newProps = createFakePositionProps({ san: "c4" });
+            const headVariation = history.addNextPosition(newProps);
+
+            expect(headVariation).not.toBe(head);
+            expect(history.viewingPosition).toBe(headVariation);
+            expect(history.plyCount).toBe(1);
+
+            const retrieved = history.goToPosition(headVariation.positionId);
+            expect(retrieved.success).toBe(true);
+            expect(history.viewingPosition).toBe(headVariation);
+
+            history.goToStart();
+            expect(history.stepForward()).toBe(true);
+            expect(history.viewingPosition).toBe(head);
         });
 
         it("should add a variation when viewing a non tail position", () => {

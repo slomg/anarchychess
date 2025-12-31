@@ -29,6 +29,7 @@ export default class PositionHistory {
     _byPositionId: Map<PositionId, PositionNode> = new Map();
 
     _head: PositionNode | null = null;
+    _headVariationBySan: Map<string, PositionNode> = new Map();
     _tail: PositionNode | null = null;
 
     _viewingPosition: PositionNode | null = null;
@@ -127,8 +128,19 @@ export default class PositionHistory {
             return node;
         }
 
-        // we're not viewing anything, but we're not empty, expand tail
-        const node = this._addToNode(this._tail, props);
+        // we're not viewing anything, but we're not empty, add a head variation
+        const existing =
+            props.san === this._head.san
+                ? this._head
+                : this._headVariationBySan.get(props.san);
+        if (existing) {
+            this._viewingPosition = existing;
+            return existing;
+        }
+
+        const node = new PositionNode(props);
+        this._byPositionId.set(node.positionId, node);
+        this._headVariationBySan.set(props.san, node);
         this._viewingPosition = node;
         return node;
     }
