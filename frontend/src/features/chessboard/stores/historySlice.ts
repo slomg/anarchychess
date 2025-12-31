@@ -1,6 +1,7 @@
 import { StateCreator } from "zustand";
 
 import PositionHistory, {
+    Position,
     PositionId,
     PositionProps,
 } from "../lib/positionHistory";
@@ -23,7 +24,7 @@ export interface HistorySlice {
     goToStartPosition(): Promise<void>;
     goToLatestPosition(): Promise<void>;
 
-    addLatestPosition(newPosition: PositionProps): void;
+    addPosition(newPosition: PositionProps): Position;
 }
 
 export function createHistorySlice(
@@ -41,8 +42,8 @@ export function createHistorySlice(
         async goToPosition(positionId) {
             const { applyMoveAnimated, updatePiecesFromPosition } = get();
 
-            let success = false;
-            let isOneStepForward = false;
+            let success: boolean | undefined;
+            let isOneStepForward: boolean | undefined;
             set((state) => {
                 ({ success, isOneStepForward } =
                     state.positionHistory.goToPosition(positionId));
@@ -92,25 +93,41 @@ export function createHistorySlice(
         async goToStartPosition() {
             const { positionHistory, updatePieces } = get();
 
-            set((state) => state.positionHistory.goToStart());
-            await updatePieces(positionHistory.rootPieces);
+            let success: boolean | undefined;
+            set((state) => {
+                success = state.positionHistory.goToStart();
+            });
+            if (success) {
+                await updatePieces(positionHistory.rootPieces);
+            }
         },
 
         async goToLatestPosition() {
-            const { updatePiecesFromPosition } = get();
-            set((state) => state.positionHistory.goToEnd());
+            const { updatePiecesFromPosition, applyMoveAnimated } = get();
+
+            let success: boolean | undefined;
+            let isOneStepForward: boolean | undefined;
+            set((state) => {
+                ({ success, isOneStepForward } =
+                    state.positionHistory.goToEnd());
+            });
 
             const { positionHistory } = get();
-            if (positionHistory.viewingPosition) {
+            if (!success || !positionHistory.viewingPosition) return;
+
+            if (isOneStepForward) {
+                await applyMoveAnimated(positionHistory.viewingPosition.move);
+            } else {
                 await updatePiecesFromPosition(positionHistory.viewingPosition);
             }
         },
 
-        addLatestPosition(newPosition) {
+        addPosition(newPosition) {
+            let position: Position;
             set((state) => {
-                state.positionHistory.goToEnd();
-                state.positionHistory.addNextPosition(newPosition);
+                position = state.positionHistory.addNextPosition(newPosition);
             });
+            return position!;
         },
     });
 }

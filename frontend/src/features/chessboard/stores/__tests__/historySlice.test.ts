@@ -240,28 +240,24 @@ describe("HistorySlice", () => {
         });
     });
 
-    describe("addLatestPosition", () => {
-        it("should add the new position to the end of positionHistory", () => {
+    describe("addPosition", () => {
+        it("should add the new position to positionHistory", async () => {
             const positionHistory = new PositionHistory(
                 createFakeBoardPieces(),
             );
             const pos1 = positionHistory.addNextPosition(
                 createFakePositionProps(),
             );
-            const pos2 = positionHistory.addNextPosition(
-                createFakePositionProps(),
-            );
             positionHistory.goToPosition(pos1.positionId);
             const newPosition = createFakePositionProps();
             store.setState({ positionHistory });
 
-            store.getState().addLatestPosition(newPosition);
+            const result = store.getState().addPosition(newPosition);
 
-            const historyArr = [...store.getState().positionHistory];
-            expect(historyArr).toHaveLength(3);
-            expect(historyArr[0]).toEqual(pos1);
-            expect(historyArr[1]).toEqual(pos2);
-            expect(historyArr[2]).toEqual(expect.objectContaining(newPosition));
+            expect(result).toEqual(expect.objectContaining(newPosition));
+
+            const newPositionHistory = store.getState().positionHistory;
+            expect([...newPositionHistory]).toEqual([pos1, result]);
         });
     });
 });
