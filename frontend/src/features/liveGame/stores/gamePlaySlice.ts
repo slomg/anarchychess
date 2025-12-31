@@ -18,7 +18,7 @@ export interface GamePlaySliceProps {
 export interface GamePlaySlice extends GamePlaySliceProps {
     isPendingMoveAck: boolean;
 
-    receiveMove(clocks: Clocks, sideToMove: GameColor): void;
+    receiveLiveMove(clocks: Clocks, sideToMove: GameColor): void;
     markPendingMoveAck(): void;
 
     setClocks(clocks: Clocks): void;
@@ -37,7 +37,7 @@ export function createGamePlaySlice(
 
         isPendingMoveAck: false,
 
-        receiveMove(clocks, sideToMove) {
+        receiveLiveMove(clocks, sideToMove) {
             const { decrementDrawCooldown } = get();
 
             decrementDrawCooldown();

@@ -18,7 +18,7 @@ describe("gamePlaySlice", () => {
         store = createLiveChessStore(initialProps);
     });
 
-    describe("receiveMove", () => {
+    describe("receiveLiveMove", () => {
         it("should update clocks, sideToMove, and clear isPendingMoveAck", () => {
             const newClocks: Clocks = {
                 whiteClock: 500,
@@ -39,7 +39,7 @@ describe("gamePlaySlice", () => {
                 sideToMove: GameColor.WHITE,
             });
 
-            store.getState().receiveMove(newClocks, newSideToMove);
+            store.getState().receiveLiveMove(newClocks, newSideToMove);
             const state = store.getState();
 
             expect(state.clocks).toBe(newClocks);
@@ -53,7 +53,9 @@ describe("gamePlaySlice", () => {
                 decrementDrawCooldown: decrementDrawCooldownMock,
             });
 
-            store.getState().receiveMove(createFakeClock(), GameColor.WHITE);
+            store
+                .getState()
+                .receiveLiveMove(createFakeClock(), GameColor.WHITE);
 
             expect(decrementDrawCooldownMock).toHaveBeenCalledOnce();
         });
