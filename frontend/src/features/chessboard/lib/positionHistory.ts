@@ -78,12 +78,24 @@ export default class PositionHistory {
         return { success: true, isOneStepForward };
     }
 
-    goToStart(): void {
+    goToStart(): boolean {
+        if (this._viewingPosition === null) return false;
+
         this._viewingPosition = null;
+        return true;
     }
 
-    goToEnd(): void {
+    goToEnd(): {
+        success: boolean;
+        isOneStepForward: boolean;
+    } {
+        if (this._viewingPosition?.positionId === this._tail?.positionId)
+            return { success: false, isOneStepForward: false };
+
+        const isOneStepForward =
+            this._viewingPosition?.next?.positionId === this._tail?.positionId;
         this._viewingPosition = this._tail;
+        return { success: true, isOneStepForward };
     }
 
     stepBackward(): boolean {

@@ -119,31 +119,63 @@ describe("PositionHistory", () => {
     describe("goToStart", () => {
         it("should set viewingPosition to null", () => {
             history.addNextPosition(createFakePositionProps());
-            const pos2 = history.addNextPosition(createFakePositionProps());
+            history.addNextPosition(createFakePositionProps());
 
-            history.goToEnd();
-            expect(history.viewingPosition).toBe(pos2);
-
-            history.goToStart();
+            expect(history.goToStart()).toBe(true);
             expect(history.viewingPosition).toBeNull();
+        });
+
+        it("should return false if we're already at the end", () => {
+            history.addNextPosition(createFakePositionProps());
+            history.addNextPosition(createFakePositionProps());
+
+            expect(history.goToStart()).toBe(true);
+            expect(history.goToStart()).toBe(false);
         });
     });
 
     describe("goToEnd", () => {
-        it("should set viewingPosition to tail", () => {
+        it("should return isOneStepForward true when moving exactly one step to tail", () => {
             history.addNextPosition(createFakePositionProps());
             const pos2 = history.addNextPosition(createFakePositionProps());
+            const pos3 = history.addNextPosition(createFakePositionProps());
 
-            history.goToStart();
-            expect(history.viewingPosition).toBeNull();
+            history.goToPosition(pos2.positionId);
 
-            history.goToEnd();
-            expect(history.viewingPosition).toBe(pos2);
+            const result = history.goToEnd();
+
+            expect(result.success).toBe(true);
+            expect(result.isOneStepForward).toBe(true);
+            expect(history.viewingPosition).toBe(pos3);
         });
 
         it("should do nothing if history is empty", () => {
             history.goToStart();
             expect(history.viewingPosition).toBeNull();
+        });
+
+        it("should return false if already at the tail", () => {
+            history.addNextPosition(createFakePositionProps());
+            const pos2 = history.addNextPosition(createFakePositionProps());
+
+            history.goToEnd();
+            const result = history.goToEnd();
+            expect(result.success).toBe(false);
+            expect(result.isOneStepForward).toBe(false);
+            expect(history.viewingPosition).toBe(pos2);
+        });
+
+        it("should return isOneStepForward false when jumping multiple moves ahead", () => {
+            history.addNextPosition(createFakePositionProps());
+            history.addNextPosition(createFakePositionProps());
+            const pos3 = history.addNextPosition(createFakePositionProps());
+            history.goToStart();
+
+            const result = history.goToEnd();
+
+            expect(result.success).toBe(true);
+            expect(result.isOneStepForward).toBe(false);
+            expect(history.viewingPosition).toBe(pos3);
         });
     });
 
