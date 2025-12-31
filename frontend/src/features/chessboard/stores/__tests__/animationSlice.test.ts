@@ -185,6 +185,17 @@ describe("AnimationSlice", () => {
 
             await promise;
         });
+
+        it("should hide legal moves", async () => {
+            const hideLegalMovesMock = vi.fn();
+            store.setState({ hideLegalMoves: hideLegalMovesMock });
+
+            await store
+                .getState()
+                .playAnimationBatch({ steps: [], removedPieceIds: [] });
+
+            expect(hideLegalMovesMock).toHaveBeenCalledOnce();
+        });
     });
 
     describe("playAnimation", () => {

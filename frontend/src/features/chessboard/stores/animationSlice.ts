@@ -44,7 +44,8 @@ export function createAnimationSlice(
             animation: MoveAnimation,
             persistent: boolean = false,
         ) {
-            const { playAudioForAnimationStep } = get();
+            const { playAudioForAnimationStep, hideLegalMoves } = get();
+            hideLegalMoves();
 
             if (currentAnimationCancelToken) {
                 currentAnimationCancelToken.canceled = true;
