@@ -50,7 +50,7 @@ export default class PositionHistory {
     }
 
     get isViewingLatestPosition(): boolean {
-        return this._viewingPosition === this._tail;
+        return this._viewingPosition?.positionId === this._tail?.positionId;
     }
 
     goToPosition(positionId: PositionId): {
@@ -63,8 +63,9 @@ export default class PositionHistory {
         let isOneStepForward = true;
         if (this._viewingPosition) {
             isOneStepForward =
-                this._viewingPosition.next === node ||
-                this._viewingPosition.subVariationBySan.get(node.san) === node;
+                this._viewingPosition.next?.positionId === node.positionId ||
+                this._viewingPosition.subVariationBySan.get(node.san)
+                    ?.positionId === node.positionId;
         }
 
         this._viewingPosition = node;
@@ -83,7 +84,6 @@ export default class PositionHistory {
         if (!this._viewingPosition) return false;
 
         const prev = this._viewingPosition.prev;
-        console.log(prev);
         if (!prev) {
             this._viewingPosition = null;
             return true;
@@ -138,7 +138,7 @@ export default class PositionHistory {
 
         // if parent is the tail, it cannot possibly have a sub variation already
         // which means this is a main variation, increment ply count
-        if (parent === this._tail) {
+        if (parent?.positionId === this._tail?.positionId) {
             this._tail = node;
             this._plyCount++;
         }
