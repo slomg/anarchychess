@@ -23,7 +23,6 @@ import { createFakeMoveSnapshot } from "@/lib/testUtils/fakers/moveSnapshotFaker
 import { createFakeClock } from "@/lib/testUtils/fakers/clockFaker";
 import { act } from "react";
 import { refetchGame } from "../../lib/gameStateProcessor";
-import { createFakePosition } from "@/lib/testUtils/fakers/positionFaker";
 import {
     createFakeLegalMoves,
     createFakePiece,
@@ -37,7 +36,8 @@ import {
 } from "../../lib/moveDecoder";
 import { GameClientEvents, useGameEvent } from "../useGameHub";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
-import { Position } from "@/features/chessboard/lib/types";
+import { createNFakePositionHistory } from "@/lib/testUtils/fakers/positionHistoryFaker";
+import { Position } from "@/features/chessboard/lib/positionHistory";
 
 vi.mock("@/features/liveGame/hooks/useGameHub");
 vi.mock("@/features/liveGame/lib/gameStateProcessor");
@@ -69,8 +69,7 @@ describe("useLiveChessEvents", () => {
             position: logicalPoint({ x: 1, y: 1 }),
         });
         chessboardStore.setState({
-            viewingPlyIdx: 0,
-            positionHistory: [createFakePosition()],
+            positionHistory: createNFakePositionHistory(3),
             pieces: BoardPieces.fromPieces(piece),
         });
         liveChessStore.setState({
@@ -82,24 +81,25 @@ describe("useLiveChessEvents", () => {
     async function triggerMoveMade({
         sideToMove,
         clocks,
-        plyIdx,
+        plyNumber,
     }: {
         sideToMove: GameColor;
         clocks?: Clocks;
-        plyIdx?: number;
+        plyNumber?: number;
     }): Promise<MoveSnapshot> {
         const move = createFakeMoveSnapshot({
             san: "test san",
             path: { fromIdx: 11, toIdx: 12, moveKey: "0" },
         });
         clocks ??= createFakeClock();
-        plyIdx ??= chessboardStore.getState().positionHistory.length - 1;
+        plyNumber ??=
+            chessboardStore.getState().positionHistory.mainPlyCount + 1;
 
         await act(async () => {
             await gameEventHandlers.MoveMadeAsync?.(
                 move,
                 sideToMove,
-                plyIdx,
+                plyNumber,
                 clocks,
             );
         });
@@ -146,15 +146,20 @@ describe("useLiveChessEvents", () => {
     describe("MoveMadeAsync", () => {
         it("should trigger a refetch when plyIdx is out of sync", async () => {
             chessboardStore.setState({
-                positionHistory: [createFakePosition()],
+                positionHistory: createNFakePositionHistory(1),
             });
 
             renderLiveChessEvents();
 
-            await triggerMoveMade({ sideToMove: GameColor.WHITE, plyIdx: 23 });
+            await triggerMoveMade({
+                sideToMove: GameColor.WHITE,
+                plyNumber: 23,
+            });
 
             expect(refetchGame).toHaveBeenCalled();
-            expect(chessboardStore.getState().positionHistory.length).toBe(1);
+            expect(
+                chessboardStore.getState().positionHistory.totalPlyCount,
+            ).toBe(1);
         });
 
         it.each([true, false])(
@@ -172,12 +177,9 @@ describe("useLiveChessEvents", () => {
                     sideToMove: GameColor.WHITE,
                 });
 
-                expect(chessboardStore.getState().viewingPlyIdx).toBe(
-                    positionHistoryBefore.length,
-                );
-                expect(chessboardStore.getState().positionHistory.length).toBe(
-                    positionHistoryBefore.length + 1,
-                );
+                expect(
+                    chessboardStore.getState().positionHistory.totalPlyCount,
+                ).toBe(positionHistoryBefore.totalPlyCount + 1);
 
                 const piecesAfter = chessboardStore.getState().pieces;
                 if (!awaitingAck) {
@@ -187,12 +189,14 @@ describe("useLiveChessEvents", () => {
                 }
 
                 expect(
-                    chessboardStore.getState().positionHistory[1],
-                ).toEqual<Position>({
-                    san: move.san,
-                    move: decodeMovePath(move.path, 10),
-                    pieces: piecesAfter,
-                });
+                    chessboardStore.getState().positionHistory.viewingPosition,
+                ).toEqual(
+                    expect.objectContaining({
+                        san: move.san,
+                        move: decodeMovePath(move.path, 10),
+                        pieces: piecesAfter,
+                    }),
+                );
             },
         );
 
