@@ -23,7 +23,8 @@ export interface PositionProps {
 export default class PositionHistory {
     [immerable] = true;
 
-    _plyCount = 0;
+    _mainBranchPlies = 0;
+    _totalPlies = 0;
 
     _rootPieces: BoardPieces;
     _byPositionId: Map<PositionId, PositionNode> = new Map();
@@ -46,8 +47,12 @@ export default class PositionHistory {
         return this._viewingPosition;
     }
 
-    get plyCount(): number {
-        return this._plyCount;
+    get mainPlyCount(): number {
+        return this._mainBranchPlies;
+    }
+
+    get totalPlyCount(): number {
+        return this._totalPlies;
     }
 
     get isViewingLatestPosition(): boolean {
@@ -121,7 +126,8 @@ export default class PositionHistory {
             const node = new PositionNode(props);
             this._head = node;
             this._tail = node;
-            this._plyCount = 1;
+            this._mainBranchPlies = 1;
+            this._totalPlies = 1;
 
             this._byPositionId.set(node.positionId, node);
             this._viewingPosition = node;
@@ -142,6 +148,7 @@ export default class PositionHistory {
         this._byPositionId.set(node.positionId, node);
         this._headVariationBySan.set(props.san, node);
         this._viewingPosition = node;
+        this._totalPlies++;
         return node;
     }
 
@@ -152,10 +159,11 @@ export default class PositionHistory {
         // which means this is a main variation, increment ply count
         if (parent?.positionId === this._tail?.positionId) {
             this._tail = node;
-            this._plyCount++;
+            this._mainBranchPlies++;
         }
 
         this._byPositionId.set(node.positionId, node);
+        this._totalPlies++;
         return node;
     }
 
@@ -165,7 +173,6 @@ export default class PositionHistory {
 }
 
 class PositionNode implements Position {
-
     _pieces: BoardPieces;
     _move: Move;
     _san: string;

@@ -15,7 +15,8 @@ describe("PositionHistory", () => {
     describe("constructor", () => {
         it("should initialize with the given root pieces", () => {
             expect(history.rootPieces).toBe(rootPieces);
-            expect(history.plyCount).toBe(0);
+            expect(history.mainPlyCount).toBe(0);
+            expect(history.totalPlyCount).toBe(0);
             expect(history.viewingPosition).toBeNull();
             expect([...history].length).toBe(0);
         });
@@ -211,7 +212,8 @@ describe("PositionHistory", () => {
             expect(pos.pieces).toBe(props.pieces);
             expect(pos.move).toBe(props.move);
             expect(pos.san).toBe(props.san);
-            expect(history.plyCount).toBe(1);
+            expect(history.mainPlyCount).toBe(1);
+            expect(history.totalPlyCount).toBe(1);
             expect(history.viewingPosition).toBe(pos);
         });
 
@@ -219,7 +221,8 @@ describe("PositionHistory", () => {
             const pos1 = history.addNextPosition(createFakePositionProps());
             const pos2 = history.addNextPosition(createFakePositionProps());
 
-            expect(history.plyCount).toBe(2);
+            expect(history.mainPlyCount).toBe(2);
+            expect(history.totalPlyCount).toBe(2);
             expect([...history]).toEqual([pos1, pos2]);
             expect(history.viewingPosition).toBe(pos2);
         });
@@ -247,7 +250,8 @@ describe("PositionHistory", () => {
 
             expect(headVariation).not.toBe(head);
             expect(history.viewingPosition).toBe(headVariation);
-            expect(history.plyCount).toBe(1);
+            expect(history.mainPlyCount).toBe(1);
+            expect(history.totalPlyCount).toBe(2);
 
             const retrieved = history.goToPosition(headVariation.positionId);
             expect(retrieved.success).toBe(true);
@@ -270,7 +274,8 @@ describe("PositionHistory", () => {
 
             expect(pos1Variation).toBeDefined();
             expect(pos1.variations).toEqual([pos2, pos1Variation]);
-            expect(history.plyCount).toBe(2); // only main line counted
+            expect(history.mainPlyCount).toBe(2);
+            expect(history.totalPlyCount).toBe(3);
         });
 
         it("should return the existing variation if SAN already exists as main variation", () => {
