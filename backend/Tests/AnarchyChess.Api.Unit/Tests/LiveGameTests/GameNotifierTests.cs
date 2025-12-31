@@ -71,7 +71,7 @@ public class GameNotifierTests
             ),
             SideToMove: GameColor.White,
             SideToMoveUserId: _userId,
-            LegalMoves: [1, 2, 3],
+            EncodedLegalMoves: [1, 2, 3],
             HasForcedMoves: true
         );
 
@@ -87,10 +87,12 @@ public class GameNotifierTests
             );
         await _clientUserGameGroupProxyMock
             .Received(1)
-            .LegalMovesChangedAsync(
-                encodedLegalMoves: notification.LegalMoves,
+            .OpponentMoveMadeAsync(
+                move: notification.Move,
+                plyNumber: notification.PlyNumber,
+                encodedLegalMoves: notification.EncodedLegalMoves,
                 hasForcedMoves: notification.HasForcedMoves,
-                plyNumber: notification.PlyNumber
+                clock: notification.Clocks
             );
         state.Revision.Should().Be(1);
     }

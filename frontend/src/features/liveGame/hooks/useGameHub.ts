@@ -1,5 +1,5 @@
-import useSignalREmitter from "@/features/signalR/hooks/useSignalREmitter";
-import useSignalREvent from "@/features/signalR/hooks/useSignalREvent";
+import { useMemo } from "react";
+
 import {
     Clocks,
     DrawState,
@@ -7,21 +7,25 @@ import {
     GameResultData,
     MoveSnapshot,
 } from "@/lib/apiClient";
+
+import useSignalREmitter from "@/features/signalR/hooks/useSignalREmitter";
+import useSignalREvent from "@/features/signalR/hooks/useSignalREvent";
 import constants from "@/lib/constants";
-import { useMemo } from "react";
 
 export type GameClientEvents = {
     SyncRevisionAsync: [currentRevision: number];
     MoveMadeAsync: [
         move: MoveSnapshot,
-        sideToMove: GameColor,
         plyNumber: number,
+        sideToMove: GameColor,
         clocks: Clocks,
     ];
-    LegalMovesChangedAsync: [
+    OpponentMoveMadeAsync: [
+        move: MoveSnapshot,
+        plyNumber: number,
         encodedLegalMoves: string,
         hasForcedMoves: boolean,
-        plyNumber: number,
+        clocks: Clocks,
     ];
     GameEndedAsync: [result: GameResultData, finalClocks: Clocks];
 

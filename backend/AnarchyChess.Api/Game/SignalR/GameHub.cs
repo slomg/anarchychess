@@ -14,11 +14,13 @@ namespace AnarchyChess.Api.Game.SignalR;
 public interface IGameHubClient : IAnarchyChessHubClient
 {
     Task SyncRevisionAsync(int currentRevision);
-    Task MoveMadeAsync(MoveSnapshot move, GameColor sideToMove, int plyNumber, ClockSnapshot clock);
-    Task LegalMovesChangedAsync(
+    Task MoveMadeAsync(MoveSnapshot move, int plyNumber, GameColor sideToMove, ClockSnapshot clock);
+    Task OpponentMoveMadeAsync(
+        MoveSnapshot move,
+        int plyNumber,
         IEnumerable<byte> encodedLegalMoves,
         bool hasForcedMoves,
-        int plyNumber
+        ClockSnapshot clock
     );
 
     Task DrawStateChangeAsync(DrawState drawState);

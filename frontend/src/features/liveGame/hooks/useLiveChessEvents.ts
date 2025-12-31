@@ -1,13 +1,13 @@
-import { ChessboardStore } from "@/features/chessboard/stores/chessboardStore";
 import { StoreApi, useStore } from "zustand";
-import { LiveChessStore } from "../stores/liveChessStore";
+
+import { ChessboardStore } from "@/features/chessboard/stores/chessboardStore";
 import { decodeMovePath, decodeLegalMoves } from "../lib/moveDecoder";
+import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
+import { Position } from "@/features/chessboard/lib/positionHistory";
+import { Clocks, GameColor, MoveSnapshot } from "@/lib/apiClient";
+import { LiveChessStore } from "../stores/liveChessStore";
 import { refetchGame } from "../lib/gameStateProcessor";
 import { useGameEvent } from "./useGameHub";
-import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
-import { PositionId } from "@/features/chessboard/lib/positionHistory";
-import { useRef } from "react";
-import LegalMoves from "@/features/chessboard/lib/legalMoves";
 
 export default function useLiveChessEvents(
     liveChessStore: StoreApi<LiveChessStore>,
@@ -16,6 +16,46 @@ export default function useLiveChessEvents(
     const boardDimensions = useStore(chessboardStore, (x) => x.boardDimensions);
     const gameToken = useStore(liveChessStore, (x) => x.gameToken);
 
+    async function handleMoveUpdate(
+        move: MoveSnapshot,
+        plyNumber: number,
+        sideToMove: GameColor,
+        clocks: Clocks,
+    ): Promise<Position | undefined> {
+        const {
+            positionHistory,
+            addPosition,
+            applyMoveAnimated,
+            goToLatestPosition,
+        } = chessboardStore.getState();
+        const { isPendingMoveAck, receiveLiveMove } = liveChessStore.getState();
+
+        // we missed a move... we need to refetch the state
+        if (plyNumber - 1 != positionHistory.mainPlyCount) {
+            await refetchGame(liveChessStore, chessboardStore);
+            return;
+        }
+        await goToLatestPosition();
+
+        const decodedMove = decodeMovePath(move.path, boardDimensions.width);
+        if (!isPendingMoveAck) {
+            await applyMoveAnimated(decodedMove);
+        }
+
+        const pieces = chessboardStore.getState().pieces;
+        const position = addPosition({
+            pieces,
+            san: move.san,
+            move: decodedMove,
+            // clocks: {
+            //     whiteClock: clocks.whiteClock,
+            //     blackClock: clocks.blackClock,
+            // },
+        });
+        receiveLiveMove(clocks, sideToMove);
+        return position;
+    }
+
     useGameEvent(gameToken, "SyncRevisionAsync", async (currentRevision) => {
         const { sourceRevision } = liveChessStore.getState();
         if (sourceRevision !== currentRevision) {
@@ -23,86 +63,42 @@ export default function useLiveChessEvents(
         }
     });
 
-    const pendingLegalMovesRef = useRef<LegalMoves | null>(null);
-    const liveHeadPositionId = useRef<PositionId | null>(null);
-
     useGameEvent(
         gameToken,
         "MoveMadeAsync",
-        async (move, sideToMove, plyNumber, clocks) => {
-            const { isPendingMoveAck, viewer, receiveMove } =
-                liveChessStore.getState();
-            const {
-                positionHistory,
-                addPosition,
-                applyMoveAnimated,
-                disableMovement,
-                setLatestLegalMoves,
-                goToLatestPosition,
-            } = chessboardStore.getState();
-
-            // we missed a move... we need to refetch the state
-            if (plyNumber - 1 != positionHistory.mainPlyCount) {
-                await refetchGame(liveChessStore, chessboardStore);
-                return;
-            }
-
-            const isOurTurn = viewer.playerColor === sideToMove;
-            if (!isOurTurn) {
+        async (move, plyNumber, sideToMove, clocks) => {
+            const { disableMovement } = chessboardStore.getState();
+            const { viewer } = liveChessStore.getState();
+            if (viewer.playerColor !== sideToMove) {
                 disableMovement();
-            }
-            await goToLatestPosition();
-
-            const decodedMove = decodeMovePath(
-                move.path,
-                boardDimensions.width,
-            );
-            if (!isPendingMoveAck) {
-                await applyMoveAnimated(decodedMove);
-            }
-
-            const pieces = chessboardStore.getState().pieces;
-            const position = addPosition({
-                pieces,
-                san: move.san,
-                move: decodedMove,
-                // clocks: {
-                //     whiteClock: clocks.whiteClock,
-                //     blackClock: clocks.blackClock,
-                // },
-            });
-            receiveMove(clocks, sideToMove);
-
-            if (pendingLegalMovesRef.current) {
-                setLatestLegalMoves(pendingLegalMovesRef.current);
-                pendingLegalMovesRef.current = null;
-            } else if (isOurTurn) {
-                liveHeadPositionId.current = position.positionId;
+                await handleMoveUpdate(move, plyNumber, sideToMove, clocks);
             }
         },
     );
 
     useGameEvent(
         gameToken,
-        "LegalMovesChangedAsync",
-        async (encodedLegalMoves, hasForcedMoves) => {
+        "OpponentMoveMadeAsync",
+        async (move, plyNumber, encodedLegalMoves, hasForcedMoves, clocks) => {
+            const { viewer } = liveChessStore.getState();
+            if (viewer.playerColor === null) return;
+
+            const position = await handleMoveUpdate(
+                move,
+                plyNumber,
+                viewer.playerColor,
+                clocks,
+            );
+            if (!position) return;
+
             const decodedLegalMoves = decodeLegalMoves({
                 encoded: encodedLegalMoves,
                 boardWidth: boardDimensions.width,
                 hasForcedMoves: hasForcedMoves,
             });
-
-            if (liveHeadPositionId.current) {
-                chessboardStore
-                    .getState()
-                    .addLegalMoves(
-                        decodedLegalMoves,
-                        liveHeadPositionId.current,
-                    );
-                liveHeadPositionId.current = null;
-            } else {
-                pendingLegalMovesRef.current = decodedLegalMoves;
-            }
+            chessboardStore
+                .getState()
+                .addLegalMoves(decodedLegalMoves, position.positionId);
         },
     );
 

@@ -269,7 +269,7 @@ public class GameGrainTests : BaseOrleansIntegrationTest
                                 Clocks: expectedClock,
                                 SideToMove: GameColor.Black,
                                 SideToMoveUserId: _blackPlayer.UserId,
-                                LegalMoves: legalMoves.EncodedMoves,
+                                EncodedLegalMoves: legalMoves.EncodedMoves,
                                 HasForcedMoves: legalMoves.HasForcedMoves
                             )
                         )

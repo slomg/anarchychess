@@ -374,7 +374,10 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         var legalMoves = _core.GetLegalMovesOf(nextPlayer.Color, game.Core);
 
         if (moveResult.EndStatus is not null)
+        {
             await EndGameAsync(moveResult.EndStatus, game, token);
+        }
+
         await _gameNotifier.NotifyMoveMadeAsync(
             notification: new(
                 GameToken: _token,
@@ -383,7 +386,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
                 Clocks: _clock.ToSnapshot(game.ClockState),
                 SideToMove: nextPlayer.Color,
                 SideToMoveUserId: nextPlayer.UserId,
-                LegalMoves: legalMoves.EncodedMoves,
+                EncodedLegalMoves: legalMoves.EncodedMoves,
                 HasForcedMoves: legalMoves.HasForcedMoves
             ),
             game.NotifierState

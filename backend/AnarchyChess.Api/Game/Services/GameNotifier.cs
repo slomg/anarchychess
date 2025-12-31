@@ -33,7 +33,7 @@ public record MoveNotification(
     ClockSnapshot Clocks,
     GameColor SideToMove,
     UserId SideToMoveUserId,
-    IReadOnlyCollection<byte> LegalMoves,
+    IReadOnlyCollection<byte> EncodedLegalMoves,
     bool HasForcedMoves
 );
 
@@ -62,16 +62,18 @@ public class GameNotifier(IHubContext<GameHub, IGameHubClient> hub) : IGameNotif
             .Clients.Group(notification.GameToken)
             .MoveMadeAsync(
                 move: notification.Move,
-                sideToMove: notification.SideToMove,
                 plyNumber: notification.PlyNumber,
+                sideToMove: notification.SideToMove,
                 clock: notification.Clocks
             );
         await _hub
             .Clients.Group(UserGameGroup(notification.GameToken, notification.SideToMoveUserId))
-            .LegalMovesChangedAsync(
-                notification.LegalMoves,
-                notification.HasForcedMoves,
-                plyNumber: notification.PlyNumber
+            .OpponentMoveMadeAsync(
+                move: notification.Move,
+                plyNumber: notification.PlyNumber,
+                encodedLegalMoves: notification.EncodedLegalMoves,
+                hasForcedMoves: notification.HasForcedMoves,
+                clock: notification.Clocks
             );
     }
 

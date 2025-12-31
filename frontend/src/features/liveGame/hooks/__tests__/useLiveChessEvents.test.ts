@@ -99,8 +99,8 @@ describe("useLiveChessEvents", () => {
         await act(async () => {
             await gameEventHandlers.MoveMadeAsync?.(
                 move,
-                sideToMove,
                 plyNumber,
+                sideToMove,
                 clocks,
             );
         });
@@ -153,7 +153,7 @@ describe("useLiveChessEvents", () => {
             renderLiveChessEvents();
 
             await triggerMoveMade({
-                sideToMove: GameColor.WHITE,
+                sideToMove: GameColor.BLACK,
                 plyNumber: 23,
             });
 
@@ -175,7 +175,7 @@ describe("useLiveChessEvents", () => {
                 if (awaitingAck) liveChessStore.getState().markPendingMoveAck();
 
                 const move = await triggerMoveMade({
-                    sideToMove: GameColor.WHITE,
+                    sideToMove: GameColor.BLACK,
                 });
 
                 expect(
@@ -209,7 +209,7 @@ describe("useLiveChessEvents", () => {
             await goToStartPosition();
 
             await triggerMoveMade({
-                sideToMove: GameColor.WHITE,
+                sideToMove: GameColor.BLACK,
             });
 
             const {
@@ -249,56 +249,63 @@ describe("useLiveChessEvents", () => {
                 }
             },
         );
+
+        it("should do nothing if it's our turn next", async () => {
+            const addPositionMock = vi.fn();
+            chessboardStore.setState({ addPosition: addPositionMock });
+            liveChessStore.setState({
+                viewer: { userId: "test-id", playerColor: GameColor.WHITE },
+            });
+
+            setupStandardStoresForMove();
+            renderLiveChessEvents();
+            await triggerMoveMade({ sideToMove: GameColor.WHITE });
+
+            expect(addPositionMock).not.toHaveBeenCalled();
+        });
     });
 
-    describe("LegalMovesChangedAsync", () => {
+    describe("OpponentMoveMadeAsync", () => {
         function encodeMoves(moves: MovePath[]): string {
             const json = JSON.stringify(moves);
             const compressed = brotliCompressSync(Buffer.from(json));
             return compressed.toString("base64");
         }
 
-        it("should decode legal moves and update both stores", async () => {
-            const addLegalMovesMock = vi.fn();
-            chessboardStore.setState({ addLegalMoves: addLegalMovesMock });
-
+        it("should apply move and set legal moves for the next player", async () => {
+            setupStandardStoresForMove();
             renderLiveChessEvents();
+
             const fakeMoves: MovePath[] = [
-                {
-                    fromIdx: 0,
-                    toIdx: 1,
-                    moveKey: "1",
-                    triggerIdxs: [2],
-                    capturedIdxs: [3],
-                    sideEffects: [{ fromIdx: 4, toIdx: 5 }],
-                    promotesTo: null,
-                },
-                {
-                    fromIdx: 10,
-                    toIdx: 11,
-                    moveKey: "2",
-                },
+                { fromIdx: 0, toIdx: 1, moveKey: "1" },
+                { fromIdx: 10, toIdx: 11, moveKey: "2" },
             ];
             const encodedMoves = encodeMoves(fakeMoves);
             const hasForcedMoves = true;
-            const plyNumber = 68;
 
-            await act(async () =>
-                gameEventHandlers.LegalMovesChangedAsync?.(
+            await act(async () => {
+                await gameEventHandlers.OpponentMoveMadeAsync?.(
+                    createFakeMoveSnapshot({
+                        san: "test san",
+                        path: { fromIdx: 11, toIdx: 12, moveKey: "0" },
+                    }),
+                    chessboardStore.getState().positionHistory.mainPlyCount + 1,
                     encodedMoves,
                     hasForcedMoves,
-                    plyNumber,
-                ),
-            );
+                    createFakeClock(),
+                );
+            });
 
+            const position =
+                chessboardStore.getState().positionHistory.viewingPosition!;
             const expectedLegalMoves = decodeMovePathIntoLegalMoves({
                 paths: fakeMoves,
                 boardWidth: 10,
                 hasForcedMoves,
             });
-            expect(addLegalMovesMock).toHaveBeenCalledExactlyOnceWith(
+            expect(position).toBeDefined();
+            expect(chessboardStore.getState().getLegalMoves()).toEqual(
                 expectedLegalMoves,
-                plyNumber + 1,
             );
         });
     });
