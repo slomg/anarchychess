@@ -144,7 +144,7 @@ describe("useLiveChessEvents", () => {
     });
 
     describe("MoveMadeAsync", () => {
-        it("should trigger a refetch when plyIdx is out of sync", async () => {
+        it("should trigger a refetch when plyNumber is out of sync", async () => {
             chessboardStore.setState({
                 positionHistory: createNFakePositionHistory(1),
             });
@@ -258,13 +258,13 @@ describe("useLiveChessEvents", () => {
             ];
             const encodedMoves = encodeMoves(fakeMoves);
             const hasForcedMoves = true;
-            const plyIdx = 68;
+            const plyNumber = 68;
 
             await act(async () =>
                 gameEventHandlers.LegalMovesChangedAsync?.(
                     encodedMoves,
                     hasForcedMoves,
-                    plyIdx,
+                    plyNumber,
                 ),
             );
 
@@ -275,7 +275,7 @@ describe("useLiveChessEvents", () => {
             });
             expect(addLegalMovesMock).toHaveBeenCalledExactlyOnceWith(
                 expectedLegalMoves,
-                plyIdx + 1,
+                plyNumber + 1,
             );
         });
     });
