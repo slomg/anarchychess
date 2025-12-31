@@ -1,12 +1,13 @@
 import { ChessboardStore } from "@/features/chessboard/stores/chessboardStore";
-import { Clocks, GameColor, MoveSnapshot } from "@/lib/apiClient";
 import { StoreApi, useStore } from "zustand";
 import { LiveChessStore } from "../stores/liveChessStore";
 import { decodeMovePath, decodeLegalMoves } from "../lib/moveDecoder";
 import { refetchGame } from "../lib/gameStateProcessor";
 import { useGameEvent } from "./useGameHub";
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
-import { PositionProps } from "@/features/chessboard/lib/positionHistory";
+import { PositionId } from "@/features/chessboard/lib/positionHistory";
+import { useRef } from "react";
+import LegalMoves from "@/features/chessboard/lib/legalMoves";
 
 export default function useLiveChessEvents(
     liveChessStore: StoreApi<LiveChessStore>,
@@ -22,6 +23,9 @@ export default function useLiveChessEvents(
         }
     });
 
+    const pendingLegalMovesRef = useRef<LegalMoves | null>(null);
+    const liveHeadPositionId = useRef<PositionId | null>(null);
+
     useGameEvent(
         gameToken,
         "MoveMadeAsync",
@@ -30,9 +34,11 @@ export default function useLiveChessEvents(
                 liveChessStore.getState();
             const {
                 positionHistory,
-                addLatestPosition,
+                addPosition,
                 applyMoveAnimated,
                 disableMovement,
+                setLatestLegalMoves,
+                goToLatestPosition,
             } = chessboardStore.getState();
 
             // we missed a move... we need to refetch the state
@@ -41,9 +47,11 @@ export default function useLiveChessEvents(
                 return;
             }
 
-            if (viewer.playerColor !== sideToMove) {
+            const isOurTurn = viewer.playerColor === sideToMove;
+            if (!isOurTurn) {
                 disableMovement();
             }
+            await goToLatestPosition();
 
             const decodedMove = decodeMovePath(
                 move.path,
@@ -54,7 +62,7 @@ export default function useLiveChessEvents(
             }
 
             const pieces = chessboardStore.getState().pieces;
-            const position: PositionProps = {
+            const position = addPosition({
                 pieces,
                 san: move.san,
                 move: decodedMove,
@@ -62,26 +70,39 @@ export default function useLiveChessEvents(
                 //     whiteClock: clocks.whiteClock,
                 //     blackClock: clocks.blackClock,
                 // },
-            };
-
-            addLatestPosition(position);
+            });
             receiveMove(clocks, sideToMove);
+
+            if (pendingLegalMovesRef.current) {
+                setLatestLegalMoves(pendingLegalMovesRef.current);
+                pendingLegalMovesRef.current = null;
+            } else if (isOurTurn) {
+                liveHeadPositionId.current = position.positionId;
+            }
         },
     );
 
     useGameEvent(
         gameToken,
         "LegalMovesChangedAsync",
-        async (encodedLegalMoves, hasForcedMoves, plyNumber) => {
+        async (encodedLegalMoves, hasForcedMoves) => {
             const decodedLegalMoves = decodeLegalMoves({
                 encoded: encodedLegalMoves,
                 boardWidth: boardDimensions.width,
                 hasForcedMoves: hasForcedMoves,
             });
 
-            // chessboardStore
-            //     .getState()
-            //     .addLegalMoves(decodedLegalMoves, plyNumber + 1); // plyNumber + 1 because our history includes the starting position
+            if (liveHeadPositionId.current) {
+                chessboardStore
+                    .getState()
+                    .addLegalMoves(
+                        decodedLegalMoves,
+                        liveHeadPositionId.current,
+                    );
+                liveHeadPositionId.current = null;
+            } else {
+                pendingLegalMovesRef.current = decodedLegalMoves;
+            }
         },
     );
 

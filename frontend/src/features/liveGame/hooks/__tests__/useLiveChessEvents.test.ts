@@ -1,13 +1,8 @@
+import { renderHook } from "@testing-library/react";
+import { brotliCompressSync } from "zlib";
 import { StoreApi } from "zustand";
-import createLiveChessStore, {
-    LiveChessStore,
-} from "../../stores/liveChessStore";
-import {
-    ChessboardStore,
-    createChessboardStore,
-} from "@/features/chessboard/stores/chessboardStore";
-import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
-import useLiveChessEvents from "../useLiveChessEvents";
+import { act } from "react";
+
 import {
     Clocks,
     DrawState,
@@ -17,27 +12,33 @@ import {
     MovePath,
     MoveSnapshot,
 } from "@/lib/apiClient";
-import { EventHandlers } from "@/features/signalR/hooks/useSignalREvent";
-import { renderHook } from "@testing-library/react";
-import { createFakeMoveSnapshot } from "@/lib/testUtils/fakers/moveSnapshotFaker";
-import { createFakeClock } from "@/lib/testUtils/fakers/clockFaker";
-import { act } from "react";
-import { refetchGame } from "../../lib/gameStateProcessor";
+import {
+    ChessboardStore,
+    createChessboardStore,
+} from "@/features/chessboard/stores/chessboardStore";
 import {
     createFakeLegalMoves,
     createFakePiece,
     createRandomPoint,
 } from "@/lib/testUtils/fakers/chessboardFakers";
-import { logicalPoint } from "@/features/point/pointUtils";
-import { brotliCompressSync } from "zlib";
+import createLiveChessStore, {
+    LiveChessStore,
+} from "../../stores/liveChessStore";
 import {
     decodeMovePath,
     decodeMovePathIntoLegalMoves,
 } from "../../lib/moveDecoder";
-import { GameClientEvents, useGameEvent } from "../useGameHub";
-import BoardPieces from "@/features/chessboard/lib/boardPieces";
+
+import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
 import { createNFakePositionHistory } from "@/lib/testUtils/fakers/positionHistoryFaker";
-import { Position } from "@/features/chessboard/lib/positionHistory";
+import { createFakeMoveSnapshot } from "@/lib/testUtils/fakers/moveSnapshotFaker";
+import { EventHandlers } from "@/features/signalR/hooks/useSignalREvent";
+import { createFakeClock } from "@/lib/testUtils/fakers/clockFaker";
+import BoardPieces from "@/features/chessboard/lib/boardPieces";
+import { GameClientEvents, useGameEvent } from "../useGameHub";
+import { refetchGame } from "../../lib/gameStateProcessor";
+import { logicalPoint } from "@/features/point/pointUtils";
+import useLiveChessEvents from "../useLiveChessEvents";
 
 vi.mock("@/features/liveGame/hooks/useGameHub");
 vi.mock("@/features/liveGame/lib/gameStateProcessor");
@@ -199,6 +200,28 @@ describe("useLiveChessEvents", () => {
                 );
             },
         );
+
+        it("should go to the last position before playing the move", async () => {
+            setupStandardStoresForMove();
+            renderLiveChessEvents();
+
+            const { goToStartPosition } = chessboardStore.getState();
+            await goToStartPosition();
+
+            await triggerMoveMade({
+                sideToMove: GameColor.WHITE,
+            });
+
+            const {
+                positionHistory: updatedPositionHistory,
+                pieces: updatedPieces,
+            } = chessboardStore.getState();
+
+            expect(updatedPositionHistory.isViewingLatestPosition).toBe(true);
+            expect(updatedPositionHistory.viewingPosition?.pieces).toEqual(
+                updatedPieces,
+            );
+        });
 
         it.each([
             [GameColor.WHITE, GameColor.BLACK],
