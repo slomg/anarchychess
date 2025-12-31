@@ -165,7 +165,6 @@ export default class PositionHistory {
 }
 
 class PositionNode implements Position {
-    [immerable] = true;
 
     _pieces: BoardPieces;
     _move: Move;
