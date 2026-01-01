@@ -35,6 +35,7 @@ public class GameGrainTests : BaseOrleansIntegrationTest
 
     private readonly GameClock _gameClock;
     private readonly IGameResultDescriber _gameResultDescriber;
+    private readonly IFenCalculator _fenCalculator;
     private readonly ISanCalculator _sanCalculator;
     private readonly IGameCore _gameCore;
     private readonly GameSettings _settings;
@@ -54,6 +55,7 @@ public class GameGrainTests : BaseOrleansIntegrationTest
     public GameGrainTests(AnarchyChessWebApplicationFactory factory)
         : base(factory)
     {
+        _fenCalculator = ApiTestBase.Scope.ServiceProvider.GetRequiredService<IFenCalculator>();
         _sanCalculator = ApiTestBase.Scope.ServiceProvider.GetRequiredService<ISanCalculator>();
         _gameCore = ApiTestBase.Scope.ServiceProvider.GetRequiredService<IGameCore>();
         _gameResultDescriber =
@@ -243,9 +245,10 @@ public class GameGrainTests : BaseOrleansIntegrationTest
 
         MoveSnapshot expectedMoveSnapshot = new(
             Path: MovePath.FromMove(move, GameLogicConstants.BoardWidth),
+            Fen: _fenCalculator.CalculateFen(_state.CurrentGame!.Core.Board),
             San: _sanCalculator.CalculateSan(
                 move,
-                _gameCore.GetLegalMovesOf(GameColor.White, _state.CurrentGame!.Core).AllMoves
+                _gameCore.GetLegalMovesOf(GameColor.White, _state.CurrentGame.Core).AllMoves
             ),
             TimeLeft: expectedTimeLeft
         );

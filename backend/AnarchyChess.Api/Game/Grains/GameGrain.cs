@@ -367,7 +367,12 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         }
 
         var timeLeft = _clock.CommitTurn(currentPlayer.Color, game.ClockState);
-        MoveSnapshot moveSnapshot = new(moveResult.MovePath, moveResult.San, timeLeft);
+        MoveSnapshot moveSnapshot = new(
+            Path: moveResult.MovePath,
+            Fen: moveResult.Fen,
+            San: moveResult.San,
+            timeLeft
+        );
         game.MoveSnapshots.Add(moveSnapshot);
 
         var nextPlayer = game.Players.GetPlayerByColor(_core.SideToMove(game.Core));

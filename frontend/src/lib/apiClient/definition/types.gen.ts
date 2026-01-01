@@ -314,6 +314,7 @@ export type Clocks = {
 
 export type MoveSnapshot = {
     path: MovePath;
+    fen: string;
     san: string;
     timeLeft: number;
 };

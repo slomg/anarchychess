@@ -1,3 +1,5 @@
+import { faker } from "@faker-js/faker";
+
 import {
     Position,
     PositionId,
@@ -8,6 +10,7 @@ import { createFakeSan } from "./sanFaker";
 export function createFakePosition(overrides?: Partial<Position>): Position {
     return {
         pieces: createFakeBoardPieces(),
+        fen: faker.string.alphanumeric(100),
         move: createFakeMove(),
         san: createFakeSan(),
         variations: [],

@@ -7,6 +7,7 @@ export type PositionId = string & { __brand: "PositionId" };
 
 export interface Position {
     pieces: BoardPieces;
+    fen: string;
     move: Move;
     san: string;
 
@@ -16,6 +17,7 @@ export interface Position {
 
 export interface PositionProps {
     pieces: BoardPieces;
+    fen: string;
     move: Move;
     san: string;
 }
@@ -186,6 +188,7 @@ export default class PositionHistory {
 
 class PositionNode implements Position {
     _pieces: BoardPieces;
+    _fen: string;
     _move: Move;
     _san: string;
 
@@ -198,8 +201,17 @@ class PositionNode implements Position {
     constructor(props: PositionProps, parent: PositionNode | null = null) {
         this._parent = parent;
         this._pieces = props.pieces;
+        this._fen = props.fen;
         this._move = props.move;
         this._san = props.san;
+    }
+
+    get pieces(): BoardPieces {
+        return this._pieces;
+    }
+
+    get fen(): string {
+        return this._fen;
     }
 
     get move(): Move {
@@ -208,10 +220,6 @@ class PositionNode implements Position {
 
     get san(): string {
         return this._san;
-    }
-
-    get pieces(): BoardPieces {
-        return this._pieces;
     }
 
     get positionId(): PositionId {

@@ -45,6 +45,7 @@ export default function useLiveChessEvents(
         const pieces = chessboardStore.getState().pieces;
         const position = addPosition({
             pieces,
+            fen: move.fen,
             san: move.san,
             move: decodedMove,
             // clocks: {

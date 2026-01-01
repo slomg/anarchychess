@@ -241,9 +241,7 @@ describe("PositionHistory", () => {
             const props = createFakePositionProps();
             const pos = history.addNextPosition(props);
 
-            expect(pos.pieces).toBe(props.pieces);
-            expect(pos.move).toBe(props.move);
-            expect(pos.san).toBe(props.san);
+            expect(pos).toEqual(expect.objectContaining(props));
             expect(history.mainPlyCount).toBe(1);
             expect(history.totalPlyCount).toBe(1);
             expect(history.viewingPosition).toBe(pos);

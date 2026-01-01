@@ -21,6 +21,7 @@ public interface IGameCore
 public readonly record struct MoveResult(
     Move Move,
     MovePath MovePath,
+    string Fen,
     string San,
     GameEndStatus? EndStatus
 );
@@ -115,7 +116,13 @@ public class GameCore(
             state.LegalMoves.AllMoves,
             isKingCapture: winStatus is not null
         );
-        MoveResult moveResult = new(move, path, san, endStatus);
+        MoveResult moveResult = new(
+            Move: move,
+            MovePath: path,
+            Fen: fen,
+            San: san,
+            EndStatus: endStatus
+        );
 
         state.LegalMoves = CalculateAllLegalMoves(state.Board);
         return moveResult;

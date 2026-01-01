@@ -1,10 +1,10 @@
-﻿using AnarchyChess.Api.GameLogic;
-using AnarchyChess.Api.GameLogic.Models;
-using AnarchyChess.Api.GameSnapshot.Models;
-using AnarchyChess.Api.Game.Errors;
+﻿using AnarchyChess.Api.Game.Errors;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.SanNotation;
 using AnarchyChess.Api.Game.Services;
+using AnarchyChess.Api.GameLogic;
+using AnarchyChess.Api.GameLogic.Models;
+using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.TestInfrastructure.Factories;
 using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
@@ -151,6 +151,7 @@ public class GameCoreTests
         MoveResult expected = new(
             Move: move,
             MovePath: MovePath.FromMove(move, GameLogicConstants.BoardWidth),
+            Fen: "fen-string",
             San: "e4",
             EndStatus: null
         );

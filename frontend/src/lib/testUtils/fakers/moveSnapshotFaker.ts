@@ -8,6 +8,7 @@ export function createFakeMoveSnapshot(
 ): MoveSnapshot {
     return {
         path: createFakeMovePath(),
+        fen: faker.string.alphanumeric(100),
         san: createFakeSan(),
         timeLeft: faker.number.int({ min: 100, max: 10000 }),
         ...overrides,
