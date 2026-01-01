@@ -35,7 +35,7 @@ public class PositionAnalysis(
             HasForcedMoves: legalMoves.HasForcedMoves
         );
 
-        return new(Fen: initialFen, SideToMove: GameColor.White, MoveOptions: moveOptions);
+        return new(Fen: initialFen, MoveOptions: moveOptions);
     }
 
     public ErrorOr<AnalysisPosition> GetNextLegalMoves(AnalysisMove analMove) // hehe

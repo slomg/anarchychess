@@ -17,7 +17,6 @@ public class AnalysisControllerTests(AnarchyChessWebApplicationFactory factory)
 
         var position = response.Content;
         position.Should().NotBeNull();
-        position.SideToMove.Should().Be(GameColor.White);
         position.MoveOptions.LegalMoves.Count.Should().BeGreaterThan(0);
     }
 
