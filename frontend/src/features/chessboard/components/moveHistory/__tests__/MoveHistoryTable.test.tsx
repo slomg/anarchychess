@@ -17,7 +17,7 @@ import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFak
 import { mockScrollTo } from "@/lib/testUtils/mocks/mockDom";
 import { logicalPoint } from "@/features/point/pointUtils";
 import MoveHistoryTable from "../MoveHistoryTable";
-import BoardPieces from "../../lib/boardPieces";
+import BoardPieces from "../../../lib/boardPieces";
 import { GameColor } from "@/lib/apiClient";
 
 describe("MoveHistoryTable", () => {

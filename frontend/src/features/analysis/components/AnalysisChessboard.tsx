@@ -10,7 +10,7 @@ import { StoreApi } from "zustand";
 import processRootAnalysis from "../lib/rootAnalysisPositionProcessor";
 import useAnalysisMoveEmitter from "../hooks/useAnalysisMoveEmitter";
 import ChessboardWithSidebar from "@/features/chessboard/components/ChessboardWithSidebar";
-import MoveHistoryTable from "@/features/chessboard/components/MoveHistoryTable";
+import MoveHistoryTable from "@/features/chessboard/components/moveHistory/MoveHistoryTable";
 
 const AnalysisChessboard = ({
     rootPosition,

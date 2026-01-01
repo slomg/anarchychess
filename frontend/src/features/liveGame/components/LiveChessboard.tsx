@@ -27,7 +27,7 @@ import { GameState, Preferences } from "@/lib/apiClient";
 import GameOverPopup from "./GameOverPopup";
 import useConst from "@/hooks/useConst";
 import GameChat from "./GameChat";
-import MoveHistoryTable from "@/features/chessboard/components/MoveHistoryTable";
+import MoveHistoryTable from "@/features/chessboard/components/moveHistory/MoveHistoryTable";
 
 const LiveChessboard = ({
     gameToken,

@@ -5,7 +5,7 @@ import clsx from "clsx";
 import { useChessboardStore } from "@/features/chessboard/hooks/useChessboard";
 import useAutoScroll from "@/hooks/useAutoScroll";
 import Card from "@/components/ui/Card";
-import { Position } from "../lib/positionHistory";
+import { Position } from "../../lib/positionHistory";
 
 const MoveHistoryTable = () => {
     useChessboardStore((x) => x.positionHistory.totalPlyCount);
@@ -78,12 +78,9 @@ const MoveHistoryTable = () => {
     ]);
 
     return (
-        <Card className="relative block max-h-96 p-0 lg:max-h-full">
-            <div className="max-h-full overflow-x-auto" ref={tableRef}>
-                <table className="w-full table-fixed">
-                    <tbody>{moveRows}</tbody>
-                </table>
-            </div>
+        <Card className="relative block max-h-96 w-full p-0 lg:max-h-full">
+            <div className="h-full w-full overflow-x-auto" ref={tableRef}>
+                {moveRows}
 
             <div className="absolute right-0 bottom-0 flex w-fit gap-3 p-3">
                 <ArrowsUpDownIcon
@@ -123,11 +120,11 @@ const MoveRow = ({
     const color = index % 2 === 0 ? "bg-white/10" : "";
     const selectedClass = "bg-blue-300/30";
     return (
-        <tr className={color}>
-            <td className="bg-card w-10 p-3">{index}.</td>
-            <td
+        <div className={clsx("relative flex", color)}>
+            <div className="bg-card w-10 p-3">{index}.</div>
+            <div
                 className={clsx(
-                    "cursor-pointer overflow-x-auto p-3",
+                    "flex-1 cursor-pointer overflow-x-auto p-3",
                     isViewingWhite && selectedClass,
                 )}
                 onClick={() =>
@@ -135,10 +132,10 @@ const MoveRow = ({
                 }
             >
                 <div className="overflow-x-auto">{whitePosition?.san}</div>
-            </td>
-            <td
+            </div>
+            <div
                 className={clsx(
-                    "cursor-pointer overflow-x-auto p-3",
+                    "flex-1 cursor-pointer overflow-x-auto p-3",
                     isViewingBlack && selectedClass,
                 )}
                 onClick={() =>
@@ -146,7 +143,7 @@ const MoveRow = ({
                 }
             >
                 <div className="overflow-x-auto">{blackPosition?.san}</div>
-            </td>
-        </tr>
+            </div>
+        </div>
     );
 };
