@@ -56,11 +56,16 @@ public class PositionAnalysis(
         var newFen = _fenCalculator.CalculateFen(coreState.Board);
 
         var sideToMove = _core.SideToMove(coreState);
-        var legalMoves = _core.GetLegalMovesOf(sideToMove, coreState);
-        MoveOptions moveOptions = new(
-            LegalMoves: legalMoves.MovePaths,
-            HasForcedMoves: legalMoves.HasForcedMoves
-        );
+
+        MoveOptions moveOptions = new();
+        if (moveResult.EndStatus is null)
+        {
+            var legalMoves = _core.GetLegalMovesOf(sideToMove, coreState);
+            moveOptions = new(
+                LegalMoves: legalMoves.MovePaths,
+                HasForcedMoves: legalMoves.HasForcedMoves
+            );
+        }
 
         return new AnalysisPosition(
             Fen: newFen,

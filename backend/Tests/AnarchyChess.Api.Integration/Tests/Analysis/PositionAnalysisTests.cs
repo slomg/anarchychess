@@ -75,7 +75,7 @@ public class PositionAnalysisTests : BaseIntegrationTest
     }
 
     [Fact]
-    public void GetNextLegalMoves_includes_end_status_when_needed()
+    public void GetNextLegalMoves_doesnt_include_legal_moves_when_the_game_ends()
     {
         AnalysisMove analysisMove = new(
             "qK", // black queen next to white king
@@ -89,6 +89,7 @@ public class PositionAnalysisTests : BaseIntegrationTest
         result.IsError.Should().BeFalse();
 
         var newPosition = result.Value;
+        newPosition.MoveOptions.Should().BeEquivalentTo(new MoveOptions());
         newPosition.EndStatus.Should().NotBeNull();
         newPosition.EndStatus.Result.Should().Be(GameResult.BlackWin);
         newPosition.SideToMove.Should().Be(GameColor.White);
