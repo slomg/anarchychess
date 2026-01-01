@@ -5,7 +5,7 @@ namespace AnarchyChess.Api.Analysis.Models;
 
 public record AnalysisPosition(
     string Fen,
-    string? San,
+    string San,
     MoveOptions MoveOptions,
     GameColor SideToMove,
     GameEndStatus? EndStatus

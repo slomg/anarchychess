@@ -522,7 +522,7 @@ export type RootAnalysisPosition = {
 
 export type AnalysisPosition = {
     fen: string;
-    san?: string | null;
+    san: string;
     moveOptions: MoveOptions;
     sideToMove: GameColor;
     endStatus?: GameEndStatus | null;
