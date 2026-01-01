@@ -518,7 +518,6 @@ export type TimeControlSettingsRequest = {
 
 export type RootAnalysisPosition = {
     fen: string;
-    sideToMove: GameColor;
     moveOptions: MoveOptions;
 };
 
