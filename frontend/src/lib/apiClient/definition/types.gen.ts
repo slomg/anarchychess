@@ -514,6 +514,12 @@ export type TimeControlSettingsRequest = {
     incrementSeconds: number;
 };
 
+export type RootAnalysisPosition = {
+    fen: string;
+    sideToMove: GameColor;
+    moveOptions: MoveOptions;
+};
+
 export type AnalysisPosition = {
     fen: string;
     san?: string | null;
@@ -1485,7 +1491,7 @@ export type GetInitialAnalysisPositionData = {
 };
 
 export type GetInitialAnalysisPositionResponses = {
-    200: AnalysisPosition;
+    200: RootAnalysisPosition;
 };
 
 export type GetInitialAnalysisPositionResponse =

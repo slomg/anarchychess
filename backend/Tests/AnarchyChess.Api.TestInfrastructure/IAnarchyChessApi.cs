@@ -80,7 +80,7 @@ public interface IAnarchyChessApi
 
     #region Analysis
     [Get("/api/analysis/initial")]
-    Task<IApiResponse<AnalysisPosition>> GetInitialAnalysisPosition();
+    Task<IApiResponse<RootAnalysisPosition>> GetInitialAnalysisPosition();
 
     [Post("/api/analysis/next")]
     Task<IApiResponse<AnalysisPosition>> GetNextAnalysisPosition(AnalysisMove move);

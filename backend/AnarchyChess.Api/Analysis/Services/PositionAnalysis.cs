@@ -3,6 +3,7 @@ using AnarchyChess.Api.Game.Errors;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.GameLogic;
+using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using ErrorOr;
 
@@ -10,7 +11,7 @@ namespace AnarchyChess.Api.Analysis.Services;
 
 public interface IPositionAnalysis
 {
-    AnalysisPosition GetInitialPosition();
+    RootAnalysisPosition GetInitialPosition();
     ErrorOr<AnalysisPosition> GetNextLegalMoves(AnalysisMove analMove);
 }
 
@@ -24,12 +25,17 @@ public class PositionAnalysis(
     private readonly ILegalMoveCalculator _legalMoveCalculator = legalMoveCalculator;
     private readonly IGameCore _core = gameCore;
 
-    public AnalysisPosition GetInitialPosition()
+    public RootAnalysisPosition GetInitialPosition()
     {
         GameCoreState coreState = new();
         var initialFen = _core.StartGame(coreState);
+        var legalMoves = _core.GetLegalMovesOf(GameColor.White, coreState);
+        MoveOptions moveOptions = new(
+            LegalMoves: legalMoves.MovePaths,
+            HasForcedMoves: legalMoves.HasForcedMoves
+        );
 
-        return GetAnalysisPosition(coreState, fen: initialFen);
+        return new(Fen: initialFen, SideToMove: GameColor.White, MoveOptions: moveOptions);
     }
 
     public ErrorOr<AnalysisPosition> GetNextLegalMoves(AnalysisMove analMove) // hehe
@@ -49,28 +55,19 @@ public class PositionAnalysis(
         var moveResult = _core.MakeMove(move, coreState);
         var newFen = _fenCalculator.CalculateFen(coreState.Board);
 
-        return GetAnalysisPosition(coreState, newFen, moveResult);
-    }
-
-    private AnalysisPosition GetAnalysisPosition(
-        GameCoreState state,
-        string fen,
-        MoveResult? lastMove = null
-    )
-    {
-        var sideToMove = _core.SideToMove(state);
-        var legalMoves = _core.GetLegalMovesOf(sideToMove, state);
+        var sideToMove = _core.SideToMove(coreState);
+        var legalMoves = _core.GetLegalMovesOf(sideToMove, coreState);
         MoveOptions moveOptions = new(
             LegalMoves: legalMoves.MovePaths,
             HasForcedMoves: legalMoves.HasForcedMoves
         );
 
-        return new(
-            Fen: fen,
-            San: lastMove?.San,
+        return new AnalysisPosition(
+            Fen: newFen,
+            San: moveResult.San,
             MoveOptions: moveOptions,
             SideToMove: sideToMove,
-            EndStatus: lastMove?.EndStatus
+            EndStatus: moveResult.EndStatus
         );
     }
 }

@@ -13,8 +13,8 @@ public class AnalysisController(IPositionAnalysis positionAnalysis) : Controller
     private readonly IPositionAnalysis _positionAnalysis = positionAnalysis;
 
     [HttpGet("initial")]
-    [ProducesResponseType<AnalysisPosition>(StatusCodes.Status200OK)]
-    public ActionResult<AnalysisPosition> GetInitialAnalysisPosition()
+    [ProducesResponseType<RootAnalysisPosition>(StatusCodes.Status200OK)]
+    public ActionResult<RootAnalysisPosition> GetInitialAnalysisPosition()
     {
         var position = _positionAnalysis.GetInitialPosition();
         return Ok(position);

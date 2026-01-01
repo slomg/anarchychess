@@ -34,12 +34,10 @@ public class PositionAnalysisTests : BaseIntegrationTest
         var legalMoves = _core.GetLegalMovesOf(GameColor.White, state);
         MoveOptions moveOptions = new(legalMoves.MovePaths, legalMoves.HasForcedMoves);
 
-        AnalysisPosition expectedPosition = new(
+        RootAnalysisPosition expectedPosition = new(
             Fen: fen,
-            San: null,
             MoveOptions: moveOptions,
-            SideToMove: GameColor.White,
-            EndStatus: null
+            SideToMove: GameColor.White
         );
         result.Should().BeEquivalentTo(expectedPosition);
     }
