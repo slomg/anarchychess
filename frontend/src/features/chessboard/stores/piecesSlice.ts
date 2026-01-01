@@ -55,12 +55,12 @@ export function createPiecesSlice(
 > {
     return (set, get) => {
         async function applyMoveTurn(move: Move): Promise<void> {
-            const { applyMoveImmediate, disableMovement, pieceMovementEvent } =
+            const { applyMoveImmediate, unselectPiece, pieceMovementEvent } =
                 get();
 
             const animationPromise = applyMoveImmediate(move);
 
-            disableMovement();
+            unselectPiece();
             await pieceMovementEvent.emit(move);
 
             await animationPromise;

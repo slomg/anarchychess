@@ -12,16 +12,16 @@ import {
 } from "@/features/point/pointUtils";
 
 import { ChessboardStore, createChessboardStore } from "../chessboardStore";
+import { AnimationStep, IntermediateSquare, Move } from "../../lib/types";
+import { createFakePosition } from "@/lib/testUtils/fakers/positionFaker";
+import { GameColor, PieceType, SpecialMoveType } from "@/lib/apiClient";
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
 import flushMicrotasks from "@/lib/testUtils/flushMicrotasks";
-import { AnimationStep, IntermediateSquare, Move } from "../../lib/types";
 import { LogicalPoint } from "@/features/point/types";
 import { ScreenPoint } from "@/features/point/types";
 import BoardPieces from "../../lib/boardPieces";
 import LegalMoves from "../../lib/legalMoves";
-import { GameColor, PieceType, SpecialMoveType } from "@/lib/apiClient";
 import { Piece } from "../../lib/types";
-import { createFakePosition } from "@/lib/testUtils/fakers/positionFaker";
 
 vi.mock("@/features/audio/audioPlayer");
 
