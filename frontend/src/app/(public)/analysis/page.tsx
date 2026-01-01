@@ -1,3 +1,6 @@
+import AnalysisChessboard from "@/features/analysis/components/AnalysisChessboard";
+import { getInitialAnalysisPosition } from "@/lib/apiClient";
+import dataOrThrow from "@/lib/apiClient/dataOrThrow";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -11,6 +14,7 @@ export const metadata: Metadata = {
     ],
 };
 
-export default function AnalysisPage() {
-    return null;
+export default async function AnalysisPage() {
+    const rootPosition = await dataOrThrow(getInitialAnalysisPosition());
+    return <AnalysisChessboard rootPosition={rootPosition} />;
 }

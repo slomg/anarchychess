@@ -192,7 +192,7 @@ export default class PositionHistory {
 class PositionNode implements Position {
     _pieces: BoardPieces;
     _fen: string;
-    _sideToMove: GameColor;
+    _movedBy: GameColor;
     _move: Move;
     _san: string;
 
@@ -207,7 +207,7 @@ class PositionNode implements Position {
 
         this._pieces = props.pieces;
         this._fen = props.fen;
-        this._sideToMove = props.movedBy;
+        this._movedBy = props.movedBy;
         this._move = props.move;
         this._san = props.san;
     }
@@ -221,7 +221,7 @@ class PositionNode implements Position {
     }
 
     get movedBy(): GameColor {
-        return this._sideToMove;
+        return this._movedBy;
     }
 
     get move(): Move {
