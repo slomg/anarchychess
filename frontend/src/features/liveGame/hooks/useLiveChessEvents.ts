@@ -46,6 +46,7 @@ export default function useLiveChessEvents(
         const position = addPosition({
             pieces,
             fen: move.fen,
+            movedBy: move.movedBy,
             san: move.san,
             move: decodedMove,
             // clocks: {

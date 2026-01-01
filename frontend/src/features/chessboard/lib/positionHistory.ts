@@ -2,12 +2,14 @@ import { immerable } from "immer";
 
 import BoardPieces from "./boardPieces";
 import { Move } from "./types";
+import { GameColor } from "@/lib/apiClient";
 
 export type PositionId = string & { __brand: "PositionId" };
 
 export interface Position {
     pieces: BoardPieces;
     fen: string;
+    movedBy: GameColor;
     move: Move;
     san: string;
 
@@ -18,6 +20,7 @@ export interface Position {
 export interface PositionProps {
     pieces: BoardPieces;
     fen: string;
+    movedBy: GameColor;
     move: Move;
     san: string;
 }
@@ -189,6 +192,7 @@ export default class PositionHistory {
 class PositionNode implements Position {
     _pieces: BoardPieces;
     _fen: string;
+    _sideToMove: GameColor;
     _move: Move;
     _san: string;
 
@@ -200,8 +204,10 @@ class PositionNode implements Position {
 
     constructor(props: PositionProps, parent: PositionNode | null = null) {
         this._parent = parent;
+
         this._pieces = props.pieces;
         this._fen = props.fen;
+        this._sideToMove = props.movedBy;
         this._move = props.move;
         this._san = props.san;
     }
@@ -212,6 +218,10 @@ class PositionNode implements Position {
 
     get fen(): string {
         return this._fen;
+    }
+
+    get movedBy(): GameColor {
+        return this._sideToMove;
     }
 
     get move(): Move {

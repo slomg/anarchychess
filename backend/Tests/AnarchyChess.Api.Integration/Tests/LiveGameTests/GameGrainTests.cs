@@ -246,6 +246,7 @@ public class GameGrainTests : BaseOrleansIntegrationTest
         MoveSnapshot expectedMoveSnapshot = new(
             Path: MovePath.FromMove(move, GameLogicConstants.BoardWidth),
             Fen: _fenCalculator.CalculateFen(_state.CurrentGame!.Core.Board),
+            MovedBy: GameColor.White,
             San: _sanCalculator.CalculateSan(
                 move,
                 _gameCore.GetLegalMovesOf(GameColor.White, _state.CurrentGame.Core).AllMoves

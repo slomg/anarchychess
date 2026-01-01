@@ -370,6 +370,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         MoveSnapshot moveSnapshot = new(
             Path: moveResult.MovePath,
             Fen: moveResult.Fen,
+            MovedBy: currentPlayer.Color,
             San: moveResult.San,
             timeLeft
         );
