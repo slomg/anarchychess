@@ -6,13 +6,11 @@ import {
     ChessboardStore,
     createChessboardStore,
 } from "@/features/chessboard/stores/chessboardStore";
-import PositionHistory, {
-    Position,
-} from "@/features/chessboard/lib/positionHistory";
 
 import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardStoreContext";
 import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
 import { createFakeBoardPieces } from "@/lib/testUtils/fakers/chessboardFakers";
+import PositionHistory from "@/features/chessboard/lib/positionHistory";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
 import MoveVariation from "../MoveVariation";
 
@@ -27,14 +25,6 @@ describe("MoveVariation", () => {
         chessboardStore = createChessboardStore();
         chessboardStore.setState({ positionHistory: history });
     });
-
-    function renderWithCtx(variations: readonly Position[]) {
-        return render(
-            <ChessboardStoreContext.Provider value={chessboardStore}>
-                <MoveVariation variations={variations} />
-            </ChessboardStoreContext.Provider>,
-        );
-    }
 
     it("renders a single mainline correctly", () => {
         /**
@@ -51,7 +41,11 @@ describe("MoveVariation", () => {
             }),
         );
 
-        renderWithCtx([pos1]);
+        render(
+            <ChessboardStoreContext.Provider value={chessboardStore}>
+                <MoveVariation variations={[pos1]} />
+            </ChessboardStoreContext.Provider>,
+        );
 
         const moveVariations = screen.getByTestId("moveVariations");
         expect(moveVariations).toHaveTextContent(
@@ -102,8 +96,11 @@ describe("MoveVariation", () => {
             }),
         );
 
-        const { debug } = renderWithCtx([e4]);
-        debug();
+        render(
+            <ChessboardStoreContext.Provider value={chessboardStore}>
+                <MoveVariation variations={[e4]} />
+            </ChessboardStoreContext.Provider>,
+        );
 
         const rootVariation = screen.getAllByTestId("moveVariations")[0];
 
@@ -148,7 +145,11 @@ describe("MoveVariation", () => {
             createFakePositionProps({ san: "e5" }),
         );
 
-        renderWithCtx([pos1]);
+        render(
+            <ChessboardStoreContext.Provider value={chessboardStore}>
+                <MoveVariation variations={[pos1]} />
+            </ChessboardStoreContext.Provider>,
+        );
 
         const user = userEvent.setup();
         const e4Button = screen.getByText("1.e4");
