@@ -1,15 +1,17 @@
 import { ArrowsUpDownIcon } from "@heroicons/react/24/solid";
 import React, { useEffect, useRef } from "react";
-import clsx from "clsx";
 
 import { useChessboardStore } from "@/features/chessboard/hooks/useChessboard";
 import useAutoScroll from "@/hooks/useAutoScroll";
+import MoveVariation from "./MoveVariation";
 import Card from "@/components/ui/Card";
-import { Position } from "../../lib/positionHistory";
+import MoveRow from "./MoveRow";
 
 const MoveHistoryTable = () => {
-    useChessboardStore((x) => x.positionHistory.totalPlyCount);
-    const positionHistory = useChessboardStore((x) => x.positionHistory);
+    const { totalPlyCount, positionHistory } = useChessboardStore((x) => ({
+        totalPlyCount: x.positionHistory.totalPlyCount,
+        positionHistory: x.positionHistory,
+    }));
 
     const {
         stepPositionForward,
@@ -26,29 +28,7 @@ const MoveHistoryTable = () => {
     }));
 
     const tableRef = useRef<HTMLDivElement | null>(null);
-    useAutoScroll(tableRef, [positionHistory]);
-
-    let rowIndex = 1;
-    const moveRows: React.ReactElement[] = [];
-
-    const iterator = positionHistory[Symbol.iterator]();
-    while (true) {
-        const white = iterator.next();
-        const black = iterator.next();
-
-        if (white.done) break;
-
-        moveRows.push(
-            <MoveRow
-                key={rowIndex}
-                index={rowIndex}
-                whitePosition={white.value}
-                blackPosition={black.done ? undefined : black.value}
-            />,
-        );
-
-        rowIndex++;
-    }
+    useAutoScroll(tableRef, [totalPlyCount]);
 
     useEffect(() => {
         async function onKeyDown(event: KeyboardEvent): Promise<void> {
@@ -77,10 +57,65 @@ const MoveHistoryTable = () => {
         goToLatestPosition,
     ]);
 
+    let pendingWhiteMoveVariation: React.ReactElement | null =
+        positionHistory.rootSubVariationBySan.size > 0 ? (
+            <MoveVariation
+                key="rootVariation"
+                variations={[...positionHistory.rootSubVariationBySan.values()]}
+            />
+        ) : null;
+
+    const moveRows: React.ReactElement[] = [];
+    const iterator = positionHistory[Symbol.iterator]();
+    while (true) {
+        const white = iterator.next();
+        const black = iterator.next();
+
+        if (white.done) break;
+
+        const whitePosition = white.value;
+        const blackPosition = black.done ? undefined : black.value;
+        moveRows.push(
+            <MoveRow
+                key={whitePosition.ply}
+                whitePosition={whitePosition}
+                blackPosition={blackPosition}
+            />,
+        );
+
+        if (pendingWhiteMoveVariation) {
+            moveRows.push(pendingWhiteMoveVariation);
+            pendingWhiteMoveVariation = null;
+        }
+
+        if (whitePosition.subVariationBySan.size > 0) {
+            moveRows.push(
+                <MoveVariation
+                    key={"variation:" + whitePosition.positionId}
+                    variations={[...whitePosition.subVariationBySan.values()]}
+                />,
+            );
+        }
+
+        if (blackPosition && blackPosition.subVariationBySan.size > 0) {
+            pendingWhiteMoveVariation = (
+                <MoveVariation
+                    key={blackPosition.positionId}
+                    variations={[...blackPosition.subVariationBySan.values()]}
+                />
+            );
+        }
+    }
+
     return (
         <Card className="relative block max-h-96 w-full p-0 lg:max-h-full">
-            <div className="h-full w-full overflow-x-auto" ref={tableRef}>
+            <div
+                className="h-full flex-1 overflow-x-auto"
+                ref={tableRef}
+                data-testid="moveHistoryContents"
+            >
                 {moveRows}
+            </div>
 
             <div className="absolute right-0 bottom-0 flex w-fit gap-3 p-3">
                 <ArrowsUpDownIcon
@@ -93,57 +128,3 @@ const MoveHistoryTable = () => {
     );
 };
 export default MoveHistoryTable;
-
-const MoveRow = ({
-    whitePosition,
-    blackPosition,
-    index,
-}: {
-    whitePosition?: Position;
-    blackPosition?: Position;
-    index: number;
-}) => {
-    const { goToPosition, isViewingWhite, isViewingBlack } = useChessboardStore(
-        (x) => ({
-            goToPosition: x.goToPosition,
-            isViewingWhite:
-                whitePosition &&
-                x.positionHistory.viewingPosition?.positionId ===
-                    whitePosition.positionId,
-            isViewingBlack:
-                blackPosition &&
-                x.positionHistory.viewingPosition?.positionId ===
-                    blackPosition.positionId,
-        }),
-    );
-
-    const color = index % 2 === 0 ? "bg-white/10" : "";
-    const selectedClass = "bg-blue-300/30";
-    return (
-        <div className={clsx("relative flex", color)}>
-            <div className="bg-card w-10 p-3">{index}.</div>
-            <div
-                className={clsx(
-                    "flex-1 cursor-pointer overflow-x-auto p-3",
-                    isViewingWhite && selectedClass,
-                )}
-                onClick={() =>
-                    whitePosition && goToPosition(whitePosition.positionId)
-                }
-            >
-                <div className="overflow-x-auto">{whitePosition?.san}</div>
-            </div>
-            <div
-                className={clsx(
-                    "flex-1 cursor-pointer overflow-x-auto p-3",
-                    isViewingBlack && selectedClass,
-                )}
-                onClick={() =>
-                    blackPosition && goToPosition(blackPosition.positionId)
-                }
-            >
-                <div className="overflow-x-auto">{blackPosition?.san}</div>
-            </div>
-        </div>
-    );
-};

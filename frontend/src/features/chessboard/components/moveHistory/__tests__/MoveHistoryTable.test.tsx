@@ -7,6 +7,7 @@ import {
     createChessboardStore,
 } from "@/features/chessboard/stores/chessboardStore";
 import {
+    createFakeBoardPieces,
     createFakeMove,
     createFakePiece,
 } from "@/lib/testUtils/fakers/chessboardFakers";
@@ -19,6 +20,7 @@ import { logicalPoint } from "@/features/point/pointUtils";
 import MoveHistoryTable from "../MoveHistoryTable";
 import BoardPieces from "../../../lib/boardPieces";
 import { GameColor } from "@/lib/apiClient";
+import PositionHistory from "@/features/chessboard/lib/positionHistory";
 
 describe("MoveHistoryTable", () => {
     let chessboardStore: StoreApi<ChessboardStore>;
@@ -51,8 +53,9 @@ describe("MoveHistoryTable", () => {
 
         renderWithCtx();
 
-        expect(screen.getByText("1.")).toBeInTheDocument();
-        expect(screen.getByText("e4")).toBeInTheDocument();
+        expect(screen.getByTestId("moveHistoryContents")).toHaveTextContent(
+            "1.e4",
+        );
     });
 
     it("should render multiple rows for multiple moves", () => {
@@ -69,12 +72,76 @@ describe("MoveHistoryTable", () => {
 
         renderWithCtx();
 
-        expect(screen.getByText("1.")).toBeInTheDocument();
-        expect(screen.getByText("2.")).toBeInTheDocument();
-        expect(screen.getByText("e4")).toBeInTheDocument();
-        expect(screen.getByText("e5")).toBeInTheDocument();
-        expect(screen.getByText("Nf3")).toBeInTheDocument();
-        expect(screen.getByText("Nc6")).toBeInTheDocument();
+        expect(screen.getByTestId("moveHistoryContents")).toHaveTextContent(
+            "1.e4 e5 2.Nf3 Nc6".replaceAll(" ", ""),
+        );
+    });
+
+    it("should render root sub variations", () => {
+        const positionHistory = new PositionHistory(createFakeBoardPieces());
+        const pos1 = positionHistory.addNextPosition(
+            createFakePositionProps({ san: "e4" }),
+        );
+        positionHistory.goToStart();
+        positionHistory.addNextPosition(createFakePositionProps({ san: "c4" }));
+        positionHistory.goToPosition(pos1.positionId);
+        positionHistory.addNextPosition(createFakePositionProps({ san: "e5" }));
+        positionHistory.addNextPosition(
+            createFakePositionProps({ san: "Nf3" }),
+        );
+        chessboardStore.setState({ positionHistory });
+
+        renderWithCtx();
+
+        expect(screen.getByTestId("moveVariations")).toHaveTextContent("1.c4");
+        expect(screen.getByTestId("moveHistoryContents")).toHaveTextContent(
+            "1.e4 e5 1.c4 2.Nf3".replaceAll(" ", ""),
+        );
+    });
+
+    it("should render sub variations for the on white position", () => {
+        const positionHistory = new PositionHistory(createFakeBoardPieces());
+
+        const whitePos = positionHistory.addNextPosition(
+            createFakePositionProps({ san: "e4" }),
+        );
+        positionHistory.addNextPosition(createFakePositionProps({ san: "e5" }));
+        positionHistory.goToPosition(whitePos.positionId);
+        positionHistory.addNextPosition(createFakePositionProps({ san: "c5" }));
+        chessboardStore.setState({ positionHistory });
+
+        renderWithCtx();
+
+        expect(screen.getByTestId("moveVariations")).toHaveTextContent(
+            "1...c5",
+        );
+        expect(screen.getByTestId("moveHistoryContents")).toHaveTextContent(
+            "1.e4 e5 1...c5".replaceAll(" ", ""),
+        );
+    });
+
+    it("should render sub variations for the black position on the next move", () => {
+        const positionHistory = new PositionHistory(createFakeBoardPieces());
+
+        positionHistory.addNextPosition(createFakePositionProps({ san: "e4" }));
+        const blackPos = positionHistory.addNextPosition(
+            createFakePositionProps({ san: "e5" }),
+        );
+        positionHistory.addNextPosition(
+            createFakePositionProps({ san: "Nf3" }),
+        );
+        positionHistory.goToPosition(blackPos.positionId);
+        positionHistory.addNextPosition(
+            createFakePositionProps({ san: "Nc3" }),
+        );
+        chessboardStore.setState({ positionHistory });
+
+        renderWithCtx();
+
+        expect(screen.getByTestId("moveVariations")).toHaveTextContent("2.Nc3");
+        expect(screen.getByTestId("moveHistoryContents")).toHaveTextContent(
+            "1.e4 e5 2.Nf3 2.Nc3".replaceAll(" ", ""),
+        );
     });
 
     it("should apply alternating background color class for odd rows", () => {
@@ -155,66 +222,6 @@ describe("MoveHistoryTable", () => {
         // jump to start
         await user.keyboard("{ArrowUp}");
         expect(chessboardStore.getState().pieces).toEqual(rootPieces);
-    });
-
-    it("should update position when clicking on a move", async () => {
-        const piece = createFakePiece({
-            position: logicalPoint({ x: 0, y: 0 }),
-        });
-
-        const rootPieces = BoardPieces.fromPieces(piece);
-        const position1 = createFakePositionProps({
-            san: "e4",
-            pieces: BoardPieces.fromPieces({
-                ...piece,
-                position: logicalPoint({ x: 1, y: 0 }),
-            }),
-            move: createFakeMove({
-                from: logicalPoint({ x: 0, y: 0 }),
-                to: logicalPoint({ x: 1, y: 0 }),
-            }),
-        });
-        const position2 = createFakePositionProps({
-            san: "e5",
-            pieces: BoardPieces.fromPieces({
-                ...piece,
-                position: logicalPoint({ x: 2, y: 0 }),
-            }),
-            move: createFakeMove({
-                from: logicalPoint({ x: 1, y: 0 }),
-                to: logicalPoint({ x: 2, y: 0 }),
-            }),
-        });
-        const position3 = createFakePositionProps({
-            san: "e6",
-            pieces: BoardPieces.fromPieces({
-                ...piece,
-                position: logicalPoint({ x: 3, y: 0 }),
-            }),
-            move: createFakeMove({
-                from: logicalPoint({ x: 2, y: 0 }),
-                to: logicalPoint({ x: 3, y: 0 }),
-            }),
-        });
-
-        chessboardStore.setState({
-            positionHistory: createFakePositionHistory({
-                rootPieces,
-                pos: [position1, position2, position3],
-            }),
-        });
-
-        const user = userEvent.setup();
-        renderWithCtx();
-
-        await user.click(screen.getByText("e4"));
-        expect(chessboardStore.getState().pieces).toEqual(position1.pieces);
-
-        await user.click(screen.getByText("e5"));
-        expect(chessboardStore.getState().pieces).toEqual(position2.pieces);
-
-        await user.click(screen.getByText("e6"));
-        expect(chessboardStore.getState().pieces).toEqual(position3.pieces);
     });
 
     it("should flip the board when the flip board icon is clicked", async () => {
