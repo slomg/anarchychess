@@ -1,20 +1,20 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { StoreApi } from "zustand";
 
-import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardStoreContext";
-import PositionHistory, {
-    Position,
-} from "@/features/chessboard/lib/positionHistory";
 import {
     ChessboardStore,
     createChessboardStore,
 } from "@/features/chessboard/stores/chessboardStore";
-import { StoreApi } from "zustand";
-import MoveVariation from "../MoveVariation";
+import PositionHistory, {
+    Position,
+} from "@/features/chessboard/lib/positionHistory";
+
+import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardStoreContext";
 import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
-import { createFakePositionHistory } from "@/lib/testUtils/fakers/positionHistoryFaker";
-import userEvent from "@testing-library/user-event";
 import { createFakeBoardPieces } from "@/lib/testUtils/fakers/chessboardFakers";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
+import MoveVariation from "../MoveVariation";
 
 describe("MoveVariation", () => {
     let rootPieces: BoardPieces;
