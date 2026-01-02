@@ -1,35 +1,12 @@
 import { immerable } from "immer";
 
+import { Position, PositionId, PositionNode, PositionProps } from "./position";
 import BoardPieces from "./boardPieces";
-import { Move } from "./types";
-import { GameColor } from "@/lib/apiClient";
-
-export type PositionId = string & { __brand: "PositionId" };
-
-export interface Position {
-    pieces: BoardPieces;
-    fen: string;
-    movedBy: GameColor;
-    move: Move;
-    san: string;
-
-    variations: readonly Position[];
-    positionId: PositionId;
-}
-
-export interface PositionProps {
-    pieces: BoardPieces;
-    fen: string;
-    movedBy: GameColor;
-    move: Move;
-    san: string;
-}
 
 export default class PositionHistory {
     [immerable] = true;
 
     _mainBranchPlies = 0;
-    _totalPlies = 0;
 
     _rootPieces: BoardPieces;
     _byPositionId: Map<PositionId, PositionNode> = new Map();
@@ -48,6 +25,10 @@ export default class PositionHistory {
         return this._rootPieces;
     }
 
+    get rootSubVariationBySan(): ReadonlyMap<string, Position> {
+        return this._headVariationBySan;
+    }
+
     get viewingPosition(): Position | null {
         return this._viewingPosition;
     }
@@ -57,7 +38,7 @@ export default class PositionHistory {
     }
 
     get totalPlyCount(): number {
-        return this._totalPlies;
+        return this._byPositionId.size;
     }
 
     get isViewingLatestPosition(): boolean {
@@ -144,7 +125,6 @@ export default class PositionHistory {
             this._head = node;
             this._tail = node;
             this._mainBranchPlies = 1;
-            this._totalPlies = 1;
 
             this._byPositionId.set(node.positionId, node);
             this._viewingPosition = node;
@@ -165,7 +145,6 @@ export default class PositionHistory {
         this._byPositionId.set(node.positionId, node);
         this._headVariationBySan.set(props.san, node);
         this._viewingPosition = node;
-        this._totalPlies++;
         return node;
     }
 
@@ -180,101 +159,10 @@ export default class PositionHistory {
         }
 
         this._byPositionId.set(node.positionId, node);
-        this._totalPlies++;
         return node;
     }
 
     *[Symbol.iterator](): IterableIterator<Position> {
         if (this._head) yield* this._head;
-    }
-}
-
-class PositionNode implements Position {
-    _pieces: BoardPieces;
-    _fen: string;
-    _movedBy: GameColor;
-    _move: Move;
-    _san: string;
-
-    _positionId: PositionId = crypto.randomUUID() as PositionId;
-
-    _parent: PositionNode | null = null;
-    _mainVariation: PositionNode | null = null;
-    _subVariationBySan: Map<string, PositionNode> = new Map();
-
-    constructor(props: PositionProps, parent: PositionNode | null = null) {
-        this._parent = parent;
-
-        this._pieces = props.pieces;
-        this._fen = props.fen;
-        this._movedBy = props.movedBy;
-        this._move = props.move;
-        this._san = props.san;
-    }
-
-    get pieces(): BoardPieces {
-        return this._pieces;
-    }
-
-    get fen(): string {
-        return this._fen;
-    }
-
-    get movedBy(): GameColor {
-        return this._movedBy;
-    }
-
-    get move(): Move {
-        return this._move;
-    }
-
-    get san(): string {
-        return this._san;
-    }
-
-    get positionId(): PositionId {
-        return this._positionId;
-    }
-
-    get prev(): PositionNode | null {
-        return this._parent;
-    }
-    get next(): PositionNode | null {
-        return this._mainVariation;
-    }
-
-    get subVariationBySan(): ReadonlyMap<string, PositionNode> {
-        return this._subVariationBySan;
-    }
-
-    get variations(): readonly PositionNode[] {
-        const allVariations = [...this._subVariationBySan.values()];
-        if (this._mainVariation) allVariations.unshift(this._mainVariation);
-
-        return allVariations;
-    }
-
-    createChild(props: PositionProps): PositionNode {
-        const child = new PositionNode(props, this);
-
-        if (!this._mainVariation) {
-            this._mainVariation = child;
-            return child;
-        }
-
-        if (this._mainVariation.san === props.san) {
-            return this._mainVariation;
-        }
-
-        const existingSubWithSan = this._subVariationBySan.get(props.san);
-        if (existingSubWithSan) return existingSubWithSan;
-
-        this._subVariationBySan.set(child.san, child);
-        return child;
-    }
-
-    *[Symbol.iterator](): IterableIterator<PositionNode> {
-        yield this;
-        if (this._mainVariation) yield* this._mainVariation;
     }
 }

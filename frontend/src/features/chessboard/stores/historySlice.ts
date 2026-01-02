@@ -1,10 +1,9 @@
 import { StateCreator } from "zustand";
 
-import PositionHistory, {
-    Position,
-    PositionId,
-    PositionProps,
-} from "../lib/positionHistory";
+import PositionHistory from "../lib/positionHistory";
+import { PositionId } from "../lib/position";
+import { Position } from "../lib/position";
+import { PositionProps } from "../lib/position";
 
 import { ChessboardStore } from "./chessboardStore";
 import BoardPieces from "../lib/boardPieces";

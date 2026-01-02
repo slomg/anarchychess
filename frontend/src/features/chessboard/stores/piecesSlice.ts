@@ -12,7 +12,7 @@ import {
 import BoardPieces from "../lib/boardPieces";
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
 import { EventBus } from "@/lib/eventBus";
-import { Position } from "../lib/positionHistory";
+import { Position } from "../lib/position";
 
 export interface PieceSliceProps {
     pieces: BoardPieces;

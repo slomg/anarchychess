@@ -9,7 +9,7 @@ import { pointToStr } from "@/features/point/pointUtils";
 import { PieceType } from "@/lib/apiClient";
 import BoardPieces from "../lib/boardPieces";
 import LegalMoves from "../lib/legalMoves";
-import { PositionId } from "../lib/positionHistory";
+import { PositionId } from "../lib/position";
 
 export interface LegalMovesSliceProps {
     legalMovesByPosition: Map<PositionId | undefined, LegalMoves>;

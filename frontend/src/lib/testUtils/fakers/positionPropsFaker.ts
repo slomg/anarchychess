@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 
-import { PositionProps } from "@/features/chessboard/lib/positionHistory";
+import { PositionProps } from "@/features/chessboard/lib/position";
 import { createFakeBoardPieces, createFakeMove } from "./chessboardFakers";
 import { GameColor } from "@/lib/apiClient";
 import { createFakeSan } from "./sanFaker";

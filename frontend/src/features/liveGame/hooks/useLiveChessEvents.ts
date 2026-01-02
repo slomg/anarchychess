@@ -3,7 +3,7 @@ import { StoreApi, useStore } from "zustand";
 import { ChessboardStore } from "@/features/chessboard/stores/chessboardStore";
 import { decodeMovePath, decodeLegalMoves } from "../lib/moveDecoder";
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
-import { Position } from "@/features/chessboard/lib/positionHistory";
+import { Position } from "@/features/chessboard/lib/position";
 import { Clocks, GameColor, MoveSnapshot } from "@/lib/apiClient";
 import { LiveChessStore } from "../stores/liveChessStore";
 import { refetchGame } from "../lib/gameStateProcessor";

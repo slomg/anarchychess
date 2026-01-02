@@ -1,9 +1,7 @@
 import { faker } from "@faker-js/faker";
 
-import {
-    Position,
-    PositionId,
-} from "@/features/chessboard/lib/positionHistory";
+import { PositionId } from "@/features/chessboard/lib/position";
+import { Position } from "@/features/chessboard/lib/position";
 
 import { createFakeBoardPieces, createFakeMove } from "./chessboardFakers";
 import { GameColor } from "@/lib/apiClient";
@@ -16,8 +14,12 @@ export function createFakePosition(overrides?: Partial<Position>): Position {
         movedBy: faker.helpers.enumValue(GameColor),
         move: createFakeMove(),
         san: createFakeSan(),
-        variations: [],
+        ply: faker.number.int({ min: 0, max: 100 }),
+
         positionId: crypto.randomUUID() as PositionId,
+        variations: [],
+        subVariationBySan: new Map(),
+        *[Symbol.iterator]() {},
         ...overrides,
     };
 }

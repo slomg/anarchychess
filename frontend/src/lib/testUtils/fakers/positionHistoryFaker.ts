@@ -1,6 +1,5 @@
-import PositionHistory, {
-    PositionProps,
-} from "@/features/chessboard/lib/positionHistory";
+import PositionHistory from "@/features/chessboard/lib/positionHistory";
+import { PositionProps } from "@/features/chessboard/lib/position";
 import { createFakeBoardPieces } from "./chessboardFakers";
 import { createFakePositionProps } from "./positionPropsFaker";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";

@@ -1,7 +1,7 @@
 import clsx from "clsx";
 
 import { useChessboardStore } from "../../hooks/useChessboard";
-import { Position } from "../../lib/positionHistory";
+import { Position } from "../../lib/position";
 
 const MoveRow = ({
     whitePosition,

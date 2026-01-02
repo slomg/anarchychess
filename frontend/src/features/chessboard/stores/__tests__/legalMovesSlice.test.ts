@@ -11,7 +11,7 @@ import { createNFakePositionHistory } from "@/lib/testUtils/fakers/positionHisto
 import { ChessboardStore, createChessboardStore } from "../chessboardStore";
 import { logicalPoint, pointToStr } from "@/features/point/pointUtils";
 import { IntermediateSquare, Piece } from "../../lib/types";
-import { PositionId } from "../../lib/positionHistory";
+import { PositionId } from "../../lib/position";
 import { waitFor } from "@testing-library/react";
 import BoardPieces from "../../lib/boardPieces";
 import LegalMoves from "../../lib/legalMoves";

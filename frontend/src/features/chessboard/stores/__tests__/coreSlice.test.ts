@@ -10,7 +10,7 @@ import {
     createChessboardStore,
 } from "../chessboardStore";
 
-import { PositionId } from "../../lib/positionHistory";
+import { PositionId } from "../../lib/position";
 import { GameColor } from "@/lib/apiClient";
 
 describe("CoreSlice", () => {

@@ -1,6 +1,7 @@
 import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
 import { createFakeBoardPieces } from "@/lib/testUtils/fakers/chessboardFakers";
-import PositionHistory, { PositionId } from "../positionHistory";
+import PositionHistory from "../positionHistory";
+import { PositionId } from "../position";
 import BoardPieces from "../boardPieces";
 
 describe("PositionHistory", () => {
@@ -286,6 +287,9 @@ describe("PositionHistory", () => {
             const retrieved = history.goToPosition(headVariation.positionId);
             expect(retrieved.success).toBe(true);
             expect(history.viewingPosition).toBe(headVariation);
+            expect(history.rootSubVariationBySan).toEqual(
+                new Map([[headVariation.san, headVariation]]),
+            );
 
             history.goToStart();
             expect(history.stepForward()).toBe(true);

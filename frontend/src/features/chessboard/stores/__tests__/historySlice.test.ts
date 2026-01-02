@@ -4,7 +4,8 @@ import { createNFakePositionHistory } from "@/lib/testUtils/fakers/positionHisto
 import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
 import { createFakeBoardPieces } from "@/lib/testUtils/fakers/chessboardFakers";
 import { ChessboardStore, createChessboardStore } from "../chessboardStore";
-import PositionHistory, { PositionId } from "../../lib/positionHistory";
+import PositionHistory from "../../lib/positionHistory";
+import { PositionId } from "../../lib/position";
 
 describe("HistorySlice", () => {
     let store: StoreApi<ChessboardStore>;

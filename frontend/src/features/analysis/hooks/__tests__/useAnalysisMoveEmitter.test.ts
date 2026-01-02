@@ -16,7 +16,7 @@ import { createFakeMove } from "@/lib/testUtils/fakers/chessboardFakers";
 import { renderHook } from "@testing-library/react";
 import useAnalysisMoveEmitter from "../useAnalysisMoveEmitter";
 import { createFakeMovePath } from "@/lib/testUtils/fakers/movePathFaker";
-import { PositionProps } from "@/features/chessboard/lib/positionHistory";
+import { PositionProps } from "@/features/chessboard/lib/position";
 import mockSequentialUUID from "@/lib/testUtils/mocks/mockUuids";
 import { decodeMovePathIntoLegalMoves } from "@/features/liveGame/lib/moveDecoder";
 import { createFakePosition } from "@/lib/testUtils/fakers/positionFaker";
