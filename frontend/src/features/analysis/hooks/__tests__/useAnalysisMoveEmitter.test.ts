@@ -12,7 +12,10 @@ import {
     RootAnalysisPosition,
 } from "@/lib/apiClient";
 import constants from "@/lib/constants";
-import { createFakeMove } from "@/lib/testUtils/fakers/chessboardFakers";
+import {
+    createFakeBoardPieces,
+    createFakeMove,
+} from "@/lib/testUtils/fakers/chessboardFakers";
 import { renderHook } from "@testing-library/react";
 import useAnalysisMoveEmitter from "../useAnalysisMoveEmitter";
 import { createFakeMovePath } from "@/lib/testUtils/fakers/movePathFaker";
@@ -20,6 +23,8 @@ import { PositionProps } from "@/features/chessboard/lib/position";
 import mockSequentialUUID from "@/lib/testUtils/mocks/mockUuids";
 import { decodeMovePathIntoLegalMoves } from "@/features/liveGame/lib/moveDecoder";
 import { createFakePosition } from "@/lib/testUtils/fakers/positionFaker";
+import PositionHistory from "@/features/chessboard/lib/positionHistory";
+import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
 
 vi.mock("@/lib/apiClient/definition");
 
@@ -138,6 +143,26 @@ describe("useAnalysisMoveEmitter", () => {
                 boardWidth: constants.BOARD_WIDTH,
                 hasForcedMoves: newAnalysisPosition.moveOptions.hasForcedMoves,
             }),
+        );
+    });
+
+    it("should go directly to an existing position without calling the API", async () => {
+        const positionHistory = new PositionHistory(createFakeBoardPieces());
+        const existingPosition = positionHistory.addNextPosition(
+            createFakePositionProps(),
+        );
+        positionHistory.goToStart();
+        chessboardStore.setState({ positionHistory });
+
+        renderHook(() => useAnalysisMoveEmitter(rootPosition, chessboardStore));
+
+        await chessboardStore
+            .getState()
+            .pieceMovementEvent.emit(existingPosition.move);
+
+        expect(getNextAnalysisPositionMock).not.toHaveBeenCalled();
+        expect(chessboardStore.getState().positionHistory.viewingPosition).toBe(
+            existingPosition,
         );
     });
 });

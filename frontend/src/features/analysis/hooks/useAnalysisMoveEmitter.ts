@@ -20,8 +20,16 @@ export default function useAnalysisMoveEmitter(
 
     useEffect(() => {
         async function emitMove(move: Move) {
-            const { pieces, boardDimensions, positionHistory } =
+            const { pieces, boardDimensions, positionHistory, goToPosition } =
                 chessboardStore.getState();
+
+            const nextPosition = positionHistory.getNextPositionWithKey(
+                move.moveKey,
+            );
+            if (nextPosition) {
+                await goToPosition(nextPosition.positionId);
+                return;
+            }
 
             const { error, data } = await getNextAnalysisPosition({
                 body: {
