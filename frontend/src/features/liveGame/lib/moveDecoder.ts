@@ -2,6 +2,7 @@ import brotliDecompress from "brotli/decompress";
 
 import {
     IntermediateSquare,
+    MoveKey,
     MoveSideEffect,
     Piece,
 } from "@/features/chessboard/lib/types";
@@ -60,7 +61,7 @@ export function decodeMovePath(path: MovePath, boardWidth: number): Move {
     return {
         from,
         to,
-        moveKey: path.moveKey,
+        moveKey: path.moveKey as MoveKey,
         triggers,
         captures,
         intermediates,

@@ -7,7 +7,7 @@ import {
     SpecialMoveType,
 } from "@/lib/apiClient";
 import { decodeLegalMoves, decodeMovePathIntoLegalMoves } from "../moveDecoder";
-import { Move } from "@/features/chessboard/lib/types";
+import { Move, MoveKey } from "@/features/chessboard/lib/types";
 import { logicalPoint } from "@/features/point/pointUtils";
 import mockSequentialUUID from "@/lib/testUtils/mocks/mockUuids";
 import LegalMoves from "@/features/chessboard/lib/legalMoves";
@@ -63,7 +63,7 @@ describe("decodeMovePathIntoLegalMoves", () => {
         expect(move).toEqual<Move>({
             from: logicalPoint({ x: 0, y: 0 }),
             to: logicalPoint({ x: 1, y: 0 }),
-            moveKey: "2",
+            moveKey: "2" as MoveKey,
             triggers: [logicalPoint({ x: 3, y: 0 })],
             captures: [logicalPoint({ x: 4, y: 0 })],
             intermediates: [
@@ -171,7 +171,7 @@ describe("decodeLegalMoves", () => {
             {
                 from: logicalPoint({ x: 0, y: 0 }),
                 to: logicalPoint({ x: 1, y: 0 }),
-                moveKey: "1",
+                moveKey: "1" as MoveKey,
                 triggers: [logicalPoint({ x: 2, y: 0 })],
                 captures: [logicalPoint({ x: 3, y: 0 })],
                 intermediates: [
@@ -202,7 +202,7 @@ describe("decodeLegalMoves", () => {
             {
                 from: logicalPoint({ x: 0, y: 1 }),
                 to: logicalPoint({ x: 1, y: 1 }),
-                moveKey: "5",
+                moveKey: "5" as MoveKey,
                 ...emptyMove,
             },
         ]);

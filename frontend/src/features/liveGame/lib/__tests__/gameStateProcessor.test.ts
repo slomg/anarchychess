@@ -13,6 +13,7 @@ import { LogicalPoint } from "@/features/point/types";
 import { GameColor } from "@/lib/apiClient";
 import constants from "@/lib/constants";
 import PositionHistory from "@/features/chessboard/lib/positionHistory";
+import { createFakeMove } from "@/lib/testUtils/fakers/chessboardFakers";
 
 describe("createStoreProps", () => {
     it("should return the complete and correct store props object", () => {
@@ -91,18 +92,10 @@ describe("createStoreProps", () => {
         let pieces = new BoardPieces(constants.DEFAULT_CHESS_BOARD);
 
         function applyMove(from: LogicalPoint, to: LogicalPoint) {
-            const { newPieces } = simulateMove(pieces, {
-                from,
-                to,
-                moveKey: "",
-                captures: [],
-                triggers: [],
-                intermediates: [],
-                sideEffects: [],
-                pieceSpawns: [],
-                promotesTo: null,
-                specialType: null,
-            });
+            const { newPieces } = simulateMove(
+                pieces,
+                createFakeMove({ from, to }),
+            );
             pieces = newPieces;
         }
 

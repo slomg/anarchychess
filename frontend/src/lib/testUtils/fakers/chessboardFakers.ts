@@ -1,7 +1,7 @@
 import { GameColor, PieceType } from "@/lib/apiClient";
 import { logicalPoint, pointToStr } from "@/features/point/pointUtils";
 import { LogicalPoint, StrPoint } from "@/features/point/types";
-import { Move } from "@/features/chessboard/lib/types";
+import { Move, MoveKey } from "@/features/chessboard/lib/types";
 import { Piece } from "@/features/chessboard/lib/types";
 import { faker } from "@faker-js/faker";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
@@ -28,7 +28,7 @@ export function createFakeMove(override?: Partial<Move>): Move {
     return {
         from: createRandomPoint(),
         to: createRandomPoint(),
-        moveKey: faker.string.alpha(10),
+        moveKey: faker.string.alpha(10) as MoveKey,
         triggers: [],
         captures: [],
         intermediates: [],

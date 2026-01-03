@@ -12,7 +12,7 @@ export interface Piece {
 export interface Move {
     from: LogicalPoint;
     to: LogicalPoint;
-    moveKey: string;
+    moveKey: MoveKey;
 
     triggers: LogicalPoint[];
     captures: LogicalPoint[];
@@ -22,6 +22,8 @@ export interface Move {
     promotesTo: PieceType | null;
     specialType: SpecialMoveType | null;
 }
+
+export type MoveKey = string & { __brand: "MoveKey" };
 
 export type MinimalMove = Partial<Move> & {
     from: LogicalPoint;

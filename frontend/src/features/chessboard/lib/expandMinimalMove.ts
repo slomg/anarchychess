@@ -1,8 +1,8 @@
-import { MinimalMove, Move } from "./types";
+import { MinimalMove, Move, MoveKey } from "./types";
 
 export default function expandMinimalMove(minimalMove: MinimalMove): Move {
     return {
-        moveKey: "",
+        moveKey: "" as MoveKey,
         triggers: [],
         captures: [],
         intermediates: [],
