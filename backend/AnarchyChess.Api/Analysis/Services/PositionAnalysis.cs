@@ -57,15 +57,11 @@ public class PositionAnalysis(
 
         var sideToMove = _core.SideToMove(coreState);
 
-        MoveOptions moveOptions = new();
-        if (moveResult.EndStatus is null)
-        {
-            var legalMoves = _core.GetLegalMovesOf(sideToMove, coreState);
-            moveOptions = new(
-                LegalMoves: legalMoves.MovePaths,
-                HasForcedMoves: legalMoves.HasForcedMoves
-            );
-        }
+        var legalMoves = _core.GetLegalMovesOf(sideToMove, coreState);
+        MoveOptions moveOptions = new(
+            LegalMoves: legalMoves.MovePaths,
+            HasForcedMoves: legalMoves.HasForcedMoves
+        );
 
         return new AnalysisPosition(
             Fen: newFen,

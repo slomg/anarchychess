@@ -137,6 +137,24 @@ public class ChessBoardTests
     }
 
     [Fact]
+    public void HasPieceOfType_returns_true_when_piece_exists()
+    {
+        ChessBoard board = new();
+        board.PlacePiece(new("a2"), PieceFactory.White(PieceType.Pawn));
+        board.HasPieceOfType(PieceType.Pawn, GameColor.White).Should().BeTrue();
+    }
+
+    [Fact]
+    public void HasPieceOfType_returns_false_for_wrong_type_or_color()
+    {
+        ChessBoard board = new();
+        board.PlacePiece(new("a2"), PieceFactory.White(PieceType.Pawn));
+
+        board.HasPieceOfType(PieceType.Rook, GameColor.White).Should().BeFalse();
+        board.HasPieceOfType(PieceType.Pawn, GameColor.Black).Should().BeFalse();
+    }
+
+    [Fact]
     public void PlayMove_with_a_regular_moves_correctly_moves_the_piece()
     {
         ChessBoard board = new();

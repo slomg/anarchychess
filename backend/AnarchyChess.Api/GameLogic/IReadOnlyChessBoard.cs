@@ -15,6 +15,7 @@ public interface IReadOnlyChessBoard
     bool IsWithinBoundaries(AlgebraicPoint point);
     bool IsEmpty(AlgebraicPoint point);
     List<Piece> GetAllPiecesWith(PieceType type, GameColor? color);
+    bool HasPieceOfType(PieceType type, GameColor? color);
 
     IEnumerable<(AlgebraicPoint Position, Piece? Occupant)> EnumerateSquares();
     IEnumerable<(AlgebraicPoint Position, Piece Occupant)> EnumeratePieces();

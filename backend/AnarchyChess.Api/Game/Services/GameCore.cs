@@ -92,10 +92,10 @@ public class GameCore(
         var fen = _fenCalculator.CalculateFen(state.Board);
 
         GameEndStatus? endStatus = null;
-        var winStatus = EvaluateKingCaptureResult(move, state.Board, movingSide);
-        if (winStatus is not null)
+        var kingCaptureWinStatus = EvaluateKingCaptureResult(move, state.Board, movingSide);
+        if (kingCaptureWinStatus is not null)
         {
-            endStatus = winStatus;
+            endStatus = kingCaptureWinStatus;
         }
         else if (
             _drawEvaulator.TryEvaluateDraw(
@@ -114,7 +114,7 @@ public class GameCore(
         var san = _sanCalculator.CalculateSan(
             move,
             state.LegalMoves.AllMoves,
-            isKingCapture: winStatus is not null
+            isKingCapture: kingCaptureWinStatus is not null
         );
         MoveResult moveResult = new(
             Move: move,
@@ -124,6 +124,7 @@ public class GameCore(
             EndStatus: endStatus
         );
 
+        // if the game is over, there are no legal moves
         state.LegalMoves = CalculateAllLegalMoves(state.Board);
         return moveResult;
     }
@@ -137,6 +138,9 @@ public class GameCore(
 
     private LegalMoveSet CalculateAllLegalMoves(ChessBoard board)
     {
+        if (!BothSidesHaveKing(board))
+            return new();
+
         var allMoves = _legalMoveCalculator
             .CalculateAllLegalMoves(board, board.SideToMove)
             .ToList();
@@ -175,15 +179,18 @@ public class GameCore(
         )
             return null;
 
-        bool opponentOutOfKings =
-            board.GetAllPiecesWith(PieceType.King, movingSide.Invert()).Count == 0;
+        bool opponentOutOfKings = !board.HasPieceOfType(PieceType.King, movingSide.Invert());
         if (opponentOutOfKings)
             return _resultDescriber.KingCaptured(by: movingSide);
 
-        bool isSelfCapture = board.GetAllPiecesWith(PieceType.King, movingSide).Count == 0;
+        bool isSelfCapture = !board.HasPieceOfType(PieceType.King, movingSide);
         if (isSelfCapture)
             return _resultDescriber.KingSelfCapture(by: movingSide);
 
         return null;
     }
+
+    private static bool BothSidesHaveKing(ChessBoard board) =>
+        board.HasPieceOfType(PieceType.King, GameColor.White)
+        && board.HasPieceOfType(PieceType.King, GameColor.Black);
 }

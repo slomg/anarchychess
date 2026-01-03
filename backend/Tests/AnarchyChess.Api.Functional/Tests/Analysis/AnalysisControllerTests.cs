@@ -24,7 +24,7 @@ public class AnalysisControllerTests(AnarchyChessWebApplicationFactory factory)
     public async Task GetNextAnalysisPosition_plays_the_move()
     {
         AnalysisMove move = new(
-            Fen: "R5r",
+            Fen: "R5rKk",
             MovingPlayer: GameColor.White,
             PiecePosition: new AlgebraicPoint("a1"),
             MoveKey: new(from: new AlgebraicPoint("a1"), to: new AlgebraicPoint("c1"))
