@@ -125,7 +125,6 @@ function getPositionHistory(gameState: GameState): PositionHistory {
         positionHistory.addNextPosition({
             pieces: newPieces,
             move,
-            movedBy: moveSnapshot.movedBy,
             sideToMove: moveSnapshot.nextSideToMove,
             fen: moveSnapshot.fen,
             san: moveSnapshot.san,
