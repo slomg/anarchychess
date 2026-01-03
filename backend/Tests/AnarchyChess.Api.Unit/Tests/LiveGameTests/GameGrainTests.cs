@@ -23,9 +23,12 @@ public class GameGrainTests : BaseGrainTest
     private readonly GamePlayer _whitePlayer = new GamePlayerFaker(GameColor.White).Generate();
     private readonly GamePlayer _blackPlayer = new GamePlayerFaker(GameColor.Black).Generate();
 
+    private readonly GameGrainState _state;
+
     public GameGrainTests()
     {
         Silo.ServiceProvider.AddService(Options.Create(AppSettingsLoader.LoadAppSettings()));
+        _state = Silo.StorageManager.GetStorage<GameGrainState>(GameGrain.StateName).State;
     }
 
     [Fact]
@@ -212,6 +215,12 @@ public class GameGrainTests : BaseGrainTest
         );
 
     [Fact]
+    public Task RequestDrawAsync_rejects_when_game_over() =>
+        AssertRejectsForGameOverAsync(async grain =>
+            await grain.RequestDrawAsync(_whitePlayer.UserId)
+        );
+
+    [Fact]
     public Task DeclineDrawAsync_rejects_invalid_users() =>
         AssertRejectsForInvalidPlayerAsync(async grain =>
             await grain.DeclineDrawAsync("invalid user")
@@ -220,6 +229,12 @@ public class GameGrainTests : BaseGrainTest
     [Fact]
     public Task DeclineDrawAsync_rejects_when_not_playing() =>
         AssertRejectsForNotPlayingAsync(async grain =>
+            await grain.DeclineDrawAsync(_whitePlayer.UserId)
+        );
+
+    [Fact]
+    public Task DeclineDrawAsync_rejects_when_game_over() =>
+        AssertRejectsForGameOverAsync(async grain =>
             await grain.DeclineDrawAsync(_whitePlayer.UserId)
         );
 
@@ -242,14 +257,29 @@ public class GameGrainTests : BaseGrainTest
         );
 
     [Fact]
-    public Task EndGameAsync_rejects_invalid_users() =>
+    public Task MovePieceAsync_rejects_when_game_over() =>
+        AssertRejectsForGameOverAsync(async grain =>
+            await grain.MovePieceAsync(
+                _whitePlayer.UserId,
+                new(from: new AlgebraicPoint("a2"), to: new AlgebraicPoint("c4"))
+            )
+        );
+
+    [Fact]
+    public Task RequestGameEndAsync_rejects_invalid_users() =>
         AssertRejectsForInvalidPlayerAsync(async grain =>
             await grain.RequestGameEndAsync("invalid user")
         );
 
     [Fact]
-    public Task EndGameAsync_rejects_when_not_playing() =>
+    public Task RequestGameEndAsync_rejects_when_not_playing() =>
         AssertRejectsForNotPlayingAsync(async grain =>
+            await grain.RequestGameEndAsync(_whitePlayer.UserId)
+        );
+
+    [Fact]
+    public Task RequestGameEndAsync_rejects_when_game_over() =>
+        AssertRejectsForGameOverAsync(async grain =>
             await grain.RequestGameEndAsync(_whitePlayer.UserId)
         );
 
@@ -271,6 +301,18 @@ public class GameGrainTests : BaseGrainTest
     )
     {
         var grain = await Silo.CreateGrainAsync<GameGrain>(TestGameToken);
+
+        var result = await callback(grain);
+
+        result.IsError.Should().BeTrue();
+        result.FirstError.Should().Be(GameErrors.GameNotFound);
+    }
+
+    private async Task AssertRejectsForGameOverAsync<T>(Func<GameGrain, Task<ErrorOr<T>>> callback)
+    {
+        var grain = await Silo.CreateGrainAsync<GameGrain>(TestGameToken);
+        await StartGameAsync(grain);
+        _state.CurrentGame!.Result = new GameResultDataFaker().Generate();
 
         var result = await callback(grain);
 

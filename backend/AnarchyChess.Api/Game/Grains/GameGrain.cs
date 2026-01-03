@@ -250,7 +250,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         CancellationToken token = default
     )
     {
-        if (!TryGetCurrentGame(out var game))
+        if (!TryGetOngoingGame(out var game))
             return GameErrors.GameNotFound;
         if (!game.Players.TryGetPlayerById(byUserId, out var player))
             return GameErrors.PlayerInvalid;
@@ -279,7 +279,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         CancellationToken token = default
     )
     {
-        if (!TryGetCurrentGame(out var game))
+        if (!TryGetOngoingGame(out var game))
             return GameErrors.GameNotFound;
         if (!game.Players.TryGetPlayerById(byUserId, out var player))
             return GameErrors.PlayerInvalid;
@@ -309,7 +309,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         CancellationToken token = default
     )
     {
-        if (!TryGetCurrentGame(out var game))
+        if (!TryGetOngoingGame(out var game))
             return GameErrors.GameNotFound;
         if (!game.Players.TryGetPlayerById(byUserId, out var player))
             return GameErrors.PlayerInvalid;
@@ -332,7 +332,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         CancellationToken token = default
     )
     {
-        if (!TryGetCurrentGame(out var game))
+        if (!TryGetOngoingGame(out var game))
             return GameErrors.GameNotFound;
 
         var currentPlayer = game.Players.GetPlayerByColor(_core.SideToMove(game.Core));
@@ -402,12 +402,12 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         if (reminderName != ClockReactivationReminder)
             return;
 
-        if (TryGetCurrentGame(out var game) && game.Result is null)
-            return;
-
-        var reminder = await this.GetReminder(ClockReactivationReminder);
-        if (reminder is not null)
-            await this.UnregisterReminder(reminder);
+        if (TryGetCurrentGame(out var game) && game.Result is not null)
+        {
+            var reminder = await this.GetReminder(ClockReactivationReminder);
+            if (reminder is not null)
+                await this.UnregisterReminder(reminder);
+        }
     }
 
     public override Task OnActivateAsync(CancellationToken cancellationToken)
@@ -426,7 +426,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
 
     private async Task HandleClockTickAsync(CancellationToken token = default)
     {
-        if (!TryGetCurrentGame(out var game))
+        if (!TryGetOngoingGame(out var game))
             return;
 
         var sideToMove = _core.SideToMove(game.Core);
@@ -518,5 +518,11 @@ public class GameGrain : Grain, IGameGrain, IRemindable
     {
         state = _state.State.CurrentGame;
         return state is not null;
+    }
+
+    private bool TryGetOngoingGame([NotNullWhen(true)] out GameData? state)
+    {
+        state = _state.State.CurrentGame;
+        return state is not null && state.Result is null;
     }
 }
