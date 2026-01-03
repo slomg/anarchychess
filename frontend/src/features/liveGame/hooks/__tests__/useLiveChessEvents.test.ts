@@ -91,18 +91,14 @@ describe("useLiveChessEvents", () => {
         const move = createFakeMoveSnapshot({
             san: "test san",
             path: { fromIdx: 11, toIdx: 12, moveKey: "0" },
+            nextSideToMove: sideToMove,
         });
         clocks ??= createFakeClock();
         plyNumber ??=
             chessboardStore.getState().positionHistory.mainPlyCount + 1;
 
         await act(async () => {
-            await gameEventHandlers.MoveMadeAsync?.(
-                move,
-                plyNumber,
-                sideToMove,
-                clocks,
-            );
+            await gameEventHandlers.MoveMadeAsync?.(move, plyNumber, clocks);
         });
         return move;
     }

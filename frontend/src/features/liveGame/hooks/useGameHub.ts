@@ -14,12 +14,7 @@ import constants from "@/lib/constants";
 
 export type GameClientEvents = {
     SyncRevisionAsync: [currentRevision: number];
-    MoveMadeAsync: [
-        move: MoveSnapshot,
-        plyNumber: number,
-        sideToMove: GameColor,
-        clocks: Clocks,
-    ];
+    MoveMadeAsync: [move: MoveSnapshot, plyNumber: number, clocks: Clocks];
     OpponentMoveMadeAsync: [
         move: MoveSnapshot,
         plyNumber: number,

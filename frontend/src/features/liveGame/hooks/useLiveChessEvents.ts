@@ -4,7 +4,7 @@ import { ChessboardStore } from "@/features/chessboard/stores/chessboardStore";
 import { decodeMovePath, decodeLegalMoves } from "../lib/moveDecoder";
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
 import { Position } from "@/features/chessboard/lib/position";
-import { Clocks, GameColor, MoveSnapshot } from "@/lib/apiClient";
+import { Clocks, MoveSnapshot } from "@/lib/apiClient";
 import { LiveChessStore } from "../stores/liveChessStore";
 import { refetchGame } from "../lib/gameStateProcessor";
 import { useGameEvent } from "./useGameHub";
@@ -19,7 +19,6 @@ export default function useLiveChessEvents(
     async function handleMoveUpdate(
         move: MoveSnapshot,
         plyNumber: number,
-        sideToMove: GameColor,
         clocks: Clocks,
     ): Promise<Position | undefined> {
         const {
@@ -46,7 +45,7 @@ export default function useLiveChessEvents(
         const position = addPosition({
             pieces,
             fen: move.fen,
-            sideToMove: sideToMove,
+            sideToMove: move.nextSideToMove,
             san: move.san,
             move: decodedMove,
             // clocks: {
@@ -54,7 +53,7 @@ export default function useLiveChessEvents(
             //     blackClock: clocks.blackClock,
             // },
         });
-        receiveLiveMove(clocks, sideToMove);
+        receiveLiveMove(clocks, move.nextSideToMove);
         return position;
     }
 
@@ -68,10 +67,10 @@ export default function useLiveChessEvents(
     useGameEvent(
         gameToken,
         "MoveMadeAsync",
-        async (move, plyNumber, sideToMove, clocks) => {
+        async (move, plyNumber, clocks) => {
             const { viewer } = liveChessStore.getState();
-            if (viewer.playerColor !== sideToMove) {
-                await handleMoveUpdate(move, plyNumber, sideToMove, clocks);
+            if (viewer.playerColor !== move.nextSideToMove) {
+                await handleMoveUpdate(move, plyNumber, clocks);
             }
         },
     );
@@ -83,12 +82,7 @@ export default function useLiveChessEvents(
             const { viewer } = liveChessStore.getState();
             if (viewer.playerColor === null) return;
 
-            const position = await handleMoveUpdate(
-                move,
-                plyNumber,
-                viewer.playerColor,
-                clocks,
-            );
+            const position = await handleMoveUpdate(move, plyNumber, clocks);
             if (!position) return;
 
             const decodedLegalMoves = decodeLegalMoves({
@@ -108,7 +102,7 @@ export default function useLiveChessEvents(
 
     useGameEvent(gameToken, "GameEndedAsync", async (result, finalClocks) => {
         liveChessStore.getState().endGame(result, finalClocks);
-        chessboardStore.getState().disableMovement();
+        chessboardStore.getState().setAllowHistoryChanges(true);
         AudioPlayer.playAudio(AudioType.GAME_END);
     });
 }
