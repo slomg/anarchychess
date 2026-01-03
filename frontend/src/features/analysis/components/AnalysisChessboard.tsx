@@ -42,7 +42,8 @@ const AnalysisChessboard = ({
                 }
                 aside={
                     <aside
-                        className="flex h-full w-full overflow-auto lg:max-w-sm"
+                        className="flex h-96 min-h-[100px] w-full overflow-auto
+                            md:h-full lg:max-w-sm"
                     >
                         <MoveHistoryTable />
                     </aside>

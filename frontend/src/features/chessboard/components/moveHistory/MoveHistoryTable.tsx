@@ -108,7 +108,7 @@ const MoveHistoryTable = () => {
     }
 
     return (
-        <Card className="relative block max-h-96 w-full p-0 lg:max-h-full">
+        <Card className="relative max-h-96 w-full p-0 lg:max-h-full">
             <div
                 className="h-full flex-1 overflow-x-auto"
                 ref={tableRef}
