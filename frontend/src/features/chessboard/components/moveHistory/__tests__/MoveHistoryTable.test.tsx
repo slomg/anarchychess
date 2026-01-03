@@ -40,7 +40,7 @@ describe("MoveHistoryTable", () => {
 
     it("should render an empty table when there are no moves", () => {
         renderWithCtx();
-        const rows = screen.queryAllByRole("row");
+        const rows = screen.queryAllByTestId("moveRow");
         expect(rows.length).toBe(0);
     });
 
@@ -156,9 +156,10 @@ describe("MoveHistoryTable", () => {
             }),
         });
 
-        renderWithCtx();
+        const { debug } = renderWithCtx();
+        debug();
 
-        const rows = screen.getAllByRole("row");
+        const rows = screen.getAllByTestId("moveRow");
         expect(rows.length).toBe(2);
 
         expect(rows[0].className).not.toContain("bg-white/10");
