@@ -34,7 +34,6 @@ describe("processRootAnalysis", () => {
         });
 
         expect(state.viewingFrom).toBe(GameColor.WHITE);
-        expect(state.muteAudio).toBe(false);
         expect(state.allowHistoryChanges).toBe(true);
 
         expect(state.positionHistory.totalPlyCount).toBe(0);

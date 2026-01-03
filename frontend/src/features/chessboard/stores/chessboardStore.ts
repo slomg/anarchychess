@@ -65,7 +65,6 @@ export function createChessboardStore(
         pieces: new BoardPieces(),
         positionHistory: new PositionHistory(new BoardPieces()),
         legalMovesByPosition: new Map(),
-        muteAudio: false,
     },
 ) {
     return createWithEqualityFn<ChessboardStore>()(

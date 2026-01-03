@@ -6,7 +6,7 @@ import { AnimationStep } from "../lib/types";
 import AudioPlayer, { AudioType } from "../../audio/audioPlayer";
 
 export interface AudioSliceProps {
-    muteAudio: boolean;
+    muteAudio?: boolean;
 }
 
 export interface AudioSlice {
@@ -31,7 +31,7 @@ export function createAudioSlice(
     AudioSlice
 > {
     return (_, get) => ({
-        ...initState,
+        muteAudio: initState.muteAudio ?? false,
         cachedAudios: new Map(),
 
         async playAudioForAnimationStep(step) {
