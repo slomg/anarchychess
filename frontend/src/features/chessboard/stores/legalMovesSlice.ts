@@ -30,7 +30,7 @@ export interface LegalMovesSlice {
     ): Promise<Move | null>;
 
     highlightLegalMoves(piece: Piece): boolean;
-    hideLegalMoves(): void;
+    unhighlightLegalMoves(): void;
     flashLegalMoves(): void;
 
     addLegalMoves(legalMoves: LegalMoves, positionId?: PositionId): void;
@@ -141,7 +141,7 @@ export function createLegalMovesSlice(
             return moves.length > 0;
         },
 
-        hideLegalMoves() {
+        unhighlightLegalMoves() {
             set((state) => {
                 state.highlightedLegalMoves = [];
             });

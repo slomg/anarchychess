@@ -3,9 +3,8 @@ import { useMemo } from "react";
 import {
     Clocks,
     DrawState,
-    GameColor,
-    GameResultData,
     MoveSnapshot,
+    GameResultData,
 } from "@/lib/apiClient";
 
 import useSignalREmitter from "@/features/signalR/hooks/useSignalREmitter";

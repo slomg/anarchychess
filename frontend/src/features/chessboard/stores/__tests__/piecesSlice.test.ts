@@ -118,7 +118,7 @@ describe("PiecesSlice", () => {
             const hideLegalMovesMock = vi.fn();
             store.setState({
                 selectedPieceId: "0",
-                hideLegalMoves: hideLegalMovesMock,
+                unhighlightLegalMoves: hideLegalMovesMock,
             });
 
             store.getState().unselectPiece();

@@ -64,8 +64,8 @@ export function createChessboardStore(
         },
         pieces: new BoardPieces(),
         positionHistory: new PositionHistory(new BoardPieces()),
-        canDrag: true,
         legalMovesByPosition: new Map(),
+        canDrag: true,
         muteAudio: false,
     },
 ) {

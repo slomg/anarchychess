@@ -188,7 +188,7 @@ describe("AnimationSlice", () => {
 
         it("should hide legal moves", async () => {
             const hideLegalMovesMock = vi.fn();
-            store.setState({ hideLegalMoves: hideLegalMovesMock });
+            store.setState({ unhighlightLegalMoves: hideLegalMovesMock });
 
             await store
                 .getState()

@@ -133,9 +133,9 @@ export function createPiecesSlice(
                 return hasLegalMoves;
             },
             unselectPiece() {
-                const { hideLegalMoves } = get();
+                const { unhighlightLegalMoves } = get();
 
-                hideLegalMoves();
+                unhighlightLegalMoves();
                 set((state) => {
                     state.selectedPieceId = null;
                 });

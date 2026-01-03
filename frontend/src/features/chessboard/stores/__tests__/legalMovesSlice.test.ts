@@ -231,7 +231,7 @@ describe("LegalMovesSlice", () => {
         });
     });
 
-    describe("hideLegalMoves", () => {
+    describe("unhighlightLegalMoves", () => {
         it("should remove any highlighted legal moves", () => {
             store.setState({
                 highlightedLegalMoves: [
@@ -241,7 +241,7 @@ describe("LegalMovesSlice", () => {
                 ],
             });
 
-            store.getState().hideLegalMoves();
+            store.getState().unhighlightLegalMoves();
             expect(store.getState().highlightedLegalMoves).toHaveLength(0);
         });
     });
