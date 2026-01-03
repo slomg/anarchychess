@@ -10,7 +10,7 @@ import { MoveBounds } from "@/features/chessboard/lib/types";
 import { logicalPoint } from "@/features/point/pointUtils";
 import { createStoreProps } from "../gameStateProcessor";
 import { LogicalPoint } from "@/features/point/types";
-import { GameColor } from "@/lib/apiClient";
+import { GameColor, GameResult } from "@/lib/apiClient";
 import constants from "@/lib/constants";
 import PositionHistory from "@/features/chessboard/lib/positionHistory";
 import { createFakeMove } from "@/lib/testUtils/fakers/chessboardFakers";
@@ -207,6 +207,7 @@ describe("createStoreProps", () => {
                 viewingFrom: GameColor.BLACK,
                 canDrag: true,
                 muteAudio: false,
+                allowHistoryChanges: false,
             },
         });
     });
@@ -221,5 +222,22 @@ describe("createStoreProps", () => {
             userId,
             playerColor: null,
         });
+    });
+
+    it("should enable history changes if the game is over", () => {
+        const gameState = createFakeGameState({
+            resultData: {
+                result: GameResult.WHITE_WIN,
+                resultDescription: "desc",
+            },
+        });
+
+        const result = createStoreProps(
+            "game-token",
+            gameState.blackPlayer.userId,
+            gameState,
+        );
+
+        expect(result.board.allowHistoryChanges).toBe(true);
     });
 });
