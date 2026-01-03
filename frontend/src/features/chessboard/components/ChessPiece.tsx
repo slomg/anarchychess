@@ -21,7 +21,7 @@ const ChessPiece = ({ id }: { id: PieceID }) => {
         isSelected,
         isAnimating,
         isRemoving,
-        canDrag,
+        disableDrag,
         screenPointToPiece,
         selectPiece,
         unselectPiece,
@@ -34,7 +34,7 @@ const ChessPiece = ({ id }: { id: PieceID }) => {
             isSelected: x.selectedPieceId === id,
             isAnimating: x.animatingPieceIds.has(id),
             isRemoving: x.removingPieceIds.has(id),
-            canDrag: x.canDrag,
+            disableDrag: x.disableDrag,
             screenPointToPiece: x.screenPointToPiece,
             selectPiece: x.selectPiece,
             unselectPiece: x.unselectPiece,
@@ -60,7 +60,7 @@ const ChessPiece = ({ id }: { id: PieceID }) => {
                 return false;
             }
 
-            if (!canDrag || info.button !== 0) return false;
+            if (disableDrag || info.button !== 0) return false;
 
             const piece = screenPointToPiece(info.point);
             return piece === id;

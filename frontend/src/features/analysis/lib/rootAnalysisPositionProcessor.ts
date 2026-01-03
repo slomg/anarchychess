@@ -35,7 +35,6 @@ export default function processRootAnalysis(
             height: boardHeight,
         },
         viewingFrom: GameColor.WHITE,
-        canDrag: true,
         muteAudio: false,
         allowHistoryChanges: true,
     });

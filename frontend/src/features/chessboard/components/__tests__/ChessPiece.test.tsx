@@ -337,9 +337,9 @@ describe("ChessPiece", () => {
         },
     );
 
-    it("should not allow dragging if canDrag is false", async () => {
+    it("should not allow dragging if disableDrag is true", async () => {
         const { logicalPointToScreenPoint } = store.getState();
-        store.setState({ canDrag: false });
+        store.setState({ disableDrag: true });
 
         const user = userEvent.setup();
         const { piece, pieceInfo, chessboard } = renderPiece();

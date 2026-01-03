@@ -205,7 +205,6 @@ describe("createStoreProps", () => {
                 positionHistory,
                 lastMove,
                 viewingFrom: GameColor.BLACK,
-                canDrag: true,
                 muteAudio: false,
                 allowHistoryChanges: false,
             },

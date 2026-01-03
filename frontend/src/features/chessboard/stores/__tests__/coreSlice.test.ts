@@ -36,7 +36,7 @@ describe("CoreSlice", () => {
                         createFakeLegalMoves({ hasForcedMoves: true }),
                     ],
                 ]),
-                canDrag: false,
+                disableDrag: true,
                 muteAudio: true,
             };
 

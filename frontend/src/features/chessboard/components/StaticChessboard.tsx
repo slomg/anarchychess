@@ -23,7 +23,7 @@ interface BaseChessboardProps {
     boardWidth?: number;
     boardHeight?: number;
     viewingFrom?: GameColor;
-    canDrag?: boolean;
+    disableDrag?: boolean;
     muteAudio?: boolean;
 }
 
@@ -43,7 +43,7 @@ const StaticChessboard = ({
     boardHeight = constants.BOARD_HEIGHT,
     boardWidth = constants.BOARD_WIDTH,
     viewingFrom = GameColor.WHITE,
-    canDrag = true,
+    disableDrag = false,
     muteAudio = false,
 
     position = constants.DEFAULT_CHESS_BOARD,
@@ -63,7 +63,7 @@ const StaticChessboard = ({
             legalMovesByPosition: new Map(),
             positionHistory: new PositionHistory(initialPosition),
             viewingFrom,
-            canDrag,
+            disableDrag,
             muteAudio,
         }),
     );

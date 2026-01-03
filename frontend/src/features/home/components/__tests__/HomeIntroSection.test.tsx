@@ -42,7 +42,8 @@ describe("HomeIntroSection", () => {
         expect(StaticChessboard).toHaveBeenCalledWith(
             expect.objectContaining({
                 replays: homePageReplay,
-                canDrag: false,
+                disableDrag: true,
+                muteAudio: true,
             }),
             undefined,
         );

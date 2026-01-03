@@ -16,13 +16,13 @@ import { Position } from "../lib/position";
 
 export interface PieceSliceProps {
     pieces: BoardPieces;
-    canDrag: boolean;
+    disableDrag?: boolean;
 }
 
 export interface PiecesSlice {
     pieces: BoardPieces;
     selectedPieceId: PieceID | null;
-    canDrag: boolean;
+    disableDrag: boolean;
     isProcessingMove: boolean;
 
     pieceMovementEvent: EventBus<[move: Move], void>;
@@ -107,6 +107,8 @@ export function createPiecesSlice(
 
         return {
             ...initState,
+
+            disableDrag: initState.disableDrag ?? false,
 
             selectedPieceId: null,
             animatingPieces: new Set(),

@@ -13,12 +13,13 @@ const typedHomePageReplay = homePageReplay as GameReplay[];
 const HomeIntroSection = () => {
     return (
         <section
-            className="grid grid-rows-[auto_auto] justify-center gap-10 bg-[#0d151d] p-15
-                lg:grid-cols-[auto_auto] lg:grid-rows-1 lg:gap-x-20"
+            className="grid grid-rows-[auto_auto] justify-center gap-10
+                bg-[#0d151d] p-15 lg:grid-cols-[auto_auto] lg:grid-rows-1
+                lg:gap-x-20"
         >
             <div
-                className="flex w-full flex-col items-center gap-3 text-center lg:max-w-lg lg:items-start
-                    lg:text-start"
+                className="flex w-full flex-col items-center gap-3 text-center
+                    lg:max-w-lg lg:items-start lg:text-start"
             >
                 <h2 className="text-5xl text-balance">
                     Discover the Madness of Anarchy Chess
@@ -67,7 +68,7 @@ const HomeIntroSection = () => {
                 defaultOffset={{ width: 700, height: 0, maxSize: 400 }}
                 className="my-auto justify-self-center"
                 replays={typedHomePageReplay}
-                canDrag={false}
+                disableDrag={true}
                 muteAudio={true}
             />
         </section>
