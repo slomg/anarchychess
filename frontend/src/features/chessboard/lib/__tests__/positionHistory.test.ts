@@ -27,6 +27,94 @@ describe("PositionHistory", () => {
         });
     });
 
+    describe("hasNextPositionWithKey", () => {
+        it("should return false when history is empty", () => {
+            expect(history.hasNextPositionWithKey("any" as MoveKey)).toBe(
+                false,
+            );
+        });
+
+        it("should detect the head move when viewingPosition is null", () => {
+            const head = history.addNextPosition(createFakePositionProps());
+
+            history.goToStart();
+
+            expect(history.hasNextPositionWithKey(head.move.moveKey)).toBe(
+                true,
+            );
+        });
+
+        it("should detect a head sub-variation when viewingPosition is null", () => {
+            history.addNextPosition(createFakePositionProps());
+
+            history.goToStart();
+            const variation = history.addNextPosition(
+                createFakePositionProps(),
+            );
+
+            history.goToStart();
+
+            expect(history.hasNextPositionWithKey(variation.move.moveKey)).toBe(
+                true,
+            );
+        });
+
+        it("should return false for an unknown key when viewingPosition is null", () => {
+            history.addNextPosition(createFakePositionProps());
+            history.goToStart();
+
+            expect(history.hasNextPositionWithKey("unknown" as MoveKey)).toBe(
+                false,
+            );
+        });
+
+        it("should detect the next mainline move when viewing a position", () => {
+            const pos1 = history.addNextPosition(createFakePositionProps());
+            const pos2 = history.addNextPosition(createFakePositionProps());
+
+            history.goToPosition(pos1.positionId);
+
+            expect(history.hasNextPositionWithKey(pos2.move.moveKey)).toBe(
+                true,
+            );
+        });
+
+        it("should detect a sub-variation from the current position", () => {
+            const pos1 = history.addNextPosition(createFakePositionProps());
+            history.addNextPosition(createFakePositionProps());
+
+            history.goToPosition(pos1.positionId);
+            const variation = history.addNextPosition(
+                createFakePositionProps(),
+            );
+
+            history.goToPosition(pos1.positionId);
+
+            expect(history.hasNextPositionWithKey(variation.move.moveKey)).toBe(
+                true,
+            );
+        });
+
+        it("should return false when the move key does not exist from the current position", () => {
+            const pos1 = history.addNextPosition(createFakePositionProps());
+            history.addNextPosition(createFakePositionProps());
+
+            history.goToPosition(pos1.positionId);
+
+            expect(
+                history.hasNextPositionWithKey("nonexistent" as MoveKey),
+            ).toBe(false);
+        });
+
+        it("should return false when viewing the tail with no variations", () => {
+            const tail = history.addNextPosition(createFakePositionProps());
+
+            expect(history.hasNextPositionWithKey(tail.move.moveKey)).toBe(
+                false,
+            );
+        });
+    });
+
     describe("isViewingLatestPosition", () => {
         it("should return true when viewingPosition is the tail", () => {
             history.addNextPosition(createFakePositionProps());

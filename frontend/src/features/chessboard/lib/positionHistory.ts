@@ -46,6 +46,20 @@ export default class PositionHistory {
         return this._viewingPosition?.positionId === this._tail?.positionId;
     }
 
+    hasNextPositionWithKey(key: MoveKey): boolean {
+        if (!this._viewingPosition) {
+            return (
+                this._head?.move.moveKey === key ||
+                this._headVariationByKey.has(key)
+            );
+        }
+
+        return (
+            this._viewingPosition.next?.move.moveKey === key ||
+            this._viewingPosition.subVariationByKey.has(key)
+        );
+    }
+
     goToPosition(positionId: PositionId): {
         success: boolean;
         isOneStepForward: boolean;
