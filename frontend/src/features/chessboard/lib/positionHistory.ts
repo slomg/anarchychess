@@ -46,18 +46,18 @@ export default class PositionHistory {
         return this._viewingPosition?.positionId === this._tail?.positionId;
     }
 
-    hasNextPositionWithKey(key: MoveKey): boolean {
+    getNextPositionWithKey(key: MoveKey): Position | undefined {
         if (!this._viewingPosition) {
-            return (
-                this._head?.move.moveKey === key ||
-                this._headVariationByKey.has(key)
-            );
+            const head = this._head?.move.moveKey === key && this._head;
+            const headSub = this._headVariationByKey.get(key);
+            return head || headSub;
         }
 
-        return (
-            this._viewingPosition.next?.move.moveKey === key ||
-            this._viewingPosition.subVariationByKey.has(key)
-        );
+        const next =
+            this._viewingPosition.next?.move.moveKey === key &&
+            this._viewingPosition.next;
+        const viewingSub = this._viewingPosition.subVariationByKey.get(key);
+        return next || viewingSub;
     }
 
     goToPosition(positionId: PositionId): {

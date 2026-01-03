@@ -27,11 +27,11 @@ describe("PositionHistory", () => {
         });
     });
 
-    describe("hasNextPositionWithKey", () => {
+    describe("getNextPositionWithKey", () => {
         it("should return false when history is empty", () => {
-            expect(history.hasNextPositionWithKey("any" as MoveKey)).toBe(
-                false,
-            );
+            expect(
+                history.getNextPositionWithKey("any" as MoveKey),
+            ).toBeUndefined();
         });
 
         it("should detect the head move when viewingPosition is null", () => {
@@ -39,8 +39,8 @@ describe("PositionHistory", () => {
 
             history.goToStart();
 
-            expect(history.hasNextPositionWithKey(head.move.moveKey)).toBe(
-                true,
+            expect(history.getNextPositionWithKey(head.move.moveKey)).toBe(
+                head,
             );
         });
 
@@ -54,8 +54,8 @@ describe("PositionHistory", () => {
 
             history.goToStart();
 
-            expect(history.hasNextPositionWithKey(variation.move.moveKey)).toBe(
-                true,
+            expect(history.getNextPositionWithKey(variation.move.moveKey)).toBe(
+                variation,
             );
         });
 
@@ -63,9 +63,9 @@ describe("PositionHistory", () => {
             history.addNextPosition(createFakePositionProps());
             history.goToStart();
 
-            expect(history.hasNextPositionWithKey("unknown" as MoveKey)).toBe(
-                false,
-            );
+            expect(
+                history.getNextPositionWithKey("unknown" as MoveKey),
+            ).toBeUndefined();
         });
 
         it("should detect the next mainline move when viewing a position", () => {
@@ -74,8 +74,8 @@ describe("PositionHistory", () => {
 
             history.goToPosition(pos1.positionId);
 
-            expect(history.hasNextPositionWithKey(pos2.move.moveKey)).toBe(
-                true,
+            expect(history.getNextPositionWithKey(pos2.move.moveKey)).toBe(
+                pos2,
             );
         });
 
@@ -90,8 +90,8 @@ describe("PositionHistory", () => {
 
             history.goToPosition(pos1.positionId);
 
-            expect(history.hasNextPositionWithKey(variation.move.moveKey)).toBe(
-                true,
+            expect(history.getNextPositionWithKey(variation.move.moveKey)).toBe(
+                variation,
             );
         });
 
@@ -102,16 +102,16 @@ describe("PositionHistory", () => {
             history.goToPosition(pos1.positionId);
 
             expect(
-                history.hasNextPositionWithKey("nonexistent" as MoveKey),
-            ).toBe(false);
+                history.getNextPositionWithKey("nonexistent" as MoveKey),
+            ).toBeUndefined();
         });
 
         it("should return false when viewing the tail with no variations", () => {
             const tail = history.addNextPosition(createFakePositionProps());
 
-            expect(history.hasNextPositionWithKey(tail.move.moveKey)).toBe(
-                false,
-            );
+            expect(
+                history.getNextPositionWithKey(tail.move.moveKey),
+            ).toBeUndefined();
         });
     });
 
