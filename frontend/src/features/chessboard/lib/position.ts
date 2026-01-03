@@ -1,6 +1,8 @@
 import { GameColor } from "@/lib/apiClient";
 import BoardPieces from "./boardPieces";
-import { Move } from "./types";
+import { Move, MoveKey } from "./types";
+
+export type PositionId = string & { __brand: "PositionId" };
 
 export interface PositionProps {
     pieces: BoardPieces;
@@ -20,7 +22,7 @@ export interface Position {
 
     positionId: PositionId;
     variations: readonly Position[];
-    subVariationBySan: ReadonlyMap<string, Position>;
+    subVariationByKey: ReadonlyMap<MoveKey, Position>;
     [Symbol.iterator](): IterableIterator<Position>;
 }
 
@@ -36,7 +38,7 @@ export class PositionNode implements Position {
 
     _parent: PositionNode | null = null;
     _mainVariation: PositionNode | null = null;
-    _subVariationBySan: Map<string, PositionNode> = new Map();
+    _subVariationByKey: Map<MoveKey, PositionNode> = new Map();
     _allVariations: PositionNode[] = [];
 
     constructor(props: PositionProps, parent: PositionNode | null = null) {
@@ -90,8 +92,8 @@ export class PositionNode implements Position {
         return this._allVariations;
     }
 
-    get subVariationBySan(): ReadonlyMap<string, Position> {
-        return this._subVariationBySan;
+    get subVariationByKey(): ReadonlyMap<MoveKey, Position> {
+        return this._subVariationByKey;
     }
 
     createChild(props: PositionProps): PositionNode {
@@ -103,14 +105,16 @@ export class PositionNode implements Position {
             return child;
         }
 
-        if (this._mainVariation.san === props.san) {
+        if (this._mainVariation.move.moveKey === props.move.moveKey) {
             return this._mainVariation;
         }
 
-        const existingSubWithSan = this._subVariationBySan.get(props.san);
+        const existingSubWithSan = this._subVariationByKey.get(
+            props.move.moveKey,
+        );
         if (existingSubWithSan) return existingSubWithSan;
 
-        this._subVariationBySan.set(child.san, child);
+        this._subVariationByKey.set(child.move.moveKey, child);
         this._allVariations.push(child);
         return child;
     }
@@ -120,4 +124,3 @@ export class PositionNode implements Position {
         if (this._mainVariation) yield* this._mainVariation;
     }
 }
-export type PositionId = string & { __brand: "PositionId" };

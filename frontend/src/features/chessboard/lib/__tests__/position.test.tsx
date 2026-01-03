@@ -20,7 +20,7 @@ describe("PositionNode", () => {
         expect(root.prev).toBeNull();
         expect(root.next).toBeNull();
         expect(root.variations).toEqual([]);
-        expect(root.subVariationBySan.size).toBe(0);
+        expect(root.subVariationByKey.size).toBe(0);
         expect(root.positionId).toBeTypeOf("string");
     });
 
@@ -31,10 +31,10 @@ describe("PositionNode", () => {
         expect(child.ply).toBe(1);
         expect(root.next).toBe(child);
         expect(root.variations).toContain(child);
-        expect(root.subVariationBySan.size).toBe(0);
+        expect(root.subVariationByKey.size).toBe(0);
     });
 
-    it("should return the main variation if SAN matches", () => {
+    it("should return the main variation if move key matches", () => {
         const props = createFakePositionProps();
         const firstChild = root.createChild(props);
         const duplicateChild = root.createChild(props);
@@ -43,16 +43,18 @@ describe("PositionNode", () => {
         expect(root.variations.length).toBe(1);
     });
 
-    it("should create sub-variations correctly", () => {
-        const mainChildProps = createFakePositionProps({ san: "e5" });
-        const subChildProps = createFakePositionProps({ san: "c5" });
+    it("should create sub variations correctly", () => {
+        const mainChildProps = createFakePositionProps();
+        const subChildProps = createFakePositionProps();
 
         const mainChild = root.createChild(mainChildProps);
         const subChild = root.createChild(subChildProps);
 
         expect(subChild.prev).toBe(root);
         expect(root.variations).toHaveLength(2);
-        expect(root.subVariationBySan.get(subChildProps.san)).toBe(subChild);
+        expect(root.subVariationByKey.get(subChildProps.move.moveKey)).toBe(
+            subChild,
+        );
         expect(root.next).toBe(mainChild);
     });
 

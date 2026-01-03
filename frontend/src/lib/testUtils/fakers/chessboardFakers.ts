@@ -28,7 +28,7 @@ export function createFakeMove(override?: Partial<Move>): Move {
     return {
         from: createRandomPoint(),
         to: createRandomPoint(),
-        moveKey: faker.string.alpha(10) as MoveKey,
+        moveKey: faker.string.uuid() as MoveKey,
         triggers: [],
         captures: [],
         intermediates: [],

@@ -1,8 +1,12 @@
 import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
-import { createFakeBoardPieces } from "@/lib/testUtils/fakers/chessboardFakers";
+import {
+    createFakeBoardPieces,
+    createFakeMove,
+} from "@/lib/testUtils/fakers/chessboardFakers";
 import PositionHistory from "../positionHistory";
 import { PositionId } from "../position";
 import BoardPieces from "../boardPieces";
+import { MoveKey } from "../types";
 
 describe("PositionHistory", () => {
     let rootPieces: BoardPieces;
@@ -87,7 +91,7 @@ describe("PositionHistory", () => {
             history.addNextPosition(createFakePositionProps());
             history.goToPosition(pos1.positionId);
             const pos1Variation = history.addNextPosition(
-                createFakePositionProps({ san: "c4" }),
+                createFakePositionProps(),
             );
             history.goToPosition(pos1.positionId);
 
@@ -258,8 +262,8 @@ describe("PositionHistory", () => {
             expect(history.viewingPosition).toBe(pos2);
         });
 
-        it("should return the existing head variation if SAN is the same as head when viewing root", () => {
-            const props = createFakePositionProps({ san: "e4" });
+        it("should return the existing head variation if move key is the same as head when viewing root", () => {
+            const props = createFakePositionProps();
             const pos = history.addNextPosition(props);
 
             history.goToStart();
@@ -270,13 +274,17 @@ describe("PositionHistory", () => {
             expect([...history]).toEqual([pos]);
         });
 
-        it("should add a new head variation if SAN does not exist", () => {
+        it("should add a new head variation if move key does not exist", () => {
             const head = history.addNextPosition(
-                createFakePositionProps({ san: "e4" }),
+                createFakePositionProps({
+                    move: createFakeMove({ moveKey: "move1" as MoveKey }),
+                }),
             );
 
-            history.goToStart(); // viewing root
-            const newProps = createFakePositionProps({ san: "c4" });
+            history.goToStart();
+            const newProps = createFakePositionProps({
+                move: createFakeMove({ moveKey: "move2" as MoveKey }),
+            });
             const headVariation = history.addNextPosition(newProps);
 
             expect(headVariation).not.toBe(head);
@@ -287,8 +295,8 @@ describe("PositionHistory", () => {
             const retrieved = history.goToPosition(headVariation.positionId);
             expect(retrieved.success).toBe(true);
             expect(history.viewingPosition).toBe(headVariation);
-            expect(history.rootSubVariationBySan).toEqual(
-                new Map([[headVariation.san, headVariation]]),
+            expect(history.rootSubVariationByKey).toEqual(
+                new Map([[headVariation.move.moveKey, headVariation]]),
             );
 
             history.goToStart();
@@ -312,33 +320,41 @@ describe("PositionHistory", () => {
             expect(history.totalPlyCount).toBe(3);
         });
 
-        it("should return the existing variation if SAN already exists as main variation", () => {
+        it("should return the existing variation if move key already exists as main variation", () => {
             const pos = history.addNextPosition(createFakePositionProps());
 
             const variation1 = history.addNextPosition(
-                createFakePositionProps({ san: "d4" }),
+                createFakePositionProps({
+                    move: createFakeMove({ moveKey: "move1" as MoveKey }),
+                }),
             );
 
             history.goToPosition(pos.positionId);
             const variation2 = history.addNextPosition(
-                createFakePositionProps({ san: "d4" }),
+                createFakePositionProps({
+                    move: createFakeMove({ moveKey: "move1" as MoveKey }),
+                }),
             );
 
             expect(variation1).toBe(variation2);
         });
 
-        it("should return the existing variation if SAN already exists as sub variation", () => {
+        it("should return the existing variation if move key already exists as sub variation", () => {
             const pos1 = history.addNextPosition(createFakePositionProps());
             const pos2 = history.addNextPosition(createFakePositionProps());
 
             history.goToPosition(pos1.positionId);
             const variation1 = history.addNextPosition(
-                createFakePositionProps({ san: "c4" }),
+                createFakePositionProps({
+                    move: createFakeMove({ moveKey: "move1" as MoveKey }),
+                }),
             );
 
             history.goToPosition(pos1.positionId);
             const variation2 = history.addNextPosition(
-                createFakePositionProps({ san: "c4" }),
+                createFakePositionProps({
+                    move: createFakeMove({ moveKey: "move1" as MoveKey }),
+                }),
             );
 
             expect(variation1).toBe(variation2);

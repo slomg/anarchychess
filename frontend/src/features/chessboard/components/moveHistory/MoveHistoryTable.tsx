@@ -58,10 +58,10 @@ const MoveHistoryTable = () => {
     ]);
 
     let pendingWhiteMoveVariation: React.ReactElement | null =
-        positionHistory.rootSubVariationBySan.size > 0 ? (
+        positionHistory.rootSubVariationByKey.size > 0 ? (
             <MoveVariation
                 key="rootVariation"
-                variations={[...positionHistory.rootSubVariationBySan.values()]}
+                variations={[...positionHistory.rootSubVariationByKey.values()]}
             />
         ) : null;
 
@@ -88,20 +88,20 @@ const MoveHistoryTable = () => {
             pendingWhiteMoveVariation = null;
         }
 
-        if (whitePosition.subVariationBySan.size > 0) {
+        if (whitePosition.subVariationByKey.size > 0) {
             moveRows.push(
                 <MoveVariation
                     key={"variation:" + whitePosition.positionId}
-                    variations={[...whitePosition.subVariationBySan.values()]}
+                    variations={[...whitePosition.subVariationByKey.values()]}
                 />,
             );
         }
 
-        if (blackPosition && blackPosition.subVariationBySan.size > 0) {
+        if (blackPosition && blackPosition.subVariationByKey.size > 0) {
             pendingWhiteMoveVariation = (
                 <MoveVariation
                     key={blackPosition.positionId}
-                    variations={[...blackPosition.subVariationBySan.values()]}
+                    variations={[...blackPosition.subVariationByKey.values()]}
                 />
             );
         }

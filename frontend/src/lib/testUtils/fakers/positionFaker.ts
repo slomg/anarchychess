@@ -18,7 +18,7 @@ export function createFakePosition(overrides?: Partial<Position>): Position {
 
         positionId: crypto.randomUUID() as PositionId,
         variations: [],
-        subVariationBySan: new Map(),
+        subVariationByKey: new Map(),
         *[Symbol.iterator]() {},
         ...overrides,
     };

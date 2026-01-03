@@ -2,6 +2,7 @@ import { immerable } from "immer";
 
 import { Position, PositionId, PositionNode, PositionProps } from "./position";
 import BoardPieces from "./boardPieces";
+import { MoveKey } from "./types";
 
 export default class PositionHistory {
     [immerable] = true;
@@ -12,7 +13,7 @@ export default class PositionHistory {
     _byPositionId: Map<PositionId, PositionNode> = new Map();
 
     _head: PositionNode | null = null;
-    _headVariationBySan: Map<string, PositionNode> = new Map();
+    _headVariationByKey: Map<MoveKey, PositionNode> = new Map();
     _tail: PositionNode | null = null;
 
     _viewingPosition: PositionNode | null = null;
@@ -25,8 +26,8 @@ export default class PositionHistory {
         return this._rootPieces;
     }
 
-    get rootSubVariationBySan(): ReadonlyMap<string, Position> {
-        return this._headVariationBySan;
+    get rootSubVariationByKey(): ReadonlyMap<MoveKey, Position> {
+        return this._headVariationByKey;
     }
 
     get viewingPosition(): Position | null {
@@ -56,7 +57,7 @@ export default class PositionHistory {
         if (this._viewingPosition) {
             isOneStepForward =
                 this._viewingPosition.next?.positionId === node.positionId ||
-                this._viewingPosition.subVariationBySan.get(node.san)
+                this._viewingPosition.subVariationByKey.get(node.move.moveKey)
                     ?.positionId === node.positionId;
         }
 
@@ -133,9 +134,9 @@ export default class PositionHistory {
 
         // we're not viewing anything, but we're not empty, add a head variation
         const existing =
-            props.san === this._head.san
+            props.move.moveKey === this._head.move.moveKey
                 ? this._head
-                : this._headVariationBySan.get(props.san);
+                : this._headVariationByKey.get(props.move.moveKey);
         if (existing) {
             this._viewingPosition = existing;
             return existing;
@@ -143,7 +144,7 @@ export default class PositionHistory {
 
         const node = new PositionNode(props);
         this._byPositionId.set(node.positionId, node);
-        this._headVariationBySan.set(props.san, node);
+        this._headVariationByKey.set(props.move.moveKey, node);
         this._viewingPosition = node;
         return node;
     }
