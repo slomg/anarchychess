@@ -456,7 +456,7 @@ public class GameGrainTests : BaseOrleansIntegrationTest
 
         await Silo.FireAllTimersAsync();
 
-        (await grain.DoesGameExistAsync()).Should().BeTrue();
+        _state.CurrentGame!.Result.Should().BeNull();
     }
 
     private Move GetLegalMoveFor(GamePlayer player) =>

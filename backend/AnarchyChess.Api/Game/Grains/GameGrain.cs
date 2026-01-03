@@ -32,9 +32,6 @@ public interface IGameGrain : IGrainWithStringKey
         CancellationToken token = default
     );
 
-    [Alias("IsGameOngoingAsync")]
-    Task<bool> DoesGameExistAsync();
-
     [Alias("GetStateAsync")]
     Task<ErrorOr<GameState>> GetStateAsync(UserId? forUserId = null);
 
@@ -225,8 +222,6 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         await _gameNotifier.SyncRevisionAsync(connectionId, game.NotifierState);
         return Result.Success;
     }
-
-    public Task<bool> DoesGameExistAsync() => Task.FromResult(_state.State.CurrentGame is not null);
 
     public Task<ErrorOr<GameState>> GetStateAsync(UserId? forUserId = null)
     {
