@@ -179,11 +179,11 @@ public class GameCore(
         )
             return null;
 
-        bool opponentOutOfKings = !board.HasPieceOfType(PieceType.King, movingSide.Invert());
+        bool opponentOutOfKings = !board.HasPieceWith(PieceType.King, movingSide.Invert());
         if (opponentOutOfKings)
             return _resultDescriber.KingCaptured(by: movingSide);
 
-        bool isSelfCapture = !board.HasPieceOfType(PieceType.King, movingSide);
+        bool isSelfCapture = !board.HasPieceWith(PieceType.King, movingSide);
         if (isSelfCapture)
             return _resultDescriber.KingSelfCapture(by: movingSide);
 
@@ -191,6 +191,6 @@ public class GameCore(
     }
 
     private static bool BothSidesHaveKing(ChessBoard board) =>
-        board.HasPieceOfType(PieceType.King, GameColor.White)
-        && board.HasPieceOfType(PieceType.King, GameColor.Black);
+        board.HasPieceWith(PieceType.King, GameColor.White)
+        && board.HasPieceWith(PieceType.King, GameColor.Black);
 }

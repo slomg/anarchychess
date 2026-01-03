@@ -87,7 +87,7 @@ public class ChessBoard : IReadOnlyChessBoard
         return result;
     }
 
-    public bool HasPieceOfType(PieceType type, GameColor? color) =>
+    public bool HasPieceWith(PieceType type, GameColor? color) =>
         _piecePositions.TryGetValue((type, color), out var positions) && positions.Count > 0;
 
     public void PlayMove(Move move)
