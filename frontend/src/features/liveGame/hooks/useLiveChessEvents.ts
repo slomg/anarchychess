@@ -47,6 +47,7 @@ export default function useLiveChessEvents(
             pieces,
             fen: move.fen,
             movedBy: move.movedBy,
+            sideToMove: sideToMove,
             san: move.san,
             move: decodedMove,
             // clocks: {

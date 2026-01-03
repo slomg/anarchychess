@@ -12,6 +12,7 @@ import { LiveChessStore, LiveChessStoreProps } from "./liveChessStore";
 
 export interface GameStateSliceProps {
     gameToken: string;
+    initialFen: string;
 
     whitePlayer: GamePlayer;
     blackPlayer: GamePlayer;

@@ -246,7 +246,7 @@ public class GameGrainTests : BaseOrleansIntegrationTest
         MoveSnapshot expectedMoveSnapshot = new(
             Path: MovePath.FromMove(move, GameLogicConstants.BoardWidth),
             Fen: _fenCalculator.CalculateFen(_state.CurrentGame!.Core.Board),
-            MovedBy: GameColor.White,
+            NextSideToMove: GameColor.Black,
             San: _sanCalculator.CalculateSan(
                 move,
                 _gameCore.GetLegalMovesOf(GameColor.White, _state.CurrentGame.Core).AllMoves
@@ -271,7 +271,6 @@ public class GameGrainTests : BaseOrleansIntegrationTest
                                 Move: expectedMoveSnapshot,
                                 PlyNumber: 1,
                                 Clocks: expectedClock,
-                                SideToMove: GameColor.Black,
                                 SideToMoveUserId: _blackPlayer.UserId,
                                 EncodedLegalMoves: legalMoves.EncodedMoves,
                                 HasForcedMoves: legalMoves.HasForcedMoves

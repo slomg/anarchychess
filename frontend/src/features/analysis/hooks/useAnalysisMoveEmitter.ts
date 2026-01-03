@@ -29,7 +29,7 @@ export default function useAnalysisMoveEmitter(
                         positionHistory.viewingPosition?.fen ??
                         rootPosition.fen,
                     movingPlayer:
-                        positionHistory.viewingPosition?.movedBy ??
+                        positionHistory.viewingPosition?.sideToMove ??
                         GameColor.WHITE,
                     piecePosition: move.from,
                     moveKey: move.moveKey,
@@ -43,7 +43,7 @@ export default function useAnalysisMoveEmitter(
             const position = addPosition({
                 pieces,
                 move,
-                movedBy: data.sideToMove,
+                sideToMove: data.sideToMove,
                 fen: data.fen,
                 san: data.san,
             });

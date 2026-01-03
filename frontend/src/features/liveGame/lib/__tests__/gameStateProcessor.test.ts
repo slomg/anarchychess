@@ -28,7 +28,7 @@ describe("createStoreProps", () => {
                         toIdx: 45,
                         moveKey: "0",
                     },
-                    movedBy: GameColor.WHITE,
+                    nextSideToMove: GameColor.BLACK,
                     fen: "fake-fen-1",
                     san: "f5",
                     timeLeft: 100,
@@ -39,7 +39,7 @@ describe("createStoreProps", () => {
                         toIdx: 55,
                         moveKey: "1",
                     },
-                    movedBy: GameColor.BLACK,
+                    nextSideToMove: GameColor.WHITE,
                     fen: "fake-fen-2",
                     san: "f6",
                     timeLeft: 100,
@@ -50,7 +50,7 @@ describe("createStoreProps", () => {
                         toIdx: 27,
                         moveKey: "2",
                     },
-                    movedBy: GameColor.WHITE,
+                    nextSideToMove: GameColor.BLACK,
                     fen: "fake-fen-3",
                     san: "Hh3",
                     timeLeft: 50,
@@ -61,7 +61,7 @@ describe("createStoreProps", () => {
                         toIdx: 72,
                         moveKey: "3",
                     },
-                    movedBy: GameColor.BLACK,
+                    nextSideToMove: GameColor.WHITE,
                     fen: "fake-fen-4",
                     san: "Hc8",
                     timeLeft: 50,
@@ -122,7 +122,7 @@ describe("createStoreProps", () => {
                 decoded: decodeMovePath(gameState.moveHistory[0].path, 10),
                 clocks: { whiteClock: 100, blackClock: baseMs },
                 fen: "fake-fen-1",
-                movedBy: GameColor.WHITE,
+                nextSideToMove: GameColor.BLACK,
                 san: "f5",
             },
             {
@@ -131,7 +131,7 @@ describe("createStoreProps", () => {
                 decoded: decodeMovePath(gameState.moveHistory[1].path, 10),
                 clocks: { whiteClock: 100, blackClock: 100 },
                 fen: "fake-fen-2",
-                movedBy: GameColor.BLACK,
+                nextSideToMove: GameColor.WHITE,
                 san: "f6",
             },
             {
@@ -140,7 +140,7 @@ describe("createStoreProps", () => {
                 decoded: decodeMovePath(gameState.moveHistory[2].path, 10),
                 clocks: { whiteClock: 50, blackClock: 100 },
                 fen: "fake-fen-3",
-                movedBy: GameColor.WHITE,
+                nextSideToMove: GameColor.BLACK,
                 san: "Hh3",
             },
             {
@@ -149,7 +149,7 @@ describe("createStoreProps", () => {
                 decoded: decodeMovePath(gameState.moveHistory[3].path, 10),
                 clocks: { whiteClock: 50, blackClock: 50 },
                 fen: "fake-fen-4",
-                movedBy: GameColor.BLACK,
+                nextSideToMove: GameColor.WHITE,
                 san: "Hc8",
             },
         ];
@@ -159,7 +159,7 @@ describe("createStoreProps", () => {
             positionHistory.addNextPosition({
                 pieces,
                 move: move.decoded,
-                movedBy: move.movedBy,
+                sideToMove: move.nextSideToMove,
                 fen: move.fen,
                 // clocks: move.clocks,
                 san: move.san,
@@ -188,6 +188,7 @@ describe("createStoreProps", () => {
                 whitePlayer: gameState.whitePlayer,
                 blackPlayer: gameState.blackPlayer,
                 sideToMove: gameState.sideToMove,
+                initialFen: gameState.initialFen,
 
                 pool: gameState.pool,
                 viewer: {

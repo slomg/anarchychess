@@ -13,7 +13,7 @@ export function createFakePositionProps(
         pieces: createFakeBoardPieces(),
         fen: constants.INITIAL_FEN,
         move: createFakeMove(),
-        movedBy: faker.helpers.enumValue(GameColor),
+        sideToMove: faker.helpers.enumValue(GameColor),
         san: createFakeSan(),
         ...overrides,
     };

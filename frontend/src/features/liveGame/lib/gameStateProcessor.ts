@@ -52,6 +52,7 @@ export function createStoreProps(
 
     const live: LiveChessStoreProps = {
         gameToken,
+        initialFen: gameState.initialFen,
 
         whitePlayer: gameState.whitePlayer,
         blackPlayer: gameState.blackPlayer,
@@ -81,6 +82,8 @@ export function createStoreProps(
         viewingFrom: viewerColor ?? GameColor.WHITE,
         canDrag: true,
         muteAudio: false,
+        allowHistoryChanges:
+            gameState.resultData !== null && gameState.resultData !== undefined,
     };
 
     return { live, board };
@@ -123,6 +126,7 @@ function getPositionHistory(gameState: GameState): PositionHistory {
             pieces: newPieces,
             move,
             movedBy: moveSnapshot.movedBy,
+            sideToMove: moveSnapshot.nextSideToMove,
             fen: moveSnapshot.fen,
             san: moveSnapshot.san,
         });

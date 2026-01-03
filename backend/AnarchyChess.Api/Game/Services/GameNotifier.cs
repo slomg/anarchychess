@@ -1,6 +1,5 @@
 ﻿using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.SignalR;
-using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Shared.Models;
@@ -31,7 +30,6 @@ public record MoveNotification(
     MoveSnapshot Move,
     int PlyNumber,
     ClockSnapshot Clocks,
-    GameColor SideToMove,
     UserId SideToMoveUserId,
     IReadOnlyCollection<byte> EncodedLegalMoves,
     bool HasForcedMoves
@@ -63,7 +61,6 @@ public class GameNotifier(IHubContext<GameHub, IGameHubClient> hub) : IGameNotif
             .MoveMadeAsync(
                 move: notification.Move,
                 plyNumber: notification.PlyNumber,
-                sideToMove: notification.SideToMove,
                 clock: notification.Clocks
             );
         await _hub

@@ -13,7 +13,7 @@ describe("PositionNode", () => {
     it("should create a root position with correct properties", () => {
         expect(root.pieces).toEqual(props.pieces);
         expect(root.fen).toBe(props.fen);
-        expect(root.movedBy).toBe(props.movedBy);
+        expect(root.sideToMove).toBe(props.sideToMove);
         expect(root.move).toBe(props.move);
         expect(root.san).toBe(props.san);
         expect(root.ply).toBe(0);

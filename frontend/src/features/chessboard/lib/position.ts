@@ -5,7 +5,7 @@ import { Move } from "./types";
 export interface PositionProps {
     pieces: BoardPieces;
     fen: string;
-    movedBy: GameColor;
+    sideToMove: GameColor;
     move: Move;
     san: string;
 }
@@ -13,7 +13,7 @@ export interface PositionProps {
 export interface Position {
     pieces: BoardPieces;
     fen: string;
-    movedBy: GameColor;
+    sideToMove: GameColor;
     move: Move;
     san: string;
     ply: number;
@@ -27,7 +27,7 @@ export interface Position {
 export class PositionNode implements Position {
     _pieces: BoardPieces;
     _fen: string;
-    _movedBy: GameColor;
+    _sideToMove: GameColor;
     _move: Move;
     _san: string;
     _ply: number;
@@ -44,7 +44,7 @@ export class PositionNode implements Position {
 
         this._pieces = props.pieces;
         this._fen = props.fen;
-        this._movedBy = props.movedBy;
+        this._sideToMove = props.sideToMove;
         this._move = props.move;
         this._san = props.san;
         this._ply = parent ? parent.ply + 1 : 0;
@@ -58,8 +58,8 @@ export class PositionNode implements Position {
         return this._fen;
     }
 
-    get movedBy(): GameColor {
-        return this._movedBy;
+    get sideToMove(): GameColor {
+        return this._sideToMove;
     }
 
     get move(): Move {

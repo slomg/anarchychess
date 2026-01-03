@@ -367,17 +367,17 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         }
 
         var timeLeft = _clock.CommitTurn(currentPlayer.Color, game.ClockState);
+        var nextPlayer = game.Players.GetPlayerByColor(_core.SideToMove(game.Core));
+        var legalMoves = _core.GetLegalMovesOf(nextPlayer.Color, game.Core);
+
         MoveSnapshot moveSnapshot = new(
             Path: moveResult.MovePath,
             Fen: moveResult.Fen,
-            MovedBy: currentPlayer.Color,
+            NextSideToMove: nextPlayer.Color,
             San: moveResult.San,
             timeLeft
         );
         game.MoveSnapshots.Add(moveSnapshot);
-
-        var nextPlayer = game.Players.GetPlayerByColor(_core.SideToMove(game.Core));
-        var legalMoves = _core.GetLegalMovesOf(nextPlayer.Color, game.Core);
 
         if (moveResult.EndStatus is not null)
         {
@@ -390,7 +390,6 @@ public class GameGrain : Grain, IGameGrain, IRemindable
                 Move: moveSnapshot,
                 PlyNumber: game.MoveSnapshots.Count,
                 Clocks: _clock.ToSnapshot(game.ClockState),
-                SideToMove: nextPlayer.Color,
                 SideToMoveUserId: nextPlayer.UserId,
                 EncodedLegalMoves: legalMoves.EncodedMoves,
                 HasForcedMoves: legalMoves.HasForcedMoves

@@ -4,6 +4,7 @@ import { LiveChessStoreProps } from "@/features/liveGame/stores/liveChessStore";
 import { GameColor, GamePlayer, PoolType, TimeControl } from "@/lib/apiClient";
 import { createFakePlayer } from "./playerFaker";
 import { createFakeClock } from "./clockFaker";
+import constants from "@/lib/constants";
 
 export function createFakeLiveChessStoreProps(
     override: Partial<LiveChessStoreProps> & {
@@ -21,6 +22,7 @@ export function createFakeLiveChessStoreProps(
 
     return {
         gameToken: faker.string.alpha(16),
+        initialFen: constants.INITIAL_FEN,
 
         sideToMove: faker.helpers.enumValue(GameColor),
         sourceRevision: faker.number.int({ min: 5, max: 100 }),

@@ -87,7 +87,7 @@ describe("useAnalysisMoveEmitter", () => {
         expect(getNextAnalysisPositionMock).toHaveBeenCalledWith({
             body: {
                 fen: initialPosition.fen,
-                movingPlayer: initialPosition.movedBy,
+                movingPlayer: initialPosition.sideToMove,
                 piecePosition: move.from,
                 moveKey: move.moveKey,
             },
@@ -126,7 +126,7 @@ describe("useAnalysisMoveEmitter", () => {
             expect.objectContaining<PositionProps>({
                 pieces: prevPieces,
                 move,
-                movedBy: newAnalysisPosition.sideToMove,
+                sideToMove: newAnalysisPosition.sideToMove,
                 fen: newAnalysisPosition.fen,
                 san: newAnalysisPosition.san,
             }),

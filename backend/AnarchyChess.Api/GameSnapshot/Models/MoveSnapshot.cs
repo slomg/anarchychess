@@ -7,7 +7,7 @@ namespace AnarchyChess.Api.GameSnapshot.Models;
 public record MoveSnapshot(
     MovePath Path,
     string Fen,
-    GameColor MovedBy,
+    GameColor NextSideToMove,
     string San,
     double TimeLeft
 );

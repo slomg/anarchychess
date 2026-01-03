@@ -69,7 +69,6 @@ public class GameNotifierTests
                 LastUpdated: 1000,
                 IsFrozen: false
             ),
-            SideToMove: GameColor.White,
             SideToMoveUserId: _userId,
             EncodedLegalMoves: [1, 2, 3],
             HasForcedMoves: true
@@ -81,7 +80,6 @@ public class GameNotifierTests
             .Received(1)
             .MoveMadeAsync(
                 move: notification.Move,
-                sideToMove: notification.SideToMove,
                 plyNumber: notification.PlyNumber,
                 clock: notification.Clocks
             );

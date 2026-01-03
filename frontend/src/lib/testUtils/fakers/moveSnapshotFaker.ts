@@ -9,7 +9,7 @@ export function createFakeMoveSnapshot(
     return {
         path: createFakeMovePath(),
         fen: faker.string.alphanumeric(100),
-        movedBy: faker.helpers.enumValue(GameColor),
+        nextSideToMove: faker.helpers.enumValue(GameColor),
         san: createFakeSan(),
         timeLeft: faker.number.int({ min: 100, max: 10000 }),
         ...overrides,

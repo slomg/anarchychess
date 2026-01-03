@@ -11,7 +11,7 @@ export function createFakePosition(overrides?: Partial<Position>): Position {
     return {
         pieces: createFakeBoardPieces(),
         fen: faker.string.alphanumeric(100),
-        movedBy: faker.helpers.enumValue(GameColor),
+        sideToMove: faker.helpers.enumValue(GameColor),
         move: createFakeMove(),
         san: createFakeSan(),
         ply: faker.number.int({ min: 0, max: 100 }),
