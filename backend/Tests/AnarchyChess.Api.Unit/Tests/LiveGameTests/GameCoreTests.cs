@@ -6,6 +6,7 @@ using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.TestInfrastructure.Factories;
+using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
@@ -14,7 +15,7 @@ namespace AnarchyChess.Api.Unit.Tests.LiveGameTests;
 
 public class GameCoreTests
 {
-    private readonly IFenCalculator _fenCalculatorMock = Substitute.For<IFenCalculator>();
+    private readonly IFenEncoder _fenEncoder = Substitute.For<IFenEncoder>();
     private readonly ILegalMoveCalculator _legalMoveCalculatorMock =
         Substitute.For<ILegalMoveCalculator>();
     private readonly IMoveEncoder _encoderMock = Substitute.For<IMoveEncoder>();
@@ -27,7 +28,7 @@ public class GameCoreTests
     {
         _gameCore = new(
             Substitute.For<ILogger<GameCore>>(),
-            _fenCalculatorMock,
+            _fenEncoder,
             _legalMoveCalculatorMock,
             _encoderMock,
             _sanCalculatorMock,
@@ -49,6 +50,7 @@ public class GameCoreTests
             MovePath.FromMove(m2, GameLogicConstants.BoardWidth),
         ];
         byte[] movesEnc = [1, 2, 3];
+        var fen = new FenNotationFaker().Generate();
 
         _legalMoveCalculatorMock
             .CalculateAllLegalMoves(Arg.Any<ChessBoard>(), GameColor.White)
@@ -56,7 +58,7 @@ public class GameCoreTests
         _encoderMock
             .EncodeMoves(Arg.Is<IEnumerable<MovePath>>(m => m.SequenceEqual(movePaths)))
             .Returns(movesEnc);
-        _fenCalculatorMock.CalculateFen(Arg.Any<ChessBoard>()).Returns("fen");
+        _fenEncoder.EncodeFen(Arg.Any<ChessBoard>()).Returns(fen);
 
         var initialFen = _gameCore.StartGame(state);
 
@@ -82,8 +84,8 @@ public class GameCoreTests
         blackMoves.MovePaths.Should().BeEmpty();
         blackMoves.EncodedMoves.Should().BeEmpty();
 
-        initialFen.Should().Be("fen");
-        _drawEvaluatorMock.Received(1).RegisterInitialPosition("fen", state.AutoDrawState);
+        initialFen.Should().Be(fen);
+        _drawEvaluatorMock.Received(1).RegisterInitialPosition(fen, state.AutoDrawState);
     }
 
     [Fact]
@@ -133,12 +135,13 @@ public class GameCoreTests
         GameCoreState state = new();
         Move move = new(new("e2"), new("e4"), PieceFactory.White());
         MoveKey key = new(from: new("e2"), to: new("e4"));
+        var fen = new FenNotationFaker().Generate();
 
         List<Move> expectedMoves = [move];
         _legalMoveCalculatorMock
             .CalculateAllLegalMoves(Arg.Any<ChessBoard>(), GameColor.White)
             .Returns(expectedMoves);
-        _fenCalculatorMock.CalculateFen(Arg.Any<ChessBoard>()).Returns("fen-string");
+        _fenEncoder.EncodeFen(Arg.Any<ChessBoard>()).Returns(fen);
         _sanCalculatorMock
             .CalculateSan(move, Arg.Is<IEnumerable<Move>>(x => x.Count() == 1), false)
             .Returns("e4");
@@ -151,7 +154,7 @@ public class GameCoreTests
         MoveResult expected = new(
             Move: move,
             MovePath: MovePath.FromMove(move, GameLogicConstants.BoardWidth),
-            Fen: "fen-string",
+            Fen: fen,
             San: "e4",
             EndStatus: null
         );
@@ -189,7 +192,7 @@ public class GameCoreTests
             .EncodeMoves(Arg.Is<IEnumerable<MovePath>>(x => x.SequenceEqual(blackMovePaths)))
             .Returns(encodedBlackMoves);
 
-        _fenCalculatorMock.CalculateFen(Arg.Any<ChessBoard>()).Returns("fen-after-move");
+        _fenEncoder.EncodeFen(Arg.Any<ChessBoard>()).Returns(new FenNotationFaker().Generate());
 
         _gameCore.StartGame(state);
         _gameCore.MakeMove(key, state);

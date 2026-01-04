@@ -25,7 +25,7 @@ public class AnalysisControllerTests(AnarchyChessWebApplicationFactory factory)
     {
         AnalysisMove move = new(
             Fen: "R5rKk",
-            MovingPlayer: GameColor.White,
+            //MovingPlayer: GameColor.White,
             PiecePosition: new AlgebraicPoint("a1"),
             MoveKey: new(from: new AlgebraicPoint("a1"), to: new AlgebraicPoint("c1"))
         );

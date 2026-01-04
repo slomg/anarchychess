@@ -9,12 +9,13 @@ public interface IReadOnlyChessBoard
     int Height { get; }
     IReadOnlyList<Move> Moves { get; }
     GameColor SideToMove { get; }
+    int HalfMoveClock { get; }
 
     bool TryGetPieceAt(AlgebraicPoint point, [NotNullWhen(true)] out Piece? piece);
     Piece? PeekPieceAt(AlgebraicPoint point);
     bool IsWithinBoundaries(AlgebraicPoint point);
     bool IsEmpty(AlgebraicPoint point);
-    List<Piece> GetAllPiecesWith(PieceType type, GameColor? color);
+    List<(Piece Piece, AlgebraicPoint Position)> GetAllPiecesWith(PieceType type, GameColor? color);
     bool HasPieceWith(PieceType type, GameColor? color);
 
     IEnumerable<(AlgebraicPoint Position, Piece? Occupant)> EnumerateSquares();

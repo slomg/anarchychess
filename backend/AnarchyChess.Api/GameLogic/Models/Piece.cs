@@ -2,4 +2,4 @@
 
 [GenerateSerializer]
 [Alias("AnarchyChess.Api.GameLogic.Models.Piece")]
-public record Piece(PieceType Type, GameColor? Color, int TimesMoved = 0);
+public record Piece(PieceType Type, GameColor? Color, bool HasMoved = false);

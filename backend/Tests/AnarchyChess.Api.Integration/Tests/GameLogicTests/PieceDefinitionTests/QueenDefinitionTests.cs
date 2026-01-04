@@ -19,7 +19,7 @@ public class QueenDefinitionTestData : TheoryData<PieceTestCase>
     public QueenDefinitionTestData()
     {
         var queen = PieceFactory.White(PieceType.Queen);
-        Console.WriteLine(queen.TimesMoved);
+        Console.WriteLine(queen.HasMoved);
 
         Add(
             PieceTestCase

@@ -13,14 +13,14 @@ namespace AnarchyChess.Api.Integration.Tests.Analysis;
 public class PositionAnalysisTests : BaseIntegrationTest
 {
     private readonly IPositionAnalysis _positionAnalysis;
-    private readonly IFenCalculator _fenCalculator;
+    private readonly IFenEncoder _fenEncoder;
     private readonly IGameCore _core;
 
     public PositionAnalysisTests(AnarchyChessWebApplicationFactory factory)
         : base(factory)
     {
         _positionAnalysis = Scope.ServiceProvider.GetRequiredService<IPositionAnalysis>();
-        _fenCalculator = Scope.ServiceProvider.GetRequiredService<IFenCalculator>();
+        _fenEncoder = Scope.ServiceProvider.GetRequiredService<IFenEncoder>();
         _core = Scope.ServiceProvider.GetRequiredService<IGameCore>();
     }
 
@@ -34,7 +34,7 @@ public class PositionAnalysisTests : BaseIntegrationTest
         var legalMoves = _core.GetLegalMovesOf(GameColor.White, state);
         MoveOptions moveOptions = new(legalMoves.MovePaths, legalMoves.HasForcedMoves);
 
-        RootAnalysisPosition expectedPosition = new(Fen: fen, MoveOptions: moveOptions);
+        RootAnalysisPosition expectedPosition = new(Fen: fen.FullFen, MoveOptions: moveOptions);
         result.Should().BeEquivalentTo(expectedPosition);
     }
 
@@ -45,7 +45,6 @@ public class PositionAnalysisTests : BaseIntegrationTest
         MoveKey moveKey = new(from: new AlgebraicPoint("e2"), to: new AlgebraicPoint("e4"));
         AnalysisMove analysisMove = new(
             Fen: initialPosition.Fen,
-            MovingPlayer: GameColor.White,
             PiecePosition: new AlgebraicPoint("e2"),
             MoveKey: moveKey
         );
@@ -62,10 +61,10 @@ public class PositionAnalysisTests : BaseIntegrationTest
         var legalMoves = _core.GetLegalMovesOf(GameColor.Black, state);
         MoveOptions moveOptions = new(legalMoves.MovePaths, legalMoves.HasForcedMoves);
 
-        var fen = _fenCalculator.CalculateFen(state.Board);
+        var fen = _fenEncoder.EncodeFen(state.Board);
 
         AnalysisPosition expectedPosition = new(
-            Fen: fen,
+            Fen: fen.FullFen,
             San: "e4",
             MoveOptions: moveOptions,
             SideToMove: GameColor.Black,
@@ -78,8 +77,7 @@ public class PositionAnalysisTests : BaseIntegrationTest
     public void GetNextAnalysisPosition_doesnt_include_legal_moves_when_the_game_ends()
     {
         AnalysisMove analysisMove = new(
-            "qK", // black queen next to white king
-            GameColor.Black,
+            "qK {\"sideToMove\":1}", // black queen next to white king
             new AlgebraicPoint("a1"),
             new MoveKey(new AlgebraicPoint("a1"), new AlgebraicPoint("b1"))
         );

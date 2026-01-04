@@ -45,7 +45,7 @@ public class AlgebraicPointTests : BaseUnitTest
     [InlineData(0, 0, "a1")]
     [InlineData(1, 1, "b2")]
     [InlineData(25, 7, "z8")]
-    public void AsAlgebraic_returns_correct_string(int x, int y, string expected)
+    public void AsAlgebraic_returns_correct_string(int x, int y, AlgebraicString expected)
     {
         var point = new AlgebraicPoint(x, y);
 

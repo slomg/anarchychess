@@ -16,12 +16,12 @@ public interface IPositionAnalysis
 }
 
 public class PositionAnalysis(
-    IFenCalculator fenCalculator,
+    IFenDecoder fenDecoder,
     ILegalMoveCalculator legalMoveCalculator,
     IGameCore gameCore
 ) : IPositionAnalysis
 {
-    private readonly IFenCalculator _fenCalculator = fenCalculator;
+    private readonly IFenDecoder _fenDecoder = fenDecoder;
     private readonly ILegalMoveCalculator _legalMoveCalculator = legalMoveCalculator;
     private readonly IGameCore _core = gameCore;
 
@@ -35,25 +35,24 @@ public class PositionAnalysis(
             HasForcedMoves: legalMoves.HasForcedMoves
         );
 
-        return new(Fen: initialFen, MoveOptions: moveOptions);
+        return new(Fen: initialFen.FullFen, MoveOptions: moveOptions);
     }
 
     public ErrorOr<AnalysisPosition> GetNextAnalysisPosition(AnalysisMove analMove) // hehe
     {
-        var boardResult = _fenCalculator.DecodeFen(analMove.Fen, sideToMove: analMove.MovingPlayer);
+        var boardResult = _fenDecoder.DecodeFen(analMove.Fen);
         if (boardResult.IsError)
             return boardResult.Errors;
         var board = boardResult.Value;
 
         var move = _legalMoveCalculator
-            .CalculateLegalMoves(board, analMove.PiecePosition, analMove.MovingPlayer)
+            .CalculateLegalMoves(board, analMove.PiecePosition, board.SideToMove)
             .FirstOrDefault(x => new MoveKey(x) == analMove.MoveKey);
         if (move is null)
             return GameErrors.MoveInvalid;
 
         GameCoreState coreState = new() { Board = board };
         var moveResult = _core.MakeMove(move, coreState);
-        var newFen = _fenCalculator.CalculateFen(coreState.Board);
 
         var sideToMove = _core.SideToMove(coreState);
 
@@ -64,18 +63,11 @@ public class PositionAnalysis(
         );
 
         return new AnalysisPosition(
-            Fen: newFen,
+            Fen: moveResult.Fen.FullFen,
             San: moveResult.San,
             MoveOptions: moveOptions,
             SideToMove: sideToMove,
             EndStatus: moveResult.EndStatus
         );
-    }
-
-    public ErrorOr<MoveOptions> GetLegalMoves(string fen)
-    {
-        var boardResult = _fenCalculator.DecodeFen(fen, sideToMove: analMove.MovingPlayer);
-        if (boardResult.IsError)
-            return boardResult.Errors;
     }
 }

@@ -29,16 +29,23 @@ public class ChessBoard : IReadOnlyChessBoard
     [Id(5)]
     public GameColor SideToMove { get; private set; }
 
+    [Id(6)]
+    public int HalfMoveClock { get; private set; }
+
     public ChessBoard(
         Dictionary<AlgebraicPoint, Piece>? pieces = null,
         int height = GameLogicConstants.BoardHeight,
         int width = GameLogicConstants.BoardWidth,
-        GameColor sideToMove = GameColor.White
+        GameColor sideToMove = GameColor.White,
+        List<Move>? moves = null,
+        int halfMoveClock = 0
     )
     {
         Height = height;
         Width = width;
         SideToMove = sideToMove;
+        _moves = moves ?? [];
+        HalfMoveClock = halfMoveClock;
 
         _board = new Piece[height, width];
         if (pieces is not null)
@@ -72,17 +79,20 @@ public class ChessBoard : IReadOnlyChessBoard
     public bool IsEmpty(AlgebraicPoint point) =>
         !IsWithinBoundaries(point) || _board[point.Y, point.X] is null;
 
-    public List<Piece> GetAllPiecesWith(PieceType type, GameColor? color)
+    public List<(Piece Piece, AlgebraicPoint Position)> GetAllPiecesWith(
+        PieceType type,
+        GameColor? color
+    )
     {
         (PieceType, GameColor?) key = (type, color);
         if (!_piecePositions.TryGetValue(key, out var positions))
             return [];
 
-        List<Piece> result = [];
+        List<(Piece Piece, AlgebraicPoint Position)> result = [];
         foreach (var position in positions)
         {
             if (TryGetPieceAt(position, out var piece))
-                result.Add(piece);
+                result.Add((piece, position));
         }
         return result;
     }
@@ -133,7 +143,7 @@ public class ChessBoard : IReadOnlyChessBoard
         // step 3: place all pieces in their final destinations
         foreach (var (piece, newPosition) in finalPositions)
         {
-            PlacePiece(newPosition, piece with { TimesMoved = piece.TimesMoved + 1 });
+            PlacePiece(newPosition, piece with { HasMoved = true });
         }
 
         foreach (var spawn in move.PieceSpawns)
@@ -143,11 +153,24 @@ public class ChessBoard : IReadOnlyChessBoard
 
         if (move.PromotesTo is PieceType promotesTo)
         {
-            ModifyPiece(move.To, piece => piece with { Type = promotesTo, TimesMoved = 0 });
+            ModifyPiece(move.To, piece => piece with { Type = promotesTo, HasMoved = false });
         }
 
         _moves.Add(move);
         SideToMove = SideToMove.Invert();
+        UpdateHalfMockClock(move);
+    }
+
+    private void UpdateHalfMockClock(Move move)
+    {
+        if (GameLogicConstants.PawnLikePieces.Contains(move.Piece.Type) || move.Captures.Count > 0)
+        {
+            HalfMoveClock = 0;
+        }
+        else
+        {
+            HalfMoveClock++;
+        }
     }
 
     public void PlacePiece(AlgebraicPoint point, Piece piece)

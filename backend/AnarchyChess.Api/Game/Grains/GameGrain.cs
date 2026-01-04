@@ -162,7 +162,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             Players = players,
             GameSource = gameSource,
             Pool = pool,
-            InitialFen = _core.StartGame(core),
+            InitialFen = _core.StartGame(core).FullFen,
             Core = core,
             DrawRequest = drawRequest,
             ClockState = clockState,
@@ -367,7 +367,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
 
         MoveSnapshot moveSnapshot = new(
             Path: moveResult.MovePath,
-            Fen: moveResult.Fen,
+            Fen: moveResult.Fen.FullFen,
             NextSideToMove: nextPlayer.Color,
             San: moveResult.San,
             timeLeft

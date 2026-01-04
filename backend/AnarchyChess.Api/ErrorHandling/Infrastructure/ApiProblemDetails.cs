@@ -59,7 +59,10 @@ public static class ErrorCodes
     public const string GameDrawNotRequested = "Game.DrawNotRequested";
     public const string GameNotOver = "Game.NotOver";
     public const string GameInvalidPieceLetter = "Game.InvalidPieceLetter";
-    public const string GameMalformedFen = "Game.MalformedFen";
+    public const string GameMalformedFenParts = "Game.MalformedFen.Parts";
+    public const string GameMalformedFenPieces = "Game.MalformedFen.Pieces";
+    public const string GameMalformedFenMovedPieces = "Game.MalformedFen.MovedPieces";
+    public const string GameMalformedFenLastMove = "Game.MalformedFen.LastMove";
 
     public const string GameChatInvalidUser = "GameChat.InvalidUser";
     public const string GameChatInvalidMessage = "GameChat.InvalidMessage";

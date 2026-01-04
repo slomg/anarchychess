@@ -12,8 +12,8 @@ public class MovePathFaker : RecordFaker<MovePath>
         RuleFor(x => x.FromIdx, f => (byte)f.Random.Number(0, 99));
         RuleFor(x => x.ToIdx, f => (byte)f.Random.Number(0, 99));
         RuleFor(x => x.MoveKey, f => f.Random.String2(10));
-        RuleFor(x => x.CapturedIdxs, MoveData.RandomIdxs);
-        RuleFor(x => x.TriggerIdxs, MoveData.RandomIdxs);
+        RuleFor(x => x.CapturedIdxs, GameTestData.RandomIdxs);
+        RuleFor(x => x.TriggerIdxs, GameTestData.RandomIdxs);
         RuleFor(
             x => x.IntermediateSquares,
             f => new IntermediateSquarePathFaker().Generate(f.Random.Number(1, 5))

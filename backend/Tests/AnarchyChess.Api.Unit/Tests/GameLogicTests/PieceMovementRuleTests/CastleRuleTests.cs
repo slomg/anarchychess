@@ -20,18 +20,18 @@ public class CastleRuleTests
     private readonly AlgebraicPoint _kingQueensideDestination = new("d1");
     private readonly AlgebraicPoint _rookQueensideDestination = new("e1");
 
-    private readonly Piece _kingWhite = PieceFactory.White(PieceType.King, timesMoved: 0);
-    private readonly Piece _rookWhite = PieceFactory.White(PieceType.Rook, timesMoved: 0);
+    private readonly Piece _kingWhite = PieceFactory.White(PieceType.King, hasMoved: false);
+    private readonly Piece _rookWhite = PieceFactory.White(PieceType.Rook, hasMoved: false);
 
-    private readonly Piece _kingBlack = PieceFactory.Black(PieceType.King, timesMoved: 0);
-    private readonly Piece _rookBlack = PieceFactory.Black(PieceType.Rook, timesMoved: 0);
+    private readonly Piece _kingBlack = PieceFactory.Black(PieceType.King, hasMoved: false);
+    private readonly Piece _rookBlack = PieceFactory.Black(PieceType.Rook, hasMoved: false);
 
     [Fact]
     public void Evaluate_returns_nothing_if_king_has_moved()
     {
         ChessBoard board = new();
 
-        var king = _kingWhite with { TimesMoved = 1 };
+        var king = _kingWhite with { HasMoved = true };
         board.PlacePiece(_kingOrigin, king);
         board.PlacePiece(_rookQueensideOrigin, _rookWhite);
         board.PlacePiece(_rookKingsideOrigin, _rookWhite);
@@ -47,8 +47,8 @@ public class CastleRuleTests
         ChessBoard board = new();
 
         board.PlacePiece(_kingOrigin, _kingWhite);
-        board.PlacePiece(_rookQueensideOrigin, _rookWhite with { TimesMoved = 1 });
-        board.PlacePiece(_rookKingsideOrigin, _rookWhite with { TimesMoved = 1 });
+        board.PlacePiece(_rookQueensideOrigin, _rookWhite with { HasMoved = true });
+        board.PlacePiece(_rookKingsideOrigin, _rookWhite with { HasMoved = true });
 
         var result = _rule.Evaluate(board, _kingOrigin, _kingWhite);
 

@@ -1,6 +1,7 @@
 ﻿using AnarchyChess.Api.Game.Errors;
 using AnarchyChess.Api.Game.Grains;
 using AnarchyChess.Api.Game.Models;
+using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Infrastructure;
@@ -11,6 +12,7 @@ using AwesomeAssertions;
 using ErrorOr;
 using Microsoft.Extensions.Options;
 using Moq;
+using NSubstitute;
 using Orleans.TestKit;
 
 namespace AnarchyChess.Api.Unit.Tests.LiveGameTests;
@@ -27,7 +29,12 @@ public class GameGrainTests : BaseGrainTest
 
     public GameGrainTests()
     {
+        var coreMock = Substitute.For<IGameCore>();
+        coreMock.StartGame(Arg.Any<GameCoreState>()).Returns(new FenNotationFaker().Generate());
+
         Silo.ServiceProvider.AddService(Options.Create(AppSettingsLoader.LoadAppSettings()));
+        Silo.ServiceProvider.AddService(coreMock);
+
         _state = Silo.StorageManager.GetStorage<GameGrainState>(GameGrain.StateName).State;
     }
 

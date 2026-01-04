@@ -23,7 +23,7 @@ public class PieceTestCase
     [JsonPropertyName(nameof(BlockedBy))]
     public Dictionary<string, Piece> BlockedBySurrogate
     {
-        get => BlockedBy.ToDictionary(x => x.Key.AsAlgebraic(), x => x.Value);
+        get => BlockedBy.ToDictionary(x => (string)x.Key.AsAlgebraic(), x => x.Value);
         set
         {
             BlockedBy.Clear();

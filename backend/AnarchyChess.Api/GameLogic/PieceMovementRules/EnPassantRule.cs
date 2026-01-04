@@ -39,7 +39,7 @@ public class EnPassantRule(Offset direction, Offset chainCaptureDirection) : IPi
             lastMove is null
             || !GameLogicConstants.PawnLikePieces.Contains(lastMove.Piece.Type)
             || lastMove.Piece.Color == movingPiece.Color
-            || lastMove.Piece.TimesMoved != 0
+            || lastMove.Piece.HasMoved
         )
             return null;
 

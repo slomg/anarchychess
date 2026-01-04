@@ -131,9 +131,13 @@ public class ChessBoardTests
         var blackPawns = board.GetAllPiecesWith(PieceType.Pawn, GameColor.Black);
         var whiteKnights = board.GetAllPiecesWith(PieceType.Horsey, GameColor.White);
 
-        whitePawns.Should().BeEquivalentTo([whitePawn1, whitePawn2]);
-        blackPawns.Should().ContainSingle().Which.Should().Be(blackPawn);
-        whiteKnights.Should().ContainSingle().Which.Should().Be(whiteKnight);
+        whitePawns
+            .Should()
+            .BeEquivalentTo(
+                [(whitePawn1, new AlgebraicPoint("a2")), (whitePawn2, new AlgebraicPoint("b2"))]
+            );
+        blackPawns.Should().BeEquivalentTo([(blackPawn, new AlgebraicPoint("c2"))]);
+        whiteKnights.Should().BeEquivalentTo([(whiteKnight, new AlgebraicPoint("d2"))]);
     }
 
     [Fact]
@@ -166,7 +170,7 @@ public class ChessBoardTests
 
         Dictionary<AlgebraicPoint, Piece?> expectedBoard = board.EnumerateSquares().ToDictionary();
         expectedBoard[move.From] = null;
-        expectedBoard[move.To] = piece with { TimesMoved = piece.TimesMoved + 1 };
+        expectedBoard[move.To] = piece with { HasMoved = true };
 
         board.PlayMove(move);
 
@@ -191,7 +195,7 @@ public class ChessBoardTests
 
         Dictionary<AlgebraicPoint, Piece?> expectedBoard = board.EnumerateSquares().ToDictionary();
         expectedBoard[move.From] = null;
-        expectedBoard[move.To] = pieceToMove with { TimesMoved = pieceToMove.TimesMoved + 1 };
+        expectedBoard[move.To] = pieceToMove with { HasMoved = true };
         expectedBoard[new AlgebraicPoint("e5")] = null;
 
         board.PlayMove(move);
@@ -271,7 +275,7 @@ public class ChessBoardTests
 
         board.PeekPieceAt(from).Should().BeNull();
         var promotedPiece = board.PeekPieceAt(to);
-        promotedPiece.Should().Be(new Piece(PieceType.Queen, pawn.Color, TimesMoved: 0));
+        promotedPiece.Should().Be(new Piece(PieceType.Queen, pawn.Color, HasMoved: false));
     }
 
     [Fact]
@@ -323,8 +327,8 @@ public class ChessBoardTests
 
         board.PlayMove(move);
 
-        board.PeekPieceAt(pos1).Should().Be(piece2 with { TimesMoved = piece2.TimesMoved + 1 });
-        board.PeekPieceAt(pos2).Should().Be(piece1 with { TimesMoved = piece1.TimesMoved + 1 });
+        board.PeekPieceAt(pos1).Should().Be(piece2 with { HasMoved = true });
+        board.PeekPieceAt(pos2).Should().Be(piece1 with { HasMoved = true });
     }
 
     [Fact]
@@ -381,6 +385,64 @@ public class ChessBoardTests
     }
 
     [Fact]
+    public void PlayMove_resets_HalfMoveClock_after_pawn_move()
+    {
+        ChessBoard board = new(halfMoveClock: 100);
+        Piece whitePawn = PieceFactory.White(PieceType.Pawn);
+        AlgebraicPoint from = new("e2");
+        AlgebraicPoint to = new("e4");
+
+        board.PlacePiece(from, whitePawn);
+        Move move = new(from, to, whitePawn);
+
+        board.PlayMove(move);
+
+        board.HalfMoveClock.Should().Be(0);
+    }
+
+    [Fact]
+    public void PlayMove_resets_HalfMoveClock_after_capture()
+    {
+        ChessBoard board = new(halfMoveClock: 100);
+        Piece whiteRook = PieceFactory.White(PieceType.Rook);
+        Piece blackPawn = PieceFactory.Black(PieceType.Pawn);
+        AlgebraicPoint from = new("a1");
+        AlgebraicPoint to = new("a7");
+
+        board.PlacePiece(from, whiteRook);
+        board.PlacePiece(to, blackPawn);
+
+        Move move = new(
+            from: from,
+            to: to,
+            piece: whiteRook,
+            captures: [new MoveCapture(blackPawn, to)]
+        );
+
+        board.PlayMove(move);
+
+        board.HalfMoveClock.Should().Be(0);
+    }
+
+    [Fact]
+    public void PlayMove_increments_HalfMoveClock_non_pawn_non_capture_move()
+    {
+        ChessBoard board = new(halfMoveClock: 10);
+        Piece whiteRook = PieceFactory.White(PieceType.Rook);
+        AlgebraicPoint from = new("a1");
+        AlgebraicPoint to = new("a2");
+
+        board.PlacePiece(from, whiteRook);
+
+        board.HalfMoveClock.Should().Be(10);
+        Move move = new(from, to, whiteRook);
+
+        board.PlayMove(move);
+
+        board.HalfMoveClock.Should().Be(11);
+    }
+
+    [Fact]
     public void PlacePiece_adds_piece()
     {
         ChessBoard board = new();
@@ -390,7 +452,7 @@ public class ChessBoardTests
         board.PlacePiece(pt, piece);
 
         var pieces = board.GetAllPiecesWith(piece.Type, GameColor.White);
-        pieces.Should().ContainSingle().Which.Should().Be(piece);
+        pieces.Should().ContainSingle().Which.Should().BeEquivalentTo((piece, pt));
     }
 
     [Fact]
@@ -422,7 +484,7 @@ public class ChessBoardTests
         pawns.Should().BeEmpty();
 
         var queens = board.GetAllPiecesWith(PieceType.Queen, GameColor.White);
-        queens.Should().ContainSingle().Which.Type.Should().Be(PieceType.Queen);
+        queens.Should().ContainSingle().Which.Piece.Type.Should().Be(PieceType.Queen);
     }
 
     [Theory]

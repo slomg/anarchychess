@@ -35,7 +35,7 @@ public abstract class BasePawnDefinition : IPieceDefinition
         [
             new NoCaptureRule(
                 new ConditionalBehaviour(
-                    (board, pos, piece) => piece.TimesMoved == 0,
+                    (board, pos, piece) => !piece.HasMoved,
                     // move maxInitialMoveDistance squares if this piece has not moved before
                     trueBranch: new SlideBehaviour(
                         new Offset(X: 0, Y: 1 * direction),

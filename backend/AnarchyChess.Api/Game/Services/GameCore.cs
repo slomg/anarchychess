@@ -15,13 +15,13 @@ public interface IGameCore
     ErrorOr<MoveResult> MakeMove(MoveKey key, GameCoreState state);
     MoveResult MakeMove(Move move, GameCoreState state);
     GameColor SideToMove(GameCoreState state);
-    string StartGame(GameCoreState state);
+    FenNotation StartGame(GameCoreState state);
 }
 
 public readonly record struct MoveResult(
     Move Move,
     MovePath MovePath,
-    string Fen,
+    FenNotation Fen,
     string San,
     GameEndStatus? EndStatus
 );
@@ -47,7 +47,7 @@ public class GameCoreState
 
 public class GameCore(
     ILogger<GameCore> logger,
-    IFenCalculator fenCalculator,
+    IFenEncoder fenEncoder,
     ILegalMoveCalculator legalMoveCalculator,
     IMoveEncoder legalMoveEncoder,
     ISanCalculator sanCalculator,
@@ -56,7 +56,7 @@ public class GameCore(
 ) : IGameCore
 {
     private readonly ILogger<GameCore> _logger = logger;
-    private readonly IFenCalculator _fenCalculator = fenCalculator;
+    private readonly IFenEncoder _fenEncoder = fenEncoder;
     private readonly ILegalMoveCalculator _legalMoveCalculator = legalMoveCalculator;
     private readonly IMoveEncoder _moveEncoder = legalMoveEncoder;
     private readonly ISanCalculator _sanCalculator = sanCalculator;
@@ -65,9 +65,9 @@ public class GameCore(
 
     public GameColor SideToMove(GameCoreState state) => state.Board.SideToMove;
 
-    public string StartGame(GameCoreState state)
+    public FenNotation StartGame(GameCoreState state)
     {
-        var fen = _fenCalculator.CalculateFen(state.Board);
+        var fen = _fenEncoder.EncodeFen(state.Board);
         state.LegalMoves = CalculateAllLegalMoves(state.Board);
         _drawEvaulator.RegisterInitialPosition(fen, state.AutoDrawState);
 
@@ -89,7 +89,7 @@ public class GameCore(
     {
         var movingSide = state.Board.SideToMove;
         state.Board.PlayMove(move);
-        var fen = _fenCalculator.CalculateFen(state.Board);
+        var fen = _fenEncoder.EncodeFen(state.Board);
 
         GameEndStatus? endStatus = null;
         var kingCaptureWinStatus = EvaluateKingCaptureResult(move, state.Board, movingSide);

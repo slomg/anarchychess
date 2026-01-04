@@ -16,7 +16,7 @@ public class CastleRule : IPieceMovementRule
         Piece movingPiece
     )
     {
-        if (movingPiece.TimesMoved > 0)
+        if (movingPiece.HasMoved)
             yield break;
 
         foreach (var move in GetKingSide(board, position, movingPiece))
@@ -84,7 +84,7 @@ public class CastleRule : IPieceMovementRule
     {
         if (
             !board.TryGetPieceAt(rookPosition, out var rook)
-            || rook.TimesMoved > 0
+            || rook.HasMoved
             || rook.Color != movingPiece.Color
             || rook.Type != PieceType.Rook
         )

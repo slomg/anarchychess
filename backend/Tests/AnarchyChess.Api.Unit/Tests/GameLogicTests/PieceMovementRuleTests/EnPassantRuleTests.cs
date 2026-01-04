@@ -29,7 +29,7 @@ public class EnPassantRuleTests
         board.PlacePiece(origin, piece);
         board.PlacePiece(enemyOrigin, enemyPiece);
         board.PlayMove(new Move(enemyOrigin, enemyDestination, enemyPiece));
-        enemyPiece = enemyPiece with { TimesMoved = 1 };
+        enemyPiece = enemyPiece with { HasMoved = true };
 
         EnPassantRule behaviour = new(direction, _nullChain);
 
@@ -95,7 +95,7 @@ public class EnPassantRuleTests
     {
         ChessBoard board = new();
         var pawn = PieceFactory.White(PieceType.Pawn);
-        var enemy = PieceFactory.Black(enemyType, timesMoved: 0);
+        var enemy = PieceFactory.Black(enemyType, hasMoved: false);
 
         AlgebraicPoint origin = new("e6");
         AlgebraicPoint enemyOrigin = new("d9");
@@ -120,7 +120,7 @@ public class EnPassantRuleTests
         ChessBoard board = new();
 
         var whitePawn = PieceFactory.White(PieceType.Pawn);
-        var blackPawn = PieceFactory.Black(PieceType.Pawn, timesMoved: 0);
+        var blackPawn = PieceFactory.Black(PieceType.Pawn, hasMoved: false);
         var blackEnemy2 = PieceFactory.Black();
         var blackEnemy3 = PieceFactory.Black();
         var friendlyOnChain = PieceFactory.White();
@@ -139,7 +139,7 @@ public class EnPassantRuleTests
         board.PlacePiece(whiteFriendlyOnChainPos, friendlyOnChain);
 
         board.PlayMove(new Move(blackPawnStart, blackPawnEnd, blackPawn));
-        blackPawn = blackPawn with { TimesMoved = 1 };
+        blackPawn = blackPawn with { HasMoved = true };
 
         EnPassantRule behaviour = new(new Offset(-1, 1), new Offset(0, -1));
 
@@ -177,7 +177,7 @@ public class EnPassantRuleTests
         ChessBoard board = new();
 
         var whitePawn = PieceFactory.White(PieceType.Pawn);
-        var blackPawn1 = PieceFactory.Black(PieceType.Pawn, timesMoved: 0);
+        var blackPawn1 = PieceFactory.Black(PieceType.Pawn, hasMoved: false);
 
         // near left edge of board
         AlgebraicPoint origin = new("b7");
@@ -204,7 +204,7 @@ public class EnPassantRuleTests
         ChessBoard board = new();
 
         var whitePawn = PieceFactory.White(PieceType.Pawn);
-        var blackPawn = PieceFactory.Black(PieceType.Pawn, timesMoved: 0);
+        var blackPawn = PieceFactory.Black(PieceType.Pawn, hasMoved: false);
         var blackEnemy1 = PieceFactory.Black();
         var blackBlocker = PieceFactory.Black();
 
@@ -220,7 +220,7 @@ public class EnPassantRuleTests
         board.PlacePiece(blackBlockerPos, blackBlocker);
 
         board.PlayMove(new Move(blackPawnStart, blackPawnEnd, blackPawn));
-        blackPawn = blackPawn with { TimesMoved = 1 };
+        blackPawn = blackPawn with { HasMoved = true };
 
         var behaviour = new EnPassantRule(new Offset(-1, 1), new Offset(0, -1));
 

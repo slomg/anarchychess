@@ -12,10 +12,10 @@ public abstract class PawnLikeTestData : TheoryData<PieceTestCase>
         IReadOnlyCollection<PieceType> promotesTo
     )
     {
-        var whitePawn = PieceFactory.White(pawnType, timesMoved: 0);
-        var blackPawn = PieceFactory.Black(pawnType, timesMoved: 0);
-        var movedWhitePawn = PieceFactory.White(pawnType, timesMoved: 1);
-        var movedBlackPawn = PieceFactory.Black(pawnType, timesMoved: 1);
+        var whitePawn = PieceFactory.White(pawnType, hasMoved: false);
+        var blackPawn = PieceFactory.Black(pawnType, hasMoved: false);
+        var movedWhitePawn = PieceFactory.White(pawnType, hasMoved: true);
+        var movedBlackPawn = PieceFactory.Black(pawnType, hasMoved: true);
 
         #region regular moves
         Add(

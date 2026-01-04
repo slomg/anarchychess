@@ -101,12 +101,12 @@ public class KingDefinitionTestData : TheoryData<PieceTestCase>
                 .WithDescription("King on h1, friend at i2, enemy at g2")
         );
 
-        var rook = PieceFactory.White(PieceType.Rook, timesMoved: 0);
+        var rook = PieceFactory.White(PieceType.Rook, hasMoved: false);
         MoveSideEffect rookKingsideCastle = new(new("j1"), new("g1"), rook);
         MoveSideEffect rookQueensideCastle = new(new("a1"), new("e1"), rook);
         Add(
             PieceTestCase
-                .From("f1", king with { TimesMoved = 0 })
+                .From("f1", king with { HasMoved = false })
                 .WithPieceAt("j1", rook) // Kingside rook
                 .WithPieceAt("a1", rook) // Queenside rook
                 .GoesTo(
