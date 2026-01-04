@@ -12,7 +12,7 @@ namespace AnarchyChess.Api.Analysis.Services;
 public interface IPositionAnalysis
 {
     RootAnalysisPosition GetInitialPosition();
-    ErrorOr<AnalysisPosition> GetNextLegalMoves(AnalysisMove analMove);
+    ErrorOr<AnalysisPosition> GetNextAnalysisPosition(AnalysisMove analMove);
 }
 
 public class PositionAnalysis(
@@ -38,7 +38,7 @@ public class PositionAnalysis(
         return new(Fen: initialFen, MoveOptions: moveOptions);
     }
 
-    public ErrorOr<AnalysisPosition> GetNextLegalMoves(AnalysisMove analMove) // hehe
+    public ErrorOr<AnalysisPosition> GetNextAnalysisPosition(AnalysisMove analMove) // hehe
     {
         var boardResult = _fenCalculator.DecodeFen(analMove.Fen, sideToMove: analMove.MovingPlayer);
         if (boardResult.IsError)
@@ -70,5 +70,12 @@ public class PositionAnalysis(
             SideToMove: sideToMove,
             EndStatus: moveResult.EndStatus
         );
+    }
+
+    public ErrorOr<MoveOptions> GetLegalMoves(string fen)
+    {
+        var boardResult = _fenCalculator.DecodeFen(fen, sideToMove: analMove.MovingPlayer);
+        if (boardResult.IsError)
+            return boardResult.Errors;
     }
 }

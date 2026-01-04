@@ -39,7 +39,7 @@ public class PositionAnalysisTests : BaseIntegrationTest
     }
 
     [Fact]
-    public void GetNextLegalMoves_returns_correct_position_after_move()
+    public void GetNextAnalysisPosition_returns_correct_position_after_move()
     {
         var initialPosition = _positionAnalysis.GetInitialPosition();
         MoveKey moveKey = new(from: new AlgebraicPoint("e2"), to: new AlgebraicPoint("e4"));
@@ -50,7 +50,7 @@ public class PositionAnalysisTests : BaseIntegrationTest
             MoveKey: moveKey
         );
 
-        var result = _positionAnalysis.GetNextLegalMoves(analysisMove);
+        var result = _positionAnalysis.GetNextAnalysisPosition(analysisMove);
 
         result.IsError.Should().BeFalse();
         var newPosition = result.Value;
@@ -75,7 +75,7 @@ public class PositionAnalysisTests : BaseIntegrationTest
     }
 
     [Fact]
-    public void GetNextLegalMoves_doesnt_include_legal_moves_when_the_game_ends()
+    public void GetNextAnalysisPosition_doesnt_include_legal_moves_when_the_game_ends()
     {
         AnalysisMove analysisMove = new(
             "qK", // black queen next to white king
@@ -84,7 +84,7 @@ public class PositionAnalysisTests : BaseIntegrationTest
             new MoveKey(new AlgebraicPoint("a1"), new AlgebraicPoint("b1"))
         );
 
-        var result = _positionAnalysis.GetNextLegalMoves(analysisMove);
+        var result = _positionAnalysis.GetNextAnalysisPosition(analysisMove);
 
         result.IsError.Should().BeFalse();
 

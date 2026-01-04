@@ -25,7 +25,7 @@ public class AnalysisController(IPositionAnalysis positionAnalysis) : Controller
     [ProducesResponseType<ApiProblemDetails>(StatusCodes.Status400BadRequest)]
     public ActionResult<AnalysisPosition> GetNextAnalysisPosition(AnalysisMove move)
     {
-        var result = _positionAnalysis.GetNextLegalMoves(move);
+        var result = _positionAnalysis.GetNextAnalysisPosition(move);
         return result.Match(Ok, errors => errors.ToActionResult());
     }
 }
