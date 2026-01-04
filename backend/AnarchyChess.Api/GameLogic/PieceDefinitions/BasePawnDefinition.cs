@@ -12,8 +12,7 @@ public abstract class BasePawnDefinition : IPieceDefinition
     public abstract IEnumerable<IPieceMovementRule> GetBehaviours(
         IReadOnlyChessBoard board,
         AlgebraicPoint position,
-        Piece movingPiece,
-        GameColor movingPlayer
+        Piece movingPiece
     );
 
     protected IEnumerable<IPieceMovementRule> GetPawnBehaviours(

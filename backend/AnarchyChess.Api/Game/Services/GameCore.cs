@@ -141,9 +141,7 @@ public class GameCore(
         if (!BothSidesHaveKing(board))
             return new();
 
-        var allMoves = _legalMoveCalculator
-            .CalculateAllLegalMoves(board, board.SideToMove)
-            .ToList();
+        var allMoves = _legalMoveCalculator.CalculateAllLegalMoves(board).ToList();
         var maxPriority =
             allMoves.Count != 0 ? allMoves.Max(m => m.ForcedPriority) : ForcedMovePriority.None;
         var legalMoves = allMoves.Where(m => m.ForcedPriority == maxPriority).ToList();

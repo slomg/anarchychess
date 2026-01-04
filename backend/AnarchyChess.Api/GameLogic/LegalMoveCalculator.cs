@@ -4,20 +4,12 @@ using AnarchyChess.Api.GameLogic.PieceDefinitions;
 
 namespace AnarchyChess.Api.GameLogic;
 
-public record PieceRule(
-    AlgebraicPoint Offset,
-    bool CanCapture = false,
-    bool CaptureOnly = false,
-    bool Slide = false
-);
-
 public interface ILegalMoveCalculator
 {
-    IEnumerable<Move> CalculateAllLegalMoves(IReadOnlyChessBoard board, GameColor movingPlayer);
+    IEnumerable<Move> CalculateAllLegalMoves(IReadOnlyChessBoard board);
     IEnumerable<Move> CalculateLegalMovesForPiece(
         IReadOnlyChessBoard board,
-        AlgebraicPoint position,
-        GameColor movingPlayer
+        AlgebraicPoint position
     );
 }
 
@@ -38,39 +30,34 @@ public class LegalMoveCalculator : ILegalMoveCalculator
         _foreverRules = foreverRules;
     }
 
-    public IEnumerable<Move> CalculateAllLegalMoves(
-        IReadOnlyChessBoard board,
-        GameColor movingPlayer
-    )
+    public IEnumerable<Move> CalculateAllLegalMoves(IReadOnlyChessBoard board)
     {
         foreach (var (position, piece) in board.EnumeratePieces())
         {
-            foreach (var move in CalculateLegalMovesForPiece(board, position, movingPlayer))
+            foreach (var move in CalculateLegalMovesForPiece(board, position))
                 yield return move;
         }
 
         foreach (var rule in _foreverRules)
         {
-            foreach (var move in rule.GetBehaviours(board, movingPlayer))
+            foreach (var move in rule.GetBehaviours(board, board.SideToMove))
                 yield return move;
         }
     }
 
     public IEnumerable<Move> CalculateLegalMovesForPiece(
         IReadOnlyChessBoard board,
-        AlgebraicPoint position,
-        GameColor movingPlayer
+        AlgebraicPoint position
     )
     {
         if (!board.TryGetPieceAt(position, out var piece))
             yield break;
 
-        var isColorMismatch = piece.Color is not null && piece.Color != movingPlayer;
+        var isColorMismatch = piece.Color is not null && piece.Color != board.SideToMove;
         if (isColorMismatch)
             yield break;
 
-        var pieceBehaviours = _pieceDefinitions[piece.Type]
-            .GetBehaviours(board, position, piece, movingPlayer);
+        var pieceBehaviours = _pieceDefinitions[piece.Type].GetBehaviours(board, position, piece);
         foreach (var behaviour in pieceBehaviours)
         {
             foreach (var move in behaviour.Evaluate(board, position, piece))

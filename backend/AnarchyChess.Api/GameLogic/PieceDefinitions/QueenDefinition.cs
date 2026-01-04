@@ -23,13 +23,12 @@ public class QueenDefinition : IPieceDefinition
     public IEnumerable<IPieceMovementRule> GetBehaviours(
         IReadOnlyChessBoard board,
         AlgebraicPoint position,
-        Piece movingPiece,
-        GameColor movingPlayer
+        Piece movingPiece
     )
     {
         yield return _regularQueenMoves;
 
-        var directionY = movingPlayer.Match(whenWhite: 1, whenBlack: -1);
+        var directionY = board.SideToMove.Match(whenWhite: 1, whenBlack: -1);
         yield return new RadioactiveBetaDecayRule(
             new()
             {

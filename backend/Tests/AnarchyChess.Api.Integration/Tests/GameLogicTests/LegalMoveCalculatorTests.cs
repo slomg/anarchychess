@@ -30,18 +30,16 @@ public class LegalMoveCalculatorTests : BaseIntegrationTest
     [Fact]
     public void CalculateAllLegalMoves_includes_moves_from_forever_rules()
     {
-        ChessBoard board = new();
-
         Move lastMove = new(
             from: new AlgebraicPoint("g2"),
             to: new AlgebraicPoint("h3"),
             piece: PieceFactory.Black(),
             captures: [new MoveCapture(PieceFactory.White(), new AlgebraicPoint("h3"))]
         );
-        board.PlacePiece(lastMove.From, lastMove.Piece);
-        board.PlayMove(lastMove);
+        ChessBoard board = new(moves: [lastMove], sideToMove: GameColor.White);
+        board.PlacePiece(lastMove.To, lastMove.Piece);
 
-        var moves = _calculator.CalculateAllLegalMoves(board, GameColor.White).ToList();
+        var moves = _calculator.CalculateAllLegalMoves(board).ToList();
 
         moves
             .Should()
@@ -51,11 +49,11 @@ public class LegalMoveCalculatorTests : BaseIntegrationTest
     [Fact]
     public void CalculateAllLegalMoves_only_returns_the_moves_for_the_right_color()
     {
-        ChessBoard board = new();
+        ChessBoard board = new(sideToMove: GameColor.White);
         board.PlacePiece(new AlgebraicPoint("a1"), PieceFactory.White(PieceType.Pawn));
         board.PlacePiece(new AlgebraicPoint("a3"), PieceFactory.Black(PieceType.King));
 
-        var moves = _calculator.CalculateAllLegalMoves(board, GameColor.White);
+        var moves = _calculator.CalculateAllLegalMoves(board);
 
         moves
             .Should()
@@ -68,10 +66,12 @@ public class LegalMoveCalculatorTests : BaseIntegrationTest
             });
     }
 
-    [Fact]
-    public void CalculateLegalMoves_allows_moves_for_piece_with_neutral_color()
+    [Theory]
+    [InlineData(GameColor.White)]
+    [InlineData(GameColor.Black)]
+    public void CalculateLegalMoves_allows_moves_for_piece_with_neutral_color(GameColor sideToMove)
     {
-        ChessBoard board = new();
+        ChessBoard board = new(sideToMove: sideToMove);
         var neutralPiece = PieceFactory.Neutral(PieceType.TraitorRook);
         board.PlacePiece(new AlgebraicPoint("d4"), neutralPiece);
 
@@ -79,10 +79,8 @@ public class LegalMoveCalculatorTests : BaseIntegrationTest
         board.PlacePiece(new AlgebraicPoint("c3"), PieceFactory.White(PieceType.Pawn));
         board.PlacePiece(new AlgebraicPoint("e5"), PieceFactory.Black(PieceType.Pawn));
 
-        var movesForWhite = _calculator.CalculateAllLegalMoves(board, GameColor.White).ToList();
-        var movesForBlack = _calculator.CalculateAllLegalMoves(board, GameColor.Black).ToList();
+        var moves = _calculator.CalculateAllLegalMoves(board).ToList();
 
-        movesForWhite.Should().Contain(move => move.Piece.Type == PieceType.TraitorRook);
-        movesForBlack.Should().Contain(move => move.Piece.Type == PieceType.TraitorRook);
+        moves.Should().Contain(move => move.Piece.Type == PieceType.TraitorRook);
     }
 }

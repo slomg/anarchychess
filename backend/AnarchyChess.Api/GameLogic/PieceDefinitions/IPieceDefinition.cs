@@ -10,7 +10,6 @@ public interface IPieceDefinition
     IEnumerable<IPieceMovementRule> GetBehaviours(
         IReadOnlyChessBoard board,
         AlgebraicPoint position,
-        Piece movingPiece,
-        GameColor movingPlayer
+        Piece movingPiece
     );
 }

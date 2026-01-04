@@ -32,7 +32,6 @@ public class HorseyDefinition : IPieceDefinition
     public IEnumerable<IPieceMovementRule> GetBehaviours(
         IReadOnlyChessBoard board,
         AlgebraicPoint position,
-        Piece movingPiece,
-        GameColor movingPlayer
+        Piece movingPiece
     ) => _behaviours;
 }

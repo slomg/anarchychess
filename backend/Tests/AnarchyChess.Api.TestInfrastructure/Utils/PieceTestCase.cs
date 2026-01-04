@@ -67,6 +67,7 @@ public class PieceTestCase
             BuildMove(
                 Origin.AsAlgebraic(),
                 to,
+                Piece,
                 trigger,
                 captures,
                 intermediates,
@@ -132,9 +133,14 @@ public class PieceTestCase
         PieceType? promotesTo = null
     )
     {
+        var toPoint = new AlgebraicPoint(to);
+        var piece =
+            _board.PeekPieceAt(toPoint)
+            ?? throw new InvalidOperationException($"No Piece Found at {toPoint}");
         var move = BuildMove(
             from,
             to,
+            piece,
             trigger,
             captures,
             intermediates,
@@ -145,7 +151,6 @@ public class PieceTestCase
             promotesTo
         );
         PriorMoves.Add(move);
-        _board.PlayMove(move);
         return this;
     }
 
@@ -178,6 +183,7 @@ public class PieceTestCase
     private Move BuildMove(
         string from,
         string to,
+        Piece piece,
         IEnumerable<string>? trigger = null,
         IEnumerable<string>? captures = null,
         IEnumerable<IntermediateSquare>? intermediates = null,
@@ -197,13 +203,11 @@ public class PieceTestCase
                 pos
             );
         });
-        AlgebraicPoint fromPoint = new(from);
 
         return new Move(
-            fromPoint,
+            new AlgebraicPoint(from),
             new AlgebraicPoint(to),
-            _board.PeekPieceAt(fromPoint)
-                ?? throw new InvalidOperationException($"No Piece Found at {fromPoint}"),
+            piece,
             triggerSquares: trigger?.Select(x => new AlgebraicPoint(x)),
             intermediateSquares: intermediates,
             captures: moveCaptures,

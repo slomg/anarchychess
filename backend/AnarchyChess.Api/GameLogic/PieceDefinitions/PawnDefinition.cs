@@ -10,8 +10,7 @@ public class PawnDefinition : BasePawnDefinition
     public override IEnumerable<IPieceMovementRule> GetBehaviours(
         IReadOnlyChessBoard board,
         AlgebraicPoint position,
-        Piece movingPiece,
-        GameColor movingPlayer
+        Piece movingPiece
     ) =>
         GetPawnBehaviours(
             board,

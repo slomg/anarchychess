@@ -18,17 +18,14 @@ public abstract class PieceDefinitionTestBase : BaseIntegrationTest
 
     protected void TestMoves(PieceTestCase testCase)
     {
-        var board = new ChessBoard();
+        var board = new ChessBoard(moves: testCase.PriorMoves, sideToMove: testCase.MovingPlayer);
         board.PlacePiece(testCase.Origin, testCase.Piece);
 
         foreach (var (point, piece) in testCase.BlockedBy)
             board.PlacePiece(point, piece);
 
-        foreach (var priorMove in testCase.PriorMoves)
-            board.PlayMove(priorMove);
-
         var result = _legalMoveCalculator
-            .CalculateLegalMovesForPiece(board, testCase.Origin, testCase.MovingPlayer)
+            .CalculateLegalMovesForPiece(board, testCase.Origin)
             .ToList();
 
         result.Should().BeEquivalentTo(testCase.ExpectedMoves);

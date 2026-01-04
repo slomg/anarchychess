@@ -52,9 +52,7 @@ public class GameCoreTests
         byte[] movesEnc = [1, 2, 3];
         var fen = new FenNotationFaker().Generate();
 
-        _legalMoveCalculatorMock
-            .CalculateAllLegalMoves(Arg.Any<ChessBoard>(), GameColor.White)
-            .Returns(allMoves);
+        _legalMoveCalculatorMock.CalculateAllLegalMoves(Arg.Any<ChessBoard>()).Returns(allMoves);
         _encoderMock
             .EncodeMoves(Arg.Is<IEnumerable<MovePath>>(m => m.SequenceEqual(movePaths)))
             .Returns(movesEnc);
@@ -139,7 +137,7 @@ public class GameCoreTests
 
         List<Move> expectedMoves = [move];
         _legalMoveCalculatorMock
-            .CalculateAllLegalMoves(Arg.Any<ChessBoard>(), GameColor.White)
+            .CalculateAllLegalMoves(Arg.Any<ChessBoard>())
             .Returns(expectedMoves);
         _fenEncoder.EncodeFen(Arg.Any<ChessBoard>()).Returns(fen);
         _sanCalculatorMock
@@ -181,11 +179,15 @@ public class GameCoreTests
         byte[] encodedBlackMoves = [1, 2, 3];
 
         _legalMoveCalculatorMock
-            .CalculateAllLegalMoves(Arg.Any<ChessBoard>(), GameColor.White)
+            .CalculateAllLegalMoves(
+                Arg.Is<ChessBoard>(board => board.SideToMove == GameColor.White)
+            )
             .Returns(whiteMoves);
 
         _legalMoveCalculatorMock
-            .CalculateAllLegalMoves(Arg.Any<ChessBoard>(), GameColor.Black)
+            .CalculateAllLegalMoves(
+                Arg.Is<ChessBoard>(board => board.SideToMove == GameColor.Black)
+            )
             .Returns(blackMoves);
 
         _encoderMock

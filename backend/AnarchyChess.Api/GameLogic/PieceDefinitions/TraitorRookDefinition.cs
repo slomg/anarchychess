@@ -31,8 +31,7 @@ public class TraitorRookDefinition : IPieceDefinition
     public IEnumerable<IPieceMovementRule> GetBehaviours(
         IReadOnlyChessBoard board,
         AlgebraicPoint position,
-        Piece movingPiece,
-        GameColor movingPlayer
+        Piece movingPiece
     )
     {
         int whitePieces = 0;
@@ -55,9 +54,9 @@ public class TraitorRookDefinition : IPieceDefinition
             }
         }
 
-        if (whitePieces > blackPieces && movingPlayer is GameColor.White)
+        if (whitePieces > blackPieces && board.SideToMove is GameColor.White)
             yield return _whiteMajority;
-        else if (blackPieces > whitePieces && movingPlayer is GameColor.Black)
+        else if (blackPieces > whitePieces && board.SideToMove is GameColor.Black)
             yield return _blackMajority;
         else if (blackPieces > 0 && whitePieces > 0 && blackPieces == whitePieces)
             yield return _neutral;

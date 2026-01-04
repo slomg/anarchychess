@@ -161,7 +161,7 @@ public abstract class PawnLikeTestData : TheoryData<PieceTestCase>
         Add(
             PieceTestCase
                 .From("e7", movedWhitePawn)
-                .WithPieceAt("d9", blackPawn)
+                .WithPieceAt("d7", blackPawn)
                 .WithPriorMove(from: "d9", to: "d7")
                 .GoesTo(
                     "d8",
@@ -176,7 +176,7 @@ public abstract class PawnLikeTestData : TheoryData<PieceTestCase>
         Add(
             PieceTestCase
                 .From("e4", movedBlackPawn)
-                .WithPieceAt("f2", whitePawn)
+                .WithPieceAt("f4", whitePawn)
                 .WithPriorMove(from: "f2", to: "f4")
                 .GoesTo(
                     "f3",
@@ -191,7 +191,7 @@ public abstract class PawnLikeTestData : TheoryData<PieceTestCase>
         Add(
             PieceTestCase
                 .From("e6", movedWhitePawn)
-                .WithPieceAt("d9", blackPawn)
+                .WithPieceAt("d6", blackPawn)
                 .WithEnemyPieceAt("c7")
                 .WithEnemyPieceAt("b8")
                 .WithPriorMove(from: "d9", to: "d6")
@@ -220,7 +220,7 @@ public abstract class PawnLikeTestData : TheoryData<PieceTestCase>
         Add(
             PieceTestCase
                 .From("e5", movedBlackPawn)
-                .WithPieceAt("f2", whitePawn)
+                .WithPieceAt("f5", whitePawn)
                 .WithEnemyPieceAt("g4")
                 .WithEnemyPieceAt("h3")
                 .WithPriorMove(from: "f2", to: "f5")

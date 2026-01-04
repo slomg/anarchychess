@@ -28,8 +28,7 @@ public class CheckerDefinition : IPieceDefinition
     public IEnumerable<IPieceMovementRule> GetBehaviours(
         IReadOnlyChessBoard board,
         AlgebraicPoint position,
-        Piece movingPiece,
-        GameColor movingPlayer
+        Piece movingPiece
     )
     {
         if (movingPiece.Color is null)
