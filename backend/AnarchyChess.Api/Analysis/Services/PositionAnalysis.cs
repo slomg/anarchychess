@@ -46,7 +46,7 @@ public class PositionAnalysis(
         var board = boardResult.Value;
 
         var move = _legalMoveCalculator
-            .CalculateLegalMoves(board, analMove.PiecePosition, board.SideToMove)
+            .CalculateLegalMovesForPiece(board, analMove.PiecePosition, board.SideToMove)
             .FirstOrDefault(x => new MoveKey(x) == analMove.MoveKey);
         if (move is null)
             return GameErrors.MoveInvalid;

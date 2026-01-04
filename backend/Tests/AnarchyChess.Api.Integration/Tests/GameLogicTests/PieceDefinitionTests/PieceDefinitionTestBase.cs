@@ -28,7 +28,7 @@ public abstract class PieceDefinitionTestBase : BaseIntegrationTest
             board.PlayMove(priorMove);
 
         var result = _legalMoveCalculator
-            .CalculateLegalMoves(board, testCase.Origin, testCase.MovingPlayer)
+            .CalculateLegalMovesForPiece(board, testCase.Origin, testCase.MovingPlayer)
             .ToList();
 
         result.Should().BeEquivalentTo(testCase.ExpectedMoves);
