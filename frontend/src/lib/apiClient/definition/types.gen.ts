@@ -536,7 +536,6 @@ export type GameEndStatus = {
 
 export type AnalysisMove = {
     fen: string;
-    movingPlayer: GameColor;
     piecePosition: AlgebraicPoint;
     moveKey: string;
 };
@@ -578,7 +577,10 @@ export enum ErrorCode {
     GAME_DRAW_NOT_REQUESTED = "Game.DrawNotRequested",
     GAME_NOT_OVER = "Game.NotOver",
     GAME_INVALID_PIECE_LETTER = "Game.InvalidPieceLetter",
-    GAME_MALFORMED_FEN = "Game.MalformedFen",
+    GAME_MALFORMED_FEN_PARTS = "Game.MalformedFen.Parts",
+    GAME_MALFORMED_FEN_PIECES = "Game.MalformedFen.Pieces",
+    GAME_MALFORMED_FEN_MOVED_PIECES = "Game.MalformedFen.MovedPieces",
+    GAME_MALFORMED_FEN_LAST_MOVE = "Game.MalformedFen.LastMove",
     GAME_CHAT_INVALID_USER = "GameChat.InvalidUser",
     GAME_CHAT_INVALID_MESSAGE = "GameChat.InvalidMessage",
     GAME_CHAT_ON_COOLDOWN = "GameChat.OnCooldown",
