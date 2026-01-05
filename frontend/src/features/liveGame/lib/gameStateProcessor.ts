@@ -80,7 +80,6 @@ export function createStoreProps(
 
         boardDimensions: { width: boardWidth, height: boardHeight },
         viewingFrom: viewerColor ?? GameColor.WHITE,
-        muteAudio: false,
         allowHistoryChanges:
             gameState.resultData !== null && gameState.resultData !== undefined,
     };

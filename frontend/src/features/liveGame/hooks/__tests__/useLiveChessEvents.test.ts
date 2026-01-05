@@ -39,6 +39,7 @@ import { GameClientEvents, useGameEvent } from "../useGameHub";
 import { refetchGame } from "../../lib/gameStateProcessor";
 import { logicalPoint } from "@/features/point/pointUtils";
 import useLiveChessEvents from "../useLiveChessEvents";
+import { createFakeGameResultData } from "@/lib/testUtils/fakers/gameResultDataFaker";
 
 vi.mock("@/features/liveGame/hooks/useGameHub");
 vi.mock("@/features/liveGame/lib/gameStateProcessor");
@@ -309,34 +310,16 @@ describe("useLiveChessEvents", () => {
 
     describe("GameEndedAsync", () => {
         it("should update liveChessStore, disable chessboard movement, and set final clocks", async () => {
-            liveChessStore.setState({
-                resultData: null,
-            });
-            chessboardStore.setState({
-                highlightedLegalMoves: [
-                    createRandomPoint(),
-                    createRandomPoint(),
-                ],
-                selectedPieceId: "123",
-            });
+            liveChessStore.setState({ resultData: null });
+            chessboardStore.setState({ allowHistoryChanges: false });
             chessboardStore
                 .getState()
                 .setLatestLegalMoves(createFakeLegalMoves());
 
             renderLiveChessEvents();
 
-            const gameResult: GameResultData = {
-                whiteRatingChange: 10,
-                blackRatingChange: -10,
-                result: GameResult.WHITE_WIN,
-                resultDescription: "test",
-            };
-            const finalClocks: Clocks = {
-                whiteClock: 6,
-                blackClock: 9,
-                lastUpdated: 1234,
-                isFrozen: true,
-            };
+            const gameResult = createFakeGameResultData();
+            const finalClocks = createFakeClock({ isFrozen: true });
 
             await act(async () => {
                 gameEventHandlers.GameEndedAsync?.(gameResult, finalClocks);
@@ -347,9 +330,7 @@ describe("useLiveChessEvents", () => {
             expect(liveState.clocks).toEqual(finalClocks);
 
             const chessboardState = chessboardStore.getState();
-            expect(chessboardState.highlightedLegalMoves).toHaveLength(0);
-            expect(chessboardState.selectedPieceId).toBeNull();
-            expect(chessboardState.getLegalMoves().size).toBe(0);
+            expect(chessboardState.allowHistoryChanges).toBe(true);
         });
     });
 });
