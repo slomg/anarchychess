@@ -4,22 +4,12 @@ import { StoreApi } from "zustand";
 import { act } from "react";
 
 import {
-    Clocks,
-    DrawState,
-    GameColor,
-    GameResult,
-    GameResultData,
-    MovePath,
-    MoveSnapshot,
-} from "@/lib/apiClient";
-import {
     ChessboardStore,
     createChessboardStore,
 } from "@/features/chessboard/stores/chessboardStore";
 import {
     createFakeLegalMoves,
     createFakePiece,
-    createRandomPoint,
 } from "@/lib/testUtils/fakers/chessboardFakers";
 import createLiveChessStore, {
     LiveChessStore,
@@ -28,6 +18,13 @@ import {
     decodeMovePath,
     decodeMovePathIntoLegalMoves,
 } from "../../lib/moveDecoder";
+import {
+    Clocks,
+    DrawState,
+    GameColor,
+    MovePath,
+    MoveSnapshot,
+} from "@/lib/apiClient";
 
 import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
 import { createNFakePositionHistory } from "@/lib/testUtils/fakers/positionHistoryFaker";
