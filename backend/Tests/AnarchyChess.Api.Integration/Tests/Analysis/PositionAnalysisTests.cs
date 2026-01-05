@@ -31,7 +31,7 @@ public class PositionAnalysisTests : BaseIntegrationTest
 
         GameCoreState state = new();
         var fen = _core.StartGame(state);
-        var legalMoves = _core.GetLegalMovesOf(GameColor.White, state);
+        var legalMoves = _core.GetLegalMoves(state);
         MoveOptions moveOptions = new(legalMoves.MovePaths, legalMoves.HasForcedMoves);
 
         RootAnalysisPosition expectedPosition = new(Fen: fen.FullFen, MoveOptions: moveOptions);
@@ -58,7 +58,7 @@ public class PositionAnalysisTests : BaseIntegrationTest
         _core.StartGame(state);
         _core.MakeMove(moveKey, state);
 
-        var legalMoves = _core.GetLegalMovesOf(GameColor.Black, state);
+        var legalMoves = _core.GetLegalMoves(state);
         MoveOptions moveOptions = new(legalMoves.MovePaths, legalMoves.HasForcedMoves);
 
         var fen = _fenEncoder.EncodeFen(state.Board);
@@ -77,7 +77,7 @@ public class PositionAnalysisTests : BaseIntegrationTest
     public void GetNextAnalysisPosition_doesnt_include_legal_moves_when_the_game_ends()
     {
         AnalysisMove analysisMove = new(
-            "qK {\"sideToMove\":1}", // black queen next to white king
+            "qK3k {\"sideToMove\":1}", // black queen next to white king
             new AlgebraicPoint("a1"),
             new MoveKey(new AlgebraicPoint("a1"), new AlgebraicPoint("b1"))
         );

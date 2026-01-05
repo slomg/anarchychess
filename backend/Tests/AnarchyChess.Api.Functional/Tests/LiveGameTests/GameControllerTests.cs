@@ -72,7 +72,7 @@ public class GameControllerTests : BaseFunctionalTest
     }
 
     [Fact]
-    public async Task GetGame_returns_gane_state_for_guest_not_in_game()
+    public async Task GetGame_returns_game_state_for_guest_not_in_game()
     {
         var gameToken = await _gameStarter.StartGameWithRandomColorsAsync(
             UserId.Guest(),
@@ -87,7 +87,6 @@ public class GameControllerTests : BaseFunctionalTest
         response.IsSuccessful.Should().BeTrue();
 
         response.Content.Should().NotBeNull();
-        response.Content.MoveOptions.Should().BeEquivalentTo(new MoveOptions());
     }
 
     [Fact]
@@ -107,7 +106,6 @@ public class GameControllerTests : BaseFunctionalTest
         response.IsSuccessful.Should().BeTrue();
 
         response.Content.Should().NotBeNull();
-        response.Content.MoveOptions.Should().BeEquivalentTo(new MoveOptions());
     }
 
     [Fact]

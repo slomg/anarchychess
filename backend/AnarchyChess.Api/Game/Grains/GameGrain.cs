@@ -33,7 +33,7 @@ public interface IGameGrain : IGrainWithStringKey
     );
 
     [Alias("GetStateAsync")]
-    Task<ErrorOr<GameState>> GetStateAsync(UserId? forUserId = null);
+    Task<ErrorOr<GameState>> GetStateAsync();
 
     [Alias("GetPlayersAsync")]
     Task<ErrorOr<PlayerRoster>> GetPlayersAsync();
@@ -223,13 +223,12 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         return Result.Success;
     }
 
-    public Task<ErrorOr<GameState>> GetStateAsync(UserId? forUserId = null)
+    public Task<ErrorOr<GameState>> GetStateAsync()
     {
         if (!TryGetCurrentGame(out var game))
             return Task.FromResult<ErrorOr<GameState>>(GameErrors.GameNotFound);
 
-        GamePlayer? player = game.Players.GetPlayerById(forUserId);
-        var gameState = GetGameState(game, player);
+        var gameState = GetGameState(game);
         return Task.FromResult<ErrorOr<GameState>>(gameState);
     }
 
@@ -363,7 +362,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
 
         var timeLeft = _clock.CommitTurn(currentPlayer.Color, game.ClockState);
         var nextPlayer = game.Players.GetPlayerByColor(_core.SideToMove(game.Core));
-        var legalMoves = _core.GetLegalMovesOf(nextPlayer.Color, game.Core);
+        var legalMoves = _core.GetLegalMoves(game.Core);
 
         MoveSnapshot moveSnapshot = new(
             Path: moveResult.MovePath,
@@ -480,13 +479,13 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         _clockTimer = null;
     }
 
-    private GameState GetGameState(GameData game, GamePlayer? player = null)
+    private GameState GetGameState(GameData game)
     {
         // there are only legal moves if the game is not over
         MoveOptions moveOptions;
         if (game.Result is null)
         {
-            var legalMoves = _core.GetLegalMovesOf(player?.Color, game.Core);
+            var legalMoves = _core.GetLegalMoves(game.Core);
             moveOptions = new(
                 LegalMoves: legalMoves.MovePaths,
                 HasForcedMoves: legalMoves.HasForcedMoves

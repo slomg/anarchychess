@@ -1,6 +1,5 @@
 ﻿using AnarchyChess.Api.ArchivedGames.Models;
 using AnarchyChess.Api.ArchivedGames.Services;
-using AnarchyChess.Api.Auth.Services;
 using AnarchyChess.Api.ErrorHandling.Extensions;
 using AnarchyChess.Api.ErrorHandling.Infrastructure;
 using AnarchyChess.Api.Game.Grains;
@@ -19,13 +18,11 @@ namespace AnarchyChess.Api.Game.Controllers;
 [Route("api/[controller]")]
 public class GameController(
     IGameArchiveService gameArchiveService,
-    IAuthService authService,
     IValidator<PaginationQuery> paginationValidator,
     IGrainFactory grains
 ) : Controller
 {
     private readonly IGameArchiveService _gameArchiveService = gameArchiveService;
-    private readonly IAuthService _authService = authService;
     private readonly IValidator<PaginationQuery> _paginationValidator = paginationValidator;
     private readonly IGrainFactory _grains = grains;
 
@@ -35,12 +32,8 @@ public class GameController(
     [Authorize(AuthPolicies.ActiveSession)]
     public async Task<ActionResult<GameState>> GetGame(string gameToken)
     {
-        var userIdResult = _authService.GetUserId(User);
-        if (userIdResult.IsError)
-            return userIdResult.Errors.ToActionResult();
-
         var gameGrain = _grains.GetGrain<IGameGrain>(gameToken);
-        var result = await gameGrain.GetStateAsync(userIdResult.Value);
+        var result = await gameGrain.GetStateAsync();
         return result.Match(Ok, errors => errors.ToActionResult());
     }
 

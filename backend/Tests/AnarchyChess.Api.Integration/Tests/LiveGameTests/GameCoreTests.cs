@@ -1,10 +1,11 @@
-﻿using AnarchyChess.Api.Game.Models;
+﻿using AnarchyChess.Api.Game.Errors;
+using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.GameLogic;
-using AnarchyChess.Api.GameLogic.Extensions;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.TestInfrastructure;
 using AnarchyChess.Api.TestInfrastructure.Factories;
+using AnarchyChess.Api.TestInfrastructure.TestData;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -22,6 +23,19 @@ public class GameCoreTests : BaseIntegrationTest
     }
 
     [Fact]
+    public void StartGame_sets_initial_state_correctly()
+    {
+        GameCoreState state = new();
+
+        var initialFen = _gameCore.StartGame(state);
+
+        initialFen.FullFen.Should().Be(GameTestData.InitialFen);
+        state.AutoDrawState.FenOccurrences.Should().ContainSingle();
+        state.AutoDrawState.FenOccurrences[initialFen.FullFen].Should().Be(1);
+        state.LegalMoves.Should().NotBeEquivalentTo(new LegalMoveSet());
+    }
+
+    [Fact]
     public void MakeMove_moves_the_piece_and_updates_legal_moves()
     {
         var state = StartGame();
@@ -31,7 +45,7 @@ public class GameCoreTests : BaseIntegrationTest
         result.IsError.Should().BeFalse();
         _gameCore.SideToMove(state).Should().Be(GameColor.Black);
 
-        var legalMoves = _gameCore.GetLegalMovesOf(GameColor.Black, state);
+        var legalMoves = _gameCore.GetLegalMoves(state);
         legalMoves.MoveMap.Should().NotBeEmpty();
     }
 
@@ -45,42 +59,27 @@ public class GameCoreTests : BaseIntegrationTest
     }
 
     [Fact]
-    public void MakeMove_detects_draw_if_occurs()
+    public void MakeMove_detects_draw()
     {
-        var state = StartGame();
+        ChessBoard board = new();
+        board.PlacePiece(new("a1"), PieceFactory.White(PieceType.King));
+        board.PlacePiece(new("c1"), PieceFactory.Black(PieceType.King));
+        var state = StartGame(new() { Board = board });
+
         List<MoveKey> repetitionMoves =
         [
-            new MoveKey(new("b1"), new("c3")),
-            new MoveKey(new("b10"), new("c8")),
-            new MoveKey(new("c3"), new("b1")),
-            new MoveKey(new("c8"), new("b10")),
+            new MoveKey(new("a1"), new("a2")),
+            new MoveKey(new("c1"), new("c2")),
+            new MoveKey(new("a2"), new("a1")),
+            new MoveKey(new("c2"), new("c1")),
         ];
 
-        for (int i = 0; i < 3; i++)
-        {
-            MakeMoves(state, repetitionMoves);
-        }
+        var nonDrawResult = MakeMoves(state, repetitionMoves);
+        nonDrawResult.EndStatus.Should().BeNull();
 
-        var result = MakeMoves(state, repetitionMoves);
-        result.EndStatus.Should().Be(_resultDescriber.ThreeFold());
-    }
-
-    [Fact]
-    public void MakeMove_detects_forced_moves()
-    {
-        var state = StartGame();
-        MakeMoves(
-            state,
-            new MoveKey(new("f2"), new("f5")),
-            new MoveKey(new("f9"), new("f6")),
-            new MoveKey(new("g1"), new("c5")),
-            new MoveKey(new("a9"), new("a8"))
-        );
-
-        var legalMoves = _gameCore.GetLegalMovesOf(GameColor.White, state);
-        legalMoves.HasForcedMoves.Should().BeTrue();
-        legalMoves.MovePaths.Should().ContainSingle();
-        legalMoves.MoveMap.Should().ContainSingle();
+        // now it should be a draw, the initial position happened 3 times
+        var drawResult = MakeMoves(state, repetitionMoves);
+        drawResult.EndStatus.Should().Be(_resultDescriber.ThreeFold());
     }
 
     [Fact]
@@ -91,32 +90,84 @@ public class GameCoreTests : BaseIntegrationTest
         board.PlacePiece(new("a2"), PieceFactory.Black(PieceType.King));
         board.PlacePiece(new("a3"), PieceFactory.Black(PieceType.Rook));
         board.PlacePiece(new("a4"), PieceFactory.White(PieceType.King));
-        GameCoreState state = new() { Board = board };
-        StartGame(state);
+        var state = StartGame(new() { Board = board });
 
         var result = MakeMoves(state, new MoveKey(new("a1"), new("a2")));
 
-        result.EndStatus.Should().Be(_resultDescriber.KingCaptured(GameColor.White));
+        result.EndStatus.Should().Be(_resultDescriber.KingCaptured(by: GameColor.White));
         result.San.Should().Be("Qxa2#");
-        var legalMoves = _gameCore.GetLegalMovesOf(GameColor.Black, state);
+        var legalMoves = _gameCore.GetLegalMoves(state);
         legalMoves.Should().BeEquivalentTo(new LegalMoveSet());
     }
 
-    [Theory]
-    [InlineData(GameColor.White)]
-    [InlineData(GameColor.Black)]
-    public void StartGame_sets_empty_legal_moves_if_one_side_has_no_king(GameColor sideWithoutKing)
+    [Fact]
+    public void MakeMove_detects_self_capture()
     {
-        var sideWithKing = sideWithoutKing.Invert();
         ChessBoard board = new();
-        board.PlacePiece(new("a1"), new Piece(PieceType.King, sideWithKing));
-        board.PlacePiece(new("a2"), new Piece(PieceType.Rook, sideWithKing));
-        board.PlacePiece(new("a3"), new Piece(PieceType.Rook, sideWithoutKing));
-        GameCoreState state = new() { Board = board };
+        board.PlacePiece(new("a1"), PieceFactory.White(PieceType.King));
+        board.PlacePiece(new("a2"), PieceFactory.White(PieceType.Horsey));
+        board.PlacePiece(new("a3"), PieceFactory.White(PieceType.Rook));
+        board.PlacePiece(new("c1"), PieceFactory.Black(PieceType.King));
+        var state = StartGame(new() { Board = board });
 
-        StartGame(state);
+        // white knooklear fusion explosion captures the white king
+        var result = MakeMoves(
+            state,
+            new MoveKey(new("a3"), new("a2"), promotesTo: PieceType.Knook)
+        );
 
-        state.LegalMoves.Should().BeEquivalentTo(new LegalMoveSet());
+        result.EndStatus.Should().Be(_resultDescriber.KingSelfCapture(by: GameColor.White));
+        result.San.Should().Be("Rxa2xa1=N#");
+        var legalMoves = _gameCore.GetLegalMoves(state);
+        legalMoves.Should().BeEquivalentTo(new LegalMoveSet());
+    }
+
+    [Fact]
+    public void MakeMove_detects_mutual_king_capture()
+    {
+        ChessBoard board = new();
+        board.PlacePiece(new("a1"), PieceFactory.White(PieceType.King));
+        board.PlacePiece(new("b1"), PieceFactory.White(PieceType.Horsey));
+        board.PlacePiece(new("b2"), PieceFactory.White(PieceType.Rook));
+        board.PlacePiece(new("c1"), PieceFactory.Black(PieceType.King));
+        var state = StartGame(new() { Board = board });
+
+        var result = MakeMoves(
+            state,
+            new MoveKey(new("b2"), new("b1"), promotesTo: PieceType.Knook)
+        );
+
+        result.EndStatus.Should().Be(_resultDescriber.MutualKingCapture());
+        result.San.Should().Be("Rxb1xc1xa1=N#");
+        var legalMoves = _gameCore.GetLegalMoves(state);
+        legalMoves.Should().BeEquivalentTo(new LegalMoveSet());
+    }
+
+    [Fact]
+    public void MakeMove_returns_error_for_illegal_move()
+    {
+        var state = StartGame();
+        var result = _gameCore.MakeMove(new MoveKey(new("a1"), new("a9")), state);
+
+        result.IsError.Should().BeTrue();
+        result.FirstError.Should().Be(GameErrors.MoveInvalid);
+    }
+
+    [Fact]
+    public void MakeMove_returns_normal_san_for_non_king_capture()
+    {
+        ChessBoard board = new();
+        board.PlacePiece(new("a1"), PieceFactory.White(PieceType.King));
+        board.PlacePiece(new("c1"), PieceFactory.Black(PieceType.King));
+        board.PlacePiece(new("d1"), PieceFactory.White(PieceType.Rook));
+        var state = StartGame(new() { Board = board });
+
+        var result = MakeMoves(state, new MoveKey(new("d1"), new("d4")));
+
+        result.EndStatus.Should().BeNull();
+        result.San.Should().Be("Rd4");
+        var legalMoves = _gameCore.GetLegalMoves(state);
+        legalMoves.Should().NotBeEquivalentTo(new LegalMoveSet());
     }
 
     private MoveResult MakeMoves(GameCoreState state, params IEnumerable<MoveKey> moves)

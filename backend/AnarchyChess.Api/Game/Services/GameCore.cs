@@ -11,7 +11,7 @@ namespace AnarchyChess.Api.Game.Services;
 
 public interface IGameCore
 {
-    LegalMoveSet GetLegalMovesOf(GameColor? of, GameCoreState state);
+    LegalMoveSet GetLegalMoves(GameCoreState state);
     ErrorOr<MoveResult> MakeMove(MoveKey key, GameCoreState state);
     MoveResult MakeMove(Move move, GameCoreState state);
     GameColor SideToMove(GameCoreState state);
@@ -48,8 +48,7 @@ public class GameCoreState
 public class GameCore(
     ILogger<GameCore> logger,
     IFenEncoder fenEncoder,
-    ILegalMoveCalculator legalMoveCalculator,
-    IMoveEncoder legalMoveEncoder,
+    IPlayableMoveProvider playableMoveProvider,
     ISanCalculator sanCalculator,
     IDrawEvaulator drawEvaulator,
     IGameResultDescriber resultDescriber
@@ -57,8 +56,7 @@ public class GameCore(
 {
     private readonly ILogger<GameCore> _logger = logger;
     private readonly IFenEncoder _fenEncoder = fenEncoder;
-    private readonly ILegalMoveCalculator _legalMoveCalculator = legalMoveCalculator;
-    private readonly IMoveEncoder _moveEncoder = legalMoveEncoder;
+    private readonly IPlayableMoveProvider _playableMoveProvider = playableMoveProvider;
     private readonly ISanCalculator _sanCalculator = sanCalculator;
     private readonly IDrawEvaulator _drawEvaulator = drawEvaulator;
     private readonly IGameResultDescriber _resultDescriber = resultDescriber;
@@ -68,7 +66,7 @@ public class GameCore(
     public FenNotation StartGame(GameCoreState state)
     {
         var fen = _fenEncoder.EncodeFen(state.Board);
-        state.LegalMoves = CalculateAllLegalMoves(state.Board);
+        state.LegalMoves = _playableMoveProvider.CalculateAllPlayableMoves(state.Board);
         _drawEvaulator.RegisterInitialPosition(fen, state.AutoDrawState);
 
         return fen;
@@ -124,46 +122,11 @@ public class GameCore(
             EndStatus: endStatus
         );
 
-        // if the game is over, there are no legal moves
-        state.LegalMoves = CalculateAllLegalMoves(state.Board);
+        state.LegalMoves = _playableMoveProvider.CalculateAllPlayableMoves(state.Board);
         return moveResult;
     }
 
-    public LegalMoveSet GetLegalMovesOf(GameColor? of, GameCoreState state)
-    {
-        if (of != state.Board.SideToMove)
-            return new();
-        return state.LegalMoves;
-    }
-
-    private LegalMoveSet CalculateAllLegalMoves(ChessBoard board)
-    {
-        if (!BothSidesHaveKing(board))
-            return new();
-
-        var allMoves = _legalMoveCalculator.CalculateAllLegalMoves(board).ToList();
-        var maxPriority =
-            allMoves.Count != 0 ? allMoves.Max(m => m.ForcedPriority) : ForcedMovePriority.None;
-        var legalMoves = allMoves.Where(m => m.ForcedPriority == maxPriority).ToList();
-
-        Dictionary<MoveKey, Move> moveMap = [];
-        List<MovePath> movePaths = [];
-        foreach (var move in legalMoves)
-        {
-            MoveKey key = new(move);
-
-            movePaths.Add(MovePath.FromMove(move, board.Width, moveKey: key));
-            moveMap[key] = move;
-        }
-
-        var encodedMoves = _moveEncoder.EncodeMoves(movePaths);
-        return new(
-            MoveMap: moveMap,
-            MovePaths: movePaths,
-            EncodedMoves: encodedMoves,
-            HasForcedMoves: maxPriority > ForcedMovePriority.None
-        );
-    }
+    public LegalMoveSet GetLegalMoves(GameCoreState state) => state.LegalMoves;
 
     private GameEndStatus? EvaluateKingCaptureResult(
         Move move,
@@ -177,18 +140,17 @@ public class GameCore(
         )
             return null;
 
-        bool opponentOutOfKings = !board.HasPieceWith(PieceType.King, movingSide.Invert());
-        if (opponentOutOfKings)
+        bool isOpponentKingCapture = !board.HasPieceWith(PieceType.King, movingSide.Invert());
+        bool isSelfCapture = !board.HasPieceWith(PieceType.King, movingSide);
+        if (isOpponentKingCapture && isSelfCapture)
+            return _resultDescriber.MutualKingCapture();
+
+        if (isOpponentKingCapture)
             return _resultDescriber.KingCaptured(by: movingSide);
 
-        bool isSelfCapture = !board.HasPieceWith(PieceType.King, movingSide);
         if (isSelfCapture)
             return _resultDescriber.KingSelfCapture(by: movingSide);
 
         return null;
     }
-
-    private static bool BothSidesHaveKing(ChessBoard board) =>
-        board.HasPieceWith(PieceType.King, GameColor.White)
-        && board.HasPieceWith(PieceType.King, GameColor.Black);
 }

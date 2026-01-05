@@ -1,4 +1,5 @@
-﻿using AnarchyChess.Api.GameLogic.Models;
+﻿using AnarchyChess.Api.Game.Models;
+using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.TestInfrastructure.TestData;
 
@@ -11,7 +12,7 @@ public class MovePathFaker : RecordFaker<MovePath>
         StrictMode(true);
         RuleFor(x => x.FromIdx, f => (byte)f.Random.Number(0, 99));
         RuleFor(x => x.ToIdx, f => (byte)f.Random.Number(0, 99));
-        RuleFor(x => x.MoveKey, f => f.Random.String2(10));
+        RuleFor(x => x.MoveKey, f => (MoveKey)f.Random.String2(10));
         RuleFor(x => x.CapturedIdxs, GameTestData.RandomIdxs);
         RuleFor(x => x.TriggerIdxs, GameTestData.RandomIdxs);
         RuleFor(

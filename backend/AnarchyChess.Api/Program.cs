@@ -404,9 +404,10 @@ builder.Services.AddSingleton<IGameResultDescriber, GameResultDescriber>();
 builder.Services.AddSingleton<IGameNotifier, GameNotifier>();
 builder.Services.AddSingleton<IRematchNotifier, RematchNotifier>();
 
-builder.Services.AddTransient<IGameCore, GameCore>();
-builder.Services.AddTransient<IGameClock, GameClock>();
-builder.Services.AddTransient<IDrawEvaulator, DrawEvaulator>();
+builder.Services.AddSingleton<IPlayableMoveProvider, PlayableMoveProvider>();
+builder.Services.AddSingleton<IGameCore, GameCore>();
+builder.Services.AddSingleton<IGameClock, GameClock>();
+builder.Services.AddSingleton<IDrawEvaulator, DrawEvaulator>();
 builder.Services.AddSingleton<ISanCalculator, SanCalculator>();
 builder.Services.AddSingleton<IFenEncoder, FenEncoder>();
 builder.Services.AddSingleton<IFenDecoder, FenDecoder>();

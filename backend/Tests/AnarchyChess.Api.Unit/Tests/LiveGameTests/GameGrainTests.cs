@@ -205,9 +205,7 @@ public class GameGrainTests : BaseGrainTest
 
     [Fact]
     public Task GetStateAsync_rejects_when_not_playing() =>
-        AssertRejectsForNotPlayingAsync(async grain =>
-            await grain.GetStateAsync(_whitePlayer.UserId)
-        );
+        AssertRejectsForNotPlayingAsync(async grain => await grain.GetStateAsync());
 
     [Fact]
     public Task RequestDrawAsync_rejects_invalid_users() =>

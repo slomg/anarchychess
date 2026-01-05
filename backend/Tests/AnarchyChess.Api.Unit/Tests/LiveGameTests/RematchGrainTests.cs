@@ -51,7 +51,7 @@ public class RematchGrainTests : BaseGrainTest
         _gameState = new GameStateFaker()
             .RuleFor(x => x.ResultData, new GameResultDataFaker().Generate())
             .Generate();
-        _gameGrainMock.GetStateAsync(forUserId: null).Returns(_gameState);
+        _gameGrainMock.GetStateAsync().Returns(_gameState);
     }
 
     private Task<RematchGrain> CreateGrainAsync() =>
@@ -60,7 +60,7 @@ public class RematchGrainTests : BaseGrainTest
     [Fact]
     public async Task RequestAsync_rejects_when_the_game_is_not_found()
     {
-        _gameGrainMock.GetStateAsync(forUserId: null).Returns(GameErrors.GameNotFound);
+        _gameGrainMock.GetStateAsync().Returns(GameErrors.GameNotFound);
         var grain = await CreateGrainAsync();
 
         var result = await grain.RequestAsync(_gameState.WhitePlayer.UserId, "test conn", CT);
@@ -73,9 +73,7 @@ public class RematchGrainTests : BaseGrainTest
     [Fact]
     public async Task RequestAsync_rejects_when_the_game_is_not_over()
     {
-        _gameGrainMock
-            .GetStateAsync(forUserId: null)
-            .Returns(_gameState with { ResultData = null });
+        _gameGrainMock.GetStateAsync().Returns(_gameState with { ResultData = null });
         var grain = await CreateGrainAsync();
 
         var result = await grain.RequestAsync(_gameState.WhitePlayer.UserId, "test conn", CT);

@@ -117,7 +117,7 @@ public class GameGrainTests : BaseOrleansIntegrationTest
         var grain = await CreateGrainAsync();
         await StartGameAsync(grain);
 
-        var result = await grain.GetStateAsync(_whitePlayer.UserId);
+        var result = await grain.GetStateAsync();
 
         result.IsError.Should().BeFalse();
         ClockSnapshot expectedClock = new(
@@ -126,7 +126,7 @@ public class GameGrainTests : BaseOrleansIntegrationTest
             LastUpdated: _fakeNow.ToUnixTimeMilliseconds(),
             IsFrozen: false
         );
-        var legalMoves = _gameCore.GetLegalMovesOf(GameColor.White, _state.CurrentGame!.Core);
+        var legalMoves = _gameCore.GetLegalMoves(_state.CurrentGame!.Core);
         GameState expectedGameState = new(
             Revision: _state.CurrentGame.NotifierState.Revision,
             GameSource: _state.CurrentGame.GameSource,
@@ -147,25 +147,13 @@ public class GameGrainTests : BaseOrleansIntegrationTest
     }
 
     [Fact]
-    public async Task GetStateAsync_returns_empty_move_options_if_player_is_spectator()
-    {
-        var grain = await CreateGrainAsync();
-        await StartGameAsync(grain);
-
-        var result = await grain.GetStateAsync("random user id");
-
-        result.IsError.Should().BeFalse();
-        result.Value.MoveOptions.Should().BeEquivalentTo(new MoveOptions());
-    }
-
-    [Fact]
     public async Task GetStateAsync_returns_empty_move_options_if_game_is_over()
     {
         var grain = await CreateGrainAsync();
         await StartGameAsync(grain);
         await grain.RequestGameEndAsync(_whitePlayer.UserId, ApiTestBase.CT);
 
-        var result = await grain.GetStateAsync(_whitePlayer.UserId);
+        var result = await grain.GetStateAsync();
 
         result.IsError.Should().BeFalse();
         result.Value.MoveOptions.Should().BeEquivalentTo(new MoveOptions());
@@ -243,14 +231,12 @@ public class GameGrainTests : BaseOrleansIntegrationTest
             + _pool.TimeControl.IncrementSeconds * 1000 // add increment
             - 2 * 1000; // removed elapsed time
 
+        var legalMoves = _gameCore.GetLegalMoves(_state.CurrentGame!.Core);
         MoveSnapshot expectedMoveSnapshot = new(
             Path: MovePath.FromMove(move, GameLogicConstants.BoardWidth),
-            Fen: _fenEncoder.EncodeFen(_state.CurrentGame!.Core.Board).FullFen,
+            Fen: _fenEncoder.EncodeFen(_state.CurrentGame.Core.Board).FullFen,
             NextSideToMove: GameColor.Black,
-            San: _sanCalculator.CalculateSan(
-                move,
-                _gameCore.GetLegalMovesOf(GameColor.White, _state.CurrentGame.Core).AllMoves
-            ),
+            San: _sanCalculator.CalculateSan(move, legalMoves.AllMoves),
             TimeLeft: expectedTimeLeft
         );
         ClockSnapshot expectedClock = new(
@@ -259,7 +245,6 @@ public class GameGrainTests : BaseOrleansIntegrationTest
             LastUpdated: in2Seconds.ToUnixTimeMilliseconds(),
             IsFrozen: false
         );
-        var legalMoves = _gameCore.GetLegalMovesOf(GameColor.Black, _state.CurrentGame!.Core);
         await _gameNotifierMock
             .Received(1)
             .NotifyMoveMadeAsync(
@@ -355,7 +340,7 @@ public class GameGrainTests : BaseOrleansIntegrationTest
                 _state.CurrentGame!.NotifierState
             );
 
-        var state = await grain.GetStateAsync(_whitePlayer.UserId);
+        var state = await grain.GetStateAsync();
         state.Value.MoveOptions.HasForcedMoves.Should().BeTrue();
         state.Value.MoveOptions.LegalMoves.Should().HaveCount(1);
     }
@@ -459,12 +444,12 @@ public class GameGrainTests : BaseOrleansIntegrationTest
         _state.CurrentGame!.Result.Should().BeNull();
     }
 
-    private Move GetLegalMoveFor(GamePlayer player) =>
-        _gameCore.GetLegalMovesOf(player.Color, _state.CurrentGame!.Core).MoveMap.First().Value;
+    private Move GetLegalMoves() =>
+        _gameCore.GetLegalMoves(_state.CurrentGame!.Core).MoveMap.First().Value;
 
     private async Task<Move> MakeLegalMoveAsync(GameGrain grain, GamePlayer player)
     {
-        var move = GetLegalMoveFor(player);
+        var move = GetLegalMoves();
         await grain.MovePieceAsync(player.UserId, key: new MoveKey(move));
         return move;
     }

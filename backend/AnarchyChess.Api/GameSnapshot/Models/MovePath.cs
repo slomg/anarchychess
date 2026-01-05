@@ -8,7 +8,7 @@ namespace AnarchyChess.Api.GameSnapshot.Models;
 public record MovePath(
     byte FromIdx,
     byte ToIdx,
-    string MoveKey,
+    MoveKey MoveKey,
     IReadOnlyCollection<byte>? CapturedIdxs,
     IReadOnlyCollection<byte>? TriggerIdxs,
     IReadOnlyCollection<IntermediateSquarePath>? IntermediateSquares,
