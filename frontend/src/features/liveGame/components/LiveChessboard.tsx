@@ -11,10 +11,13 @@ import {
     ProcessedGameState,
 } from "../lib/gameStateProcessor";
 
+import useEnsureLegalMovesForViewedPosition from "../hooks/useEnsureLegalMovesForViewedPosition";
+import MoveHistoryTable from "@/features/chessboard/components/moveHistory/MoveHistoryTable";
 import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardStoreContext";
 import ChessboardWithSidebar from "@/features/chessboard/components/ChessboardWithSidebar";
 import ChessboardLayout from "@/features/chessboard/components/ChessboardLayout";
 import createLiveChessStore, { LiveChessStore } from "../stores/liveChessStore";
+import useSyncBoardInteraction from "../hooks/useSyncBoardInteraction";
 import LiveChessboardProfile, { ProfileSide } from "./LiveChessboardProfile";
 import { useSessionUser } from "@/features/auth/hooks/useSessionUser";
 import useInvalidateOnNavigate from "@/hooks/useInvalidateOnNavigate";
@@ -27,7 +30,6 @@ import { GameState, Preferences } from "@/lib/apiClient";
 import GameOverPopup from "./GameOverPopup";
 import useConst from "@/hooks/useConst";
 import GameChat from "./GameChat";
-import MoveHistoryTable from "@/features/chessboard/components/moveHistory/MoveHistoryTable";
 
 const LiveChessboard = ({
     gameToken,
