@@ -10,6 +10,7 @@ public interface IPositionAnalysis
 {
     RootAnalysisPosition GetInitialPosition();
     ErrorOr<AnalysisPosition> GetNextAnalysisPosition(AnalysisMove analMove);
+    ErrorOr<MoveOptions> GetNextLegalMoves(string fen);
 }
 
 public class PositionAnalysis(
@@ -66,5 +67,21 @@ public class PositionAnalysis(
             SideToMove: sideToMove,
             EndStatus: moveResult.EndStatus
         );
+    }
+
+    public ErrorOr<MoveOptions> GetNextLegalMoves(string fen)
+    {
+        var boardResult = _fenDecoder.DecodeFen(fen);
+        if (boardResult.IsError)
+            return boardResult.Errors;
+        var board = boardResult.Value;
+
+        var legalMoves = _playableMoveProvider.CalculateAllPlayableMoves(board);
+        MoveOptions moveOptions = new(
+            LegalMoves: legalMoves.MovePaths,
+            HasForcedMoves: legalMoves.HasForcedMoves
+        );
+
+        return moveOptions;
     }
 }

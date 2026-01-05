@@ -1,6 +1,8 @@
 ﻿using AnarchyChess.Api.Analysis.Models;
 using AnarchyChess.Api.GameLogic.Models;
+using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.TestInfrastructure;
+using AnarchyChess.Api.TestInfrastructure.TestData;
 using AwesomeAssertions;
 
 namespace AnarchyChess.Api.Functional.Tests.Analysis;
@@ -40,5 +42,17 @@ public class AnalysisControllerTests(AnarchyChessWebApplicationFactory factory)
         position.SideToMove.Should().Be(GameColor.Black);
         position.MoveOptions.LegalMoves.Count.Should().BeGreaterThan(0);
         position.EndStatus.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetNextLegalMoves_returns_legal_moves()
+    {
+        var response = await ApiClient.Api.GetNextLegalMoves(GameTestData.InitialFen);
+
+        response.IsSuccessful.Should().BeTrue();
+
+        var legalMoves = response.Content;
+        legalMoves.Should().NotBeNull();
+        legalMoves.Should().NotBeEquivalentTo(new MoveOptions());
     }
 }

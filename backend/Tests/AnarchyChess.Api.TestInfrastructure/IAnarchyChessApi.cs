@@ -84,6 +84,9 @@ public interface IAnarchyChessApi
 
     [Post("/api/analysis/next")]
     Task<IApiResponse<AnalysisPosition>> GetNextAnalysisPosition(AnalysisMove move);
+
+    [Get("/api/analysis/moves")]
+    Task<IApiResponse<MoveOptions>> GetNextLegalMoves(string fen);
     #endregion
 
     #region Ratings

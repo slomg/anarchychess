@@ -2,6 +2,7 @@
 using AnarchyChess.Api.Analysis.Services;
 using AnarchyChess.Api.ErrorHandling.Extensions;
 using AnarchyChess.Api.ErrorHandling.Infrastructure;
+using AnarchyChess.Api.GameSnapshot.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AnarchyChess.Api.Analysis.Controllers;
@@ -26,6 +27,15 @@ public class AnalysisController(IPositionAnalysis positionAnalysis) : Controller
     public ActionResult<AnalysisPosition> GetNextAnalysisPosition(AnalysisMove move)
     {
         var result = _positionAnalysis.GetNextAnalysisPosition(move);
+        return result.Match(Ok, errors => errors.ToActionResult());
+    }
+
+    [HttpGet("moves")]
+    [ProducesResponseType<MoveOptions>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ApiProblemDetails>(StatusCodes.Status400BadRequest)]
+    public ActionResult<MoveOptions> GetNextLegalMoves(string fen)
+    {
+        var result = _positionAnalysis.GetNextLegalMoves(fen);
         return result.Match(Ok, errors => errors.ToActionResult());
     }
 }
