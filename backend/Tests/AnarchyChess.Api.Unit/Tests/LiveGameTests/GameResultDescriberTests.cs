@@ -1,6 +1,6 @@
-﻿using AnarchyChess.Api.GameLogic.Models;
+﻿using AnarchyChess.Api.Game.Services;
+using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
-using AnarchyChess.Api.Game.Services;
 using AwesomeAssertions;
 
 namespace AnarchyChess.Api.Unit.Tests.LiveGameTests;
@@ -100,5 +100,12 @@ public class GameResultDescriberTests
     {
         var result = _describer.KingTouch();
         result.Should().Be(new GameEndStatus(GameResult.Draw, "Draw by King Touch"));
+    }
+
+    [Fact]
+    public void MutualKingCapture_returns_the_correct_status()
+    {
+        var result = _describer.MutualKingCapture();
+        result.Should().Be(new GameEndStatus(GameResult.Draw, "Draw by Mutual King Capture"));
     }
 }
