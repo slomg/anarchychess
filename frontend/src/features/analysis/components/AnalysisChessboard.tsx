@@ -8,7 +8,7 @@ import useConst from "@/hooks/useConst";
 import { RootAnalysisPosition } from "@/lib/apiClient";
 import { StoreApi } from "zustand";
 import processRootAnalysis from "../lib/rootAnalysisPositionProcessor";
-import useAnalysisMoveEmitter from "../hooks/useAnalysisMoveEmitter";
+import useAnalysisMoveResolver from "../hooks/useAnalysisMoveResolver";
 import ChessboardWithSidebar from "@/features/chessboard/components/ChessboardWithSidebar";
 import MoveHistoryTable from "@/features/chessboard/components/moveHistory/MoveHistoryTable";
 
@@ -20,7 +20,7 @@ const AnalysisChessboard = ({
     const chessboardStore = useConst<StoreApi<ChessboardStore>>(() =>
         processRootAnalysis(rootPosition),
     );
-    useAnalysisMoveEmitter(rootPosition, chessboardStore);
+    useAnalysisMoveResolver(rootPosition, chessboardStore);
 
     return (
         <ChessboardStoreContext.Provider value={chessboardStore}>

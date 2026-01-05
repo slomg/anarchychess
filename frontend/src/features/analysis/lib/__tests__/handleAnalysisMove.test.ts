@@ -1,54 +1,40 @@
-import { renderHook } from "@testing-library/react";
 import { StoreApi } from "zustand";
 
 import {
     ChessboardStore,
     createChessboardStore,
 } from "@/features/chessboard/stores/chessboardStore";
-
+import {
+    createFakeBoardPieces,
+    createFakeMove,
+} from "@/lib/testUtils/fakers/chessboardFakers";
 import {
     AnalysisMove,
     AnalysisPosition,
     GameColor,
     getNextAnalysisPosition,
-    RootAnalysisPosition,
 } from "@/lib/apiClient";
 
-import {
-    createFakeBoardPieces,
-    createFakeMove,
-} from "@/lib/testUtils/fakers/chessboardFakers";
-
-import { decodeMovePathIntoLegalMoves } from "@/features/liveGame/lib/moveDecoder";
 import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
+import { decodeMovePathIntoLegalMoves } from "@/features/liveGame/lib/moveDecoder";
 import { createFakeMovePath } from "@/lib/testUtils/fakers/movePathFaker";
 import { createFakePosition } from "@/lib/testUtils/fakers/positionFaker";
 import PositionHistory from "@/features/chessboard/lib/positionHistory";
 import { PositionProps } from "@/features/chessboard/lib/position";
 import mockSequentialUUID from "@/lib/testUtils/mocks/mockUuids";
-import useAnalysisMoveEmitter from "../useAnalysisMoveEmitter";
+import handleAnalysisMove from "../handleAnalysisMove";
 import constants from "@/lib/constants";
 
 vi.mock("@/lib/apiClient/definition");
 
-describe("useAnalysisMoveEmitter", () => {
+describe("handleAnalysisMove", () => {
     let chessboardStore: StoreApi<ChessboardStore>;
-    let rootPosition: RootAnalysisPosition;
+    const rootFen = "test root fen";
 
     const getNextAnalysisPositionMock = vi.mocked(getNextAnalysisPosition);
 
     beforeEach(() => {
         chessboardStore = createChessboardStore();
-        rootPosition = {
-            fen: constants.INITIAL_FEN,
-            moveOptions: {
-                legalMoves: [
-                    { fromIdx: 0, toIdx: 1, moveKey: "0" },
-                    { fromIdx: 2, toIdx: 3, moveKey: "1" },
-                ],
-                hasForcedMoves: true,
-            },
-        };
 
         getNextAnalysisPositionMock.mockResolvedValue({
             error: undefined,
@@ -65,33 +51,28 @@ describe("useAnalysisMoveEmitter", () => {
         });
     });
 
-    it("should call getNextAnalysisPosition with correct parameters when not viewing a position", async () => {
+    it("should call getNextAnalysisPosition with the root fen when not viewing a position", async () => {
         const move = createFakeMove();
 
-        renderHook(() => useAnalysisMoveEmitter(rootPosition, chessboardStore));
-
-        const { pieceMovementEvent } = chessboardStore.getState();
-        await pieceMovementEvent.emit(move);
+        await handleAnalysisMove(chessboardStore, rootFen, move);
 
         expect(getNextAnalysisPositionMock).toHaveBeenCalledWith<
             [{ body: AnalysisMove }]
         >({
             body: {
-                fen: rootPosition.fen,
+                fen: rootFen,
                 piecePosition: move.from,
                 moveKey: move.moveKey,
             },
         });
     });
 
-    it("should call getNextAnalysisPosition with correct parameters when viewing a position", async () => {
+    it("should call getNextAnalysisPosition viewing position fen when viewing a position", async () => {
         const move = createFakeMove();
         const { addPosition } = chessboardStore.getState();
         const initialPosition = addPosition(createFakePosition());
 
-        renderHook(() => useAnalysisMoveEmitter(rootPosition, chessboardStore));
-
-        await chessboardStore.getState().pieceMovementEvent.emit(move);
+        await handleAnalysisMove(chessboardStore, rootFen, move);
 
         expect(getNextAnalysisPositionMock).toHaveBeenCalledWith<
             [{ body: AnalysisMove }]
@@ -104,7 +85,7 @@ describe("useAnalysisMoveEmitter", () => {
         });
     });
 
-    it("should add the new position and decoded legal moves to the store after API call", async () => {
+    it("should add the new position and decoded legal moves to the store", async () => {
         const move = createFakeMove();
         const newAnalysisPosition: AnalysisPosition = {
             fen: "10/10/10/10/10/10/10/10/10/R9",
@@ -122,11 +103,9 @@ describe("useAnalysisMoveEmitter", () => {
         });
 
         mockSequentialUUID();
-        renderHook(() => useAnalysisMoveEmitter(rootPosition, chessboardStore));
 
         const { pieces: prevPieces } = chessboardStore.getState();
-
-        await chessboardStore.getState().pieceMovementEvent.emit(move);
+        await handleAnalysisMove(chessboardStore, rootFen, move);
 
         const { positionHistory, legalMovesByPosition, getLegalMoves } =
             chessboardStore.getState();
@@ -159,11 +138,11 @@ describe("useAnalysisMoveEmitter", () => {
         positionHistory.goToStart();
         chessboardStore.setState({ positionHistory });
 
-        renderHook(() => useAnalysisMoveEmitter(rootPosition, chessboardStore));
-
-        await chessboardStore
-            .getState()
-            .pieceMovementEvent.emit(existingPosition.move);
+        await handleAnalysisMove(
+            chessboardStore,
+            rootFen,
+            existingPosition.move,
+        );
 
         expect(getNextAnalysisPositionMock).not.toHaveBeenCalled();
         expect(chessboardStore.getState().positionHistory.viewingPosition).toBe(
