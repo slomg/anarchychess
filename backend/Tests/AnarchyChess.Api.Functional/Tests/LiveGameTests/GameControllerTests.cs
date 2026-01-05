@@ -141,9 +141,6 @@ public class GameControllerTests : BaseFunctionalTest
         gameState.Should().NotBeNull();
 
         gameState.ResultData.Should().NotBeNull();
-        gameState
-            .MoveOptions.Should()
-            .BeEquivalentTo(new MoveOptions(LegalMoves: [], HasForcedMoves: false));
         AssertAuthedPlayersMatch(
             startGame.User1,
             startGame.User1Rating,
@@ -175,9 +172,6 @@ public class GameControllerTests : BaseFunctionalTest
         gameState.Should().NotBeNull();
 
         gameState.ResultData.Should().NotBeNull();
-        gameState
-            .MoveOptions.Should()
-            .BeEquivalentTo(new MoveOptions(LegalMoves: [], HasForcedMoves: false));
         AssertGuestPlayersMatch(guest1, guest2, gameState);
     }
 

@@ -147,19 +147,6 @@ public class GameGrainTests : BaseOrleansIntegrationTest
     }
 
     [Fact]
-    public async Task GetStateAsync_returns_empty_move_options_if_game_is_over()
-    {
-        var grain = await CreateGrainAsync();
-        await StartGameAsync(grain);
-        await grain.RequestGameEndAsync(_whitePlayer.UserId, ApiTestBase.CT);
-
-        var result = await grain.GetStateAsync();
-
-        result.IsError.Should().BeFalse();
-        result.Value.MoveOptions.Should().BeEquivalentTo(new MoveOptions());
-    }
-
-    [Fact]
     public async Task RequestDrawAsync_sends_notification_if_no_pending_request()
     {
         var grain = await CreateGrainAsync();

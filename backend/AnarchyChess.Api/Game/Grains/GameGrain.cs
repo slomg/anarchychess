@@ -481,20 +481,11 @@ public class GameGrain : Grain, IGameGrain, IRemindable
 
     private GameState GetGameState(GameData game)
     {
-        // there are only legal moves if the game is not over
-        MoveOptions moveOptions;
-        if (game.Result is null)
-        {
-            var legalMoves = _core.GetLegalMoves(game.Core);
-            moveOptions = new(
-                LegalMoves: legalMoves.MovePaths,
-                HasForcedMoves: legalMoves.HasForcedMoves
-            );
-        }
-        else
-        {
-            moveOptions = new();
-        }
+        var legalMoves = _core.GetLegalMoves(game.Core);
+        MoveOptions moveOptions = new(
+            LegalMoves: legalMoves.MovePaths,
+            HasForcedMoves: legalMoves.HasForcedMoves
+        );
 
         GameState gameState = new(
             Revision: game.NotifierState.Revision,
