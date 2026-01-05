@@ -74,6 +74,9 @@ import type {
     GetNextAnalysisPositionData,
     GetNextAnalysisPositionErrors,
     GetNextAnalysisPositionResponses,
+    GetNextLegalMovesData,
+    GetNextLegalMovesErrors,
+    GetNextLegalMovesResponses,
     GetPreferencesData,
     GetPreferencesErrors,
     GetPreferencesResponses,
@@ -609,3 +612,12 @@ export const getNextAnalysisPosition = <ThrowOnError extends boolean = false>(
             ...options.headers,
         },
     });
+
+export const getNextLegalMoves = <ThrowOnError extends boolean = false>(
+    options?: Options<GetNextLegalMovesData, ThrowOnError>,
+) =>
+    (options?.client ?? client).get<
+        GetNextLegalMovesResponses,
+        GetNextLegalMovesErrors,
+        ThrowOnError
+    >({ url: "/api/Analysis/moves", ...options });

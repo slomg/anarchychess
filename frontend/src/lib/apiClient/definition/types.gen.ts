@@ -1520,3 +1520,26 @@ export type GetNextAnalysisPositionResponses = {
 
 export type GetNextAnalysisPositionResponse =
     GetNextAnalysisPositionResponses[keyof GetNextAnalysisPositionResponses];
+
+export type GetNextLegalMovesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        fen?: string;
+    };
+    url: "/api/Analysis/moves";
+};
+
+export type GetNextLegalMovesErrors = {
+    400: ApiProblemDetails;
+};
+
+export type GetNextLegalMovesError =
+    GetNextLegalMovesErrors[keyof GetNextLegalMovesErrors];
+
+export type GetNextLegalMovesResponses = {
+    200: MoveOptions;
+};
+
+export type GetNextLegalMovesResponse =
+    GetNextLegalMovesResponses[keyof GetNextLegalMovesResponses];
