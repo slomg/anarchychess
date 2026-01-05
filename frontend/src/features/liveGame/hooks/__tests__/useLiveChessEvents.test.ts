@@ -28,6 +28,7 @@ import {
 
 import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
 import { createNFakePositionHistory } from "@/lib/testUtils/fakers/positionHistoryFaker";
+import { createFakeGameResultData } from "@/lib/testUtils/fakers/gameResultDataFaker";
 import { createFakeMoveSnapshot } from "@/lib/testUtils/fakers/moveSnapshotFaker";
 import { EventHandlers } from "@/features/signalR/hooks/useSignalREvent";
 import { createFakeClock } from "@/lib/testUtils/fakers/clockFaker";
@@ -36,7 +37,6 @@ import { GameClientEvents, useGameEvent } from "../useGameHub";
 import { refetchGame } from "../../lib/gameStateProcessor";
 import { logicalPoint } from "@/features/point/pointUtils";
 import useLiveChessEvents from "../useLiveChessEvents";
-import { createFakeGameResultData } from "@/lib/testUtils/fakers/gameResultDataFaker";
 
 vi.mock("@/features/liveGame/hooks/useGameHub");
 vi.mock("@/features/liveGame/lib/gameStateProcessor");
