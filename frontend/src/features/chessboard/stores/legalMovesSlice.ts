@@ -21,6 +21,7 @@ export interface LegalMovesSlice {
     highlightedLegalMoves: LogicalPoint[];
     allowHistoryChanges: boolean;
 
+    hasLegalMovesForPosition(positionId?: PositionId): boolean;
     getLegalMoves(): LegalMoves;
 
     getLegalMove(
@@ -69,6 +70,11 @@ export function createLegalMovesSlice(
                     positionHistory.viewingPosition?.positionId,
                 ) ?? new LegalMoves()
             );
+        },
+
+        hasLegalMovesForPosition(positionId) {
+            const { legalMovesByPosition } = get();
+            return legalMovesByPosition.has(positionId);
         },
 
         async getLegalMove(dest, pieceId, pieces) {

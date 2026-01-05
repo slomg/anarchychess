@@ -8,6 +8,7 @@ import {
 } from "@/lib/testUtils/fakers/chessboardFakers";
 
 import { createNFakePositionHistory } from "@/lib/testUtils/fakers/positionHistoryFaker";
+import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
 import { ChessboardStore, createChessboardStore } from "../chessboardStore";
 import { logicalPoint, pointToStr } from "@/features/point/pointUtils";
 import { IntermediateSquare, Piece } from "../../lib/types";
@@ -297,6 +298,38 @@ describe("LegalMovesSlice", () => {
                 ),
             ).toEqual(legalMoves);
             expect(state.highlightedLegalMoves).toHaveLength(0);
+        });
+    });
+
+    describe("hasLegalMovesForPosition", () => {
+        it("should return false when no legal moves exist for the position id", () => {
+            const result = store
+                .getState()
+                .hasLegalMovesForPosition("test position id" as PositionId);
+            expect(result).toBe(false);
+        });
+
+        it("should return true when legal moves exist for the position id", () => {
+            const { addPosition, addLegalMoves } = store.getState();
+            const positionId = addPosition(
+                createFakePositionProps(),
+            ).positionId;
+            addPosition(createFakePositionProps());
+            addLegalMoves(createFakeLegalMoves(), positionId);
+
+            const result = store
+                .getState()
+                .hasLegalMovesForPosition(positionId);
+            expect(result).toBe(true);
+        });
+
+        it("should correctly handle undefined position id", () => {
+            const { goToStartPosition, setLatestLegalMoves } = store.getState();
+            goToStartPosition();
+            setLatestLegalMoves(createFakeLegalMoves());
+
+            const result = store.getState().hasLegalMovesForPosition(undefined);
+            expect(result).toBe(true);
         });
     });
 });
