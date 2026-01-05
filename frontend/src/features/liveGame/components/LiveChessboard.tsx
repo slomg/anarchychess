@@ -52,9 +52,10 @@ const LiveChessboard = ({
         createChessboardStore(storeProps.board),
     );
 
-    useGameStartAudio(gameState);
+    useSyncBoardInteraction(liveChessStore, chessboardStore);
     useLiveChessEvents(liveChessStore, chessboardStore);
     useLiveMoveEmitter(liveChessStore, chessboardStore);
+    useGameStartAudio(gameState);
     useInvalidateOnNavigate();
 
     return (
