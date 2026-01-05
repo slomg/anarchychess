@@ -1,10 +1,11 @@
+import { StoreApi } from "zustand";
 import { useEffect } from "react";
 
+import { ChessboardStore } from "@/features/chessboard/stores/chessboardStore";
+import handleAnalysisMove from "@/features/analysis/lib/handleAnalysisMove";
+import { LiveChessStore } from "../stores/liveChessStore";
 import { Move } from "@/features/chessboard/lib/types";
 import { useGameEmitter } from "../hooks/useGameHub";
-import { StoreApi } from "zustand";
-import { LiveChessStore } from "../stores/liveChessStore";
-import { ChessboardStore } from "@/features/chessboard/stores/chessboardStore";
 
 export default function useLiveMoveEmitter(
     liveChessStore: StoreApi<LiveChessStore>,
@@ -17,13 +18,26 @@ export default function useLiveMoveEmitter(
 
     useEffect(() => {
         async function emitMove(move: Move) {
-            markPendingMoveAck();
-            await sendGameEvent("MovePieceAsync", gameToken, move.moveKey);
+            const { resultData, initialFen } = liveChessStore.getState();
+
+            if (resultData === null) {
+                markPendingMoveAck();
+                await sendGameEvent("MovePieceAsync", gameToken, move.moveKey);
+            } else {
+                await handleAnalysisMove(chessboardStore, initialFen, move);
+            }
         }
 
         pieceMovementEvent.subscribe(emitMove);
         return () => {
             pieceMovementEvent.unsubscribe(emitMove);
         };
-    }, [pieceMovementEvent, gameToken, markPendingMoveAck, sendGameEvent]);
+    }, [
+        pieceMovementEvent,
+        gameToken,
+        markPendingMoveAck,
+        sendGameEvent,
+        liveChessStore,
+        chessboardStore,
+    ]);
 }
