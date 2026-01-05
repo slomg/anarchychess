@@ -1,3 +1,4 @@
+import { renderHook } from "@testing-library/react";
 import { StoreApi } from "zustand";
 
 import {
@@ -6,25 +7,27 @@ import {
 } from "@/features/chessboard/stores/chessboardStore";
 
 import {
+    AnalysisMove,
     AnalysisPosition,
     GameColor,
     getNextAnalysisPosition,
     RootAnalysisPosition,
 } from "@/lib/apiClient";
-import constants from "@/lib/constants";
+
 import {
     createFakeBoardPieces,
     createFakeMove,
 } from "@/lib/testUtils/fakers/chessboardFakers";
-import { renderHook } from "@testing-library/react";
-import useAnalysisMoveEmitter from "../useAnalysisMoveEmitter";
-import { createFakeMovePath } from "@/lib/testUtils/fakers/movePathFaker";
-import { PositionProps } from "@/features/chessboard/lib/position";
-import mockSequentialUUID from "@/lib/testUtils/mocks/mockUuids";
+
 import { decodeMovePathIntoLegalMoves } from "@/features/liveGame/lib/moveDecoder";
+import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
+import { createFakeMovePath } from "@/lib/testUtils/fakers/movePathFaker";
 import { createFakePosition } from "@/lib/testUtils/fakers/positionFaker";
 import PositionHistory from "@/features/chessboard/lib/positionHistory";
-import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
+import { PositionProps } from "@/features/chessboard/lib/position";
+import mockSequentialUUID from "@/lib/testUtils/mocks/mockUuids";
+import useAnalysisMoveEmitter from "../useAnalysisMoveEmitter";
+import constants from "@/lib/constants";
 
 vi.mock("@/lib/apiClient/definition");
 
@@ -70,10 +73,11 @@ describe("useAnalysisMoveEmitter", () => {
         const { pieceMovementEvent } = chessboardStore.getState();
         await pieceMovementEvent.emit(move);
 
-        expect(getNextAnalysisPositionMock).toHaveBeenCalledWith({
+        expect(getNextAnalysisPositionMock).toHaveBeenCalledWith<
+            [{ body: AnalysisMove }]
+        >({
             body: {
                 fen: rootPosition.fen,
-                movingPlayer: GameColor.WHITE,
                 piecePosition: move.from,
                 moveKey: move.moveKey,
             },
@@ -89,10 +93,11 @@ describe("useAnalysisMoveEmitter", () => {
 
         await chessboardStore.getState().pieceMovementEvent.emit(move);
 
-        expect(getNextAnalysisPositionMock).toHaveBeenCalledWith({
+        expect(getNextAnalysisPositionMock).toHaveBeenCalledWith<
+            [{ body: AnalysisMove }]
+        >({
             body: {
                 fen: initialPosition.fen,
-                movingPlayer: initialPosition.sideToMove,
                 piecePosition: move.from,
                 moveKey: move.moveKey,
             },

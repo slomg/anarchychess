@@ -1,11 +1,7 @@
 import { StoreApi } from "zustand";
 import { useEffect } from "react";
 
-import {
-    GameColor,
-    getNextAnalysisPosition,
-    RootAnalysisPosition,
-} from "@/lib/apiClient";
+import { getNextAnalysisPosition, RootAnalysisPosition } from "@/lib/apiClient";
 
 import { decodeMovePathIntoLegalMoves } from "@/features/liveGame/lib/moveDecoder";
 import { ChessboardStore } from "@/features/chessboard/stores/chessboardStore";
@@ -36,9 +32,6 @@ export default function useAnalysisMoveEmitter(
                     fen:
                         positionHistory.viewingPosition?.fen ??
                         rootPosition.fen,
-                    movingPlayer:
-                        positionHistory.viewingPosition?.sideToMove ??
-                        GameColor.WHITE,
                     piecePosition: move.from,
                     moveKey: move.moveKey,
                 },
