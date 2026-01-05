@@ -39,6 +39,8 @@ export interface LegalMovesSlice {
 
     addLegalMoves(legalMoves: LegalMoves, positionId?: PositionId): void;
     setLatestLegalMoves(legalMoves: LegalMoves): void;
+
+    setAllowHistoryChanges(value: boolean): void;
 }
 
 export function createLegalMovesSlice(
@@ -195,6 +197,12 @@ export function createLegalMovesSlice(
                 legalMoves,
                 positionHistory.viewingPosition?.positionId,
             );
+        },
+
+        setAllowHistoryChanges(value) {
+            set((state) => {
+                state.allowHistoryChanges = value;
+            });
         },
     });
 }

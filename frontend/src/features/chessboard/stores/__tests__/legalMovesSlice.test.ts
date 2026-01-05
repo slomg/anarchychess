@@ -428,12 +428,22 @@ describe("LegalMovesSlice", () => {
     });
 
     describe("setHideLegalMoves", () => {
-        it("should update hideLegalMoves state", () => {
+        it("should update hideLegalMoves", () => {
             store.setState({ hideLegalMoves: false });
 
             store.getState().setHideLegalMoves(true);
 
             expect(store.getState().hideLegalMoves).toBe(true);
+        });
+    });
+
+    describe("setAllowHistoryChanges", () => {
+        it("should update allowHistoryChanges", () => {
+            store.setState({ allowHistoryChanges: false });
+
+            store.getState().setAllowHistoryChanges(true);
+
+            expect(store.getState().allowHistoryChanges).toBe(true);
         });
     });
 });
