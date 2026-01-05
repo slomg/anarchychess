@@ -14,15 +14,18 @@ import { PositionId } from "../lib/position";
 export interface LegalMovesSliceProps {
     legalMovesByPosition: Map<PositionId | undefined, LegalMoves>;
     allowHistoryChanges?: boolean;
+    hideLegalMoves?: boolean;
 }
 
 export interface LegalMovesSlice {
     legalMovesByPosition: Map<PositionId | undefined, LegalMoves>;
     highlightedLegalMoves: LogicalPoint[];
     allowHistoryChanges: boolean;
+    hideLegalMoves: boolean;
 
     hasLegalMovesForPosition(positionId?: PositionId): boolean;
     getLegalMoves(): LegalMoves;
+    setHideLegalMoves(value: boolean): void;
 
     getLegalMove(
         dest: LogicalPoint,
@@ -49,6 +52,7 @@ export function createLegalMovesSlice(
     return (set, get) => ({
         ...initState,
         allowHistoryChanges: initState.allowHistoryChanges ?? false,
+        hideLegalMoves: initState.hideLegalMoves ?? false,
         highlightedLegalMoves: [],
 
         getLegalMoves() {
@@ -56,12 +60,13 @@ export function createLegalMovesSlice(
                 legalMovesByPosition,
                 allowHistoryChanges,
                 positionHistory,
+                hideLegalMoves,
             } = get();
 
-            if (
+            const cannotModifyHistory =
                 !allowHistoryChanges &&
-                !positionHistory.isViewingLatestPosition
-            ) {
+                !positionHistory.isViewingLatestPosition;
+            if (hideLegalMoves || cannotModifyHistory) {
                 return new LegalMoves();
             }
 
@@ -70,6 +75,12 @@ export function createLegalMovesSlice(
                     positionHistory.viewingPosition?.positionId,
                 ) ?? new LegalMoves()
             );
+        },
+
+        setHideLegalMoves(value) {
+            set((state) => {
+                state.hideLegalMoves = value;
+            });
         },
 
         hasLegalMovesForPosition(positionId) {
