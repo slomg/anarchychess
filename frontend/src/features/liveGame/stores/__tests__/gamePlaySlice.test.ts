@@ -8,6 +8,7 @@ import createLiveChessStore, {
 import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
 import { createFakeClock } from "@/lib/testUtils/fakers/clockFaker";
 import { Clocks, GameColor } from "@/lib/apiClient";
+import { createFakeGameResultData } from "@/lib/testUtils/fakers/gameResultDataFaker";
 
 describe("gamePlaySlice", () => {
     let store: StoreApi<LiveChessStore>;
@@ -16,6 +17,78 @@ describe("gamePlaySlice", () => {
     beforeEach(() => {
         initialProps = createFakeLiveChessStoreProps();
         store = createLiveChessStore(initialProps);
+    });
+
+    describe("isInteractionAllowed", () => {
+        it("should allow interaction when the game is over", () => {
+            store.setState({
+                resultData: createFakeGameResultData(),
+                viewer: {
+                    userId: "user id",
+                    playerColor: null,
+                },
+                sideToMove: GameColor.WHITE,
+            });
+
+            const result = store.getState().isInteractionAllowed();
+            expect(result).toBe(true);
+        });
+
+        it("should allow interaction when it is the viewer's turn", () => {
+            store.setState({
+                resultData: null,
+                viewer: {
+                    userId: "user id",
+                    playerColor: GameColor.BLACK,
+                },
+                sideToMove: GameColor.BLACK,
+            });
+
+            const result = store.getState().isInteractionAllowed();
+            expect(result).toBe(true);
+        });
+
+        it("should not allow interaction when it is not the viewer's turn", () => {
+            store.setState({
+                resultData: null,
+                viewer: {
+                    userId: "user id",
+                    playerColor: GameColor.WHITE,
+                },
+                sideToMove: GameColor.BLACK,
+            });
+
+            const result = store.getState().isInteractionAllowed();
+            expect(result).toBe(false);
+        });
+
+        it("should not allow interaction for spectators when the game is not over", () => {
+            store.setState({
+                resultData: null,
+                viewer: {
+                    userId: "user id",
+                    playerColor: null,
+                },
+                sideToMove: GameColor.WHITE,
+            });
+
+            const result = store.getState().isInteractionAllowed();
+            expect(result).toBe(false);
+        });
+
+        it("should allow interaction for spectators when the game is over", () => {
+            store.setState({
+                resultData: createFakeGameResultData(),
+                viewer: {
+                    userId: "user-1",
+                    playerColor: null,
+                },
+                sideToMove: GameColor.BLACK,
+            });
+
+            const result = store.getState().isInteractionAllowed();
+            expect(result).toBe(true);
+        });
     });
 
     describe("receiveLiveMove", () => {

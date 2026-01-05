@@ -18,6 +18,7 @@ export interface GamePlaySliceProps {
 export interface GamePlaySlice extends GamePlaySliceProps {
     isPendingMoveAck: boolean;
 
+    isInteractionAllowed(): boolean;
     receiveLiveMove(clocks: Clocks, sideToMove: GameColor): void;
     markPendingMoveAck(): void;
 
@@ -36,6 +37,15 @@ export function createGamePlaySlice(
         ...initState,
 
         isPendingMoveAck: false,
+
+        isInteractionAllowed() {
+            const { resultData, viewer, sideToMove } = get();
+
+            // allow interaction if the game is over (now in analysis mode)
+            // or if it's our turn
+            const isGameOver = resultData !== null;
+            return isGameOver || viewer.playerColor === sideToMove;
+        },
 
         receiveLiveMove(clocks, sideToMove) {
             const { decrementDrawCooldown } = get();
