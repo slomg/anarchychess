@@ -26,22 +26,97 @@ export interface Position {
     [Symbol.iterator](): IterableIterator<Position>;
 }
 
-export class PositionNode implements Position {
+export abstract class PositionNode {
     _pieces: BoardPieces;
+
+    _mainVariation: ChildPositionNode | null = null;
+    _subVariationByKey: Map<MoveKey, ChildPositionNode> = new Map();
+    _allVariations: ChildPositionNode[] = [];
+
+    _positionId: PositionId = crypto.randomUUID() as PositionId;
+
+    constructor(pieces: BoardPieces) {
+        this._pieces = pieces;
+    }
+
+    get pieces(): BoardPieces {
+        return this._pieces;
+    }
+
+    get positionId(): PositionId {
+        return this._positionId;
+    }
+
+    get next(): ChildPositionNode | null {
+        return this._mainVariation;
+    }
+
+    get variations(): readonly Position[] {
+        return this._allVariations;
+    }
+
+    get subVariationByKey(): ReadonlyMap<MoveKey, Position> {
+        return this._subVariationByKey;
+    }
+
+    isPositionNext(position: ChildPositionNode | null): boolean {
+        if (position === null) return false;
+
+        return (
+            position.positionId === this.next?.positionId ||
+            this.subVariationByKey.get(position.move.moveKey)?.positionId ===
+                position.positionId
+        );
+    }
+
+    createChild(props: PositionProps): {
+        child: ChildPositionNode;
+        isMainVariation: boolean;
+    } {
+        const child = new ChildPositionNode(
+            props,
+            this instanceof ChildPositionNode ? this : null,
+        );
+
+        if (!this._mainVariation) {
+            this._mainVariation = child;
+            this._allVariations.push(child);
+            return { child, isMainVariation: true };
+        }
+
+        if (this._mainVariation?.move.moveKey === props.move.moveKey) {
+            return { child: this._mainVariation, isMainVariation: true };
+        }
+
+        const existingSubWithSan = this._subVariationByKey.get(
+            props.move.moveKey,
+        );
+        if (existingSubWithSan)
+            return { child: existingSubWithSan, isMainVariation: false };
+
+        this._subVariationByKey.set(child.move.moveKey, child);
+        this._allVariations.push(child);
+        return { child, isMainVariation: false };
+    }
+
+    *[Symbol.iterator](): IterableIterator<ChildPositionNode> {
+        if (this._mainVariation) yield* this._mainVariation;
+    }
+}
+
+export class RootPositionNode extends PositionNode {}
+
+export class ChildPositionNode extends PositionNode implements Position {
     _fen: string;
     _sideToMove: GameColor;
     _move: Move;
     _san: string;
     _ply: number;
 
-    _positionId: PositionId = crypto.randomUUID() as PositionId;
+    _parent: ChildPositionNode | null = null;
 
-    _parent: PositionNode | null = null;
-    _mainVariation: PositionNode | null = null;
-    _subVariationByKey: Map<MoveKey, PositionNode> = new Map();
-    _allVariations: PositionNode[] = [];
-
-    constructor(props: PositionProps, parent: PositionNode | null = null) {
+    constructor(props: PositionProps, parent: ChildPositionNode | null = null) {
+        super(props.pieces);
         this._parent = parent;
 
         this._pieces = props.pieces;
@@ -50,10 +125,6 @@ export class PositionNode implements Position {
         this._move = props.move;
         this._san = props.san;
         this._ply = parent ? parent.ply + 1 : 0;
-    }
-
-    get pieces(): BoardPieces {
-        return this._pieces;
     }
 
     get fen(): string {
@@ -76,50 +147,11 @@ export class PositionNode implements Position {
         return this._ply;
     }
 
-    get positionId(): PositionId {
-        return this._positionId;
-    }
-
-    get prev(): PositionNode | null {
+    get prev(): ChildPositionNode | null {
         return this._parent;
     }
 
-    get next(): PositionNode | null {
-        return this._mainVariation;
-    }
-
-    get variations(): readonly Position[] {
-        return this._allVariations;
-    }
-
-    get subVariationByKey(): ReadonlyMap<MoveKey, Position> {
-        return this._subVariationByKey;
-    }
-
-    createChild(props: PositionProps): PositionNode {
-        const child = new PositionNode(props, this);
-
-        if (!this._mainVariation) {
-            this._mainVariation = child;
-            this._allVariations.push(child);
-            return child;
-        }
-
-        if (this._mainVariation.move.moveKey === props.move.moveKey) {
-            return this._mainVariation;
-        }
-
-        const existingSubWithSan = this._subVariationByKey.get(
-            props.move.moveKey,
-        );
-        if (existingSubWithSan) return existingSubWithSan;
-
-        this._subVariationByKey.set(child.move.moveKey, child);
-        this._allVariations.push(child);
-        return child;
-    }
-
-    *[Symbol.iterator](): IterableIterator<PositionNode> {
+    override *[Symbol.iterator](): IterableIterator<ChildPositionNode> {
         yield this;
         if (this._mainVariation) yield* this._mainVariation;
     }

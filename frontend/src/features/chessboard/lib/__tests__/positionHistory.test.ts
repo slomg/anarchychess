@@ -34,17 +34,19 @@ describe("PositionHistory", () => {
             ).toBeUndefined();
         });
 
-        it("should detect the head move when viewingPosition is null", () => {
-            const head = history.addNextPosition(createFakePositionProps());
+        it("should detect the first mainline position when viewingPosition is null", () => {
+            const firstPosition = history.addNextPosition(
+                createFakePositionProps(),
+            );
 
             history.goToStart();
 
-            expect(history.getNextPositionWithKey(head.move.moveKey)).toBe(
-                head,
-            );
+            expect(
+                history.getNextPositionWithKey(firstPosition.move.moveKey),
+            ).toBe(firstPosition);
         });
 
-        it("should detect a head sub-variation when viewingPosition is null", () => {
+        it("should detect a first mainline sub variation when viewingPosition is null", () => {
             history.addNextPosition(createFakePositionProps());
 
             history.goToStart();
@@ -79,7 +81,7 @@ describe("PositionHistory", () => {
             );
         });
 
-        it("should detect a sub-variation from the current position", () => {
+        it("should detect a sub variation from the current position", () => {
             const pos1 = history.addNextPosition(createFakePositionProps());
             history.addNextPosition(createFakePositionProps());
 
@@ -316,12 +318,14 @@ describe("PositionHistory", () => {
             expect(history.viewingPosition).toBe(pos3);
         });
 
-        it("should go to head if viewingPosition is null", () => {
-            const head = history.addNextPosition(createFakePositionProps());
+        it("should go to first mainline position if viewingPosition is null", () => {
+            const firstPosition = history.addNextPosition(
+                createFakePositionProps(),
+            );
             history.goToStart();
 
             expect(history.stepForward()).toBe(true);
-            expect(history.viewingPosition).toBe(head);
+            expect(history.viewingPosition).toBe(firstPosition);
         });
 
         it("should return null if history is empty", () => {
@@ -330,7 +334,7 @@ describe("PositionHistory", () => {
     });
 
     describe("addNextPosition", () => {
-        it("should create the first position and set it as head, tail, and viewing position", () => {
+        it("should create the first position and set it as tail, and viewing position", () => {
             const props = createFakePositionProps();
             const pos = history.addNextPosition(props);
 
@@ -350,7 +354,7 @@ describe("PositionHistory", () => {
             expect(history.viewingPosition).toBe(pos2);
         });
 
-        it("should return the existing head variation if move key is the same as head when viewing root", () => {
+        it("should return the existing first mainline variation if move key is the same when viewing root", () => {
             const props = createFakePositionProps();
             const pos = history.addNextPosition(props);
 
@@ -362,8 +366,8 @@ describe("PositionHistory", () => {
             expect([...history]).toEqual([pos]);
         });
 
-        it("should add a new head variation if move key does not exist", () => {
-            const head = history.addNextPosition(
+        it("should add a new first mainline variation if move key does not exist", () => {
+            const firstPosition = history.addNextPosition(
                 createFakePositionProps({
                     move: createFakeMove({ moveKey: "move1" as MoveKey }),
                 }),
@@ -373,23 +377,30 @@ describe("PositionHistory", () => {
             const newProps = createFakePositionProps({
                 move: createFakeMove({ moveKey: "move2" as MoveKey }),
             });
-            const headVariation = history.addNextPosition(newProps);
+            const firstPositionVariation = history.addNextPosition(newProps);
 
-            expect(headVariation).not.toBe(head);
-            expect(history.viewingPosition).toBe(headVariation);
+            expect(firstPositionVariation).not.toBe(firstPosition);
+            expect(history.viewingPosition).toBe(firstPositionVariation);
             expect(history.mainPlyCount).toBe(1);
             expect(history.totalPlyCount).toBe(2);
 
-            const retrieved = history.goToPosition(headVariation.positionId);
+            const retrieved = history.goToPosition(
+                firstPositionVariation.positionId,
+            );
             expect(retrieved.success).toBe(true);
-            expect(history.viewingPosition).toBe(headVariation);
+            expect(history.viewingPosition).toBe(firstPositionVariation);
             expect(history.rootSubVariationByKey).toEqual(
-                new Map([[headVariation.move.moveKey, headVariation]]),
+                new Map([
+                    [
+                        firstPositionVariation.move.moveKey,
+                        firstPositionVariation,
+                    ],
+                ]),
             );
 
             history.goToStart();
             expect(history.stepForward()).toBe(true);
-            expect(history.viewingPosition).toBe(head);
+            expect(history.viewingPosition).toBe(firstPosition);
         });
 
         it("should add a variation when viewing a non tail position", () => {

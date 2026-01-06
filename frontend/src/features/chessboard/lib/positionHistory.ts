@@ -1,6 +1,14 @@
 import { immerable } from "immer";
 
-import { Position, PositionId, PositionNode, PositionProps } from "./position";
+import {
+    PositionNode,
+    Position,
+    PositionId,
+    ChildPositionNode,
+    PositionProps,
+    RootPositionNode,
+} from "./position";
+
 import BoardPieces from "./boardPieces";
 import { MoveKey } from "./types";
 
@@ -8,26 +16,23 @@ export default class PositionHistory {
     [immerable] = true;
 
     _mainBranchPlies = 0;
+    _byPositionId: Map<PositionId, ChildPositionNode> = new Map();
 
-    _rootPieces: BoardPieces;
-    _byPositionId: Map<PositionId, PositionNode> = new Map();
+    _root: RootPositionNode;
+    _tail: ChildPositionNode | null = null;
 
-    _head: PositionNode | null = null;
-    _headVariationByKey: Map<MoveKey, PositionNode> = new Map();
-    _tail: PositionNode | null = null;
-
-    _viewingPosition: PositionNode | null = null;
+    _viewingPosition: ChildPositionNode | null = null;
 
     constructor(rootPieces: BoardPieces) {
-        this._rootPieces = rootPieces;
+        this._root = new RootPositionNode(rootPieces);
     }
 
     get rootPieces(): BoardPieces {
-        return this._rootPieces;
+        return this._root.pieces;
     }
 
     get rootSubVariationByKey(): ReadonlyMap<MoveKey, Position> {
-        return this._headVariationByKey;
+        return this._root.subVariationByKey;
     }
 
     get viewingPosition(): Position | null {
@@ -47,17 +52,12 @@ export default class PositionHistory {
     }
 
     getNextPositionWithKey(key: MoveKey): Position | undefined {
-        if (!this._viewingPosition) {
-            const head = this._head?.move.moveKey === key && this._head;
-            const headSub = this._headVariationByKey.get(key);
-            return head || headSub;
-        }
+        const currPosition = this._viewingPosition
+            ? this._viewingPosition
+            : this._root;
 
-        const next =
-            this._viewingPosition.next?.move.moveKey === key &&
-            this._viewingPosition.next;
-        const viewingSub = this._viewingPosition.subVariationByKey.get(key);
-        return next || viewingSub;
+        if (currPosition.next?.move.moveKey === key) return currPosition.next;
+        else return currPosition.subVariationByKey.get(key);
     }
 
     goToPosition(positionId: PositionId): {
@@ -69,10 +69,7 @@ export default class PositionHistory {
 
         let isOneStepForward = true;
         if (this._viewingPosition) {
-            isOneStepForward =
-                this._viewingPosition.next?.positionId === node.positionId ||
-                this._viewingPosition.subVariationByKey.get(node.move.moveKey)
-                    ?.positionId === node.positionId;
+            isOneStepForward = this._viewingPosition.isPositionNext(node);
         }
 
         this._viewingPosition = node;
@@ -94,7 +91,7 @@ export default class PositionHistory {
             return { success: false, isOneStepForward: false };
 
         const isOneStepForward =
-            this._viewingPosition?.next?.positionId === this._tail?.positionId;
+            this._viewingPosition?.isPositionNext(this._tail) ?? false;
         this._viewingPosition = this._tail;
         return { success: true, isOneStepForward };
     }
@@ -113,9 +110,9 @@ export default class PositionHistory {
     }
 
     stepForward(): boolean {
-        if (!this._viewingPosition && !this._head) return false;
+        if (!this._viewingPosition && !this._root.next) return false;
         if (!this._viewingPosition) {
-            this._viewingPosition = this._head;
+            this._viewingPosition = this._root.next;
             return true;
         }
 
@@ -127,57 +124,24 @@ export default class PositionHistory {
     }
 
     addNextPosition(props: PositionProps): Position {
-        // we're already viewing a position, add to it
-        if (this._viewingPosition) {
-            const node = this._addToNode(this._viewingPosition, props);
-            this._viewingPosition = node;
-            return node;
-        }
-
-        // we're empty, start the tree
-        if (!this._head || !this._tail) {
-            const node = new PositionNode(props);
-            this._head = node;
-            this._tail = node;
-            this._mainBranchPlies = 1;
-
-            this._byPositionId.set(node.positionId, node);
-            this._viewingPosition = node;
-            return node;
-        }
-
-        // we're not viewing anything, but we're not empty, add a head variation
-        const existing =
-            props.move.moveKey === this._head.move.moveKey
-                ? this._head
-                : this._headVariationByKey.get(props.move.moveKey);
-        if (existing) {
-            this._viewingPosition = existing;
-            return existing;
-        }
-
-        const node = new PositionNode(props);
-        this._byPositionId.set(node.positionId, node);
-        this._headVariationByKey.set(props.move.moveKey, node);
-        this._viewingPosition = node;
-        return node;
+        return this._addToNode(props, this._viewingPosition ?? this._root);
     }
 
-    _addToNode(parent: PositionNode, position: PositionProps): PositionNode {
-        const node = parent.createChild(position);
+    _addToNode(props: PositionProps, parent: PositionNode): ChildPositionNode {
+        const { child, isMainVariation } =
+            parent?.createChild(props) ?? new ChildPositionNode(props);
 
-        // if parent is the tail, it cannot possibly have a sub variation already
-        // which means this is a main variation, increment ply count
-        if (parent?.positionId === this._tail?.positionId) {
-            this._tail = node;
+        if (isMainVariation) {
+            this._tail = child;
             this._mainBranchPlies++;
         }
 
-        this._byPositionId.set(node.positionId, node);
-        return node;
+        this._byPositionId.set(child.positionId, child);
+        this._viewingPosition = child;
+        return child;
     }
 
     *[Symbol.iterator](): IterableIterator<Position> {
-        if (this._head) yield* this._head;
+        yield* this._root;
     }
 }
