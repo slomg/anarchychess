@@ -106,6 +106,7 @@ const MoveHistoryTable = () => {
             );
         }
     }
+    if (pendingWhiteMoveVariation) moveRows.push(pendingWhiteMoveVariation);
 
     return (
         <Card className="relative max-h-96 w-full p-0 lg:max-h-full">

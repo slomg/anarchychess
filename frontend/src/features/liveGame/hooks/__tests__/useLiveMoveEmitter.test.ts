@@ -10,7 +10,7 @@ import createLiveChessStore, {
 } from "../../stores/liveChessStore";
 
 import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
-import handleAnalysisMove from "@/features/analysis/lib/handleAnalysisMove";
+import { addSidelineAnalysisMove } from "@/features/analysis/lib/handleAnalysisMove";
 import { createFakeMove } from "@/lib/testUtils/fakers/chessboardFakers";
 import useLiveMoveEmitter from "../useLiveMoveEmitter";
 import { useGameEmitter } from "../useGameHub";
@@ -24,7 +24,7 @@ describe("useLiveMoveEmitter", () => {
     let chessboardStore: StoreApi<ChessboardStore>;
 
     const sendGameEventMock = vi.fn();
-    const handleAnalysisMoveMock = vi.mocked(handleAnalysisMove);
+    const addSidelineAnalysisMoveMock = vi.mocked(addSidelineAnalysisMove);
 
     beforeEach(() => {
         liveChessStore = createLiveChessStore(createFakeLiveChessStoreProps());
@@ -44,7 +44,7 @@ describe("useLiveMoveEmitter", () => {
             liveChessStore.getState().gameToken,
             move.moveKey,
         );
-        expect(handleAnalysisMoveMock).not.toHaveBeenCalled();
+        expect(addSidelineAnalysisMoveMock).not.toHaveBeenCalled();
     });
 
     it("should treat move as analysis when the game is over", () => {
@@ -61,7 +61,7 @@ describe("useLiveMoveEmitter", () => {
         const move = createFakeMove();
         chessboardStore.getState().pieceMovementEvent.emit(move);
 
-        expect(handleAnalysisMoveMock).toHaveBeenCalledExactlyOnceWith(
+        expect(addSidelineAnalysisMoveMock).toHaveBeenCalledExactlyOnceWith(
             chessboardStore,
             initialFen,
             move,

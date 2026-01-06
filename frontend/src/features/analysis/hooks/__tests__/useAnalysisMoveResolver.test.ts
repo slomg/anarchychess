@@ -6,12 +6,11 @@ import {
     createChessboardStore,
 } from "@/features/chessboard/stores/chessboardStore";
 
-import { RootAnalysisPosition } from "@/lib/apiClient";
-
-import constants from "@/lib/constants";
-import handleAnalysisMove from "../../lib/handleAnalysisMove";
-import useAnalysisMoveResolver from "../useAnalysisMoveResolver";
 import { createFakeMove } from "@/lib/testUtils/fakers/chessboardFakers";
+import useAnalysisMoveResolver from "../useAnalysisMoveResolver";
+import { addAnalysisMove } from "../../lib/handleAnalysisMove";
+import { RootAnalysisPosition } from "@/lib/apiClient";
+import constants from "@/lib/constants";
 
 vi.mock("@/features/analysis/lib/handleAnalysisMove");
 
@@ -19,7 +18,7 @@ describe("useAnalysisMoveResolver", () => {
     let chessboardStore: StoreApi<ChessboardStore>;
     let rootPosition: RootAnalysisPosition;
 
-    const handleAnalysisMoveMock = vi.mocked(handleAnalysisMove);
+    const addAnalysisMoveMock = vi.mocked(addAnalysisMove);
 
     beforeEach(() => {
         chessboardStore = createChessboardStore();
@@ -44,7 +43,7 @@ describe("useAnalysisMoveResolver", () => {
 
         await chessboardStore.getState().pieceMovementEvent.emit(move);
 
-        expect(handleAnalysisMoveMock).toHaveBeenCalledExactlyOnceWith(
+        expect(addAnalysisMoveMock).toHaveBeenCalledExactlyOnceWith(
             chessboardStore,
             rootPosition.fen,
             move,

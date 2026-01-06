@@ -1,8 +1,8 @@
 import { StoreApi } from "zustand";
 import { useEffect } from "react";
 
+import { addSidelineAnalysisMove } from "@/features/analysis/lib/handleAnalysisMove";
 import { ChessboardStore } from "@/features/chessboard/stores/chessboardStore";
-import handleAnalysisMove from "@/features/analysis/lib/handleAnalysisMove";
 import { LiveChessStore } from "../stores/liveChessStore";
 import { Move } from "@/features/chessboard/lib/types";
 import { useGameEmitter } from "../hooks/useGameHub";
@@ -24,7 +24,11 @@ export default function useLiveMoveEmitter(
                 markPendingMoveAck();
                 await sendGameEvent("MovePieceAsync", gameToken, move.moveKey);
             } else {
-                await handleAnalysisMove(chessboardStore, initialFen, move);
+                await addSidelineAnalysisMove(
+                    chessboardStore,
+                    initialFen,
+                    move,
+                );
             }
         }
 

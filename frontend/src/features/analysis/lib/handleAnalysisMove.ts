@@ -4,25 +4,47 @@ import { ChessboardStore } from "@/features/chessboard/stores/chessboardStore";
 import { getNextAnalysisPosition } from "@/lib/apiClient";
 import { Move } from "@/features/chessboard/lib/types";
 import { decodeMovePathIntoLegalMoves } from "@/features/liveGame/lib/moveDecoder";
+import { PositionProps } from "@/features/chessboard/lib/position";
+import LegalMoves from "@/features/chessboard/lib/legalMoves";
 
-export default async function handleAnalysisMove(
+export async function addAnalysisMove(
     chessboardStore: StoreApi<ChessboardStore>,
     rootFen: string,
     move: Move,
 ): Promise<void> {
-    const {
-        pieces,
-        boardDimensions,
-        positionHistory,
-        goToPosition,
-        addPosition,
-        addLegalMoves,
-    } = chessboardStore.getState();
+    const result = await fetchNextPosition(chessboardStore, rootFen, move);
+    if (result === null) return;
+
+    const { addPosition, addLegalMoves } = chessboardStore.getState();
+    const position = addPosition(result.positionProps);
+    addLegalMoves(result.legalMoves, position.positionId);
+}
+
+export async function addSidelineAnalysisMove(
+    chessboardStore: StoreApi<ChessboardStore>,
+    rootFen: string,
+    move: Move,
+) {
+    const result = await fetchNextPosition(chessboardStore, rootFen, move);
+    if (result === null) return;
+
+    const { addSidelinePosition, addLegalMoves } = chessboardStore.getState();
+    const position = addSidelinePosition(result.positionProps);
+    addLegalMoves(result.legalMoves, position.positionId);
+}
+
+async function fetchNextPosition(
+    chessboardStore: StoreApi<ChessboardStore>,
+    rootFen: string,
+    move: Move,
+): Promise<{ positionProps: PositionProps; legalMoves: LegalMoves } | null> {
+    const { pieces, boardDimensions, positionHistory, goToPosition } =
+        chessboardStore.getState();
 
     const nextPosition = positionHistory.getNextPositionWithKey(move.moveKey);
     if (nextPosition) {
         await goToPosition(nextPosition.positionId);
-        return;
+        return null;
     }
 
     const { error, data } = await getNextAnalysisPosition({
@@ -34,21 +56,21 @@ export default async function handleAnalysisMove(
     });
     if (error || data === undefined) {
         console.error(error);
-        return;
+        return null;
     }
 
-    const position = addPosition({
+    const positionProps: PositionProps = {
         pieces,
         move,
         sideToMove: data.sideToMove,
         fen: data.fen,
         san: data.san,
-    });
-
-    const decodedLegalMoves = decodeMovePathIntoLegalMoves({
+    };
+    const legalMoves = decodeMovePathIntoLegalMoves({
         paths: data.moveOptions.legalMoves,
         boardWidth: boardDimensions.width,
         hasForcedMoves: data.moveOptions.hasForcedMoves,
     });
-    addLegalMoves(decodedLegalMoves, position.positionId);
+
+    return { positionProps, legalMoves };
 }

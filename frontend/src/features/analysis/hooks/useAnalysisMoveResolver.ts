@@ -2,7 +2,7 @@ import { StoreApi } from "zustand";
 import { useEffect } from "react";
 
 import { ChessboardStore } from "@/features/chessboard/stores/chessboardStore";
-import handleAnalysisMove from "../lib/handleAnalysisMove";
+import { addAnalysisMove } from "../lib/handleAnalysisMove";
 import { RootAnalysisPosition } from "@/lib/apiClient";
 import { Move } from "@/features/chessboard/lib/types";
 
@@ -14,7 +14,7 @@ export default function useAnalysisMoveResolver(
 
     useEffect(() => {
         async function emitMove(move: Move) {
-            await handleAnalysisMove(chessboardStore, rootPosition.fen, move);
+            await addAnalysisMove(chessboardStore, rootPosition.fen, move);
         }
 
         pieceMovementEvent.subscribe(emitMove);
