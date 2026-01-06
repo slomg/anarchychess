@@ -1,7 +1,6 @@
 import { immerable } from "immer";
 
 import {
-    PositionNode,
     Position,
     PositionId,
     ChildPositionNode,
@@ -124,21 +123,40 @@ export default class PositionHistory {
     }
 
     addNextPosition(props: PositionProps): Position {
-        return this._addToNode(props, this._viewingPosition ?? this._root);
-    }
-
-    _addToNode(props: PositionProps, parent: PositionNode): ChildPositionNode {
-        const { child, isMainVariation } =
-            parent?.createChild(props) ?? new ChildPositionNode(props);
+        const parent = this._viewingPosition ?? this._root;
+        const { child: nextPosition, isMainVariation } =
+            parent.createChild(props);
+        this._trackPosition(nextPosition);
 
         if (isMainVariation) {
-            this._tail = child;
+            this._tail = nextPosition;
             this._mainBranchPlies++;
         }
 
-        this._byPositionId.set(child.positionId, child);
-        this._viewingPosition = child;
-        return child;
+        return nextPosition;
+    }
+
+    addNextSidelinePosition(props: PositionProps): Position {
+        const parent = this._viewingPosition ?? this._root;
+        let nextPosition: ChildPositionNode;
+
+        // if the parent is the tail, create a sub variation
+        // if the parent is NOT the tail, it's safe to call createChild because the parent is either
+        // - off the main line, so adding a main variation won't affect the main line
+        // - on the main line but not the tail, so it must already have a main variation and calling createChild will not replace the main variation
+        if (parent.positionId === this._tail?.positionId) {
+            nextPosition = parent.createSubVariationChild(props);
+        } else {
+            nextPosition = parent.createChild(props).child;
+        }
+        this._trackPosition(nextPosition);
+
+        return nextPosition;
+    }
+
+    _trackPosition(position: ChildPositionNode) {
+        this._byPositionId.set(position.positionId, position);
+        this._viewingPosition = position;
     }
 
     *[Symbol.iterator](): IterableIterator<Position> {

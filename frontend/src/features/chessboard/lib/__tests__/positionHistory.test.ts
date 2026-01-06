@@ -1,8 +1,5 @@
 import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
-import {
-    createFakeBoardPieces,
-    createFakeMove,
-} from "@/lib/testUtils/fakers/chessboardFakers";
+import { createFakeBoardPieces } from "@/lib/testUtils/fakers/chessboardFakers";
 import PositionHistory from "../positionHistory";
 import { PositionId } from "../position";
 import BoardPieces from "../boardPieces";
@@ -368,15 +365,11 @@ describe("PositionHistory", () => {
 
         it("should add a new first mainline variation if move key does not exist", () => {
             const firstPosition = history.addNextPosition(
-                createFakePositionProps({
-                    move: createFakeMove({ moveKey: "move1" as MoveKey }),
-                }),
+                createFakePositionProps(),
             );
 
             history.goToStart();
-            const newProps = createFakePositionProps({
-                move: createFakeMove({ moveKey: "move2" as MoveKey }),
-            });
+            const newProps = createFakePositionProps();
             const firstPositionVariation = history.addNextPosition(newProps);
 
             expect(firstPositionVariation).not.toBe(firstPosition);
@@ -422,18 +415,11 @@ describe("PositionHistory", () => {
         it("should return the existing variation if move key already exists as main variation", () => {
             const pos = history.addNextPosition(createFakePositionProps());
 
-            const variation1 = history.addNextPosition(
-                createFakePositionProps({
-                    move: createFakeMove({ moveKey: "move1" as MoveKey }),
-                }),
-            );
+            const props = createFakePositionProps();
+            const variation1 = history.addNextPosition(props);
 
             history.goToPosition(pos.positionId);
-            const variation2 = history.addNextPosition(
-                createFakePositionProps({
-                    move: createFakeMove({ moveKey: "move1" as MoveKey }),
-                }),
-            );
+            const variation2 = history.addNextPosition(props);
 
             expect(variation1).toBe(variation2);
         });
@@ -442,22 +428,72 @@ describe("PositionHistory", () => {
             const pos1 = history.addNextPosition(createFakePositionProps());
             const pos2 = history.addNextPosition(createFakePositionProps());
 
+            const props = createFakePositionProps();
             history.goToPosition(pos1.positionId);
-            const variation1 = history.addNextPosition(
-                createFakePositionProps({
-                    move: createFakeMove({ moveKey: "move1" as MoveKey }),
-                }),
-            );
+            const variation1 = history.addNextPosition(props);
 
             history.goToPosition(pos1.positionId);
-            const variation2 = history.addNextPosition(
-                createFakePositionProps({
-                    move: createFakeMove({ moveKey: "move1" as MoveKey }),
-                }),
-            );
+            const variation2 = history.addNextPosition(props);
 
             expect(variation1).toBe(variation2);
             expect(pos2).not.toBe(variation1);
+        });
+    });
+
+    describe("addNextSidelinePosition", () => {
+        it("should create a sub variation when viewing the tail", () => {
+            const main1 = history.addNextPosition(createFakePositionProps());
+            const tail = history.addNextPosition(createFakePositionProps());
+
+            const sideline = history.addNextSidelinePosition(
+                createFakePositionProps(),
+            );
+
+            expect(history.mainPlyCount).toBe(2);
+            expect(history.totalPlyCount).toBe(3);
+            expect(history.viewingPosition).toBe(sideline);
+
+            expect([...history]).toEqual([main1, tail]);
+
+            expect(tail.variations).toEqual([sideline]);
+        });
+
+        it("should create a main variation when off the main line", () => {
+            const main1 = history.addNextPosition(createFakePositionProps());
+            const tail = history.addNextPosition(createFakePositionProps());
+            history.goToPosition(main1.positionId);
+
+            const variation = history.addNextSidelinePosition(
+                createFakePositionProps(),
+            );
+
+            expect(history.totalPlyCount).toBe(3);
+            expect(history.mainPlyCount).toBe(2);
+            expect(history.viewingPosition).toBe(variation);
+
+            expect([...history]).toEqual([main1, tail]);
+
+            expect(main1.variations).toEqual([tail, variation]);
+        });
+
+        it("should add a main variation to a sub variation branch without affecting main line", () => {
+            const main1 = history.addNextPosition(createFakePositionProps());
+            const main2 = history.addNextPosition(createFakePositionProps());
+
+            history.goToPosition(main1.positionId);
+            const sub1 = history.addNextPosition(createFakePositionProps());
+            const sub2 = history.addNextSidelinePosition(
+                createFakePositionProps(),
+            );
+
+            expect(history.viewingPosition).toBe(sub2);
+            expect(history.mainPlyCount).toBe(2);
+            expect(history.totalPlyCount).toBe(4);
+
+            expect([...history]).toEqual([main1, main2]);
+
+            expect(sub1.variations).toEqual([sub2]);
+            expect(sub1.subVariationByKey.size).toBe(0);
         });
     });
 

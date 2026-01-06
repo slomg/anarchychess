@@ -115,6 +115,61 @@ describe("RootPositionNode", () => {
         });
     });
 
+    describe("createSubVariationChild", () => {
+        it("should create a sub variation child when no variations exist", () => {
+            const props = createFakePositionProps();
+            const child = root.createSubVariationChild(props);
+
+            expect(child).toEqual(expect.objectContaining(props));
+            expect(child.prev).toBeNull();
+            expect(child.ply).toBe(0);
+            expect(root.subVariationByKey.get(props.move.moveKey)).toBe(child);
+            expect(root.variations).toEqual([child]);
+            expect(root.next).toBeNull();
+        });
+
+        it("should return the existing sub variation if move key already exists as a sub variation", () => {
+            const props = createFakePositionProps();
+
+            const first = root.createSubVariationChild(props);
+            const duplicate = root.createSubVariationChild(props);
+
+            expect(duplicate).toBe(first);
+            expect(root.subVariationByKey.size).toBe(1);
+            expect(root.variations).toHaveLength(1);
+        });
+
+        it("should return the main variation if move key matches the main variation", () => {
+            const props = createFakePositionProps();
+
+            const { child: mainChild } = root.createChild(props);
+            const result = root.createSubVariationChild(props);
+
+            expect(result).toBe(mainChild);
+            expect(root.subVariationByKey.size).toBe(0);
+            expect(root.variations).toHaveLength(1);
+            expect(root.next).toBe(mainChild);
+        });
+
+        it("should allow multiple distinct sub variations alongside a main variation", () => {
+            const { child: mainChild } = root.createChild(
+                createFakePositionProps(),
+            );
+
+            const sub1 = root.createSubVariationChild(
+                createFakePositionProps(),
+            );
+            const sub2 = root.createSubVariationChild(
+                createFakePositionProps(),
+            );
+
+            expect(root.next).toBe(mainChild);
+            expect(sub1).not.toBe(sub2);
+            expect(root.variations).toEqual([mainChild, sub1, sub2]);
+            expect(root.subVariationByKey.size).toBe(2);
+        });
+    });
+
     describe("iterator", () => {
         it("should iterate over mainline positions correctly", () => {
             const { child } = root.createChild(createFakePositionProps());

@@ -73,12 +73,11 @@ export abstract class PositionNode {
         child: ChildPositionNode;
         isMainVariation: boolean;
     } {
-        const child = new ChildPositionNode(
-            props,
-            this instanceof ChildPositionNode ? this : null,
-        );
-
         if (!this._mainVariation) {
+            const child = new ChildPositionNode(
+                props,
+                this instanceof ChildPositionNode ? this : null,
+            );
             this._mainVariation = child;
             this._allVariations.push(child);
             return { child, isMainVariation: true };
@@ -88,15 +87,29 @@ export abstract class PositionNode {
             return { child: this._mainVariation, isMainVariation: true };
         }
 
+        const child = this.createSubVariationChild(props);
+        return { child, isMainVariation: false };
+    }
+
+    createSubVariationChild(props: PositionProps): ChildPositionNode {
+        if (this._mainVariation?.move.moveKey === props.move.moveKey) {
+            return this._mainVariation;
+        }
+
         const existingSubWithSan = this._subVariationByKey.get(
             props.move.moveKey,
         );
-        if (existingSubWithSan)
-            return { child: existingSubWithSan, isMainVariation: false };
+        if (existingSubWithSan) {
+            return existingSubWithSan;
+        }
 
+        const child = new ChildPositionNode(
+            props,
+            this instanceof ChildPositionNode ? this : null,
+        );
         this._subVariationByKey.set(child.move.moveKey, child);
         this._allVariations.push(child);
-        return { child, isMainVariation: false };
+        return child;
     }
 
     *[Symbol.iterator](): IterableIterator<ChildPositionNode> {
