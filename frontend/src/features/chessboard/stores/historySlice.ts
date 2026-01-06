@@ -23,7 +23,8 @@ export interface HistorySlice {
     goToStartPosition(): Promise<void>;
     goToLatestPosition(): Promise<void>;
 
-    addPosition(newPosition: PositionProps): Position;
+    addPosition(props: PositionProps): Position;
+    addSidelinePosition(props: PositionProps): Position;
 }
 
 export function createHistorySlice(
@@ -121,10 +122,18 @@ export function createHistorySlice(
             }
         },
 
-        addPosition(newPosition) {
+        addPosition(props) {
             let position: Position;
             set((state) => {
-                position = state.positionHistory.addNextPosition(newPosition);
+                position = state.positionHistory.addNextPosition(props);
+            });
+            return position!;
+        },
+
+        addSidelinePosition(props) {
+            let position: Position;
+            set((state) => {
+                position = state.positionHistory.addNextSidelinePosition(props);
             });
             return position!;
         },

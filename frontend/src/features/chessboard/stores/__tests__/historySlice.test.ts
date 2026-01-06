@@ -6,6 +6,8 @@ import { createFakeBoardPieces } from "@/lib/testUtils/fakers/chessboardFakers";
 import { ChessboardStore, createChessboardStore } from "../chessboardStore";
 import PositionHistory from "../../lib/positionHistory";
 import { PositionId } from "../../lib/position";
+import { mock } from "vitest-mock-extended";
+import { createFakePosition } from "@/lib/testUtils/fakers/positionFaker";
 
 describe("HistorySlice", () => {
     let store: StoreApi<ChessboardStore>;
@@ -243,22 +245,39 @@ describe("HistorySlice", () => {
 
     describe("addPosition", () => {
         it("should add the new position to positionHistory", async () => {
-            const positionHistory = new PositionHistory(
-                createFakeBoardPieces(),
+            const positionHistoryMock = mock<PositionHistory>();
+            const newPosition = createFakePosition();
+            const newPositionProps = createFakePositionProps();
+            positionHistoryMock.addNextPosition.mockReturnValue(newPosition);
+            store.setState({ positionHistory: positionHistoryMock });
+
+            const result = store.getState().addPosition(newPositionProps);
+
+            expect(result).toBe(newPosition);
+            expect(
+                positionHistoryMock.addNextPosition,
+            ).toHaveBeenCalledExactlyOnceWith(newPositionProps);
+        });
+    });
+
+    describe("addSidelinePosition", () => {
+        it("should add the new position as a slideline to positionHistory", async () => {
+            const positionHistoryMock = mock<PositionHistory>();
+            const newPosition = createFakePosition();
+            const newPositionProps = createFakePositionProps();
+            positionHistoryMock.addNextSidelinePosition.mockReturnValue(
+                newPosition,
             );
-            const pos1 = positionHistory.addNextPosition(
-                createFakePositionProps(),
-            );
-            positionHistory.goToPosition(pos1.positionId);
-            const newPosition = createFakePositionProps();
-            store.setState({ positionHistory });
+            store.setState({ positionHistory: positionHistoryMock });
 
-            const result = store.getState().addPosition(newPosition);
+            const result = store
+                .getState()
+                .addSidelinePosition(newPositionProps);
 
-            expect(result).toEqual(expect.objectContaining(newPosition));
-
-            const newPositionHistory = store.getState().positionHistory;
-            expect([...newPositionHistory]).toEqual([pos1, result]);
+            expect(result).toBe(newPosition);
+            expect(
+                positionHistoryMock.addNextSidelinePosition,
+            ).toHaveBeenCalledExactlyOnceWith(newPositionProps);
         });
     });
 });
