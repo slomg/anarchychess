@@ -28,7 +28,9 @@ export default function PlayPage() {
                             overflow-auto lg:max-w-sm"
                     >
                         <PlayOptions />
-                        <OpenSeekDirectory />
+                        <div className="flex min-h-fit flex-1">
+                            <OpenSeekDirectory />
+                        </div>
                     </aside>
                 }
             />
