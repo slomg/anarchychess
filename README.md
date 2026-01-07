@@ -15,6 +15,7 @@
 - **New Pieces & Rules:** Knook, Checker, Traitor Rook, Antiqueen, Underage Pawn, King Capture, King Touch = Draw, Forced En Passant, Long Passant, Il Vaticano, Omnipotent Pawn, Vertical Castling, Knooklear Fusion, Queen Beta Decay.\
   _See the [full guide](https://anarchychess.org/guide) for detailed explanations of all pieces and rules_
 
+- **Analysis:** Analysis board with branching positions and variations, available standalone or from finished games
 - **Player Profiles:** Track ratings, game history and progress for each time control
 - **Social Features:** Stars, blocks, in-game chat, leaderboards, direct challenges
 - **Matchmaking:** Seek a game in any time control, all at once, rated or casual. Your seek is also displayed as an open seek, allowing players to accept it directly without having to go through the pool
