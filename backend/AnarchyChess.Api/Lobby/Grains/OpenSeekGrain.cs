@@ -1,6 +1,5 @@
 ﻿using AnarchyChess.Api.Infrastructure;
 using AnarchyChess.Api.Infrastructure.Extensions;
-using AnarchyChess.Api.Lobby.Models;
 using AnarchyChess.Api.Lobby.Services;
 using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.Profile.Models;
@@ -27,102 +26,56 @@ public interface IOpenSeekGrain : IGrainWithIntegerKey
 #endif
 }
 
-public class SeekWatcher
-{
-    public required HashSet<ConnectionId> ConnectionIds { get; init; }
-    public required Seeker Seeker { get; init; }
-}
-
-public class OpenSeekEntry
-{
-    public required OpenSeek OpenSeek { get; init; }
-    public required Seeker Seeker { get; init; }
-    public required HashSet<string> SubscribedUserIds { get; init; }
-}
-
-public record SeekKey(UserId UserId, PoolKey Pool);
-
 [KeepAlive]
-public class OpenSeekGrain(ILogger<OpenSeekGrain> logger, IOpenSeekNotifier openSeekNotifier)
-    : Grain,
-        IOpenSeekGrain
+public class OpenSeekGrain(
+    ILogger<OpenSeekGrain> logger,
+    IOpenSeekNotifier openSeekNotifier,
+    IOpenSeekTracker openSeekTracker
+) : Grain, IOpenSeekGrain
 {
     public const int RefetchTimer = 0;
     public const string StateName = "openSeek";
 
     private readonly ILogger<OpenSeekGrain> _logger = logger;
     private readonly IOpenSeekNotifier _openSeekNotifier = openSeekNotifier;
-
-    private readonly Dictionary<UserId, SeekWatcher> _connections = [];
-    private readonly Dictionary<SeekKey, OpenSeekEntry> _openSeeks = [];
+    private readonly IOpenSeekTracker _openSeekTracker = openSeekTracker;
 
     public async Task SubscribeAsync(ConnectionId connectionId, Seeker seeker)
     {
-        if (_connections.TryGetValue(seeker.UserId, out var existingConnection))
+        var subscribedTo = _openSeekTracker.Subscribe(connectionId, seeker);
+        if (subscribedTo.Count > 0)
         {
-            existingConnection.ConnectionIds.Add(connectionId);
-        }
-        else
-        {
-            _connections[seeker.UserId] = new() { ConnectionIds = [connectionId], Seeker = seeker };
-        }
-
-        List<OpenSeek> watchingSeeks = [];
-        foreach (var openSeek in _openSeeks.Values)
-        {
-            if (
-                !seeker.IsCompatibleWith(openSeek.Seeker)
-                || !openSeek.Seeker.IsCompatibleWith(seeker)
-            )
-                continue;
-
-            watchingSeeks.Add(openSeek.OpenSeek);
-            openSeek.SubscribedUserIds.Add(seeker.UserId);
-            if (watchingSeeks.Count >= 10)
-                break;
-        }
-
-        if (watchingSeeks.Count > 0)
-        {
-            await _openSeekNotifier.NotifyOpenSeekAsync(connectionId, watchingSeeks);
+            await _openSeekNotifier.NotifyOpenSeekAsync(connectionId, subscribedTo);
         }
     }
 
     public Task UnsubscribeAsync(UserId userId, ConnectionId connectionId)
     {
-        if (!_connections.TryGetValue(userId, out var existingConnection))
-            return Task.CompletedTask;
-
-        existingConnection.ConnectionIds.Remove(connectionId);
-        if (existingConnection.ConnectionIds.Count == 0)
-        {
-            _connections.Remove(userId);
-        }
+        _openSeekTracker.Unsubscribe(userId, connectionId);
         return Task.CompletedTask;
-    }
-
-    private async Task OnSeekEnded(OpenSeekRemovedEvent @event, StreamSequenceToken _)
-    {
-        SeekKey seekKey = new(@event.UserId, @event.Pool);
-        if (!_openSeeks.TryGetValue(seekKey, out var openSeek))
-            return;
-
-        _openSeeks.Remove(seekKey);
-        await _openSeekNotifier.NotifyOpenSeekEndedAsync(
-            openSeek.SubscribedUserIds,
-            @event.UserId,
-            @event.Pool
-        );
     }
 
     private async Task OnSeekCreated(OpenSeekCreatedEvent @event, StreamSequenceToken _)
     {
-        var openSeek = RegisterOpenSeeker(@event.Seeker, @event.Pool);
-        if (openSeek.SubscribedUserIds.Count > 0)
+        var addedEntry = _openSeekTracker.AddSeek(@event.Seeker, @event.Pool);
+        if (addedEntry.SubscribedUserIds.Count > 0)
         {
             await _openSeekNotifier.NotifyOpenSeekAsync(
-                openSeek.SubscribedUserIds,
-                [openSeek.OpenSeek]
+                addedEntry.SubscribedUserIds,
+                [addedEntry.OpenSeek]
+            );
+        }
+    }
+
+    private async Task OnSeekEnded(OpenSeekRemovedEvent @event, StreamSequenceToken _)
+    {
+        var removedEntry = _openSeekTracker.RemoveSeek(@event.UserId, @event.Pool);
+        if (removedEntry?.SubscribedUserIds.Count > 0)
+        {
+            await _openSeekNotifier.NotifyOpenSeekEndedAsync(
+                removedEntry.SubscribedUserIds,
+                @event.UserId,
+                @event.Pool
             );
         }
     }
@@ -144,38 +97,12 @@ public class OpenSeekGrain(ILogger<OpenSeekGrain> logger, IOpenSeekNotifier open
         await base.OnActivateAsync(cancellationToken);
     }
 
-    private OpenSeekEntry RegisterOpenSeeker(Seeker seeker, PoolKey pool)
-    {
-        int? rating = seeker is RatedSeeker ratedSeeker ? ratedSeeker.Rating.Value : null;
-
-        HashSet<string> matchingUserIds = [];
-        foreach (var (userId, watcher) in _connections)
-        {
-            if (watcher.Seeker.IsCompatibleWith(seeker) && seeker.IsCompatibleWith(watcher.Seeker))
-            {
-                matchingUserIds.Add(userId);
-            }
-        }
-
-        OpenSeek openSeek = new(UserId: seeker.UserId, seeker.UserName, pool, rating);
-        OpenSeekEntry entry = new()
-        {
-            OpenSeek = openSeek,
-            Seeker = seeker,
-            SubscribedUserIds = matchingUserIds,
-        };
-
-        _openSeeks.TryAdd(new SeekKey(seeker.UserId, pool), entry);
-        return entry;
-    }
-
     public Task InitializeAsync() => Task.CompletedTask;
 
 #if DEBUG
     public Task ClearStateAsync()
     {
-        _connections.Clear();
-        _openSeeks.Clear();
+        _openSeekTracker.Clear();
         return Task.CompletedTask;
     }
 #endif

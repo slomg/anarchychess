@@ -1,9 +1,9 @@
-﻿using AnarchyChess.Api.GameSnapshot.Models;
-using AnarchyChess.Api.Infrastructure;
+﻿using AnarchyChess.Api.Infrastructure;
 using AnarchyChess.Api.Lobby.Grains;
 using AnarchyChess.Api.Lobby.Models;
 using AnarchyChess.Api.Lobby.Services;
 using AnarchyChess.Api.Matchmaking.Models;
+using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Shared.Models;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
 using NSubstitute;
@@ -14,28 +14,13 @@ namespace AnarchyChess.Api.Unit.Tests.LobbyTests;
 
 public class OpenSeekGrainTests : BaseGrainTest
 {
-    private readonly IOpenSeekNotifier _openSeekNotifierMock = Substitute.For<IOpenSeekNotifier>();
-    private readonly TimeProvider _timeProviderMock = Substitute.For<TimeProvider>();
-
-    private readonly DateTime _fakeNow;
-
-    private readonly PoolKey _ratedPoolKey = new(
-        PoolType.Rated,
-        new TimeControlSettings(BaseSeconds: 600, IncrementSeconds: 30)
-    );
-
-    private readonly PoolKey _casualPoolKey = new(
-        PoolType.Casual,
-        new TimeControlSettings(BaseSeconds: 300, IncrementSeconds: 20)
-    );
+    private readonly IOpenSeekNotifier _notifierMock = Substitute.For<IOpenSeekNotifier>();
+    private readonly IOpenSeekTracker _trackerMock = Substitute.For<IOpenSeekTracker>();
 
     public OpenSeekGrainTests()
     {
-        _fakeNow = DateTime.UtcNow;
-        _timeProviderMock.GetUtcNow().Returns(_fakeNow);
-
-        Silo.ServiceProvider.AddService(_openSeekNotifierMock);
-        Silo.ServiceProvider.AddService(_timeProviderMock);
+        Silo.ServiceProvider.AddService(_notifierMock);
+        Silo.ServiceProvider.AddService(_trackerMock);
     }
 
     private TestStream<OpenSeekCreatedEvent> ProbeOpenSeekCreatedStream() =>
@@ -55,169 +40,140 @@ public class OpenSeekGrainTests : BaseGrainTest
     [Fact]
     public async Task SubscribeAsync_notifies_of_all_compatible_seeks()
     {
-        var createStream = ProbeOpenSeekCreatedStream();
-        var seeker = new CasualSeekerFaker().Generate();
-        var matchSeeker = new CasualSeekerFaker().Generate();
-        var unmatchSeeker = new RatedSeekerFaker().Generate();
         var grain = await Silo.CreateGrainAsync<OpenSeekGrain>(0);
-        await createStream.OnNextBatchAsync(
-            [new(matchSeeker, _casualPoolKey), new(unmatchSeeker, _ratedPoolKey)]
-        );
-        _openSeekNotifierMock.ClearReceivedCalls();
 
-        await grain.SubscribeAsync("conn", seeker);
+        ConnectionId connId = "conn 1";
+        var watcher = new CasualSeekerFaker().Generate();
+        var openSeeks = new OpenSeekFaker().Generate(5);
+        _trackerMock.Subscribe(connId, watcher).Returns(openSeeks);
 
-        List<OpenSeek> expectedSeeks =
-        [
-            new OpenSeek(
-                matchSeeker.UserId,
-                UserName: matchSeeker.UserName,
-                _casualPoolKey,
-                Rating: null
-            ),
-        ];
-        await _openSeekNotifierMock
+        await grain.SubscribeAsync(connId, watcher);
+
+        await _notifierMock
             .Received(1)
             .NotifyOpenSeekAsync(
-                Arg.Is<ConnectionId>("conn"),
-                Arg.Is<IEnumerable<OpenSeek>>(x => x.SequenceEqual(expectedSeeks))
+                Arg.Is(connId),
+                Arg.Is<IEnumerable<OpenSeek>>(x => x.SequenceEqual(openSeeks))
             );
     }
 
     [Fact]
-    public async Task SubscribeAsync_limits_to_10_seeks()
+    public async Task SubscribeAsync_doesnt_notify_if_no_seeks_are_found()
     {
-        var createStream = ProbeOpenSeekCreatedStream();
-        var seeker = new CasualSeekerFaker().Generate();
         var grain = await Silo.CreateGrainAsync<OpenSeekGrain>(0);
 
-        var compatibleSeeks = Enumerable
-            .Range(0, 15)
-            .Select(i =>
-            {
-                var s = new CasualSeekerFaker().Generate();
-                return new OpenSeekCreatedEvent(s, _casualPoolKey);
-            })
-            .ToList();
-        await createStream.OnNextBatchAsync(compatibleSeeks);
-        _openSeekNotifierMock.ClearReceivedCalls();
+        ConnectionId connId = "conn 1";
+        var watcher = new CasualSeekerFaker().Generate();
+        _trackerMock.Subscribe(connId, watcher).Returns([]);
 
-        await grain.SubscribeAsync("conn", seeker);
+        await grain.SubscribeAsync(connId, watcher);
 
-        await _openSeekNotifierMock
-            .Received(1)
-            .NotifyOpenSeekAsync(
-                Arg.Is<ConnectionId>("conn"),
-                Arg.Is<IEnumerable<OpenSeek>>(x => x.Count() == 10)
-            );
+        await _notifierMock
+            .DidNotReceiveWithAnyArgs()
+            .NotifyOpenSeekAsync(Arg.Any<ConnectionId>(), default!);
     }
 
     [Fact]
-    public async Task UnsubscribeAsync_removes_user_and_stops_notifications()
+    public async Task UnsubscribeAsync_unsubscribes_user()
     {
-        var createStream = ProbeOpenSeekCreatedStream();
-        var seeker = new CasualSeekerFaker().Generate();
-        var matchSeeker = new CasualSeekerFaker().Generate();
         var grain = await Silo.CreateGrainAsync<OpenSeekGrain>(0);
+        UserId userId = "user 1";
+        ConnectionId connId = "conn 1";
 
-        await grain.SubscribeAsync("conn1", seeker);
+        await grain.UnsubscribeAsync(userId, connId);
 
-        await grain.UnsubscribeAsync(seeker.UserId, "conn1");
-
-        // push a compatible seek after unsubscribe
-        await createStream.OnNextAsync(new OpenSeekCreatedEvent(matchSeeker, _casualPoolKey));
-
-        await _openSeekNotifierMock
-            .Received(0)
-            .NotifyOpenSeekAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<IEnumerable<OpenSeek>>());
+        _trackerMock.Received(1).Unsubscribe(userId, connId);
     }
 
     [Fact]
-    public async Task UnsubscribeAsync_removes_only_the_specified_connection_when_multiple_exist()
+    public async Task SeekCreatedEvent_notifies_all_subscribed()
     {
         var createStream = ProbeOpenSeekCreatedStream();
-        var seeker = new CasualSeekerFaker().Generate();
-        var matchSeeker = new CasualSeekerFaker().Generate();
-        var grain = await Silo.CreateGrainAsync<OpenSeekGrain>(0);
+        var poolKey = new PoolKeyFaker().Generate();
+        OpenSeekEntry entry = new()
+        {
+            OpenSeek = new OpenSeekFaker().Generate(),
+            Seeker = new CasualSeekerFaker().Generate(),
+            SubscribedUserIds = ["user 1", "user 2", "user 3"],
+        };
+        await Silo.CreateGrainAsync<OpenSeekGrain>(0);
+        _trackerMock.AddSeek(entry.Seeker, poolKey).Returns(entry);
 
-        await grain.SubscribeAsync("conn1", seeker);
-        await grain.SubscribeAsync("conn2", seeker);
+        await createStream.OnNextAsync(new OpenSeekCreatedEvent(entry.Seeker, poolKey));
 
-        await grain.UnsubscribeAsync(seeker.UserId, "conn1");
-
-        await createStream.OnNextAsync(new OpenSeekCreatedEvent(matchSeeker, _casualPoolKey));
-
-        List<string> expectedIds = [seeker.UserId];
-        await _openSeekNotifierMock
+        List<OpenSeek> expectedSeeks = [entry.OpenSeek];
+        await _notifierMock
             .Received(1)
             .NotifyOpenSeekAsync(
-                Arg.Is<IEnumerable<string>>(ids => ids.SequenceEqual(expectedIds)),
-                Arg.Is<IEnumerable<OpenSeek>>(seeks =>
-                    seeks.Any(s => s.UserId == matchSeeker.UserId)
-                )
-            );
-    }
-
-    [Fact]
-    public async Task SeekCreated_event_notifies_all_compatible_watchers()
-    {
-        var createStream = ProbeOpenSeekCreatedStream();
-        var seeker1 = new CasualSeekerFaker().Generate();
-        var seeker2 = new CasualSeekerFaker().Generate();
-        var incompatibleSeeker = new RatedSeekerFaker().Generate();
-        var matchSeeker = new CasualSeekerFaker().Generate();
-
-        var grain = await Silo.CreateGrainAsync<OpenSeekGrain>(0);
-
-        await grain.SubscribeAsync("conn1", seeker1);
-        await grain.SubscribeAsync("conn2", seeker2);
-        await grain.SubscribeAsync("conn3", incompatibleSeeker);
-
-        await createStream.OnNextAsync(new OpenSeekCreatedEvent(matchSeeker, _casualPoolKey));
-
-        List<string> expectedUserIds = [seeker1.UserId, seeker2.UserId];
-        List<OpenSeek> expectedSeeks =
-        [
-            new OpenSeek(matchSeeker.UserId, matchSeeker.UserName, _casualPoolKey, Rating: null),
-        ];
-        await _openSeekNotifierMock
-            .Received(1)
-            .NotifyOpenSeekAsync(
-                Arg.Is<IEnumerable<string>>(ids => ids.SequenceEqual(expectedUserIds)),
+                Arg.Is<IEnumerable<string>>(ids => ids.SequenceEqual(entry.SubscribedUserIds)),
                 Arg.Is<IEnumerable<OpenSeek>>(seeks => seeks.SequenceEqual(expectedSeeks))
             );
     }
 
     [Fact]
-    public async Task SeekEnded_event_notifies_all_compatible_watchers()
+    public async Task SeekCreatedEvent_doesnt_notify_if_no_subscribers()
     {
         var createStream = ProbeOpenSeekCreatedStream();
+        var poolKey = new PoolKeyFaker().Generate();
+        OpenSeekEntry entry = new()
+        {
+            OpenSeek = new OpenSeekFaker().Generate(),
+            Seeker = new CasualSeekerFaker().Generate(),
+            SubscribedUserIds = [],
+        };
+        await Silo.CreateGrainAsync<OpenSeekGrain>(0);
+        _trackerMock.AddSeek(entry.Seeker, poolKey).Returns(entry);
+
+        await createStream.OnNextAsync(new OpenSeekCreatedEvent(entry.Seeker, poolKey));
+
+        await _notifierMock
+            .DidNotReceiveWithAnyArgs()
+            .NotifyOpenSeekAsync(Arg.Any<IEnumerable<string>>(), default!);
+    }
+
+    [Fact]
+    public async Task SeekEndedEvent_notifies_all_subscribers()
+    {
         var removeStream = ProbeOpenSeekRemovedStream();
+        var poolKey = new PoolKeyFaker().Generate();
+        OpenSeekEntry entry = new()
+        {
+            OpenSeek = new OpenSeekFaker().Generate(),
+            Seeker = new CasualSeekerFaker().Generate(),
+            SubscribedUserIds = ["user 1", "user 2", "user 3"],
+        };
+        await Silo.CreateGrainAsync<OpenSeekGrain>(0);
+        _trackerMock.RemoveSeek(entry.Seeker.UserId, poolKey).Returns(entry);
 
-        var seeker1 = new CasualSeekerFaker().Generate();
-        var seeker2 = new CasualSeekerFaker().Generate();
-        var incompatibleSeeker = new RatedSeekerFaker().Generate();
-        var matchSeeker = new CasualSeekerFaker().Generate();
+        await removeStream.OnNextAsync(new OpenSeekRemovedEvent(entry.Seeker.UserId, poolKey));
 
-        var grain = await Silo.CreateGrainAsync<OpenSeekGrain>(0);
-
-        await grain.SubscribeAsync("conn1", seeker1);
-        await grain.SubscribeAsync("conn2", seeker2);
-        await grain.SubscribeAsync("conn3", incompatibleSeeker);
-
-        await createStream.OnNextAsync(new OpenSeekCreatedEvent(matchSeeker, _casualPoolKey));
-        await removeStream.OnNextAsync(
-            new OpenSeekRemovedEvent(matchSeeker.UserId, _casualPoolKey)
-        );
-
-        List<string> expectedUserIds = [seeker1.UserId, seeker2.UserId];
-        SeekKey expectedSeekKey = new(matchSeeker.UserId, _casualPoolKey);
-        await _openSeekNotifierMock
+        await _notifierMock
             .Received(1)
             .NotifyOpenSeekEndedAsync(
-                Arg.Is<IEnumerable<string>>(ids => ids.SequenceEqual(expectedUserIds)),
-                matchSeeker.UserId,
-                _casualPoolKey
+                Arg.Is<IEnumerable<string>>(ids => ids.SequenceEqual(entry.SubscribedUserIds)),
+                entry.Seeker.UserId,
+                poolKey
             );
+    }
+
+    [Fact]
+    public async Task SeekEndedEvent_doesnt_notify_if_no_subscribers()
+    {
+        var removeStream = ProbeOpenSeekRemovedStream();
+        var poolKey = new PoolKeyFaker().Generate();
+        OpenSeekEntry entry = new()
+        {
+            OpenSeek = new OpenSeekFaker().Generate(),
+            Seeker = new CasualSeekerFaker().Generate(),
+            SubscribedUserIds = [],
+        };
+        await Silo.CreateGrainAsync<OpenSeekGrain>(0);
+        _trackerMock.RemoveSeek(entry.Seeker.UserId, poolKey).Returns(entry);
+
+        await removeStream.OnNextAsync(new OpenSeekRemovedEvent(entry.Seeker.UserId, poolKey));
+
+        await _notifierMock
+            .DidNotReceiveWithAnyArgs()
+            .NotifyOpenSeekEndedAsync(default!, default, default!);
     }
 }

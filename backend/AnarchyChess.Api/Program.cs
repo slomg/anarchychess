@@ -383,10 +383,11 @@ builder.Host.UseOrleans(siloBuilder =>
 
 builder.Services.AddHostedService<GrainInitializer>();
 
-#region Matchmaking
+#region Lobby
 builder.Services.AddSingleton<ILobbyNotifier, LobbyNotifier>();
 builder.Services.AddSingleton<IOpenSeekNotifier, OpenSeekNotifier>();
 builder.Services.AddScoped<ISeekerCreator, SeekerCreator>();
+builder.Services.AddTransient<IOpenSeekTracker, OpenSeekTracker>();
 
 builder.Services.AddSingleton<
     IValidator<TimeControlSettingsRequest>,
