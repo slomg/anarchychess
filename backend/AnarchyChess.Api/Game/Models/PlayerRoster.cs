@@ -4,10 +4,10 @@ using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Profile.Models;
 
-namespace AnarchyChess.Api.Game.Services;
+namespace AnarchyChess.Api.Game.Models;
 
 [GenerateSerializer]
-[Alias("AnarchyChess.Api.Game.Services.PlayerRoster")]
+[Alias("AnarchyChess.Api.Game.Models.PlayerRoster")]
 public record PlayerRoster(GamePlayer WhitePlayer, GamePlayer BlackPlayer)
 {
     public bool TryGetPlayerById(UserId? userId, [NotNullWhen(true)] out GamePlayer? player)

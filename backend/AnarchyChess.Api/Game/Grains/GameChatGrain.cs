@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using AnarchyChess.Api.Game.Errors;
+using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.Profile.Entities;
 using AnarchyChess.Api.Profile.Models;
