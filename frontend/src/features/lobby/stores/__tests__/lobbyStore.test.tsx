@@ -1,7 +1,8 @@
-import { act } from "@testing-library/react";
-import useLobbyStore from "../lobbyStore";
-import { PoolKeyStr } from "../../lib/types";
 import { createFakeOngoingGame } from "@/lib/testUtils/fakers/ongoingGameFaker";
+import createFakeOpenSeek from "@/lib/testUtils/fakers/openSeekFaker";
+import OpenSeekTracker from "../../lib/openSeekTracker";
+import { PoolKeyStr } from "../../lib/types";
+import useLobbyStore from "../lobbyStore";
 
 describe("lobbyStore", () => {
     beforeEach(() => {
@@ -14,10 +15,25 @@ describe("lobbyStore", () => {
                 seeks: new Set<PoolKeyStr>(["0-5+0", "1-3+2"]),
             });
 
-            const { clearSeeks } = useLobbyStore.getState();
-            act(() => clearSeeks());
+            useLobbyStore.getState().clearSeeks();
 
             expect(useLobbyStore.getState().seeks.size).toBe(0);
+        });
+
+        it("should remove all open seeks", () => {
+            const openSeekTracker = new OpenSeekTracker();
+            openSeekTracker.addSeeks([
+                createFakeOpenSeek(),
+                createFakeOpenSeek(),
+            ]);
+            useLobbyStore.setState({ openSeekTracker });
+
+            useLobbyStore.getState().clearSeeks();
+
+            expect(
+                useLobbyStore.getState().openSeekTracker.interleavedOpenSeeks
+                    .length,
+            ).toBe(0);
         });
     });
 
@@ -25,9 +41,7 @@ describe("lobbyStore", () => {
         it("should add a seek to the store", () => {
             const seekKey: PoolKeyStr = "0-10+0";
 
-            const { addSeek } = useLobbyStore.getState();
-
-            act(() => addSeek(seekKey));
+            useLobbyStore.getState().addSeek(seekKey);
 
             expect(useLobbyStore.getState().seeks.has(seekKey)).toBe(true);
         });
@@ -40,8 +54,7 @@ describe("lobbyStore", () => {
                 seeks: new Set<PoolKeyStr>([seekKey]),
             });
 
-            const { removeSeek } = useLobbyStore.getState();
-            act(() => removeSeek(seekKey));
+            useLobbyStore.getState().removeSeek(seekKey);
 
             expect(useLobbyStore.getState().seeks.has(seekKey)).toBe(false);
         });
@@ -49,9 +62,9 @@ describe("lobbyStore", () => {
 
     describe("setRequestedOpenSeek", () => {
         it("should set requestedOpenSeek to true", () => {
-            const { setRequestedOpenSeek } = useLobbyStore.getState();
+            useLobbyStore.setState({ requestedOpenSeek: false });
 
-            act(() => setRequestedOpenSeek(true));
+            useLobbyStore.getState().setRequestedOpenSeek(true);
 
             expect(useLobbyStore.getState().requestedOpenSeek).toBe(true);
         });
@@ -59,8 +72,7 @@ describe("lobbyStore", () => {
         it("should set requestedOpenSeek to false", () => {
             useLobbyStore.setState({ requestedOpenSeek: true });
 
-            const { setRequestedOpenSeek } = useLobbyStore.getState();
-            act(() => setRequestedOpenSeek(false));
+            useLobbyStore.getState().setRequestedOpenSeek(false);
 
             expect(useLobbyStore.getState().requestedOpenSeek).toBe(false);
         });
@@ -71,8 +83,7 @@ describe("lobbyStore", () => {
             const game1 = createFakeOngoingGame();
             const game2 = createFakeOngoingGame();
 
-            const { addOngoingGames } = useLobbyStore.getState();
-            act(() => addOngoingGames([game1, game2]));
+            useLobbyStore.getState().addOngoingGames([game1, game2]);
 
             expect(useLobbyStore.getState().ongoingGames).toEqual(
                 new Map([
@@ -98,12 +109,47 @@ describe("lobbyStore", () => {
                 ]),
             });
 
-            const { removeOngoingGame } = useLobbyStore.getState();
-            act(() => removeOngoingGame(gameTokenToRemove));
+            useLobbyStore.getState().removeOngoingGame(gameTokenToRemove);
 
             expect(useLobbyStore.getState().ongoingGames).toEqual(
                 new Map([[gameToKeep.gameToken, gameToKeep]]),
             );
+        });
+    });
+
+    describe("addOpenSeeks", () => {
+        it("should add all open seeks", () => {
+            const seeks = [
+                createFakeOpenSeek(),
+                createFakeOpenSeek(),
+                createFakeOpenSeek(),
+            ];
+
+            useLobbyStore.getState().addOpenSeeks(seeks);
+
+            expect(
+                useLobbyStore.getState().openSeekTracker.interleavedOpenSeeks,
+            ).toEqual(seeks);
+        });
+    });
+
+    describe("removeOpenSeek", () => {
+        it("should remove the seek", () => {
+            const seekToRemove = createFakeOpenSeek();
+            const otherSeek1 = createFakeOpenSeek();
+            const otherSeek2 = createFakeOpenSeek();
+
+            useLobbyStore
+                .getState()
+                .addOpenSeeks([otherSeek1, seekToRemove, otherSeek2]);
+
+            useLobbyStore
+                .getState()
+                .removeOpenSeek(seekToRemove.userId, seekToRemove.pool);
+
+            expect(
+                useLobbyStore.getState().openSeekTracker.interleavedOpenSeeks,
+            ).toEqual([otherSeek1, otherSeek2]);
         });
     });
 });

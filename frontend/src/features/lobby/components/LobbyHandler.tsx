@@ -33,10 +33,11 @@ const LobbyHandler = () => {
         lastPathnameRef.current = pathname;
         const { seeks, requestedOpenSeek, setRequestedOpenSeek, clearSeeks } =
             useLobbyStore.getState();
+
+        clearSeeks();
         if (requestedOpenSeek || seeks.size !== 0) {
             sendLobbyEvents("CleanupConnectionAsync");
             setRequestedOpenSeek(false);
-            clearSeeks();
         }
     }, [pathname, sendLobbyEvents]);
 

@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import { OpenSeek } from "@/features/lobby/lib/types";
 import { PoolType, TimeControl } from "@/lib/apiClient";
 import OpenSeekItem from "../OpenSeekItem";
-import createFakeOpenSeek from "@/lib/testUtils/fakers/openSeekerFaker";
+import createFakeOpenSeek from "@/lib/testUtils/fakers/openSeekFaker";
 import userEvent from "@testing-library/user-event";
 import useLobbyStore from "@/features/lobby/stores/lobbyStore";
 import { useLobbyEmitter } from "@/features/lobby/hooks/useLobbyHub";

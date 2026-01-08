@@ -3,14 +3,18 @@ import { immer } from "zustand/middleware/immer";
 import { shallow } from "zustand/shallow";
 import { enableMapSet } from "immer";
 
-import { OngoingGame, PoolKeyStr } from "../lib/types";
+import { OngoingGame, OpenSeek, PoolKeyStr } from "../lib/types";
+import OpenSeekTracker from "../lib/openSeekTracker";
+import { PoolKey } from "@/lib/apiClient";
 
 interface LobbyStore {
     seeks: Set<PoolKeyStr>;
     requestedOpenSeek: boolean;
     ongoingGames: Map<string, OngoingGame>;
+    openSeekTracker: OpenSeekTracker;
 
     clearSeeks(): void;
+
     addSeek(pool: PoolKeyStr): void;
     removeSeek(pool: PoolKeyStr): void;
 
@@ -18,6 +22,9 @@ interface LobbyStore {
 
     addOngoingGames(games: OngoingGame[]): void;
     removeOngoingGame(gameToken: string): void;
+
+    addOpenSeeks(newOpenSeek: OpenSeek[]): void;
+    removeOpenSeek(userId: string, pool: PoolKey): void;
 }
 
 enableMapSet();
@@ -26,12 +33,15 @@ const useLobbyStore = createWithEqualityFn<LobbyStore>()(
         seeks: new Set(),
         requestedOpenSeek: false,
         ongoingGames: new Map(),
+        openSeekTracker: new OpenSeekTracker(),
 
         clearSeeks() {
             set((state) => {
                 state.seeks.clear();
+                state.openSeekTracker.clear();
             });
         },
+
         addSeek(pool) {
             set((state) => {
                 state.seeks.add(pool);
@@ -59,6 +69,17 @@ const useLobbyStore = createWithEqualityFn<LobbyStore>()(
         removeOngoingGame(gameToken) {
             set((state) => {
                 state.ongoingGames.delete(gameToken);
+            });
+        },
+
+        addOpenSeeks(newOpenSeek) {
+            set((state) => {
+                state.openSeekTracker.addSeeks(newOpenSeek);
+            });
+        },
+        removeOpenSeek(userId, pool) {
+            set((state) => {
+                state.openSeekTracker.removeSeek(userId, pool);
             });
         },
     })),

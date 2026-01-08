@@ -9,7 +9,7 @@ export interface OpenSeek {
     rating?: number;
 }
 
-export type SeekKeyStr = `${PoolKeyStr}:${string}`;
+export type SeekKeyStr = `${string}:${PoolKeyStr}`;
 
 export interface SeekKey {
     userId: string;

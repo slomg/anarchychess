@@ -1,39 +1,34 @@
 "use client";
 
 import { CSSTransition, TransitionGroup } from "react-transition-group";
+import React, { useEffect, useRef, useState } from "react";
 
-import Card from "@/components/ui/Card";
-import OpenSeekItem from "./OpenSeekItem";
-import { useEffect, useRef, useState } from "react";
-import { OpenSeek, SeekKeyStr } from "@/features/lobby/lib/types";
-import { SeekKeyToStr } from "@/features/lobby/lib/matchmakingKeys";
-import React from "react";
-import constants from "@/lib/constants";
 import {
     useOpenSeekEmitter,
     useOpenSeekEvent,
 } from "@/features/lobby/hooks/useOpenSeekHub";
 
+import { OpenSeekToKeyStr } from "@/features/lobby/lib/matchmakingKeys";
+import useLobbyStore from "@/features/lobby/stores/lobbyStore";
+import { SeekKeyStr } from "@/features/lobby/lib/types";
+import OpenSeekItem from "./OpenSeekItem";
+import Card from "@/components/ui/Card";
+import constants from "@/lib/constants";
+
 const OpenSeekDirectory = () => {
-    const [openSeeks, setOpenSeeks] = useState<Record<SeekKeyStr, OpenSeek>>(
-        {},
+    const { addOpenSeeks, removeOpenSeek } = useLobbyStore((x) => ({
+        addOpenSeeks: x.addOpenSeeks,
+        removeOpenSeek: x.removeOpenSeek,
+    }));
+    const openSeeks = useLobbyStore(
+        (x) => x.openSeekTracker.interleavedOpenSeeks,
     );
-    const openSeekRefs = useRef<
-        Map<SeekKeyStr, React.RefObject<HTMLDivElement | null>>
-    >(new Map());
+    const [nodeRefs, setNodeRefs] = useState<
+        Record<SeekKeyStr, React.RefObject<HTMLDivElement | null>>
+    >({});
 
     const noSeeksRef = useRef<HTMLParagraphElement | null>(null);
     const [showNoSeeksText, setShowNoSeeksText] = useState(true);
-    useEffect(() => {
-        if (Object.keys(openSeeks).length !== 0) {
-            setShowNoSeeksText(false);
-            return;
-        }
-
-        const timer = setTimeout(() => setShowNoSeeksText(true), 300);
-        return () => clearTimeout(timer);
-    }, [openSeeks]);
-
     const sendOpenSeekEvent = useOpenSeekEmitter();
 
     useEffect(() => {
@@ -46,37 +41,36 @@ const OpenSeekDirectory = () => {
     }, [sendOpenSeekEvent]);
 
     useOpenSeekEvent("NewOpenSeeksAsync", (newOpenSeeks) => {
-        setOpenSeeks((prev) => {
-            const updated = { ...prev };
+        addOpenSeeks(newOpenSeeks);
+
+        setNodeRefs((prev) => {
+            const copy = { ...prev };
             for (const seek of newOpenSeeks) {
-                updated[
-                    SeekKeyToStr({ userId: seek.userId, pool: seek.pool })
-                ] = seek;
+                const key = OpenSeekToKeyStr(seek.userId, seek.pool);
+                const ref = React.createRef<HTMLDivElement>();
+                copy[key] = ref;
             }
-            return updated;
+            setShowNoSeeksText(false);
+
+            return copy;
         });
     });
 
     useOpenSeekEvent("OpenSeekEndedAsync", (userId, pool) => {
-        const key = SeekKeyToStr({ userId, pool });
-        openSeekRefs.current.delete(key);
-        setOpenSeeks((prev) => {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { [key]: _, ...rest } = prev;
-            return rest;
+        removeOpenSeek(userId, pool);
+
+        setNodeRefs((prev) => {
+            const copy = { ...prev };
+            const key = OpenSeekToKeyStr(userId, pool);
+            delete copy[key];
+
+            if (Object.keys(copy).length === 0) {
+                setTimeout(() => setShowNoSeeksText(true), 300);
+            }
+
+            return copy;
         });
     });
-
-    function getOpenSeekRef(
-        key: SeekKeyStr,
-    ): React.RefObject<HTMLDivElement | null> {
-        let ref = openSeekRefs.current.get(key);
-        if (ref) return ref;
-
-        ref = React.createRef<HTMLDivElement>();
-        openSeekRefs.current.set(key, ref);
-        return ref;
-    }
 
     return (
         <Card className="min-h-60 flex-1">
@@ -104,9 +98,10 @@ const OpenSeekDirectory = () => {
                 </CSSTransition>
 
                 <TransitionGroup duration={300}>
-                    {Object.entries(openSeeks).map(([key, seek]) => {
-                        const seekKey = key as SeekKeyStr;
-                        const nodeRef = getOpenSeekRef(seekKey);
+                    {openSeeks.map((seek) => {
+                        const key = OpenSeekToKeyStr(seek.userId, seek.pool);
+                        const nodeRef = nodeRefs[key];
+                        if (!nodeRef) return;
 
                         return (
                             <CSSTransition

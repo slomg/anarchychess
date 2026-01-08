@@ -3,7 +3,7 @@ import { act } from "react";
 
 import { EventHandlers } from "@/features/signalR/hooks/useSignalREvent";
 import OpenSeekDirectory from "../OpenSeekDirectory";
-import createFakeOpenSeek from "@/lib/testUtils/fakers/openSeekerFaker";
+import createFakeOpenSeek from "@/lib/testUtils/fakers/openSeekFaker";
 import constants from "@/lib/constants";
 import {
     OpenSeekClientEvents,

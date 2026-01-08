@@ -9,7 +9,7 @@ import useMatchmaking from "../useMatchmaking";
 import { EventHandlers } from "@/features/signalR/hooks/useSignalREvent";
 import constants from "@/lib/constants";
 import useLobbyStore from "../../stores/lobbyStore";
-import { PoolKeyToStr } from "../../lib/matchmakingKeys";
+import { poolKeyToStr } from "../../lib/matchmakingKeys";
 import {
     LobbyClientEvents,
     useLobbyEmitter,
@@ -191,7 +191,7 @@ describe("useMatchmaking", () => {
         expect(sendLobbyEvent).toHaveBeenCalledTimes(2);
 
         act(() => {
-            useLobbyStore.getState().removeSeek(PoolKeyToStr(poolRated));
+            useLobbyStore.getState().removeSeek(poolKeyToStr(poolRated));
         });
         expect(result.current.isSeeking).toBe(false);
 

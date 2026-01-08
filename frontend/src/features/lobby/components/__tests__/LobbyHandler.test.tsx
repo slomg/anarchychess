@@ -1,18 +1,22 @@
-import useLobbyStore from "../../stores/lobbyStore";
-import { EventHandlers } from "@/features/signalR/hooks/useSignalREvent";
 import { act, render } from "@testing-library/react";
-import LobbyHandler from "../LobbyHandler";
-import { mockRouter } from "@/lib/testUtils/mocks/mockRouter";
-import constants from "@/lib/constants";
 import { usePathname } from "next/navigation";
-import { PoolType } from "@/lib/apiClient";
-import { PoolKeyStr } from "../../lib/types";
+
 import {
     LobbyClientEvents,
     useLobbyEmitter,
     useLobbyEvent,
 } from "../../hooks/useLobbyHub";
+
 import { createFakeOngoingGame } from "@/lib/testUtils/fakers/ongoingGameFaker";
+import { EventHandlers } from "@/features/signalR/hooks/useSignalREvent";
+import createFakeOpenSeek from "@/lib/testUtils/fakers/openSeekFaker";
+import { mockRouter } from "@/lib/testUtils/mocks/mockRouter";
+import OpenSeekTracker from "../../lib/openSeekTracker";
+import useLobbyStore from "../../stores/lobbyStore";
+import { PoolKeyStr } from "../../lib/types";
+import { PoolType } from "@/lib/apiClient";
+import LobbyHandler from "../LobbyHandler";
+import constants from "@/lib/constants";
 
 vi.mock("@/features/lobby/hooks/useLobbyHub");
 vi.mock("next/navigation");
@@ -73,7 +77,7 @@ describe("LobbyHandler", () => {
         );
     });
 
-    it("should not send cleanup events if pathname has not changed", () => {
+    it("should not send cleanup event if pathname has not changed", () => {
         const seeks = new Set<PoolKeyStr>([`${PoolType.RATED}-10+5`]);
         useLobbyStore.setState({ seeks });
 
@@ -86,7 +90,7 @@ describe("LobbyHandler", () => {
         expect(sendLobbyEventMock).not.toHaveBeenCalled();
     });
 
-    it("should do nothing if pathname changes but no seeks are present", () => {
+    it("should not send cleanup event if pathname changes but no seeks are present", () => {
         useLobbyStore.setState({ seeks: new Set() });
         usePathnameMock.mockReturnValue("/new-path");
 
@@ -97,6 +101,32 @@ describe("LobbyHandler", () => {
         rerender(<LobbyHandler />);
 
         expect(sendLobbyEventMock).not.toHaveBeenCalled();
+    });
+
+    it("should always clear seeks when pathname changes", () => {
+        const openSeekTracker = new OpenSeekTracker();
+        openSeekTracker.addSeeks([createFakeOpenSeek(), createFakeOpenSeek()]);
+        useLobbyStore.setState({
+            openSeekTracker,
+            seeks: new Set(),
+            requestedOpenSeek: false,
+        });
+
+        usePathnameMock.mockReturnValue("/path1");
+        const { rerender } = render(<LobbyHandler />);
+
+        expect(
+            useLobbyStore.getState().openSeekTracker.interleavedOpenSeeks
+                .length,
+        ).toBe(2);
+
+        usePathnameMock.mockReturnValue("/path2");
+        rerender(<LobbyHandler />);
+
+        expect(
+            useLobbyStore.getState().openSeekTracker.interleavedOpenSeeks
+                .length,
+        ).toBe(0);
     });
 
     it("should add ongoing games when ReceiveOngoingGamesAsync is triggered", () => {

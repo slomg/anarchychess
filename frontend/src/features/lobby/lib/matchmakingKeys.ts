@@ -1,10 +1,10 @@
+import { SeekKeyStr, PoolKeyStr } from "./types";
 import { PoolKey } from "@/lib/apiClient";
-import { SeekKeyStr, SeekKey, PoolKeyStr } from "./types";
 
-export function SeekKeyToStr(seekKey: SeekKey): SeekKeyStr {
-    return `${PoolKeyToStr(seekKey.pool)}:${seekKey.userId}`;
+export function OpenSeekToKeyStr(userId: string, pool: PoolKey): SeekKeyStr {
+    return `${userId}:${poolKeyToStr(pool)}`;
 }
 
-export function PoolKeyToStr(poolKey: PoolKey): PoolKeyStr {
+export function poolKeyToStr(poolKey: PoolKey): PoolKeyStr {
     return `${poolKey.poolType}-${poolKey.timeControl.baseSeconds}+${poolKey.timeControl.incrementSeconds}`;
 }

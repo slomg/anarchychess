@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from "react";
 
-import { PoolKeyToStr } from "../lib/matchmakingKeys";
+import { poolKeyToStr } from "../lib/matchmakingKeys";
 import { PoolKey, PoolType } from "@/lib/apiClient";
 import useLobbyStore from "../stores/lobbyStore";
 import constants from "@/lib/constants";
@@ -13,7 +13,7 @@ export default function useMatchmaking(pool: PoolKey): {
     isSeeking: boolean;
 } {
     const sendLobbyEvent = useLobbyEmitter();
-    const poolKeyStr = PoolKeyToStr(pool);
+    const poolKeyStr = poolKeyToStr(pool);
 
     const { isSeeking, addSeek, removeSeek } = useLobbyStore((x) => ({
         isSeeking: x.seeks.has(poolKeyStr),
@@ -22,7 +22,7 @@ export default function useMatchmaking(pool: PoolKey): {
     }));
 
     useLobbyEvent("SeekFailedAsync", (pool) => {
-        if (PoolKeyToStr(pool) === poolKeyStr) removeSeek(poolKeyStr);
+        if (poolKeyToStr(pool) === poolKeyStr) removeSeek(poolKeyStr);
     });
 
     async function createSeek(): Promise<void> {
