@@ -2,6 +2,7 @@
 using AnarchyChess.Api.Infrastructure;
 using AnarchyChess.Api.Infrastructure.Extensions;
 using AnarchyChess.Api.Lobby.Errors;
+using AnarchyChess.Api.Lobby.Models;
 using AnarchyChess.Api.Lobby.Services;
 using AnarchyChess.Api.Matchmaking.Extensions;
 using AnarchyChess.Api.Matchmaking.Grains;

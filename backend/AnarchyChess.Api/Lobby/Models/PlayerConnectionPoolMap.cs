@@ -1,10 +1,10 @@
 ﻿using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.Shared.Models;
 
-namespace AnarchyChess.Api.Lobby.Services;
+namespace AnarchyChess.Api.Lobby.Models;
 
 [GenerateSerializer]
-[Alias("AnarchyChess.Api.Lobby.Services.PlayerConnectionPoolMap")]
+[Alias("AnarchyChess.Api.Lobby.Models.PlayerConnectionPoolMap")]
 public class PlayerConnectionPoolMap
 {
     [Id(0)]

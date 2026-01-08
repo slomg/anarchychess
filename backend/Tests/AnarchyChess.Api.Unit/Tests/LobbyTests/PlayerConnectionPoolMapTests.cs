@@ -1,5 +1,5 @@
 ﻿using AnarchyChess.Api.GameSnapshot.Models;
-using AnarchyChess.Api.Lobby.Services;
+using AnarchyChess.Api.Lobby.Models;
 using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.Shared.Models;
 using AwesomeAssertions;
