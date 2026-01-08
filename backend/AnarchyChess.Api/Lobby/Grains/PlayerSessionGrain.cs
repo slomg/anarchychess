@@ -221,7 +221,7 @@ public class PlayerSessionGrain
     {
         var game = @event.Game;
 
-        _state.State.OngoingGames.Add(game.GameToken, game);
+        _state.State.OngoingGames.TryAdd(game.GameToken, game);
         if (HasReachedGameLimit())
             await CancelAllSeeksAsync();
 

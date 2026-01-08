@@ -64,6 +64,7 @@ public class OpenSeekTracker(IRandomProvider randomProvider) : IOpenSeekTracker
                 if (seekEntries.TryDequeue(out var entry))
                 {
                     subscribedTo.Add(entry.OpenSeek);
+                    entry.SubscribedUserIds.Add(watchingSeeker.UserId);
                     addedThisRound = true;
                 }
 

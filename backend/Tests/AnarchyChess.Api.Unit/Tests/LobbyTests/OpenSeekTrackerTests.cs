@@ -184,6 +184,22 @@ public class OpenSeekTrackerTests
     }
 
     [Fact]
+    public void Subscribe_subscribes_the_user_to_the_open_seek()
+    {
+        var seeker = new CasualSeekerFaker().Generate();
+        var pool = new PoolKeyFaker().Generate();
+        _tracker.AddSeek(seeker, pool);
+
+        var watcher = new CasualSeekerFaker().Generate();
+        _tracker.Subscribe("conn", watcher);
+
+        var result = _tracker.RemoveSeek(seeker.UserId, pool);
+
+        result.Should().NotBeNull();
+        result.SubscribedUserIds.Should().BeEquivalentTo([watcher.UserId]);
+    }
+
+    [Fact]
     public void Unsubscribe_removes_connection_when_multiple_connections_exist()
     {
         var seeker = new CasualSeekerFaker().Generate();
