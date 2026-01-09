@@ -242,9 +242,11 @@ describe("PiecesSlice", () => {
                 setLatestLegalMoves(legalMoves);
 
                 let emittedMove: Move | null = null;
-                pieceMovementEvent.subscribe(
-                    (move) => void (emittedMove = move),
-                );
+                let emittedPrevPieces: BoardPieces | null = null;
+                pieceMovementEvent.subscribe((move, prevPieces) => {
+                    emittedMove = move;
+                    emittedPrevPieces = prevPieces;
+                });
 
                 const result = await handleMousePieceDrop({
                     mousePoint: mousePosition,
@@ -254,6 +256,7 @@ describe("PiecesSlice", () => {
 
                 expect(result).toEqual({ success: true });
                 expect(emittedMove).toEqual(move);
+                expect(emittedPrevPieces).toEqual(pieces);
                 expectPieces({ position: expectedPosition, piece });
             },
         );
