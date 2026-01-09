@@ -46,11 +46,15 @@ export function createAudioSlice(
                 return;
             }
 
-            if (step.isPromotion)
+            if (step.isPromotion) {
                 await AudioPlayer.playAudio(AudioType.PROMOTION);
+            }
 
-            if (step.isCapture) await AudioPlayer.playAudio(AudioType.CAPTURE);
-            else await AudioPlayer.playAudio(AudioType.MOVE);
+            if (step.isCapture) {
+                await AudioPlayer.playAudio(AudioType.CAPTURE);
+            } else {
+                await AudioPlayer.playAudio(AudioType.MOVE);
+            }
         },
     });
 }
