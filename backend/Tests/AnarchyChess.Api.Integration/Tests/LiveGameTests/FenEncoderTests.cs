@@ -107,28 +107,31 @@ public class FenEncoderTests : BaseIntegrationTest
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
-            [new AlgebraicPoint("a1")] = new Piece(PieceType.Rook, GameColor.White, HasMoved: true),
-            [new AlgebraicPoint("a2")] = new Piece(PieceType.King, GameColor.Black, HasMoved: true),
-            [new AlgebraicPoint("a3")] = new Piece(PieceType.Pawn, GameColor.White, HasMoved: true),
-            [new AlgebraicPoint("a4")] = new Piece(
+            [new AlgebraicPoint("a1")] = new Piece(PieceType.Pawn, GameColor.White, HasMoved: true),
+            [new AlgebraicPoint("a2")] = new Piece(
                 PieceType.UnderagePawn,
                 GameColor.Black,
                 HasMoved: true
             ),
-            [new AlgebraicPoint("a5")] = new Piece(
+            [new AlgebraicPoint("a3")] = new Piece(
                 PieceType.SterilePawn,
                 GameColor.White,
                 HasMoved: true
             ),
+            [new AlgebraicPoint("a4")] = new Piece(PieceType.King, GameColor.Black, HasMoved: true),
+            [new AlgebraicPoint("a5")] = new Piece(PieceType.Rook, GameColor.White, HasMoved: true),
+
             [new AlgebraicPoint("b1")] = new Piece(PieceType.King, GameColor.Black),
             [new AlgebraicPoint("b2")] = new Piece(PieceType.Rook, GameColor.White),
             [new AlgebraicPoint("b3")] = new Piece(PieceType.Pawn, GameColor.Black),
         };
-        ChessBoard board = new(pieces, height: 1, width: 3);
+        ChessBoard board = new(pieces, height: 5, width: 2);
 
         var result = _fenEncoder.EncodeFen(board);
 
-        result.FullFen.Should().Be("RKr {\"movedPieces\":[\"a1\",\"a2\",\"a3\",\"a4\",\"a5\"]}");
+        result
+            .FullFen.Should()
+            .Be("R1/k1/Sp/dR/Pk {\"movedPieces\":[\"a1\",\"a2\",\"a3\",\"a4\",\"a5\"]}");
     }
 
     [Fact]
