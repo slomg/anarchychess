@@ -122,9 +122,6 @@ const LoadProfilePage = async ({
                 initialHasBlocked={hasBlocked}
             />
 
-            <div style={{ maxWidth: "200px", overflow: "auto" }}>
-                <div style={{ width: "10000px" }}>Scrollable Content</div>
-            </div>
             <RatingCarousel>{ratingCards}</RatingCarousel>
 
             <GameHistory
