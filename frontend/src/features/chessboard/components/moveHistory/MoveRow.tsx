@@ -2,6 +2,8 @@ import clsx from "clsx";
 
 import { useChessboardStore } from "../../hooks/useChessboard";
 import { Position } from "../../lib/position";
+import { useRef } from "react";
+import useHorizontalScroll from "@/hooks/useHorizontalScroll";
 
 const MoveRow = ({
     whitePosition,
@@ -10,6 +12,12 @@ const MoveRow = ({
     whitePosition: Position;
     blackPosition?: Position;
 }) => {
+    const whiteMoveRef = useRef<HTMLButtonElement>(null);
+    const blackMoveRef = useRef<HTMLButtonElement>(null);
+
+    useHorizontalScroll(whiteMoveRef);
+    useHorizontalScroll(blackMoveRef);
+
     const { goToPosition, isViewingWhite, isViewingBlack } = useChessboardStore(
         (x) => ({
             goToPosition: x.goToPosition,
@@ -31,6 +39,7 @@ const MoveRow = ({
         <div className={clsx("flex", color)} data-testid="moveRow">
             <div className="bg-card w-10 p-3">{moveNumber}.</div>
             <button
+                ref={whiteMoveRef}
                 className={clsx(
                     "flex-1 cursor-pointer overflow-x-auto p-3 text-start",
                     isViewingWhite && selectedClass,
@@ -43,6 +52,7 @@ const MoveRow = ({
             </button>
 
             <button
+                ref={blackMoveRef}
                 className={clsx(
                     "flex-1 cursor-pointer overflow-x-auto p-3 text-start",
                     isViewingBlack && selectedClass,
