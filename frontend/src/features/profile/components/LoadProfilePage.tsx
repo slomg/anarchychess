@@ -16,6 +16,7 @@ import EmptyRatingCard from "@/features/profile/components/EmptyRatingCard";
 import GameHistory from "@/features/profile/components/GameHistory";
 import { isAuthed } from "@/features/auth/lib/userGuard";
 import dataOrThrow from "@/lib/apiClient/dataOrThrow";
+import RatingCarousel from "./RatingCarousel";
 
 const LoadProfilePage = async ({
     loggedInUser,
@@ -110,7 +111,9 @@ const LoadProfilePage = async ({
     });
 
     return (
-        <main className="mx-auto flex w-full max-w-7xl min-w-0 flex-col gap-5 p-6">
+        <main
+            className="mx-auto flex w-full max-w-7xl min-w-0 flex-col gap-5 p-6"
+        >
             <Profile
                 profile={profile}
                 questPoints={questPoints}
@@ -119,9 +122,10 @@ const LoadProfilePage = async ({
                 initialHasBlocked={hasBlocked}
             />
 
-            <section className="flex flex-shrink-0 gap-5 overflow-x-auto">
-                {ratingCards}
-            </section>
+            <div style={{ maxWidth: "200px", overflow: "auto" }}>
+                <div style={{ width: "10000px" }}>Scrollable Content</div>
+            </div>
+            <RatingCarousel>{ratingCards}</RatingCarousel>
 
             <GameHistory
                 initialGameResults={games}
