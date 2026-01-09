@@ -1,4 +1,5 @@
 import Card from "@/components/ui/Card";
+import constants from "@/lib/constants";
 
 export const metadata = { title: "Terms of Service - Anarchy Chess" };
 
@@ -153,14 +154,10 @@ const TosPage = () => {
                             violations of these Terms or other policies.
                         </li>
                         <li>
-                            You may request account deletion by contacting{" "}
-                            <a
-                                href="mailto:support@anarchychess.org"
-                                className="text-link"
-                            >
-                                support@anarchychess.org
-                            </a>
-                            .
+                            You may request the deletion of your account at any
+                            time. Please note that your personal profile
+                            information will be removed, but your game history
+                            will remain to maintain accurate records.
                         </li>
                         <li>
                             Termination does not remove your obligations under

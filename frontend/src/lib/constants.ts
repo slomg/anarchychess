@@ -49,6 +49,7 @@ const PATHS = {
     GITHUB: "https://github.com/slomg/anarchychess",
     DISCORD: "https://discord.gg/qnkddndecq",
     YOUTUBE: "https://youtube.com/@slomgdev",
+    REDDIT: "https://reddit.com/user/Slim_Bun",
 };
 
 const LOCALSTORAGE = {

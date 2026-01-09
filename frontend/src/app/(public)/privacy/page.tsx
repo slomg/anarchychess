@@ -1,8 +1,9 @@
 import Card from "@/components/ui/Card";
+import constants from "@/lib/constants";
 
 export const metadata = { title: "Privacy Policy - Anarchy Chess" };
 
-export default function TosPage() {
+export default function PrivacyPage() {
     return (
         <main className="mx-auto flex max-w-7xl flex-1 justify-center p-5">
             <Card className="flex-1 gap-5">
@@ -120,16 +121,16 @@ export default function TosPage() {
                     <h2 className="text-2xl">6. Account Deletion</h2>
                     <p>
                         You may request the deletion of your account at any time
-                        by contacting{" "}
-                        <a
-                            href="mailto:support@anarchychess.org"
-                            className="text-link"
-                        >
-                            support@anarchychess.org
-                        </a>
-                        . Please note that your personal profile information
-                        will be removed, but your game history will remain to
-                        maintain accurate records.
+                        by contacting us on{" "}
+                        <a href={constants.PATHS.REDDIT} className="text-link">
+                            Reddit
+                        </a>{" "}
+                        through a direct message. To verify your identity, you
+                        may be asked to place a unique code provided by us in
+                        your profile&apos;s &quot;About Me&quot; section. Once
+                        verifiedPlease note that your personal profile
+                        information will be removed, but your game history will
+                        remain to maintain accurate records.
                     </p>
                 </section>
 
@@ -158,14 +159,11 @@ export default function TosPage() {
                     <h2 className="text-2xl">9. Contact Us</h2>
                     <p>
                         If you have questions about this Privacy Policy or your
-                        data, you can reach us at{" "}
-                        <a
-                            href="mailto:support@anarchychess.org"
-                            className="text-link"
-                        >
-                            support@anarchychess.org
-                        </a>
-                        .
+                        data, you can reach us on{" "}
+                        <a href={constants.PATHS.REDDIT} className="text-link">
+                            Reddit
+                        </a>{" "}
+                        through a direct message.
                     </p>
                 </section>
 
