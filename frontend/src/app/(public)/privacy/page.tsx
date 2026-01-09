@@ -167,7 +167,7 @@ export default function PrivacyPage() {
                     </p>
                 </section>
 
-                <p className="text-text/70">Last Updated: November 30, 2025</p>
+                <p className="text-text/70">Last Updated: January 9, 2026</p>
             </Card>
         </main>
     );
