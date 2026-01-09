@@ -38,7 +38,7 @@ const PlayOptions = () => {
     }, [isLoggedIn, setPoolType]);
 
     return (
-        <Card data-testid="playOptions" className="items-center gap-5 pt-10">
+        <Card data-testid="playOptions" className="items-center gap-5 pt-7">
             <h1 className="text-center text-5xl">Play Anarchy Chess</h1>
 
             <div className="flex w-full flex-col">
