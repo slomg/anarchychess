@@ -140,11 +140,11 @@ export default class PositionHistory {
         const parent = this._viewingPosition ?? this._root;
         let nextPosition: ChildPositionNode;
 
-        // if the parent is the tail, create a sub variation
-        // if the parent is NOT the tail, it's safe to call createChild because the parent is either
+        // if viewing the tail, create a sub variation
+        // if NOT viewing the tail, it's safe to call createChild because we're either viewing a position that is
         // - off the main line, so adding a main variation won't affect the main line
         // - on the main line but not the tail, so it must already have a main variation and calling createChild will not replace the main variation
-        if (parent.positionId === this._tail?.positionId) {
+        if (this._viewingPosition?.positionId === this._tail?.positionId) {
             nextPosition = parent.createSubVariationChild(props);
         } else {
             nextPosition = parent.createChild(props).child;

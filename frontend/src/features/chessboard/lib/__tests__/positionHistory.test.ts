@@ -495,6 +495,17 @@ describe("PositionHistory", () => {
             expect(sub1.variations).toEqual([sub2]);
             expect(sub1.subVariationByKey.size).toBe(0);
         });
+
+        it("should create a sub variation when there are no prior positions", () => {
+            const sub = history.addNextSidelinePosition(
+                createFakePositionProps(),
+            );
+
+            expect(history.viewingPosition).toBe(sub);
+            expect(history.mainPlyCount).toBe(0);
+            expect(history.totalPlyCount).toBe(1);
+            expect([...history].length).toBe(0);
+        });
     });
 
     describe("iterator", () => {
