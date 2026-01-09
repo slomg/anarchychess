@@ -88,20 +88,22 @@ public class FenEncoder(IPieceLetterMap pieceLetterMap, IOptions<JsonOptions> js
 
     private static List<AlgebraicString>? GetMovedPieces(IReadOnlyChessBoard board)
     {
-        var pieces = board
-            .GetAllPiecesWith(PieceType.King, GameColor.White)
-            .Concat(board.GetAllPiecesWith(PieceType.King, GameColor.Black))
-            .Concat(board.GetAllPiecesWith(PieceType.Rook, GameColor.White))
-            .Concat(board.GetAllPiecesWith(PieceType.Rook, GameColor.Black));
-
         List<AlgebraicString> result = [];
-        foreach (var (piece, position) in pieces)
+        GameColor[] colors = [GameColor.White, GameColor.Black];
+        foreach (var pieceType in GameConstants.PiecesTrackingHasMoved)
         {
-            if (piece.HasMoved)
+            foreach (var color in colors)
             {
-                result.Add(position.AsAlgebraic());
+                foreach (var (piece, position) in board.GetAllPiecesWith(pieceType, color))
+                {
+                    if (piece.HasMoved)
+                    {
+                        result.Add(position.AsAlgebraic());
+                    }
+                }
             }
         }
+
         return result.Count > 0 ? result : null;
     }
 }

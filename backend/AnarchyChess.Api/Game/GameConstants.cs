@@ -1,4 +1,5 @@
-﻿using AnarchyChess.Api.GameLogic.Models;
+﻿using AnarchyChess.Api.GameLogic;
+using AnarchyChess.Api.GameLogic.Models;
 
 namespace AnarchyChess.Api.Game;
 
@@ -57,4 +58,11 @@ public static class GameConstants
         [new AlgebraicPoint("j10")] = new Piece(PieceType.Rook, GameColor.Black),
         #endregion
     };
+
+    public static readonly IReadOnlyList<PieceType> PiecesTrackingHasMoved =
+    [
+        .. GameLogicConstants.PawnLikePieces,
+        PieceType.King,
+        PieceType.Rook,
+    ];
 }

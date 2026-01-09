@@ -103,19 +103,32 @@ public class FenEncoderTests : BaseIntegrationTest
     }
 
     [Fact]
-    public void EncodeFen_returns_correct_fen_with_moved_kings_and_rooks()
+    public void EncodeFen_returns_correct_fen_with_moved_pieces()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
             [new AlgebraicPoint("a1")] = new Piece(PieceType.Rook, GameColor.White, HasMoved: true),
-            [new AlgebraicPoint("b1")] = new Piece(PieceType.King, GameColor.White, HasMoved: true),
-            [new AlgebraicPoint("c1")] = new Piece(PieceType.Rook, GameColor.Black),
+            [new AlgebraicPoint("a2")] = new Piece(PieceType.King, GameColor.Black, HasMoved: true),
+            [new AlgebraicPoint("a3")] = new Piece(PieceType.Pawn, GameColor.White, HasMoved: true),
+            [new AlgebraicPoint("a4")] = new Piece(
+                PieceType.UnderagePawn,
+                GameColor.Black,
+                HasMoved: true
+            ),
+            [new AlgebraicPoint("a5")] = new Piece(
+                PieceType.SterilePawn,
+                GameColor.White,
+                HasMoved: true
+            ),
+            [new AlgebraicPoint("b1")] = new Piece(PieceType.King, GameColor.Black),
+            [new AlgebraicPoint("b2")] = new Piece(PieceType.Rook, GameColor.White),
+            [new AlgebraicPoint("b3")] = new Piece(PieceType.Pawn, GameColor.Black),
         };
         ChessBoard board = new(pieces, height: 1, width: 3);
 
         var result = _fenEncoder.EncodeFen(board);
 
-        result.FullFen.Should().Be("RKr {\"movedPieces\":[\"b1\",\"a1\"]}");
+        result.FullFen.Should().Be("RKr {\"movedPieces\":[\"a1\",\"a2\",\"a3\",\"a4\",\"a5\"]}");
     }
 
     [Fact]
