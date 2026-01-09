@@ -128,9 +128,9 @@ export default function PrivacyPage() {
                         through a direct message. To verify your identity, you
                         may be asked to place a unique code provided by us in
                         your profile&apos;s &quot;About Me&quot; section. Once
-                        verifiedPlease note that your personal profile
-                        information will be removed, but your game history will
-                        remain to maintain accurate records.
+                        verified, your personal profile information will be
+                        removed, but your game history will remain to maintain
+                        accurate records.
                     </p>
                 </section>
 
