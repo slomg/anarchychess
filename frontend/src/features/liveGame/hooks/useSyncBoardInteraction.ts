@@ -8,13 +8,19 @@ export default function useSyncBoardInteraction(
     chessboardStore: StoreApi<ChessboardStore>,
 ): void {
     useEffect(() => {
-        let prev: boolean | undefined;
-        const unsub = liveChessStore.subscribe((state) => {
-            const isInteractionAllowed = state.isInteractionAllowed();
-            if (isInteractionAllowed === prev) return;
-            prev = isInteractionAllowed;
+        const { isInteractionAllowed } = liveChessStore.getState();
+        const { setHideLegalMoves } = chessboardStore.getState();
 
-            chessboardStore.getState().setHideLegalMoves(!isInteractionAllowed);
+        const initialInteractionAllowed = isInteractionAllowed();
+        setHideLegalMoves(!initialInteractionAllowed);
+
+        let prevInteractionAllowed = initialInteractionAllowed;
+        const unsub = liveChessStore.subscribe((state) => {
+            const updatedInteractionAllowed = state.isInteractionAllowed();
+            if (updatedInteractionAllowed === prevInteractionAllowed) return;
+            prevInteractionAllowed = updatedInteractionAllowed;
+
+            setHideLegalMoves(!updatedInteractionAllowed);
         });
         return unsub;
     }, [liveChessStore, chessboardStore]);

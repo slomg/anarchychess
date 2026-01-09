@@ -21,8 +21,9 @@ describe("useSyncBoardInteraction", () => {
     });
 
     it("should hide legal moves when interaction is not allowed and show when allowed", () => {
+        chessboardStore.setState({ hideLegalMoves: true });
+        // our turn
         liveChessStore.setState({
-            resultData: null,
             viewer: {
                 userId: "user id",
                 playerColor: GameColor.WHITE,
@@ -36,6 +37,7 @@ describe("useSyncBoardInteraction", () => {
 
         expect(chessboardStore.getState().hideLegalMoves).toBe(false);
 
+        // opponent side to move
         act(() => {
             liveChessStore.setState({ sideToMove: GameColor.BLACK });
         });
