@@ -478,6 +478,19 @@ describe("PiecesSlice", () => {
 
             expect(store.getState().pieces).toEqual(newPieces);
         });
+
+        it("should clear lastMove", () => {
+            store.setState({
+                lastMove: {
+                    from: logicalPoint({ x: 0, y: 0 }),
+                    to: logicalPoint({ x: 0, y: 1 }),
+                },
+            });
+
+            store.getState().setImmediatePieces(createFakeBoardPieces());
+
+            expect(store.getState().lastMove).toBeNull();
+        });
     });
 
     describe("updatePiecesFromPosition", () => {

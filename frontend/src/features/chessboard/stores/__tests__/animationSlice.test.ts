@@ -1,5 +1,5 @@
 import { StoreApi } from "zustand";
-import { AnimationStep, MoveAnimation } from "../../lib/types";
+import { AnimationStep, MoveAnimation, MoveBounds } from "../../lib/types";
 import { ChessboardStore, createChessboardStore } from "../chessboardStore";
 import { createFakePiece } from "@/lib/testUtils/fakers/chessboardFakers";
 import { logicalPoint } from "@/features/point/pointUtils";
@@ -186,6 +186,56 @@ describe("AnimationSlice", () => {
             await promise;
         });
 
+        it("should set lastMove from moveBounds for each animation step", async () => {
+            const moveBounds1: MoveBounds = {
+                from: logicalPoint({ x: 0, y: 1 }),
+                to: logicalPoint({ x: 0, y: 3 }),
+            };
+            const moveBounds3: MoveBounds = {
+                from: logicalPoint({ x: 1, y: 1 }),
+                to: logicalPoint({ x: 1, y: 2 }),
+            };
+
+            const piece = createFakePiece();
+            const boardPieces = BoardPieces.fromPieces(piece);
+
+            const animation: MoveAnimation = {
+                steps: [
+                    {
+                        newPieces: boardPieces,
+                        movedPieceIds: [piece.id],
+                        moveBounds: moveBounds1,
+                    },
+                    {
+                        newPieces: boardPieces,
+                        movedPieceIds: [piece.id],
+                    },
+                    {
+                        newPieces: boardPieces,
+                        movedPieceIds: [piece.id],
+                        moveBounds: moveBounds3,
+                    },
+                ],
+                removedPieceIds: [],
+            };
+
+            const promise = store.getState().playAnimationBatch(animation);
+
+            expect(store.getState().lastMove).toEqual(moveBounds1);
+
+            vi.advanceTimersByTime(100);
+            await flushMicrotasks();
+            expect(store.getState().lastMove).toEqual(null);
+
+            vi.advanceTimersByTime(100);
+            await flushMicrotasks();
+            expect(store.getState().lastMove).toEqual(moveBounds3);
+
+            await promise;
+
+            expect(store.getState().lastMove).toEqual(moveBounds3);
+        });
+
         it("should hide legal moves", async () => {
             const hideLegalMovesMock = vi.fn();
             store.setState({ unhighlightLegalMoves: hideLegalMovesMock });
@@ -252,6 +302,21 @@ describe("AnimationSlice", () => {
             store.getState().clearAnimation();
 
             expect(store.getState().animatingPieces).toBeNull();
+        });
+    });
+
+    describe("resetLastMove", () => {
+        it("should clear lastMove when called directly", () => {
+            store.setState({
+                lastMove: {
+                    from: logicalPoint({ x: 0, y: 0 }),
+                    to: logicalPoint({ x: 0, y: 1 }),
+                },
+            });
+
+            store.getState().resetLastMove();
+
+            expect(store.getState().lastMove).toBeNull();
         });
     });
 });

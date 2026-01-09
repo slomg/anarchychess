@@ -17,7 +17,7 @@ export interface AnimationSlice {
     animatingPieces: BoardPieces | null;
     animatingPieceIds: Set<PieceID>;
     removingPieceIds: Set<PieceID>;
-    lastMove?: MoveBounds;
+    lastMove: MoveBounds | null;
 
     playAnimationBatch(animation: MoveAnimation): Promise<void>;
     playAnimation(animation: AnimationStep): Promise<void>;
@@ -27,6 +27,7 @@ export interface AnimationSlice {
         pieces: BoardPieces,
     ): Promise<void>;
     clearAnimation(): void;
+    resetLastMove(): void;
 }
 
 export function createAnimationSlice(
@@ -62,11 +63,13 @@ export function createAnimationSlice(
                 if (cancelToken.canceled) break;
 
                 playAudioForAnimationStep(step);
-                if (step.initialSpawnPositions)
+                if (step.initialSpawnPositions) {
                     await spawnPieces(step.initialSpawnPositions);
+                }
+
                 set((state) => {
                     state.animatingPieces = step.newPieces;
-                    state.lastMove = step.moveBounds;
+                    state.lastMove = step.moveBounds ?? null;
                 });
                 await markPiecesAsAnimating(step.movedPieceIds);
             }
@@ -110,7 +113,7 @@ export function createAnimationSlice(
         }
 
         return {
-            ...initState,
+            lastMove: initState.lastMove ?? null,
             animatingPieces: null,
             animatingPieceIds: new Set(),
             removingPieceIds: new Set(),
@@ -149,6 +152,11 @@ export function createAnimationSlice(
             clearAnimation() {
                 set((state) => {
                     state.animatingPieces = null;
+                });
+            },
+            resetLastMove() {
+                set((state) => {
+                    state.lastMove = null;
                 });
             },
         };

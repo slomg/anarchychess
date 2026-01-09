@@ -212,6 +212,8 @@ export function createPiecesSlice(
             },
 
             setImmediatePieces(pieces) {
+                const { resetLastMove } = get();
+                resetLastMove();
                 set((state) => {
                     state.pieces = pieces;
                 });
