@@ -6,6 +6,7 @@ import { ChessboardStore } from "@/features/chessboard/stores/chessboardStore";
 import { LiveChessStore } from "../stores/liveChessStore";
 import { Move } from "@/features/chessboard/lib/types";
 import { useGameEmitter } from "../hooks/useGameHub";
+import BoardPieces from "@/features/chessboard/lib/boardPieces";
 
 export default function useLiveMoveEmitter(
     liveChessStore: StoreApi<LiveChessStore>,
@@ -17,18 +18,19 @@ export default function useLiveMoveEmitter(
     const sendGameEvent = useGameEmitter(gameToken);
 
     useEffect(() => {
-        async function emitMove(move: Move) {
+        async function emitMove(move: Move, prevPieces: BoardPieces) {
             const { resultData, initialFen } = liveChessStore.getState();
 
             if (resultData === null) {
                 markPendingMoveAck();
                 await sendGameEvent("MovePieceAsync", gameToken, move.moveKey);
             } else {
-                await addSidelineAnalysisMove(
+                await addSidelineAnalysisMove({
                     chessboardStore,
-                    initialFen,
+                    rootFen: initialFen,
                     move,
-                );
+                    prevPieces,
+                });
             }
         }
 

@@ -40,10 +40,10 @@ function expectPositionAndLegalMoves(
     move: Move,
     newPositionId: PositionId,
     newAnalysisPosition: AnalysisPosition,
-    prevPieces: BoardPieces,
+    newPieces: BoardPieces,
 ) {
     expect(addPositionMove).toHaveBeenCalledExactlyOnceWith<[PositionProps]>({
-        pieces: prevPieces,
+        pieces: newPieces,
         move,
         sideToMove: newAnalysisPosition.sideToMove,
         fen: newAnalysisPosition.fen,
@@ -65,10 +65,25 @@ describe("addAnalysisMove", () => {
     let chessboardStore: StoreApi<ChessboardStore>;
     const rootFen = "test root fen";
 
+    let newPieces: BoardPieces;
+    let prevPieces: BoardPieces;
+    let move: Move;
+
     const getNextAnalysisPositionMock = vi.mocked(getNextAnalysisPosition);
 
     beforeEach(() => {
         chessboardStore = createChessboardStore();
+
+        newPieces = createFakeBoardPieces(1);
+        prevPieces = createFakeBoardPieces(2);
+        move = createFakeMove();
+
+        // set pieces to something else, like a move was just played and changed from prevPieces to that
+        chessboardStore.setState({
+            pieces: newPieces,
+            allowHistoryChanges: true,
+            hideLegalMoves: false,
+        });
 
         getNextAnalysisPositionMock.mockResolvedValue({
             error: undefined,
@@ -86,9 +101,7 @@ describe("addAnalysisMove", () => {
     });
 
     it("should call getNextAnalysisPosition with the root fen when not viewing a position", async () => {
-        const move = createFakeMove();
-
-        await addAnalysisMove(chessboardStore, rootFen, move);
+        await addAnalysisMove({ chessboardStore, rootFen, move, prevPieces });
 
         expect(getNextAnalysisPositionMock).toHaveBeenCalledWith<
             [{ body: AnalysisMove }]
@@ -102,11 +115,10 @@ describe("addAnalysisMove", () => {
     });
 
     it("should call getNextAnalysisPosition viewing position fen when viewing a position", async () => {
-        const move = createFakeMove();
         const { addPosition } = chessboardStore.getState();
         const initialPosition = addPosition(createFakePosition());
 
-        await addAnalysisMove(chessboardStore, rootFen, move);
+        await addAnalysisMove({ chessboardStore, rootFen, move, prevPieces });
 
         expect(getNextAnalysisPositionMock).toHaveBeenCalledWith<
             [{ body: AnalysisMove }]
@@ -120,13 +132,11 @@ describe("addAnalysisMove", () => {
     });
 
     it("should add the new position and decoded legal moves to the store", async () => {
-        const move = createFakeMove();
         const newAnalysisPosition = createFakeAnalysisPosition();
         const newPosition = createFakePosition();
         const addPositionMock = vi.fn();
         const addLegalMovesMock = vi.fn();
         chessboardStore.setState({
-            allowHistoryChanges: true,
             addPosition: addPositionMock,
             addLegalMoves: addLegalMovesMock,
         });
@@ -138,16 +148,16 @@ describe("addAnalysisMove", () => {
         });
         addPositionMock.mockReturnValue(newPosition);
 
-        const { pieces: prevPieces } = chessboardStore.getState();
-        await addAnalysisMove(chessboardStore, rootFen, move);
+        await addAnalysisMove({ chessboardStore, rootFen, move, prevPieces });
 
+        expect(chessboardStore.getState().pieces).toBe(newPieces);
         expectPositionAndLegalMoves(
             addPositionMock,
             addLegalMovesMock,
             move,
             newPosition.positionId,
             newAnalysisPosition,
-            prevPieces,
+            newPieces,
         );
     });
 
@@ -159,12 +169,80 @@ describe("addAnalysisMove", () => {
         positionHistory.goToStart();
         chessboardStore.setState({ positionHistory });
 
-        await addAnalysisMove(chessboardStore, rootFen, existingPosition.move);
+        await addAnalysisMove({
+            chessboardStore,
+            prevPieces,
+            rootFen,
+            move: existingPosition.move,
+        });
 
         expect(getNextAnalysisPositionMock).not.toHaveBeenCalled();
         expect(chessboardStore.getState().positionHistory.viewingPosition).toBe(
             existingPosition,
         );
+    });
+
+    it("should restore prevPieces if getNextAnalysisPosition throws", async () => {
+        const addPositionMock = vi.fn();
+        chessboardStore.setState({ addPosition: addPositionMock });
+        getNextAnalysisPositionMock.mockImplementationOnce(() => {
+            throw new Error("API failure");
+        });
+
+        await expect(
+            addAnalysisMove({ chessboardStore, rootFen, move, prevPieces }),
+        ).rejects.toThrow("API failure");
+
+        const { pieces, hideLegalMoves } = chessboardStore.getState();
+        expect(pieces).toEqual(prevPieces);
+        expect(hideLegalMoves).toBe(false);
+        expect(addPositionMock).not.toHaveBeenCalled();
+    });
+
+    it("should restore prevPieces if getNextAnalysisPosition returns an error", async () => {
+        const addPositionMock = vi.fn();
+        chessboardStore.setState({ addPosition: addPositionMock });
+        getNextAnalysisPositionMock.mockResolvedValueOnce({
+            error: { errors: [] },
+            data: undefined,
+            response: new Response(),
+        });
+
+        await addAnalysisMove({ chessboardStore, rootFen, move, prevPieces });
+
+        const { pieces, hideLegalMoves } = chessboardStore.getState();
+        expect(pieces).toEqual(prevPieces);
+        expect(hideLegalMoves).toBe(false);
+        expect(addPositionMock).not.toHaveBeenCalled();
+    });
+
+    it("should hide legal moves while fetching", async () => {
+        chessboardStore.setState({ hideLegalMoves: false });
+
+        const promise = addAnalysisMove({
+            chessboardStore,
+            rootFen,
+            move,
+            prevPieces,
+        });
+
+        expect(chessboardStore.getState().hideLegalMoves).toBe(true);
+
+        await promise;
+        expect(chessboardStore.getState().hideLegalMoves).toBe(false);
+    });
+
+    it("should revert hideLegalMoves to what it was previously", async () => {
+        chessboardStore.setState({ hideLegalMoves: true });
+
+        await addAnalysisMove({
+            chessboardStore,
+            rootFen,
+            move,
+            prevPieces,
+        });
+
+        expect(chessboardStore.getState().hideLegalMoves).toBe(true);
     });
 });
 
@@ -196,8 +274,13 @@ describe("addSidelineAnalysisMove", () => {
         });
         addSidelinePositionMock.mockReturnValue(newPosition);
 
-        const { pieces: prevPieces } = chessboardStore.getState();
-        await addSidelineAnalysisMove(chessboardStore, "root fen", move);
+        const { pieces: newPieces } = chessboardStore.getState();
+        await addSidelineAnalysisMove({
+            chessboardStore,
+            rootFen: "root fen",
+            move,
+            prevPieces: newPieces,
+        });
 
         expectPositionAndLegalMoves(
             addSidelinePositionMock,
@@ -205,7 +288,7 @@ describe("addSidelineAnalysisMove", () => {
             move,
             newPosition.positionId,
             newAnalysisPosition,
-            prevPieces,
+            newPieces,
         );
     });
 });

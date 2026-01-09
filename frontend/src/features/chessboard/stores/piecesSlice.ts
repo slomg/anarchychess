@@ -25,7 +25,7 @@ export interface PiecesSlice {
     disableDrag: boolean;
     isProcessingMove: boolean;
 
-    pieceMovementEvent: EventBus<[move: Move], void>;
+    pieceMovementEvent: EventBus<[move: Move, prevPieces: BoardPieces], void>;
 
     selectPiece(pieceId: PieceID): boolean;
     unselectPiece(): void;
@@ -55,13 +55,17 @@ export function createPiecesSlice(
 > {
     return (set, get) => {
         async function applyMoveTurn(move: Move): Promise<void> {
-            const { applyMoveImmediate, unselectPiece, pieceMovementEvent } =
-                get();
+            const {
+                applyMoveImmediate,
+                unselectPiece,
+                pieces: prevPieces,
+                pieceMovementEvent,
+            } = get();
 
             const animationPromise = applyMoveImmediate(move);
 
             unselectPiece();
-            await pieceMovementEvent.emit(move);
+            await pieceMovementEvent.emit(move, prevPieces);
 
             await animationPromise;
         }

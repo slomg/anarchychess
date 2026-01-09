@@ -1,45 +1,61 @@
 import { StoreApi } from "zustand";
 
 import { ChessboardStore } from "@/features/chessboard/stores/chessboardStore";
-import { getNextAnalysisPosition } from "@/lib/apiClient";
+import {
+    AnalysisPosition,
+    ApiProblemDetails,
+    getNextAnalysisPosition,
+} from "@/lib/apiClient";
 import { Move } from "@/features/chessboard/lib/types";
 import { decodeMovePathIntoLegalMoves } from "@/features/liveGame/lib/moveDecoder";
 import { PositionProps } from "@/features/chessboard/lib/position";
 import LegalMoves from "@/features/chessboard/lib/legalMoves";
+import BoardPieces from "@/features/chessboard/lib/boardPieces";
 
-export async function addAnalysisMove(
-    chessboardStore: StoreApi<ChessboardStore>,
-    rootFen: string,
-    move: Move,
-): Promise<void> {
-    const result = await fetchNextPosition(chessboardStore, rootFen, move);
+interface AnalysisMoveArgs {
+    chessboardStore: StoreApi<ChessboardStore>;
+    prevPieces: BoardPieces;
+    rootFen: string;
+    move: Move;
+}
+
+export async function addAnalysisMove(args: AnalysisMoveArgs): Promise<void> {
+    const result = await fetchNextPosition(args);
     if (result === null) return;
 
-    const { addPosition, addLegalMoves } = chessboardStore.getState();
+    const { addPosition, addLegalMoves } = args.chessboardStore.getState();
     const position = addPosition(result.positionProps);
     addLegalMoves(result.legalMoves, position.positionId);
 }
 
-export async function addSidelineAnalysisMove(
-    chessboardStore: StoreApi<ChessboardStore>,
-    rootFen: string,
-    move: Move,
-) {
-    const result = await fetchNextPosition(chessboardStore, rootFen, move);
+export async function addSidelineAnalysisMove(args: AnalysisMoveArgs) {
+    const result = await fetchNextPosition(args);
     if (result === null) return;
 
-    const { addSidelinePosition, addLegalMoves } = chessboardStore.getState();
+    const { addSidelinePosition, addLegalMoves } =
+        args.chessboardStore.getState();
     const position = addSidelinePosition(result.positionProps);
     addLegalMoves(result.legalMoves, position.positionId);
 }
 
-async function fetchNextPosition(
-    chessboardStore: StoreApi<ChessboardStore>,
-    rootFen: string,
-    move: Move,
-): Promise<{ positionProps: PositionProps; legalMoves: LegalMoves } | null> {
-    const { pieces, boardDimensions, positionHistory, goToPosition } =
-        chessboardStore.getState();
+async function fetchNextPosition({
+    chessboardStore,
+    rootFen,
+    move,
+    prevPieces,
+}: AnalysisMoveArgs): Promise<{
+    positionProps: PositionProps;
+    legalMoves: LegalMoves;
+} | null> {
+    const {
+        pieces,
+        boardDimensions,
+        positionHistory,
+        hideLegalMoves: initialHideLegalMoves,
+        setImmediatePieces,
+        goToPosition,
+        setHideLegalMoves,
+    } = chessboardStore.getState();
 
     const nextPosition = positionHistory.getNextPositionWithKey(move.moveKey);
     if (nextPosition) {
@@ -47,15 +63,27 @@ async function fetchNextPosition(
         return null;
     }
 
-    const { error, data } = await getNextAnalysisPosition({
-        body: {
-            fen: positionHistory.viewingPosition?.fen ?? rootFen,
-            piecePosition: move.from,
-            moveKey: move.moveKey,
-        },
-    });
+    setHideLegalMoves(true);
+    let data: AnalysisPosition | undefined;
+    let error: ApiProblemDetails | undefined;
+    try {
+        ({ error, data } = await getNextAnalysisPosition({
+            body: {
+                fen: positionHistory.viewingPosition?.fen ?? rootFen,
+                piecePosition: move.from,
+                moveKey: move.moveKey,
+            },
+        }));
+    } catch (err) {
+        setImmediatePieces(prevPieces);
+        throw err;
+    } finally {
+        setHideLegalMoves(initialHideLegalMoves);
+    }
+
     if (error || data === undefined) {
         console.error(error);
+        setImmediatePieces(prevPieces);
         return null;
     }
 
