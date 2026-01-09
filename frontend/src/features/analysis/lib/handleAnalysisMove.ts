@@ -12,7 +12,7 @@ import { PositionProps } from "@/features/chessboard/lib/position";
 import LegalMoves from "@/features/chessboard/lib/legalMoves";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
 
-interface AnalysisMoveArgs {
+export interface AnalysisMoveArgs {
     chessboardStore: StoreApi<ChessboardStore>;
     prevPieces: BoardPieces;
     rootFen: string;

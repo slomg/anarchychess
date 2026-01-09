@@ -5,13 +5,20 @@ import {
     ChessboardStore,
     createChessboardStore,
 } from "@/features/chessboard/stores/chessboardStore";
+import {
+    addSidelineAnalysisMove,
+    AnalysisMoveArgs,
+} from "@/features/analysis/lib/handleAnalysisMove";
+import {
+    createFakeBoardPieces,
+    createFakeMove,
+} from "@/lib/testUtils/fakers/chessboardFakers";
 import createLiveChessStore, {
     LiveChessStore,
 } from "../../stores/liveChessStore";
 
 import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
-import { addSidelineAnalysisMove } from "@/features/analysis/lib/handleAnalysisMove";
-import { createFakeMove } from "@/lib/testUtils/fakers/chessboardFakers";
+import BoardPieces from "@/features/chessboard/lib/boardPieces";
 import useLiveMoveEmitter from "../useLiveMoveEmitter";
 import { useGameEmitter } from "../useGameHub";
 import { GameResult } from "@/lib/apiClient";
@@ -22,6 +29,7 @@ vi.mock("@/features/analysis/lib/handleAnalysisMove");
 describe("useLiveMoveEmitter", () => {
     let liveChessStore: StoreApi<LiveChessStore>;
     let chessboardStore: StoreApi<ChessboardStore>;
+    let prevPieces: BoardPieces;
 
     const sendGameEventMock = vi.fn();
     const addSidelineAnalysisMoveMock = vi.mocked(addSidelineAnalysisMove);
@@ -29,6 +37,7 @@ describe("useLiveMoveEmitter", () => {
     beforeEach(() => {
         liveChessStore = createLiveChessStore(createFakeLiveChessStoreProps());
         chessboardStore = createChessboardStore();
+        prevPieces = createFakeBoardPieces();
 
         vi.mocked(useGameEmitter).mockReturnValue(sendGameEventMock);
     });
@@ -37,7 +46,7 @@ describe("useLiveMoveEmitter", () => {
         renderHook(() => useLiveMoveEmitter(liveChessStore, chessboardStore));
 
         const move = createFakeMove();
-        chessboardStore.getState().pieceMovementEvent.emit(move);
+        chessboardStore.getState().pieceMovementEvent.emit(move, prevPieces);
 
         expect(sendGameEventMock).toHaveBeenCalledExactlyOnceWith(
             "MovePieceAsync",
@@ -59,13 +68,16 @@ describe("useLiveMoveEmitter", () => {
         });
 
         const move = createFakeMove();
-        chessboardStore.getState().pieceMovementEvent.emit(move);
+        chessboardStore.getState().pieceMovementEvent.emit(move, prevPieces);
 
-        expect(addSidelineAnalysisMoveMock).toHaveBeenCalledExactlyOnceWith(
+        expect(addSidelineAnalysisMoveMock).toHaveBeenCalledExactlyOnceWith<
+            [AnalysisMoveArgs]
+        >({
             chessboardStore,
-            initialFen,
+            prevPieces,
+            rootFen: initialFen,
             move,
-        );
+        });
         expect(sendGameEventMock).not.toHaveBeenCalled();
     });
 });

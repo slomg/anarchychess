@@ -5,10 +5,17 @@ import {
     ChessboardStore,
     createChessboardStore,
 } from "@/features/chessboard/stores/chessboardStore";
+import {
+    createFakeBoardPieces,
+    createFakeMove,
+} from "@/lib/testUtils/fakers/chessboardFakers";
 
-import { createFakeMove } from "@/lib/testUtils/fakers/chessboardFakers";
 import useAnalysisMoveResolver from "../useAnalysisMoveResolver";
-import { addAnalysisMove } from "../../lib/handleAnalysisMove";
+import BoardPieces from "@/features/chessboard/lib/boardPieces";
+import {
+    addAnalysisMove,
+    AnalysisMoveArgs,
+} from "../../lib/handleAnalysisMove";
 import { RootAnalysisPosition } from "@/lib/apiClient";
 import constants from "@/lib/constants";
 
@@ -17,11 +24,14 @@ vi.mock("@/features/analysis/lib/handleAnalysisMove");
 describe("useAnalysisMoveResolver", () => {
     let chessboardStore: StoreApi<ChessboardStore>;
     let rootPosition: RootAnalysisPosition;
+    let prevPieces: BoardPieces;
 
     const addAnalysisMoveMock = vi.mocked(addAnalysisMove);
 
     beforeEach(() => {
         chessboardStore = createChessboardStore();
+
+        prevPieces = createFakeBoardPieces();
         rootPosition = {
             fen: constants.INITIAL_FEN,
             moveOptions: {
@@ -41,12 +51,17 @@ describe("useAnalysisMoveResolver", () => {
             useAnalysisMoveResolver(rootPosition, chessboardStore),
         );
 
-        await chessboardStore.getState().pieceMovementEvent.emit(move);
+        await chessboardStore
+            .getState()
+            .pieceMovementEvent.emit(move, prevPieces);
 
-        expect(addAnalysisMoveMock).toHaveBeenCalledExactlyOnceWith(
+        expect(addAnalysisMoveMock).toHaveBeenCalledExactlyOnceWith<
+            [AnalysisMoveArgs]
+        >({
             chessboardStore,
-            rootPosition.fen,
+            prevPieces,
+            rootFen: rootPosition.fen,
             move,
-        );
+        });
     });
 });
