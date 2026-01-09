@@ -22,6 +22,7 @@ export default function PlayPage() {
     return (
         <WithOptionalSession>
             <StaticChessboardWithSidebar
+                prioritizeAside
                 aside={
                     <aside
                         className="flex h-full w-full min-w-xs flex-col gap-3

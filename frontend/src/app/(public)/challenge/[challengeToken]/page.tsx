@@ -25,6 +25,7 @@ export default async function ChallengePage({
 
                 return (
                     <StaticChessboardWithSidebar
+                        prioritizeAside
                         aside={<ChallengeSidebar challenge={challenge} />}
                     />
                 );

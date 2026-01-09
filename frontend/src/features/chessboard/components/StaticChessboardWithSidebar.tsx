@@ -1,9 +1,16 @@
 import ChessboardWithSidebar from "./ChessboardWithSidebar";
 import StaticChessboard from "./StaticChessboard";
 
-const StaticChessboardWithSidebar = ({ aside }: { aside: React.ReactNode }) => {
+const StaticChessboardWithSidebar = ({
+    aside,
+    prioritizeAside,
+}: {
+    aside: React.ReactNode;
+    prioritizeAside?: boolean;
+}) => {
     return (
         <ChessboardWithSidebar
+            prioritizeAside={prioritizeAside}
             chessboard={
                 <StaticChessboard
                     breakpoints={[
