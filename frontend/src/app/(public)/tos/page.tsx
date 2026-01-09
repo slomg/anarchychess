@@ -1,5 +1,4 @@
 import Card from "@/components/ui/Card";
-import constants from "@/lib/constants";
 
 export const metadata = { title: "Terms of Service - Anarchy Chess" };
 
