@@ -296,5 +296,8 @@ public class InvalidEnPassantTestData
 
         // pawn trying to capture where there's no one to en passant
         Add(new("e5"), new("h2"), new("h4"), new(1, 1));
+
+        // enemy pawn moves moves a file
+        Add(new("e5"), new("c9"), new("d5"), new(-1, 1));
     }
 }

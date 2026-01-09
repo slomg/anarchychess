@@ -39,12 +39,15 @@ public class EnPassantRule(Offset direction, Offset chainCaptureDirection) : IPi
             lastMove is null
             || !GameLogicConstants.PawnLikePieces.Contains(lastMove.Piece.Type)
             || lastMove.Piece.Color == movingPiece.Color
-            || lastMove.Piece.HasMoved
         )
             return null;
 
-        var distanceLastPieceMoved = Math.Abs(lastMove.From.Y - lastMove.To.Y);
-        if (distanceLastPieceMoved < 2)
+        var verticalDistanceLastPieceMoved = Math.Abs(lastMove.From.Y - lastMove.To.Y);
+        if (verticalDistanceLastPieceMoved < 2)
+            return null;
+
+        var horizontalDistanceLastPieceMoved = Math.Abs(lastMove.From.X - lastMove.To.X);
+        if (horizontalDistanceLastPieceMoved != 0)
             return null;
 
         var distanceBetweenFiles = Math.Abs(lastMove.To.X - targetPos.X);
