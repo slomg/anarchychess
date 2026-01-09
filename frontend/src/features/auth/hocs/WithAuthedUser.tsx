@@ -1,11 +1,8 @@
-import { redirect } from "next/navigation";
-import React from "react";
-
 import SessionProvider from "@/features/auth/contexts/sessionContext";
 import { Renderable, renderRenderable } from "@/lib/utils/renderable";
 import { fetchAuthedUserSession } from "../lib/getLoggedIn";
+import RefreshRedirect from "../components/RefreshRedirect";
 import { type PrivateUser } from "@/lib/apiClient";
-import constants from "@/lib/constants";
 
 interface WithAuthedUserProps {
     user: PrivateUser;
@@ -18,7 +15,7 @@ export default async function WithAuthedUser({
     children: Renderable<WithAuthedUserProps>;
 }) {
     const session = await fetchAuthedUserSession();
-    if (!session) redirect(constants.PATHS.LOGOUT);
+    if (!session) return <RefreshRedirect />;
 
     return (
         <SessionProvider user={session.user} fetchAttempted>

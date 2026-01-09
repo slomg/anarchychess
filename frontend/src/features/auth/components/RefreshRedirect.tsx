@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-import { logout, refresh } from "@/lib/apiClient";
+import rawClient from "@/lib/apiClient/rawClient";
+import { refresh } from "@/lib/apiClient";
 import constants from "@/lib/constants";
 
 /**
@@ -14,10 +15,10 @@ const RefreshRedirect = () => {
 
     useEffect(() => {
         async function handleRefresh() {
-            const { error } = await refresh();
+            const { error } = await refresh({ client: rawClient });
             if (error) {
-                await logout();
-                router.replace(constants.PATHS.SIGNIN);
+                console.log(error);
+                router.replace(constants.PATHS.LOGOUT);
                 return;
             }
 

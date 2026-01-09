@@ -1,5 +1,5 @@
-import { createGuestUser, logout, refresh } from "../definition";
 import { mockJsCookie } from "@/lib/testUtils/mocks/mockCookies";
+import { createGuestUser, refresh } from "../definition";
 import authAwareFetch from "../authAwareFetch";
 import { navigate } from "@/actions/navigate";
 import constants from "@/lib/constants";
@@ -14,7 +14,6 @@ describe("authAwareFetch", () => {
     const fetchMock = vi.fn();
     const refreshMock = vi.mocked(refresh);
     const createGuestUserMock = vi.mocked(createGuestUser);
-    const logoutMock = vi.mocked(logout);
     const navigateMock = vi.mocked(navigate);
 
     const unauthorizedResponse = new Response("unauthorized", { status: 401 });
@@ -72,7 +71,7 @@ describe("authAwareFetch", () => {
             client: rawClient,
         });
         expect(res.status).toBe(200);
-        expect(logoutMock).not.toHaveBeenCalled();
+        expect(navigateMock).not.toHaveBeenCalled();
     });
 
     it("should create guest and retry requests on 401 when needed", async () => {
@@ -101,9 +100,8 @@ describe("authAwareFetch", () => {
 
         await authAwareFetch("https://localhost/api/data");
 
-        expect(logoutMock).toHaveBeenCalledOnce();
         expect(navigateMock).toHaveBeenCalledExactlyOnceWith(
-            constants.PATHS.SIGNIN,
+            constants.PATHS.LOGOUT,
         );
     });
 
@@ -114,9 +112,8 @@ describe("authAwareFetch", () => {
 
         await authAwareFetch("https://localhost/api/data");
 
-        expect(logoutMock).toHaveBeenCalledOnce();
         expect(navigateMock).toHaveBeenCalledExactlyOnceWith(
-            constants.PATHS.SIGNIN,
+            constants.PATHS.LOGOUT,
         );
     });
 });

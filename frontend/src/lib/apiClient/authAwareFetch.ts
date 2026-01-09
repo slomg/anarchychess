@@ -1,8 +1,6 @@
 import ensureAuth from "@/features/auth/lib/ensureAuth";
 import { navigate } from "@/actions/navigate";
-import { logout } from "./definition";
 import constants from "../constants";
-import rawClient from "./rawClient";
 
 export default async function authAwareFetch(
     input: URL | RequestInfo,
@@ -16,20 +14,15 @@ export default async function authAwareFetch(
 
     const canRetryAuthed = await ensureAuth();
     if (!canRetryAuthed) {
-        await handleLogout();
+        await navigate(constants.PATHS.LOGOUT);
         return response;
     }
 
     const newResponse = await fetch(input, init);
     if (newResponse.status === 401) {
-        await handleLogout();
+        await navigate(constants.PATHS.LOGOUT);
         return newResponse;
     }
 
     return newResponse;
-}
-
-async function handleLogout(): Promise<void> {
-    await logout({ client: rawClient });
-    await navigate(constants.PATHS.SIGNIN);
 }

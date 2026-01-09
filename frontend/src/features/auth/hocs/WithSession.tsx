@@ -1,10 +1,8 @@
-import React from "react";
-
 import { Renderable, renderRenderable } from "@/lib/utils/renderable";
 import SessionProvider from "../contexts/sessionContext";
+import GuestRedirect from "../components/GuestRedirect";
 import { fetchUserSession } from "../lib/getLoggedIn";
 import { type SessionUser } from "@/lib/apiClient";
-import GuestRedirect from "../components/GuestRedirect";
 
 interface WithAuthedSessionProps {
     user: SessionUser;

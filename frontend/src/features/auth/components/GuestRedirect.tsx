@@ -2,8 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import Cookies from "js-cookie";
 
 import { createGuestUser } from "@/lib/apiClient";
+import RefreshRedirect from "./RefreshRedirect";
 import constants from "@/lib/constants";
 
 /**
@@ -11,11 +13,16 @@ import constants from "@/lib/constants";
  */
 const GuestRedirect = () => {
     const router = useRouter();
+    const shouldBeLoggedIn =
+        Cookies.get(constants.COOKIES.IS_LOGGED_IN) !== undefined;
 
     useEffect(() => {
+        if (shouldBeLoggedIn) return;
+
         async function handleCreateGuest() {
             const { error } = await createGuestUser();
             if (error) {
+                console.error(error);
                 router.replace(constants.PATHS.SIGNIN);
                 return;
             }
@@ -23,8 +30,8 @@ const GuestRedirect = () => {
             router.refresh();
         }
         handleCreateGuest();
-    }, [router]);
+    }, [router, shouldBeLoggedIn]);
 
-    return null;
+    return shouldBeLoggedIn && <RefreshRedirect />;
 };
 export default GuestRedirect;
