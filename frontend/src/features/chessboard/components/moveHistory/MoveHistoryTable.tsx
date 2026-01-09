@@ -7,7 +7,7 @@ import MoveVariation from "./MoveVariation";
 import Card from "@/components/ui/Card";
 import MoveRow from "./MoveRow";
 
-const MoveHistoryTable = () => {
+const MoveHistoryTable = ({ title }: { title?: React.ReactNode }) => {
     const { totalPlyCount, positionHistory } = useChessboardStore((x) => ({
         totalPlyCount: x.positionHistory.totalPlyCount,
         positionHistory: x.positionHistory,
@@ -109,7 +109,17 @@ const MoveHistoryTable = () => {
     if (pendingWhiteMoveVariation) moveRows.push(pendingWhiteMoveVariation);
 
     return (
-        <Card className="relative max-h-96 w-full p-0 lg:max-h-full">
+        <Card className="relative max-h-96 w-full gap-0 p-0 lg:max-h-full">
+            {title && (
+                <div
+                    className="bg-primary flex items-center justify-center gap-1
+                        rounded-t-md p-1 text-2xl"
+                    data-testid="moveHistoryTitle"
+                >
+                    {title}
+                </div>
+            )}
+
             <div
                 className="h-full flex-1 overflow-x-auto"
                 ref={tableRef}

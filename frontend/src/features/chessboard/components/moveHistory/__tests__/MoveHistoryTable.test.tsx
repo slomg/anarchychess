@@ -15,12 +15,12 @@ import {
 import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardStoreContext";
 import { createFakePositionHistory } from "@/lib/testUtils/fakers/positionHistoryFaker";
 import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
+import PositionHistory from "@/features/chessboard/lib/positionHistory";
 import { mockScrollTo } from "@/lib/testUtils/mocks/mockDom";
 import { logicalPoint } from "@/features/point/pointUtils";
 import MoveHistoryTable from "../MoveHistoryTable";
 import BoardPieces from "../../../lib/boardPieces";
 import { GameColor } from "@/lib/apiClient";
-import PositionHistory from "@/features/chessboard/lib/positionHistory";
 
 describe("MoveHistoryTable", () => {
     let chessboardStore: StoreApi<ChessboardStore>;
@@ -30,16 +30,13 @@ describe("MoveHistoryTable", () => {
         chessboardStore = createChessboardStore();
     });
 
-    function renderWithCtx() {
-        return render(
+    it("should render an empty table when there are no moves", () => {
+        render(
             <ChessboardStoreContext.Provider value={chessboardStore}>
                 <MoveHistoryTable />
             </ChessboardStoreContext.Provider>,
         );
-    }
 
-    it("should render an empty table when there are no moves", () => {
-        renderWithCtx();
         const rows = screen.queryAllByTestId("moveRow");
         expect(rows.length).toBe(0);
     });
@@ -51,7 +48,11 @@ describe("MoveHistoryTable", () => {
             }),
         });
 
-        renderWithCtx();
+        render(
+            <ChessboardStoreContext.Provider value={chessboardStore}>
+                <MoveHistoryTable />
+            </ChessboardStoreContext.Provider>,
+        );
 
         expect(screen.getByTestId("moveHistoryContents")).toHaveTextContent(
             "1.e4",
@@ -70,7 +71,11 @@ describe("MoveHistoryTable", () => {
             }),
         });
 
-        renderWithCtx();
+        render(
+            <ChessboardStoreContext.Provider value={chessboardStore}>
+                <MoveHistoryTable />
+            </ChessboardStoreContext.Provider>,
+        );
 
         expect(screen.getByTestId("moveHistoryContents")).toHaveTextContent(
             "1.e4 e5 2.Nf3 Nc6".replaceAll(" ", ""),
@@ -91,7 +96,11 @@ describe("MoveHistoryTable", () => {
         );
         chessboardStore.setState({ positionHistory });
 
-        renderWithCtx();
+        render(
+            <ChessboardStoreContext.Provider value={chessboardStore}>
+                <MoveHistoryTable />
+            </ChessboardStoreContext.Provider>,
+        );
 
         expect(screen.getByTestId("moveVariations")).toHaveTextContent("1.c4");
         expect(screen.getByTestId("moveHistoryContents")).toHaveTextContent(
@@ -110,7 +119,11 @@ describe("MoveHistoryTable", () => {
         positionHistory.addNextPosition(createFakePositionProps({ san: "c5" }));
         chessboardStore.setState({ positionHistory });
 
-        renderWithCtx();
+        render(
+            <ChessboardStoreContext.Provider value={chessboardStore}>
+                <MoveHistoryTable />
+            </ChessboardStoreContext.Provider>,
+        );
 
         expect(screen.getByTestId("moveVariations")).toHaveTextContent(
             "1...c5",
@@ -136,7 +149,11 @@ describe("MoveHistoryTable", () => {
         );
         chessboardStore.setState({ positionHistory });
 
-        renderWithCtx();
+        render(
+            <ChessboardStoreContext.Provider value={chessboardStore}>
+                <MoveHistoryTable />
+            </ChessboardStoreContext.Provider>,
+        );
 
         expect(screen.getByTestId("moveVariations")).toHaveTextContent("2.Nc3");
         expect(screen.getByTestId("moveHistoryContents")).toHaveTextContent(
@@ -156,8 +173,11 @@ describe("MoveHistoryTable", () => {
             }),
         });
 
-        const { debug } = renderWithCtx();
-        debug();
+        render(
+            <ChessboardStoreContext.Provider value={chessboardStore}>
+                <MoveHistoryTable />
+            </ChessboardStoreContext.Provider>,
+        );
 
         const rows = screen.getAllByTestId("moveRow");
         expect(rows.length).toBe(2);
@@ -202,7 +222,11 @@ describe("MoveHistoryTable", () => {
         });
 
         const user = userEvent.setup();
-        renderWithCtx();
+        render(
+            <ChessboardStoreContext.Provider value={chessboardStore}>
+                <MoveHistoryTable />
+            </ChessboardStoreContext.Provider>,
+        );
 
         // step backward 2 -> 1
         await user.keyboard("{ArrowLeft}");
@@ -229,11 +253,41 @@ describe("MoveHistoryTable", () => {
         chessboardStore.setState({ viewingFrom: GameColor.WHITE });
         const user = userEvent.setup();
 
-        renderWithCtx();
+        render(
+            <ChessboardStoreContext.Provider value={chessboardStore}>
+                <MoveHistoryTable />
+            </ChessboardStoreContext.Provider>,
+        );
 
         const flipIcon = screen.getByTitle("Flip Board");
         await user.click(flipIcon);
 
         expect(chessboardStore.getState().viewingFrom).toBe(GameColor.BLACK);
+    });
+
+    it("should render the title when provided", () => {
+        const title = "test title";
+
+        render(
+            <ChessboardStoreContext.Provider value={chessboardStore}>
+                <MoveHistoryTable title={title} />
+            </ChessboardStoreContext.Provider>,
+        );
+
+        const titleDiv = screen.getByTestId("moveHistoryTitle");
+        expect(titleDiv).toBeInTheDocument();
+        expect(titleDiv).toHaveTextContent(title);
+    });
+
+    it("should not render the title when not provided", () => {
+        render(
+            <ChessboardStoreContext.Provider value={chessboardStore}>
+                <MoveHistoryTable />
+            </ChessboardStoreContext.Provider>,
+        );
+
+        expect(
+            screen.queryByTestId("moveHistoryTitle"),
+        ).not.toBeInTheDocument();
     });
 });

@@ -11,6 +11,7 @@ import processRootAnalysis from "../lib/rootAnalysisPositionProcessor";
 import useAnalysisMoveResolver from "../hooks/useAnalysisMoveResolver";
 import ChessboardWithSidebar from "@/features/chessboard/components/ChessboardWithSidebar";
 import MoveHistoryTable from "@/features/chessboard/components/moveHistory/MoveHistoryTable";
+import { MagnifyingGlassPlusIcon } from "@heroicons/react/24/solid";
 
 const AnalysisChessboard = ({
     rootPosition,
@@ -45,7 +46,14 @@ const AnalysisChessboard = ({
                         className="flex h-96 min-h-[100px] w-full overflow-auto
                             md:h-full lg:max-w-sm"
                     >
-                        <MoveHistoryTable />
+                        <MoveHistoryTable
+                            title={
+                                <>
+                                    <MagnifyingGlassPlusIcon className="h-7 w-7" />
+                                    <h1>Analysis</h1>
+                                </>
+                            }
+                        />
                     </aside>
                 }
             />
