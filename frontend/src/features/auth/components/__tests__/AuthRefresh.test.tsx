@@ -45,4 +45,20 @@ describe("AuthRefresh", () => {
         );
         expect(routerMock.refresh).not.toHaveBeenCalled();
     });
+
+    it("should not refresh again on rerender", async () => {
+        const { rerender } = render(<AuthRefresh />);
+        await flushMicrotasks();
+
+        expect(refreshMock).toHaveBeenCalledOnce();
+        expect(routerMock.refresh).toHaveBeenCalledOnce();
+        refreshMock.mockClear();
+        routerMock.refresh.mockClear();
+
+        rerender(<AuthRefresh />);
+        await flushMicrotasks();
+
+        expect(refreshMock).not.toHaveBeenCalled();
+        expect(routerMock.refresh).not.toHaveBeenCalled();
+    });
 });

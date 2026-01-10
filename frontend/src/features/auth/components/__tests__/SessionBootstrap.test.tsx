@@ -62,4 +62,20 @@ describe("SessionBootstrap", () => {
         expect(routerMock.refresh).not.toHaveBeenCalled();
         expect(createGuestUserMock).not.toHaveBeenCalled();
     });
+
+    it("should not create guest session again on rerender", async () => {
+        const { rerender } = render(<SessionBootstrap />);
+        await flushMicrotasks();
+
+        expect(createGuestUserMock).toHaveBeenCalledOnce();
+        expect(routerMock.refresh).toHaveBeenCalledOnce();
+        createGuestUserMock.mockClear();
+        routerMock.refresh.mockClear();
+
+        rerender(<SessionBootstrap />);
+        await flushMicrotasks();
+
+        expect(createGuestUserMock).not.toHaveBeenCalled();
+        expect(routerMock.refresh).not.toHaveBeenCalled();
+    });
 });

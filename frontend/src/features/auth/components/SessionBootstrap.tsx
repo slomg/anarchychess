@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Cookies from "js-cookie";
 
 import { createGuestUser } from "@/lib/apiClient";
@@ -16,9 +16,11 @@ const SessionBootstrap = () => {
     const router = useRouter();
     const shouldBeLoggedIn =
         Cookies.get(constants.COOKIES.IS_LOGGED_IN) !== undefined;
+    const hasBootstrappedRef = useRef(false);
 
     useEffect(() => {
-        if (shouldBeLoggedIn) return;
+        if (shouldBeLoggedIn || hasBootstrappedRef.current) return;
+        hasBootstrappedRef.current = true;
 
         async function bootstrapGuestSession() {
             const { error } = await createGuestUser({ client: rawClient });
