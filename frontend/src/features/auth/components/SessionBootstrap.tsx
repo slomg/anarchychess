@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import Cookies from "js-cookie";
 
 import { createGuestUser } from "@/lib/apiClient";
+import rawClient from "@/lib/apiClient/rawClient";
 import AuthRefresh from "./AuthRefresh";
 import constants from "@/lib/constants";
 
@@ -19,8 +20,8 @@ const SessionBootstrap = () => {
     useEffect(() => {
         if (shouldBeLoggedIn) return;
 
-        async function handleCreateGuest() {
-            const { error } = await createGuestUser();
+        async function bootstrapGuestSession() {
+            const { error } = await createGuestUser({ client: rawClient });
             if (error) {
                 console.error(error);
                 router.replace(constants.PATHS.SIGNIN);
@@ -29,7 +30,7 @@ const SessionBootstrap = () => {
 
             router.refresh();
         }
-        handleCreateGuest();
+        bootstrapGuestSession();
     }, [router, shouldBeLoggedIn]);
 
     return shouldBeLoggedIn && <AuthRefresh />;
