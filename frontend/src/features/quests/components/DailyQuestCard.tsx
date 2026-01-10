@@ -68,7 +68,11 @@ const DailyQuestCard = ({ initialQuest }: { initialQuest: Quest }) => {
                 return;
             }
 
-            setQuest({ ...quest, rewardCollected: true });
+            setQuest({
+                ...quest,
+                streak: quest.streak + 1,
+                rewardCollected: true,
+            });
             router.refresh();
         } finally {
             setIsFetching(false);
@@ -141,7 +145,7 @@ const DailyQuestCard = ({ initialQuest }: { initialQuest: Quest }) => {
                     {quest.description}
                 </p>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center">
                     <ProgressBar percent={percentDone} />
 
                     <p

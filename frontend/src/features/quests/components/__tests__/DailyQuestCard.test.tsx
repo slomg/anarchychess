@@ -217,4 +217,33 @@ describe("DailyQuestCard", () => {
         ).not.toBeInTheDocument();
         expect(collectButton).not.toBeDisabled();
     });
+
+    it("should increment streak when quest is completed and reward is collected", async () => {
+        const quest = createFakeQuest({
+            progress: 5,
+            target: 5,
+            rewardCollected: false,
+            streak: 3,
+        });
+
+        collectQuestRewardMock.mockResolvedValue({
+            data: quest.difficulty,
+            error: undefined,
+            response: new Response(),
+        });
+
+        const user = userEvent.setup();
+        render(<DailyQuestCard initialQuest={quest} />);
+
+        expect(screen.getByTestId("dailyQuestStreak")).toHaveTextContent(
+            "🔥3 Days Streak",
+        );
+
+        const collectButton = screen.getByTestId("dailyQuestCollectButton");
+        await user.click(collectButton);
+
+        expect(screen.getByTestId("dailyQuestStreak")).toHaveTextContent(
+            "🔥4 Days Streak",
+        );
+    });
 });
