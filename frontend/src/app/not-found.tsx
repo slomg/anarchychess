@@ -4,7 +4,7 @@ import Button from "@/components/ui/Button";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-    title: "Not Found",
+    title: "Not Found - Anarchy Chess",
 };
 
 export default function NotFound() {
