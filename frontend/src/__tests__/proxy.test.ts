@@ -2,8 +2,8 @@ import { RequestCookies } from "next/dist/compiled/@edge-runtime/cookies";
 import { NextURL } from "next/dist/server/web/next-url";
 import { NextRequest, NextResponse } from "next/server";
 
-import { proxy } from "../proxy";
 import constants from "@/lib/constants";
+import { proxy } from "../proxy";
 
 vi.mock("next/server", () => ({
     NextRequest: vi.fn(),
@@ -74,8 +74,5 @@ describe("proxy", () => {
 
         const url = new URL(response.url);
         expect(url.pathname).toBe(constants.PATHS.REFRESH);
-        expect(
-            response.headers.get(constants.HEADERS.REDIRECT_AFTER_AUTH),
-        ).toBe(pathname);
     });
 });

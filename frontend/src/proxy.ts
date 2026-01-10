@@ -9,24 +9,13 @@ export async function proxy(request: NextRequest) {
     // if the user doesn't have an auth cookie
     // but is expected to be authenticated, we should refresh the token
     if (!hasAuthCookie && shouldBeAuthed) {
-        const response = rewriteTo(request, constants.PATHS.REFRESH);
+        const url = request.nextUrl.clone();
+        url.pathname = constants.PATHS.REFRESH;
+        const response = NextResponse.rewrite(url);
         return response;
     }
 
     return NextResponse.next();
-}
-
-function rewriteTo(request: NextRequest, newPathname: string): NextResponse {
-    const originalPathname = request.nextUrl.pathname;
-    const url = request.nextUrl.clone();
-    url.pathname = newPathname;
-
-    const response = NextResponse.rewrite(url);
-    response.headers.set(
-        constants.HEADERS.REDIRECT_AFTER_AUTH,
-        originalPathname,
-    );
-    return response;
 }
 
 export const config = {

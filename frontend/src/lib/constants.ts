@@ -66,10 +66,6 @@ const SIGNALR_PATHS = {
     CHALLENGE: `${process.env.NEXT_PUBLIC_API_URL}/api/hub/challenge`,
 };
 
-const HEADERS = {
-    REDIRECT_AFTER_AUTH: "Redirect-After-Auth",
-};
-
 const PAGINATION_PAGE_SIZE = {
     GAME_SUMMARY: 10,
     QUEST_LEADERBOARD: 10,
@@ -272,7 +268,6 @@ const constants = {
     OPEN_SEEK_RESUBSCRIBE_INTERAVAL_MS,
     COOKIES,
     PATHS,
-    HEADERS,
     LOCALSTORAGE,
     ALLOW_ABORTION_UNTIL_MOVE,
     INITIAL_FEN,
