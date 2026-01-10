@@ -1,9 +1,9 @@
 import { Metadata } from "next";
 
-import RefreshRedirect from "@/features/auth/components/RefreshRedirect";
+import AuthRefresh from "@/features/auth/components/AuthRefresh";
 
 export const metadata: Metadata = {
     title: "Please Wait...",
 };
 
-export default RefreshRedirect;
+export default AuthRefresh;

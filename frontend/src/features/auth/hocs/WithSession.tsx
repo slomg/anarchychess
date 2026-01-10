@@ -1,6 +1,6 @@
 import { Renderable, renderRenderable } from "@/lib/utils/renderable";
 import SessionProvider from "../contexts/sessionContext";
-import GuestRedirect from "../components/GuestRedirect";
+import SessionBootstrap from "../components/SessionBootstrap";
 import { fetchUserSession } from "../lib/getLoggedIn";
 import { type SessionUser } from "@/lib/apiClient";
 
@@ -15,7 +15,7 @@ export default async function WithSession({
     children: Renderable<WithAuthedSessionProps>;
 }) {
     const session = await fetchUserSession();
-    if (!session) return <GuestRedirect />;
+    if (!session) return <SessionBootstrap />;
 
     return (
         <SessionProvider user={session.user} fetchAttempted>

@@ -5,13 +5,13 @@ import { useEffect } from "react";
 import Cookies from "js-cookie";
 
 import { createGuestUser } from "@/lib/apiClient";
-import RefreshRedirect from "./RefreshRedirect";
+import AuthRefresh from "./AuthRefresh";
 import constants from "@/lib/constants";
 
 /**
  * Create a guest user and retry
  */
-const GuestRedirect = () => {
+const SessionBootstrap = () => {
     const router = useRouter();
     const shouldBeLoggedIn =
         Cookies.get(constants.COOKIES.IS_LOGGED_IN) !== undefined;
@@ -32,6 +32,6 @@ const GuestRedirect = () => {
         handleCreateGuest();
     }, [router, shouldBeLoggedIn]);
 
-    return shouldBeLoggedIn && <RefreshRedirect />;
+    return shouldBeLoggedIn && <AuthRefresh />;
 };
-export default GuestRedirect;
+export default SessionBootstrap;

@@ -3,7 +3,7 @@ import { GuestUser, SessionUser } from "@/lib/apiClient";
 import { fetchUserSession } from "../../lib/getLoggedIn";
 import SessionProvider from "../../contexts/sessionContext";
 import WithSession from "../WithSession";
-import GuestRedirect from "../../components/GuestRedirect";
+import SessionBootstrap from "../../components/SessionBootstrap";
 
 vi.mock("next/navigation");
 vi.mock("../../lib/getLoggedIn");
@@ -44,7 +44,7 @@ describe("WithSession", () => {
             children: childrenMock,
         });
 
-        expect(ui.type).toBe(GuestRedirect);
+        expect(ui.type).toBe(SessionBootstrap);
         expect(childrenMock).not.toHaveBeenCalled();
     });
 });

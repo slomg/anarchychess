@@ -1,7 +1,7 @@
 import SessionProvider from "@/features/auth/contexts/sessionContext";
 import { Renderable, renderRenderable } from "@/lib/utils/renderable";
 import { fetchAuthedUserSession } from "../lib/getLoggedIn";
-import RefreshRedirect from "../components/RefreshRedirect";
+import AuthRefresh from "../components/AuthRefresh";
 import { type PrivateUser } from "@/lib/apiClient";
 
 interface WithAuthedUserProps {
@@ -15,7 +15,7 @@ export default async function WithAuthedUser({
     children: Renderable<WithAuthedUserProps>;
 }) {
     const session = await fetchAuthedUserSession();
-    if (!session) return <RefreshRedirect />;
+    if (!session) return <AuthRefresh />;
 
     return (
         <SessionProvider user={session.user} fetchAttempted>

@@ -10,7 +10,7 @@ import constants from "@/lib/constants";
 /**
  * Refresh access token and retry
  */
-const RefreshRedirect = () => {
+const AuthRefresh = () => {
     const router = useRouter();
 
     useEffect(() => {
@@ -29,4 +29,4 @@ const RefreshRedirect = () => {
 
     return null;
 };
-export default RefreshRedirect;
+export default AuthRefresh;
