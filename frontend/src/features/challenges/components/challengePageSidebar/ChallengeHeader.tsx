@@ -5,7 +5,7 @@ import useChallengeStore from "../../hooks/useChallengeStore";
 
 const ChallengeHeader = () => {
     const challenge = useChallengeStore((x) => x.challenge);
-    const isRated = challenge.pool.poolType == PoolType.RATED;
+    const isRated = challenge.pool.poolType === PoolType.RATED;
 
     return (
         <Card className="items-center">

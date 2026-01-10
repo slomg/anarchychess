@@ -34,7 +34,7 @@ export const createIntermediateSlice: StateCreator<
     resolveNextIntermediate: null,
 
     async disambiguateDestination(dest, moves, pieceId, pieces) {
-        if (moves.length == 0) return [];
+        if (moves.length === 0) return [];
 
         const { animatePiece } = get();
         const visited: LogicalPoint[] = [dest];

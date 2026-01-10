@@ -174,7 +174,7 @@ const DailyQuestCard = ({ initialQuest }: { initialQuest: Quest }) => {
 
                     <span data-testid="dailyQuestStreak">
                         {quest.streak > 0 && "🔥"}
-                        {quest.streak} Day{quest.streak == 1 ? "" : "s"} Streak
+                        {quest.streak} Day{quest.streak === 1 ? "" : "s"} Streak
                     </span>
                 </div>
             </div>

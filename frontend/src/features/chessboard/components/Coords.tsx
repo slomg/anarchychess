@@ -20,7 +20,7 @@ const Coords = () => {
     return (
         <>
             {files.map((file, x) => {
-                const viewerX = viewingFrom == GameColor.WHITE ? x : 9 - x;
+                const viewerX = viewingFrom === GameColor.WHITE ? x : 9 - x;
                 return (
                     <CoordSquare
                         key={file}
@@ -42,7 +42,7 @@ const Coords = () => {
             })}
 
             {ranks.map((rank, y) => {
-                const viewerY = viewingFrom == GameColor.WHITE ? y : 9 - y;
+                const viewerY = viewingFrom === GameColor.WHITE ? y : 9 - y;
                 return (
                     <CoordSquare
                         key={rank}
