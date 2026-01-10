@@ -28,7 +28,10 @@ export default function useProfileActions({
         const { error } = await addStar({
             path: { starredUserId: profile.userId },
         });
-        if (error) return console.error(error);
+        if (error) {
+            console.error("useProfileActions star", error);
+            return;
+        }
 
         setHasStarred(true);
         setStarCount((prev) => prev + 1);
@@ -38,7 +41,10 @@ export default function useProfileActions({
         const { error } = await removeStar({
             path: { starredUserId: profile.userId },
         });
-        if (error) return console.error(error);
+        if (error) {
+            console.error("useProfileActions unstar", error);
+            return;
+        }
 
         setHasStarred(false);
         setStarCount((prev) => prev - 1);
@@ -60,7 +66,7 @@ export default function useProfileActions({
             path: { blockedUserId: profile.userId },
         });
         if (error) {
-            console.error(error);
+            console.error("useProfileActions block", error);
             return;
         }
         setHasBlocked(true);
@@ -71,7 +77,7 @@ export default function useProfileActions({
             path: { blockedUserId: profile.userId },
         });
         if (error) {
-            console.error(error);
+            console.error("useProfileActions unblock", error);
             return;
         }
         setHasBlocked(false);

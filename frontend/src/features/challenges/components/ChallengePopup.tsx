@@ -38,7 +38,7 @@ const ChallengePopup: ForwardRefRenderFunction<
     const user = useSessionUser();
     const router = useRouter();
 
-    async function sendChallenge() {
+    async function onChallenge() {
         const isUserGuest = isGuest(user);
         const effectivePoolType = isUserGuest ? PoolType.CASUAL : poolType;
 
@@ -67,7 +67,7 @@ const ChallengePopup: ForwardRefRenderFunction<
                     "Something went wrong",
                 ),
             );
-            console.error(error);
+            console.error("ChallengePopup onChallenge createChallenge", error);
             return;
         }
         setError(null);
@@ -133,8 +133,9 @@ const ChallengePopup: ForwardRefRenderFunction<
 
             <div>
                 <Button
-                    className="border-secondary flex w-full items-center justify-center gap-1 border-4 text-xl"
-                    onClick={sendChallenge}
+                    className="border-secondary flex w-full items-center
+                        justify-center gap-1 border-4 text-xl"
+                    onClick={onChallenge}
                     data-testid="challengePopupCreate"
                 >
                     Challenge {recipient?.userName ?? "a friend"}

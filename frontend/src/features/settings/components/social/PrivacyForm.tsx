@@ -19,7 +19,7 @@ const PrivacyForm = ({
     ) {
         const { error } = await setPreferences({ body: values });
         if (error) {
-            console.error(error);
+            console.error("PrivacyForm onSubmit setPreferences", error);
             helpers.setStatus("Failed to update preferences");
             return;
         }

@@ -36,7 +36,10 @@ const ChallengeFooter = () => {
                 path: { challengeToken: challenge.challengeToken },
             });
             if (error || gameToken === undefined) {
-                console.error(error);
+                console.error(
+                    "ChallengeFooter onAccept acceptChallenge",
+                    error,
+                );
                 setError("Failed to accept challenge");
                 return;
             }
@@ -54,7 +57,10 @@ const ChallengeFooter = () => {
                 path: { challengeToken: challenge.challengeToken },
             });
             if (error) {
-                console.error(error);
+                console.error(
+                    "ChallengeFooter onCancel cancelChallenge",
+                    error,
+                );
                 setError("Failed to cancel challenge");
                 return;
             }

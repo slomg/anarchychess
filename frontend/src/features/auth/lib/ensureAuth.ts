@@ -26,7 +26,7 @@ async function handleRefresh(): Promise<boolean> {
     const { error } = await refresh({ client: rawClient });
     if (!error) return true;
 
-    console.error("Failed refreshing:", error);
+    console.error("ensureAuth handleRefresh", error);
     return false;
 }
 
@@ -34,6 +34,6 @@ async function handleGuest(): Promise<boolean> {
     const { error } = await createGuestUser({ client: rawClient });
     if (!error) return true;
 
-    console.error("Failed creating guest:", error);
+    console.error("ensureAuth handleGuest", error);
     return false;
 }

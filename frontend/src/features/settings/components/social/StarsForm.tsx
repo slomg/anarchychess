@@ -28,7 +28,7 @@ const StarsForm = ({
             path: { starredUserId: userId },
         });
         if (error) {
-            console.error(error);
+            console.error("StarsForm star", error);
             return false;
         }
         return true;
@@ -39,7 +39,7 @@ const StarsForm = ({
             path: { starredUserId: userId },
         });
         if (error) {
-            console.error(error);
+            console.error("StarsForm unstar", error);
             return false;
         }
         return true;

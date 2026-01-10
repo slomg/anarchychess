@@ -31,7 +31,10 @@ export default function useEnsureLegalMovesForViewedPosition(
                 query: { fen: viewingPosition?.fen ?? initialFen },
             });
             if (error || data === undefined) {
-                console.error(error);
+                console.error(
+                    "useEnsureLegalMovesForViewedPosition getNextLegalMoves",
+                    error,
+                );
                 return;
             }
 

@@ -82,7 +82,10 @@ async function fetchNextPosition({
     }
 
     if (error || data === undefined) {
-        console.error(error);
+        console.error(
+            "handleAnalyisisMove fetchNextPosition getNextAnalysisPosition",
+            error,
+        );
         setImmediatePieces(prevPieces);
         return null;
     }

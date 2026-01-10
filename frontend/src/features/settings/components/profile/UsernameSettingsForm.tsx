@@ -51,7 +51,10 @@ const UsernameSettingsForm = () => {
             body: { username: values.userName },
         });
         if (error) {
-            console.error(error);
+            console.error(
+                "UsernameSettingsForm handleSubmit editUsername",
+                error,
+            );
             helpers.setErrors(
                 mapErrorsToFormik<UsernameFormValues>(error, {
                     userName: {

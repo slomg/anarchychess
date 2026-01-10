@@ -34,14 +34,17 @@ const DailyQuestCard = ({ initialQuest }: { initialQuest: Quest }) => {
         [QuestDifficulty.HARD]: "text-red-400",
     };
 
-    async function replaceQuest() {
+    async function onReplaceQuest() {
         setIsFetching(true);
 
         try {
             const { error, data: newQuest } = await replaceDailyQuest();
             if (error || !newQuest) {
                 setError("Failed to replace quest");
-                console.error(error);
+                console.error(
+                    "DailyQuestCard onReplaceQuest replaceDailyQuest",
+                    error,
+                );
                 return;
             }
 
@@ -52,13 +55,16 @@ const DailyQuestCard = ({ initialQuest }: { initialQuest: Quest }) => {
         }
     }
 
-    async function collectReward() {
+    async function onCollectReward() {
         setIsFetching(true);
         try {
             const { error } = await collectQuestReward();
             if (error) {
                 setError("Failed to collect reward");
-                console.error(error);
+                console.error(
+                    "DailyQuestCard onCollectReward collectQuestReward",
+                    error,
+                );
                 return;
             }
 
@@ -74,7 +80,7 @@ const DailyQuestCard = ({ initialQuest }: { initialQuest: Quest }) => {
             return (
                 <Button
                     data-testid="dailyQuestReplaceButton"
-                    onClick={replaceQuest}
+                    onClick={onReplaceQuest}
                     className="py-1"
                     disabled={isFetching}
                 >
@@ -86,7 +92,7 @@ const DailyQuestCard = ({ initialQuest }: { initialQuest: Quest }) => {
             return (
                 <Button
                     data-testid="dailyQuestCollectButton"
-                    onClick={collectReward}
+                    onClick={onCollectReward}
                     className="py-1"
                     disabled={isFetching}
                 >
@@ -139,7 +145,8 @@ const DailyQuestCard = ({ initialQuest }: { initialQuest: Quest }) => {
                     <ProgressBar percent={percentDone} />
 
                     <p
-                        className="text-text/70 min-w-[40px] text-center text-sm font-medium"
+                        className="text-text/70 min-w-[40px] text-center text-sm
+                            font-medium"
                         data-testid="dailyQuestProgressText"
                     >
                         {quest.progress}/{quest.target}
@@ -155,7 +162,10 @@ const DailyQuestCard = ({ initialQuest }: { initialQuest: Quest }) => {
                 )}
 
                 {/* footer */}
-                <div className="text-text/70 flex flex-wrap justify-center gap-x-3 sm:justify-between">
+                <div
+                    className="text-text/70 flex flex-wrap justify-center
+                        gap-x-3 sm:justify-between"
+                >
                     <NewQuestCountdown />
 
                     <span data-testid="dailyQuestStreak">

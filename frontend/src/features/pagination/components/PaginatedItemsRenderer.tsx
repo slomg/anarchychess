@@ -29,7 +29,7 @@ const PaginatedItemsRenderer = <TItem,>({
                 query: { Page: pageNumber, PageSize: pagedResult.pageSize },
             });
             if (error || data === undefined) {
-                console.error(error);
+                console.error("PaginatedItemsRenderer handleFetch", error);
                 return;
             }
 

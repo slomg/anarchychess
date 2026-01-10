@@ -32,7 +32,7 @@ export function useSessionUser(): SessionUser | null {
 
             const { error, data: loadedUser } = await getSessionUser();
             if (error || loadedUser === undefined) {
-                console.error(error);
+                console.error("useSessionUser getSessionUser", error);
                 return;
             }
 

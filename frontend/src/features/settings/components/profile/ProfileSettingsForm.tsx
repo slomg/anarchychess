@@ -38,7 +38,10 @@ const ProfileSettingsForm = () => {
         const { error } = await editProfileSettings({ body: values });
         if (error) {
             helpers.setStatus("Failed to save profile settings");
-            console.error(error);
+            console.error(
+                "ProfileSettingsForm handleSubmit editProfileSettings",
+                error,
+            );
             return;
         }
 

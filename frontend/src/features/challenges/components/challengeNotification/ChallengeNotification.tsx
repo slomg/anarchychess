@@ -34,7 +34,10 @@ const ChallengeNotification = ({
                 path: { challengeToken: challenge.challengeToken },
             });
             if (error) {
-                console.error(error);
+                console.error(
+                    "ChallengeNotification onDecline cancelChallenge",
+                    error,
+                );
                 setError("Failed to decline");
                 return;
             }
@@ -51,7 +54,10 @@ const ChallengeNotification = ({
                 path: { challengeToken: challenge.challengeToken },
             });
             if (error || gameToken === undefined) {
-                console.error(error);
+                console.error(
+                    "ChallengeNotification onAccept acceptChallenge",
+                    error,
+                );
                 setError("Failed to accept");
                 return;
             }

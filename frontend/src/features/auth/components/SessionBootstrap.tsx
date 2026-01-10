@@ -23,7 +23,7 @@ const SessionBootstrap = () => {
         async function bootstrapGuestSession() {
             const { error } = await createGuestUser({ client: rawClient });
             if (error) {
-                console.error(error);
+                console.error("SessionBootstrap createGuestUser", error);
                 router.replace(constants.PATHS.SIGNIN);
                 return;
             }

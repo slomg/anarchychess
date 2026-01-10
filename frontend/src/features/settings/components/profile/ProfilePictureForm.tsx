@@ -34,7 +34,10 @@ const ProfilePictureForm = () => {
             body: { File: file },
         });
         if (error) {
-            console.error(error);
+            console.error(
+                "ProfilePictureForm onUpload uploadProfilePicture",
+                error,
+            );
             setError(error.errors[0].description);
             return;
         }
@@ -43,10 +46,13 @@ const ProfilePictureForm = () => {
         setError(null);
     }
 
-    async function clearProfilePicture(): Promise<void> {
+    async function onDeleteProfilePicture(): Promise<void> {
         const { error } = await deleteProfilePicture();
         if (error) {
-            console.error(error);
+            console.error(
+                "ProfilePictureForm onDeleteProfilePicture deleteProfilePicture",
+                error,
+            );
             setError("Failed to clear profile picture");
             return;
         }
@@ -56,9 +62,15 @@ const ProfilePictureForm = () => {
 
     return (
         <Card className="w-full max-w-3xl gap-0">
-            <section className="flex h-fit w-full flex-col items-center gap-3 sm:flex-row sm:items-start">
+            <section
+                className="flex h-fit w-full flex-col items-center gap-3
+                    sm:flex-row sm:items-start"
+            >
                 <ProfilePicture userId={user.userId} refreshKey={refreshKey} />
-                <div className="flex flex-col items-center justify-center gap-3 sm:items-start">
+                <div
+                    className="flex flex-col items-center justify-center gap-3
+                        sm:items-start"
+                >
                     <div className="flex items-center gap-3">
                         <input
                             data-testid="profilePictureFileInput"
@@ -77,7 +89,7 @@ const ProfilePictureForm = () => {
                         <TrashIcon
                             data-testid="clearProfilePicture"
                             className="h-7 w-7 cursor-pointer"
-                            onClick={clearProfilePicture}
+                            onClick={onDeleteProfilePicture}
                         />
                     </div>
                     <p>Must be a valid image and cannot exceed 2MB</p>

@@ -53,7 +53,10 @@ const ProfileTooltip = ({
                 path: { userId },
             });
             if (profileError || data === undefined) {
-                console.error(profileError);
+                console.error(
+                    "ProfileTooltip loadProfile getUserById",
+                    profileError,
+                );
                 return;
             }
             setProfile(data);
@@ -66,7 +69,10 @@ const ProfileTooltip = ({
                     path: { userId: fetchedProfile.userId },
                 });
             if (ratingsError || !ratings) {
-                console.error(ratingsError);
+                console.error(
+                    "ProfileTooltip loadProfile getCurrentRatings",
+                    ratingsError,
+                );
                 return;
             }
             setRatings(ratings);

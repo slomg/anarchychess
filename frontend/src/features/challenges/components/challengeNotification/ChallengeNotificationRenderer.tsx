@@ -86,10 +86,13 @@ const ChallengeNotificationRenderer = () => {
         dispatch({ type: "remove", id: challengeToken });
     }
 
-    async function declineAll() {
+    async function onDeclineAll() {
         const { error } = await cancelAllIncomingChallenges();
         if (error) {
-            console.error(error);
+            console.error(
+                "ChallengeNotificationRenderer onDeclineAll cancelAllIncomingChallenges",
+                error,
+            );
             return;
         }
         dispatch({ type: "clear" });
@@ -132,7 +135,7 @@ const ChallengeNotificationRenderer = () => {
             <div className="flex gap-1">
                 {show && (
                     <Button
-                        onClick={declineAll}
+                        onClick={onDeclineAll}
                         className="bg-neutral-900"
                         data-testid="challengeNotificationRendererDeclineAll"
                     >

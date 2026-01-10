@@ -145,7 +145,7 @@ export async function refetchGame(
         path: { gameToken },
     });
     if (error || gameState === undefined) {
-        console.error(error);
+        console.error("refetchGame getGame", error);
         return;
     }
 
