@@ -219,4 +219,14 @@ describe("decodeLegalMoves", () => {
         });
         expect(result).toEqual(new LegalMoves());
     });
+
+    it("should return empty map when given an empty string", () => {
+        const hasForcedMoves = true;
+        const result = decodeLegalMoves({
+            encoded: "",
+            boardWidth: 10,
+            hasForcedMoves,
+        });
+        expect(result).toEqual(new LegalMoves([], hasForcedMoves));
+    });
 });

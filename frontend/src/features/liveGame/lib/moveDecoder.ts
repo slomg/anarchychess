@@ -114,6 +114,10 @@ export function decodeLegalMoves({
     boardWidth: number;
     hasForcedMoves: boolean;
 }): LegalMoves {
+    if (encoded.length === 0) {
+        return new LegalMoves([], hasForcedMoves);
+    }
+
     const buffer = Buffer.from(encoded, "base64");
     const decompressed = brotliDecompress(buffer);
     const decoded = new TextDecoder().decode(decompressed);
