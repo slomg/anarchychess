@@ -39,6 +39,8 @@ const ChallengePopup: ForwardRefRenderFunction<
     const router = useRouter();
 
     async function onChallenge() {
+        setError(null);
+
         const isUserGuest = isGuest(user);
         const effectivePoolType = isUserGuest ? PoolType.CASUAL : poolType;
 
