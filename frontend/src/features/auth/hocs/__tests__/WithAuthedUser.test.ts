@@ -1,12 +1,13 @@
 import { createFakePrivateUser } from "@/lib/testUtils/fakers/userFaker";
 import { fetchAuthedUserSession } from "../../lib/getLoggedIn";
+import SessionProvider from "../../contexts/sessionContext";
+import AuthRefresh from "../../components/AuthRefresh";
 import WithAuthedUser from "../WithAuthedUser";
 import { PrivateUser } from "@/lib/apiClient";
-import SessionProvider from "../../contexts/sessionContext";
-import constants from "@/lib/constants";
 
-vi.mock("next/navigation");
+vi.mock("@/lib/apiClient/definition");
 vi.mock("../../lib/getLoggedIn");
+vi.mock("next/navigation");
 
 describe("WithAuthedUser", () => {
     let userMock: PrivateUser;
@@ -33,15 +34,14 @@ describe("WithAuthedUser", () => {
         expect(childrenMock).toHaveBeenCalledWith(sessionMock);
     });
 
-    it("should redirect to logout when no session", async () => {
+    it("should render AuthRefresh when no session", async () => {
         fetchAuthedUserSessionMock.mockResolvedValue(null);
 
-        const act = () =>
-            WithAuthedUser({
-                children: childrenMock,
-            });
+        const ui = await WithAuthedUser({
+            children: childrenMock,
+        });
 
-        await expect(act).rejects.toThrow(`redirect ${constants.PATHS.LOGOUT}`);
+        expect(ui.type).toBe(AuthRefresh);
         expect(childrenMock).not.toHaveBeenCalled();
     });
 });

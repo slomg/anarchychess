@@ -1,9 +1,9 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
+import { Form, Formik } from "formik";
 
 import countries from "@public/data/countries.json";
-import CountrySelector from "../CountrySelector";
-import { Form, Formik } from "formik";
 import userEvent from "@testing-library/user-event";
+import CountrySelector from "../CountrySelector";
 
 describe("CountrySelector", () => {
     const renderWithFormik = (initialValues = { country: "" }) =>
@@ -26,8 +26,8 @@ describe("CountrySelector", () => {
     it("should render options with the correct classes", () => {
         renderWithFormik();
 
-        const firstOptionName = Object.values(countries)[0];
-        const option = screen.getByRole("option", { name: firstOptionName });
+        const select = screen.getByTestId("countrySelector");
+        const option = within(select).getAllByRole("option")[0];
 
         expect(option).toHaveClass("bg-white");
         expect(option).toHaveClass("text-black");

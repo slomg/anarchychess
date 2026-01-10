@@ -5,8 +5,9 @@ import SessionProvider from "../../contexts/sessionContext";
 import WithSession from "../WithSession";
 import SessionBootstrap from "../../components/SessionBootstrap";
 
-vi.mock("next/navigation");
+vi.mock("@/lib/apiClient/definition");
 vi.mock("../../lib/getLoggedIn");
+vi.mock("next/navigation");
 
 describe("WithSession", () => {
     let userMock: GuestUser;
@@ -37,7 +38,7 @@ describe("WithSession", () => {
         expect(childrenMock).toHaveBeenCalledWith(sessionMock);
     });
 
-    it("should render GuestRedirect when no session exists", async () => {
+    it("should render SessionBootstrap when no session exists", async () => {
         fetchUserSessionMock.mockResolvedValue(null);
 
         const ui = await WithSession({

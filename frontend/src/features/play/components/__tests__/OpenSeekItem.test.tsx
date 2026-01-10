@@ -50,7 +50,10 @@ describe("OpenSeekItem", () => {
     });
 
     it("should display 'casual' for casual pool", () => {
+        seek.pool.poolType = PoolType.CASUAL;
+
         render(<OpenSeekItem seek={seek} />);
+
         expect(screen.getByTestId("openSeekPoolType")).toHaveTextContent(
             "casual",
         );
@@ -59,6 +62,7 @@ describe("OpenSeekItem", () => {
     it("should display 'rated' and rating for rated pool", () => {
         seek.rating = 1200;
         seek.pool.poolType = PoolType.RATED;
+
         render(<OpenSeekItem seek={seek} />);
 
         expect(screen.getByTestId("openSeekPoolType")).toHaveTextContent(
