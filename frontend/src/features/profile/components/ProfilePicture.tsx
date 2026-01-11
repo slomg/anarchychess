@@ -17,9 +17,12 @@ const ProfilePicture = ({
     if (refreshKey !== undefined) url += `?${refreshKey}`;
 
     return (
-        <div className={className} style={{ width: size, height: size }}>
+        <div
+            className={className}
+            style={{ width: size, height: size }}
+            data-testid="profilePicture"
+        >
             <Image
-                data-testid="profilePicture"
                 className={"aspect-square rounded-md"}
                 src={url}
                 width={size}
