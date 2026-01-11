@@ -1,4 +1,4 @@
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 
 import Image from "next/image";
 
@@ -29,7 +29,6 @@ describe("ProfilePicture", () => {
 
         expect(Image).toHaveBeenCalledWith(
             expect.objectContaining({
-                className: `aspect-square rounded-md ${className}`,
                 src: `${process.env.NEXT_PUBLIC_API_URL}/api/Profile/profile-picture/${userId}`,
                 alt: "profile picture",
                 width: size,
@@ -38,6 +37,8 @@ describe("ProfilePicture", () => {
             }),
             undefined,
         );
+        const pfp = screen.getByAltText("profile picture");
+        expect(pfp.parentElement?.className).toBe(className);
     });
 
     it("should add refreshKey if provided", () => {

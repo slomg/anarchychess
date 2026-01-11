@@ -1,4 +1,3 @@
-import { twMerge } from "tailwind-merge";
 import Image from "next/image";
 
 export interface ProfilePictureProps {
@@ -18,16 +17,17 @@ const ProfilePicture = ({
     if (refreshKey !== undefined) url += `?${refreshKey}`;
 
     return (
-        <Image
-            data-testid="profilePicture"
-            className={twMerge("aspect-square rounded-md", className)}
-            style={{ width: size, height: size }}
-            alt="profile picture"
-            src={url}
-            width={size}
-            height={size}
-            unoptimized // we already cache with etag in the backend
-        />
+        <div className={className} style={{ width: size, height: size }}>
+            <Image
+                data-testid="profilePicture"
+                className={"aspect-square rounded-md"}
+                src={url}
+                width={size}
+                height={size}
+                alt="profile picture"
+                unoptimized
+            />
+        </div>
     );
 };
 export default ProfilePicture;
