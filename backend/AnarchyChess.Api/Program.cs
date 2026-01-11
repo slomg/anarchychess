@@ -534,7 +534,7 @@ if (app.Environment.IsDevelopment())
     app.ApplyMigrations();
 }
 
-// KnownNetworks and KnownProxies are cleared because azure container app does not provide a static proxy ip
+// KnownIPNetworks and KnownProxies are cleared because azure container app does not provide a static proxy ip
 // but it's safe because all traffic reaches the container via the ACA frontend proxy over HTTPS,
 // and clients cannot inject or spoof X-Forwarded headers directly
 if (app.Environment.IsProduction())
