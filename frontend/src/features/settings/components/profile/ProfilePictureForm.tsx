@@ -61,7 +61,7 @@ const ProfilePictureForm = () => {
     }
 
     return (
-        <Card className="w-full max-w-3xl gap-0">
+        <Card className="w-full gap-0">
             <section
                 className="flex h-fit w-full flex-col items-center gap-3
                     sm:flex-row sm:items-start"

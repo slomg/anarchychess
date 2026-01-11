@@ -17,7 +17,7 @@ const SettingsPageSwitcher = ({ children }: { children: ReactNode }) => {
     return (
         <section
             className={clsx(
-                "w-full max-w-3xl flex-col gap-5",
+                "w-full max-w-4xl flex-col gap-5",
                 isBaseSettings ? "hidden md:flex" : "flex",
             )}
         >
