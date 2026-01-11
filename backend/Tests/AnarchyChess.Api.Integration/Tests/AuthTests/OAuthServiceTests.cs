@@ -76,8 +76,8 @@ public class OAuthServiceTests : BaseIntegrationTest
     [Fact]
     public async Task AuthenticateAsync_Discord_creates_user_with_username()
     {
-        const string userJson = "{\"id\":\"123123\"}";
-        Claim claim = new("user", userJson);
+        const string userId = "123123";
+        Claim claim = new(ClaimTypes.NameIdentifier, userId);
 
         var user = await TestAuthenticateAsync(Providers.Discord, claim);
         user.Email.Should().BeNull();

@@ -1,5 +1,4 @@
 ﻿using System.Security.Claims;
-using System.Text.Json;
 using AnarchyChess.Api.Auth.Errors;
 using AnarchyChess.Api.Auth.Models;
 using ErrorOr;
@@ -17,27 +16,13 @@ public class DiscordOAuthAuthenticator(ILogger<DiscordOAuthAuthenticator> logger
 
     public ErrorOr<OAuthIdentity> ExtractOAuthIdentity(ClaimsPrincipal claimsPrincipal)
     {
-        var userClaim = claimsPrincipal.GetClaim("user");
-        if (userClaim is null)
+        var discordUserId = claimsPrincipal.GetClaim(ClaimTypes.NameIdentifier);
+        if (discordUserId is null)
         {
-            _logger.LogWarning("Could not get user claim from discord claims principal");
+            _logger.LogWarning("Could not get email claim from discord claims principal");
             return AuthErrors.OAuthInvalid;
         }
 
-        using var doc = JsonDocument.Parse(userClaim);
-        if (!doc.RootElement.TryGetProperty("id", out var discordIdElement))
-        {
-            _logger.LogWarning("Could not get user id from discord claims principal");
-            return AuthErrors.OAuthInvalid;
-        }
-
-        var discordId = discordIdElement.GetString();
-        if (discordId is null)
-        {
-            _logger.LogWarning("User id was null in discord claims principal");
-            return AuthErrors.OAuthInvalid;
-        }
-
-        return new OAuthIdentity(ProviderKey: discordId, Email: null);
+        return new OAuthIdentity(ProviderKey: discordUserId, Email: null);
     }
 }

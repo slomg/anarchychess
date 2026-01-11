@@ -18,7 +18,7 @@ public class DiscordOAuthAuthenticatorTests : BaseOAuthAuthenticatorTests<Discor
         string providerKey
     ) =>
         (
-            new Claim("user", $"{{\"id\":\"{providerKey}\"}}"),
+            new Claim(ClaimTypes.NameIdentifier, providerKey),
             new OAuthIdentity(ProviderKey: providerKey, Email: null)
         );
 }
