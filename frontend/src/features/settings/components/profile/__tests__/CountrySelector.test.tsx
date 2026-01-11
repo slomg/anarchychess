@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { Form, Formik } from "formik";
 
 import countries from "@public/data/countries.json";
@@ -27,10 +27,10 @@ describe("CountrySelector", () => {
         renderWithFormik();
 
         const select = screen.getByTestId("countrySelector");
-        const option = within(select).getAllByRole("option")[0];
 
-        expect(option).toHaveClass("bg-white");
-        expect(option).toHaveClass("text-black");
+        const firstOption = select.querySelector("option");
+        expect(firstOption).toHaveClass("bg-white");
+        expect(firstOption).toHaveClass("text-black");
     });
 
     it("should update Formik state when a country is selected", async () => {
