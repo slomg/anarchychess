@@ -543,7 +543,7 @@ if (app.Environment.IsProduction())
     {
         ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
     };
-    forwardingOptions.KnownNetworks.Clear();
+    forwardingOptions.KnownIPNetworks.Clear();
     forwardingOptions.KnownProxies.Clear();
     app.UseForwardedHeaders(forwardingOptions);
 }
@@ -575,6 +575,3 @@ finally
 {
     Log.CloseAndFlush();
 }
-
-// expose the program for WebApplicationFactory
-public partial class Program;

@@ -26,16 +26,15 @@ namespace AnarchyChess.Api.TestInfrastructure;
 
 public class AnarchyChessWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder()
-        .WithImage("postgres:latest")
+    private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder("postgres:latest")
         .WithDatabase("anarchychess")
         .WithUsername("postgres")
         .WithPassword("postgres")
         .Build();
 
-    private readonly AzuriteContainer _azuriteContainer = new AzuriteBuilder()
-        .WithImage("mcr.microsoft.com/azure-storage/azurite:latest")
-        .Build();
+    private readonly AzuriteContainer _azuriteContainer = new AzuriteBuilder(
+        "mcr.microsoft.com/azure-storage/azurite:latest"
+    ).Build();
 
     private NpgsqlConnection _dbConnection = null!;
     private Respawner _respawner = null!;
