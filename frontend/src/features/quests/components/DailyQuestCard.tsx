@@ -10,11 +10,9 @@ import {
     replaceDailyQuest,
 } from "@/lib/apiClient";
 
+import ProgressBar from "@/components/ui/ProgressBar";
 import NewQuestCountdown from "./NewQuestCountdown";
 import Button from "@/components/ui/Button";
-import Card from "@/components/ui/Card";
-import constants from "@/lib/constants";
-import ProgressBar from "@/components/ui/ProgressBar";
 
 const DailyQuestCard = ({ initialQuest }: { initialQuest: Quest }) => {
     const [quest, setQuest] = useState(initialQuest);
@@ -118,70 +116,56 @@ const DailyQuestCard = ({ initialQuest }: { initialQuest: Quest }) => {
     };
 
     return (
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-[1fr_auto]">
-            <Card className="order-last gap-5 p-6 md:order-first">
-                {/* quest */}
-                <div className="flex flex-col gap-2">
-                    <p
-                        className="text-center text-lg text-balance
-                            sm:text-start"
-                        data-testid="dailyQuestDescription"
+        <>
+            {/* quest */}
+            <div className="flex flex-col gap-2">
+                <p
+                    className="text-lg sm:text-start"
+                    data-testid="dailyQuestDescription"
+                >
+                    <span
+                        className={difficultyColor[quest.difficulty]}
+                        data-testid="dailyQuestDifficulty"
                     >
-                        <span
-                            className={difficultyColor[quest.difficulty]}
-                            data-testid="dailyQuestDifficulty"
-                        >
-                            {difficultyText}:
-                        </span>{" "}
-                        {quest.description}
+                        {difficultyText}:
+                    </span>{" "}
+                    {quest.description}
+                </p>
+
+                <div className="flex items-center">
+                    <ProgressBar percent={percentDone} />
+
+                    <p
+                        className="text-text/70 min-w-[40px] text-center text-sm
+                            font-medium"
+                        data-testid="dailyQuestProgressText"
+                    >
+                        {quest.progress}/{quest.target}
                     </p>
 
-                    <div className="flex items-center">
-                        <ProgressBar percent={percentDone} />
-
-                        <p
-                            className="text-text/70 min-w-[40px] text-center
-                                text-sm font-medium"
-                            data-testid="dailyQuestProgressText"
-                        >
-                            {quest.progress}/{quest.target}
-                        </p>
-
-                        {renderActionButton()}
-                    </div>
-
-                    {error && (
-                        <p className="text-error" data-testid="dailyQueryError">
-                            {error}
-                        </p>
-                    )}
-
-                    {/* footer */}
-                    <div
-                        className="text-text/70 flex flex-wrap justify-center
-                            gap-x-3 text-center sm:justify-between"
-                    >
-                        <NewQuestCountdown />
-
-                        <span data-testid="dailyQuestStreak">
-                            {quest.streak > 0 && "🔥"}
-                            {quest.streak} Day{quest.streak === 1 ? "" : "s"}{" "}
-                            Streak
-                        </span>
-                    </div>
+                    {renderActionButton()}
                 </div>
-            </Card>
 
-            <Card
-                className="items-end justify-center"
-                data-testid="dailyQuestHeader"
-            >
-                <h1 className="text-4xl text-wrap">Daily Quest</h1>
-                <h2 className="text-text/70 text-2xl">
-                    {constants.QUEST_WEEKDAY_NAMES[new Date().getDay()]}
-                </h2>
-            </Card>
-        </div>
+                {error && (
+                    <p className="text-error" data-testid="dailyQueryError">
+                        {error}
+                    </p>
+                )}
+
+                {/* footer */}
+                <div
+                    className="text-text/70 flex flex-wrap justify-center
+                        gap-x-3 text-center sm:justify-between"
+                >
+                    <NewQuestCountdown />
+
+                    <span data-testid="dailyQuestStreak">
+                        {quest.streak > 0 && "🔥"}
+                        {quest.streak} Day{quest.streak === 1 ? "" : "s"} Streak
+                    </span>
+                </div>
+            </div>
+        </>
     );
 };
 export default DailyQuestCard;

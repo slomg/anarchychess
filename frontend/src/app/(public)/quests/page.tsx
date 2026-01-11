@@ -14,6 +14,8 @@ import DailyQuestRankCard from "@/features/quests/components/DailyQuestRankCard"
 import QuestLeaderboard from "@/features/quests/components/QuestLeaderboard";
 import dataOrThrow from "@/lib/apiClient/dataOrThrow";
 import constants from "@/lib/constants";
+import Card from "@/components/ui/Card";
+import DailyQuestTitle from "@/features/quests/components/DailyQuestTitle";
 
 export const metadata: Metadata = {
     title: "Quests - Anarchy Chess",
@@ -80,11 +82,22 @@ export default async function QuestsPage() {
                         className="mx-auto flex w-full max-w-7xl min-w-0 flex-1
                             flex-col gap-5 p-6"
                     >
-                        {dailyQuest ? (
-                            <DailyQuestCard initialQuest={dailyQuest} />
-                        ) : (
-                            <DailyQuestCardLoggedOut />
-                        )}
+                        <div
+                            className="grid grid-cols-1 gap-5
+                                md:grid-cols-[1fr_auto]"
+                        >
+                            <Card
+                                className="order-last gap-5 p-6 md:order-first"
+                            >
+                                {dailyQuest ? (
+                                    <DailyQuestCard initialQuest={dailyQuest} />
+                                ) : (
+                                    <DailyQuestCardLoggedOut />
+                                )}
+                            </Card>
+
+                            <DailyQuestTitle />
+                        </div>
 
                         <DailyQuestRankCard
                             questPoints={userQuestPoints}

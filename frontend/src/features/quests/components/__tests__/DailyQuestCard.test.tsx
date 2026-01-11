@@ -1,31 +1,21 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
-import { createFakeQuest } from "@/lib/testUtils/fakers/questFaker";
-import DailyQuestCard from "../DailyQuestCard";
 import {
     collectQuestReward,
     QuestDifficulty,
     replaceDailyQuest,
 } from "@/lib/apiClient";
-import userEvent from "@testing-library/user-event";
+
+import { createFakeQuest } from "@/lib/testUtils/fakers/questFaker";
 import { mockRouter } from "@/lib/testUtils/mocks/mockRouter";
-import constants from "@/lib/constants";
+import DailyQuestCard from "../DailyQuestCard";
 
 vi.mock("@/lib/apiClient/definition");
 
 describe("DailyQuestCard", () => {
     const replaceDailyQuestMock = vi.mocked(replaceDailyQuest);
     const collectQuestRewardMock = vi.mocked(collectQuestReward);
-    const todayName = constants.QUEST_WEEKDAY_NAMES[new Date().getDay()];
-
-    it("should render the title with the current weekday", () => {
-        const quest = createFakeQuest({ streak: 0 });
-        render(<DailyQuestCard initialQuest={quest} />);
-
-        const header = screen.getByTestId("dailyQuestHeader");
-        expect(within(header).getByText("Daily Quest")).toBeInTheDocument();
-        expect(within(header).getByText(todayName)).toBeInTheDocument();
-    });
 
     it("should render the fire emoji when streak > 0", () => {
         const quest = createFakeQuest({ streak: 7 });
