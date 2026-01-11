@@ -80,7 +80,7 @@ describe("ProfilePictureForm", () => {
         );
 
         let profilePictureImg: HTMLImageElement =
-            screen.getByTestId("profilePicture");
+            screen.getByAltText("profile picture");
         expect(profilePictureImg.src.endsWith("?0")).toBe(true);
 
         const file = new File(["content"], "small.png", { type: "image/png" });
@@ -93,7 +93,7 @@ describe("ProfilePictureForm", () => {
         });
         expect(screen.queryByTestId("profilePictureError")).toBeNull();
 
-        profilePictureImg = screen.getByTestId("profilePicture");
+        profilePictureImg = screen.getByAltText("profile picture");
         expect(profilePictureImg.src.endsWith("?1")).toBe(true);
     });
 
@@ -150,7 +150,7 @@ describe("ProfilePictureForm", () => {
         expect(screen.queryByTestId("profilePictureError")).toBeNull();
 
         const profilePictureImg: HTMLImageElement =
-            screen.getByTestId("profilePicture");
+            screen.getByAltText("profile picture");
         expect(profilePictureImg.src.endsWith("?1")).toBe(true);
     });
 
