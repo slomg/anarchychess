@@ -25,7 +25,7 @@ const RankDisplay = ({
             </div>
 
             <p
-                className="text-text/70 text-sm text-nowrap"
+                className="text-text/70 text-nowrap"
                 data-testid="rankDisplayPercentile"
             >
                 {totalPlayers > 0

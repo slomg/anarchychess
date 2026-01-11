@@ -21,8 +21,8 @@ const QuestLeaderboard = ({
     return (
         <Card className="w-full flex-1 gap-5 p-6">
             <div
-                className="flex flex-col flex-wrap items-center justify-center gap-2 sm:flex-row
-                    sm:justify-between"
+                className="flex flex-col flex-wrap items-center justify-center
+                    gap-2 sm:flex-row sm:justify-between"
             >
                 <h1 className="text-2xl">Quest Leaderboard</h1>
 

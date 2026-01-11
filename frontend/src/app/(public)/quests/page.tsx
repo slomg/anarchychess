@@ -76,7 +76,10 @@ export default async function QuestsPage() {
                 ]);
 
                 return (
-                    <main className="mx-auto flex max-w-7xl flex-1 flex-col items-center gap-3 p-5">
+                    <main
+                        className="mx-auto flex w-full max-w-7xl min-w-0 flex-1
+                            flex-col gap-5 p-6"
+                    >
                         {dailyQuest ? (
                             <DailyQuestCard initialQuest={dailyQuest} />
                         ) : (

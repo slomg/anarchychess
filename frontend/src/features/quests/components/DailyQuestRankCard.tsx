@@ -18,15 +18,19 @@ const DailyQuestRankCard = ({
     if (user === null || !currentRank) return null;
 
     return (
-        <Card className="w-full items-center justify-between sm:flex-row">
-            <MinimalProfileView profile={user}>
-                <p className="ml-auto" data-testid="dailyQuestRankPoints">
-                    {questPoints} points
-                </p>
-            </MinimalProfileView>
+        <div className="flex w-full flex-row gap-5 overflow-x-auto">
+            <Card>
+                <MinimalProfileView profile={user}>
+                    <p className="ml-auto" data-testid="dailyQuestRankPoints">
+                        {questPoints} points
+                    </p>
+                </MinimalProfileView>
+            </Card>
 
-            <RankDisplay rank={currentRank} totalPlayers={totalPlayers} />
-        </Card>
+            <Card className="flex-1 justify-center">
+                <RankDisplay rank={currentRank} totalPlayers={totalPlayers} />
+            </Card>
+        </div>
     );
 };
 export default DailyQuestRankCard;

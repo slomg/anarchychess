@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 
 import { createFakeQuest } from "@/lib/testUtils/fakers/questFaker";
 import DailyQuestCard from "../DailyQuestCard";
@@ -22,9 +22,9 @@ describe("DailyQuestCard", () => {
         const quest = createFakeQuest({ streak: 0 });
         render(<DailyQuestCard initialQuest={quest} />);
 
-        expect(screen.getByTestId("dailyQuestTitle")).toHaveTextContent(
-            `Daily Quest: ${todayName}`,
-        );
+        const header = screen.getByTestId("dailyQuestHeader");
+        expect(within(header).getByText("Daily Quest")).toBeInTheDocument();
+        expect(within(header).getByText(todayName)).toBeInTheDocument();
     });
 
     it("should render the fire emoji when streak > 0", () => {
