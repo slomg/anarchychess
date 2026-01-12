@@ -19,16 +19,16 @@ const DailyQuestRankCard = ({
 
     return (
         <div className="flex w-full flex-row gap-5 overflow-x-auto">
+            <Card className="flex-1 justify-center">
+                <RankDisplay rank={currentRank} totalPlayers={totalPlayers} />
+            </Card>
+
             <Card>
                 <MinimalProfileView profile={user}>
                     <p className="ml-auto" data-testid="dailyQuestRankPoints">
                         {questPoints} points
                     </p>
                 </MinimalProfileView>
-            </Card>
-
-            <Card className="flex-1 justify-center">
-                <RankDisplay rank={currentRank} totalPlayers={totalPlayers} />
             </Card>
         </div>
     );

@@ -13,6 +13,7 @@ import {
 import ProgressBar from "@/components/ui/ProgressBar";
 import NewQuestCountdown from "./NewQuestCountdown";
 import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 
 const DailyQuestCard = ({ initialQuest }: { initialQuest: Quest }) => {
     const [quest, setQuest] = useState(initialQuest);
@@ -116,7 +117,7 @@ const DailyQuestCard = ({ initialQuest }: { initialQuest: Quest }) => {
     };
 
     return (
-        <>
+        <Card className="p-6">
             {/* quest */}
             <div className="flex flex-col gap-2">
                 <p
@@ -165,7 +166,7 @@ const DailyQuestCard = ({ initialQuest }: { initialQuest: Quest }) => {
                     </span>
                 </div>
             </div>
-        </>
+        </Card>
     );
 };
 export default DailyQuestCard;

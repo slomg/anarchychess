@@ -7,15 +7,14 @@ import {
     getUserQuestPoints,
 } from "@/lib/apiClient";
 
-import WithOptionalAuthedUser from "@/features/auth/hocs/WithOptionalAuthedUser";
-import DailyQuestCard from "@/features/quests/components/DailyQuestCard";
 import DailyQuestCardLoggedOut from "@/features/quests/components/DailyQuestCardLoggedOut";
 import DailyQuestRankCard from "@/features/quests/components/DailyQuestRankCard";
+import WithOptionalAuthedUser from "@/features/auth/hocs/WithOptionalAuthedUser";
 import QuestLeaderboard from "@/features/quests/components/QuestLeaderboard";
+import DailyQuestTitle from "@/features/quests/components/DailyQuestTitle";
+import DailyQuestCard from "@/features/quests/components/DailyQuestCard";
 import dataOrThrow from "@/lib/apiClient/dataOrThrow";
 import constants from "@/lib/constants";
-import Card from "@/components/ui/Card";
-import DailyQuestTitle from "@/features/quests/components/DailyQuestTitle";
 
 export const metadata: Metadata = {
     title: "Quests - Anarchy Chess",
@@ -86,17 +85,13 @@ export default async function QuestsPage() {
                             className="grid grid-cols-1 gap-5
                                 md:grid-cols-[1fr_auto]"
                         >
-                            <Card
-                                className="order-last gap-5 p-6 md:order-first"
-                            >
-                                {dailyQuest ? (
-                                    <DailyQuestCard initialQuest={dailyQuest} />
-                                ) : (
-                                    <DailyQuestCardLoggedOut />
-                                )}
-                            </Card>
-
                             <DailyQuestTitle />
+
+                            {dailyQuest ? (
+                                <DailyQuestCard initialQuest={dailyQuest} />
+                            ) : (
+                                <DailyQuestCardLoggedOut />
+                            )}
                         </div>
 
                         <DailyQuestRankCard

@@ -1,10 +1,12 @@
-import Button from "@/components/ui/Button";
-import constants from "@/lib/constants";
 import Link from "next/link";
+
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
+import constants from "@/lib/constants";
 
 const DailyQuestCardLoggedOut = () => {
     return (
-        <>
+        <Card className="p-6">
             <div className="flex flex-col gap-4">
                 <p
                     className="text-text/70 text-lg"
@@ -25,7 +27,7 @@ const DailyQuestCardLoggedOut = () => {
                     </Link>
                 </Button>
             </div>
-        </>
+        </Card>
     );
 };
 export default DailyQuestCardLoggedOut;
