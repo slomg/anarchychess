@@ -429,18 +429,24 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             return;
 
         var sideToMove = _core.SideToMove(game.Core);
-        var timeLeft = _clock.CalculateTimeLeft(sideToMove, game.ClockState);
-        if (timeLeft > 0)
+        var whiteTimeLeft = _clock.CalculateTimeLeft(GameColor.White, game.ClockState);
+        var blackTimeLeft = _clock.CalculateTimeLeft(GameColor.Black, game.ClockState);
+
+        GameColor timedOutColor;
+        if (whiteTimeLeft <= 0)
+        {
+            timedOutColor = GameColor.White;
+        }
+        else if (blackTimeLeft <= 0)
+        {
+            timedOutColor = GameColor.Black;
+        }
+        else
+        {
             return;
+        }
 
-        var player = game.Players.GetPlayerByColor(sideToMove);
-        _logger.LogInformation(
-            "Game {GameToken} ended by user {UserId} timing out",
-            _token,
-            player.UserId
-        );
-
-        await EndGameAsync(_resultDescriber.Timeout(sideToMove), game, token);
+        await EndGameAsync(_resultDescriber.Timeout(timedOutColor), game, token);
         await _state.WriteStateAsync(token);
     }
 
@@ -450,6 +456,8 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         CancellationToken token = default
     )
     {
+        _logger.LogInformation("Game {GameToken} eneded by {EndStatus}", _token, endStatus);
+
         _clock.CommitLastTurn(_core.SideToMove(game.Core), game.ClockState);
         var state = GetGameState(game);
 
