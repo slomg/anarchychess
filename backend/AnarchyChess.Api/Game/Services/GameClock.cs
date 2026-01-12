@@ -5,7 +5,7 @@ namespace AnarchyChess.Api.Game.Services;
 
 public interface IGameClock
 {
-    double CalculateTimeLeft(GameColor color, GameClockState state);
+    double CalculateTimeLeft(GameColor color, GameClockState state, bool isActivePlayer = true);
     void CommitLastTurn(GameColor color, GameClockState state);
     double CommitTurn(GameColor color, GameClockState state);
     void Reset(GameClockState state);
@@ -58,9 +58,13 @@ public class GameClock(TimeProvider timeProvider) : IGameClock
         return timeLeft;
     }
 
-    public double CalculateTimeLeft(GameColor color, GameClockState state)
+    public double CalculateTimeLeft(
+        GameColor color,
+        GameClockState state,
+        bool isActivePlayer = true
+    )
     {
-        if (state.IsFrozen)
+        if (state.IsFrozen || !isActivePlayer)
             return state.Clocks[color];
 
         var elapsedMs = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds() - state.LastUpdated;

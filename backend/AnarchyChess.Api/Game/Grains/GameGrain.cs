@@ -429,8 +429,16 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             return;
 
         var sideToMove = _core.SideToMove(game.Core);
-        var whiteTimeLeft = _clock.CalculateTimeLeft(GameColor.White, game.ClockState);
-        var blackTimeLeft = _clock.CalculateTimeLeft(GameColor.Black, game.ClockState);
+        var whiteTimeLeft = _clock.CalculateTimeLeft(
+            GameColor.White,
+            game.ClockState,
+            isActivePlayer: sideToMove != GameColor.White
+        );
+        var blackTimeLeft = _clock.CalculateTimeLeft(
+            GameColor.Black,
+            game.ClockState,
+            isActivePlayer: sideToMove != GameColor.Black
+        );
 
         GameColor timedOutColor;
         if (whiteTimeLeft <= 0)
