@@ -98,4 +98,23 @@ describe("OpenSeekItem", () => {
         await user.click(screen.getByTestId("openSeek"));
         expect(useLobbyStore.getState().requestedOpenSeek).toBe(true);
     });
+
+    it("should apply hover and cursor styles correctly before clicking", () => {
+        render(<OpenSeekItem seek={seek} />);
+
+        const container = screen.getByTestId("openSeek");
+        expect(container).toHaveClass("hover:bg-primary cursor-pointer");
+        expect(container).not.toHaveClass("cursor-not-allowed opacity-50");
+    });
+
+    it("should disable hover and pointer styles after clicking", async () => {
+        const user = userEvent.setup();
+        render(<OpenSeekItem seek={seek} />);
+
+        const container = screen.getByTestId("openSeek");
+        await user.click(container);
+
+        expect(container).toHaveClass("cursor-not-allowed opacity-50");
+        expect(container).not.toHaveClass("hover:bg-primary cursor-pointer");
+    });
 });

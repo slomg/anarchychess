@@ -1,23 +1,33 @@
 import { FireIcon } from "@heroicons/react/24/outline";
+import { useState } from "react";
+import clsx from "clsx";
 
 import TimeControlIcon from "@/features/lobby/components/TimeControlIcon";
+import { useLobbyEmitter } from "@/features/lobby/hooks/useLobbyHub";
+import useLobbyStore from "@/features/lobby/stores/lobbyStore";
 import { OpenSeek } from "@/features/lobby/lib/types";
 import { PoolType } from "@/lib/apiClient";
-import useLobbyStore from "@/features/lobby/stores/lobbyStore";
-import { useLobbyEmitter } from "@/features/lobby/hooks/useLobbyHub";
 
 const OpenSeekItem = ({ seek }: { seek: OpenSeek }) => {
     const sendLobbyEvents = useLobbyEmitter();
     const setRequestedOpenSeek = useLobbyStore((x) => x.setRequestedOpenSeek);
+    const [matchRequested, setMatchRequested] = useState(false);
 
     async function match() {
+        if (matchRequested) return;
+
+        setMatchRequested(true);
         setRequestedOpenSeek(true);
         await sendLobbyEvents("MatchWithOpenSeekAsync", seek.userId, seek.pool);
     }
 
     return (
         <div
-            className="hover:bg-primary flex transform cursor-pointer items-center gap-2 rounded-md p-3"
+            className={clsx(
+                "flex transform items-center gap-2 rounded-md p-3",
+                matchRequested && "cursor-not-allowed opacity-50",
+                !matchRequested && "hover:bg-primary cursor-pointer",
+            )}
             data-testid="openSeek"
             onClick={match}
         >
