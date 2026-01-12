@@ -37,6 +37,7 @@ vi.mock("@/lib/apiClient/definition");
 function expectPositionAndLegalMoves(
     addPositionMove: Mock,
     addLegalMovesMock: Mock,
+    reselectPieceMock: Mock,
     move: Move,
     newPositionId: PositionId,
     newAnalysisPosition: AnalysisPosition,
@@ -59,6 +60,11 @@ function expectPositionAndLegalMoves(
         }),
         newPositionId,
     );
+    expect(reselectPieceMock).toHaveBeenCalledOnce();
+
+    const addLegalMovesIndex = addLegalMovesMock.mock.invocationCallOrder[0];
+    const reselectPieceIndex = reselectPieceMock.mock.invocationCallOrder[0];
+    expect(reselectPieceIndex).toBeGreaterThan(addLegalMovesIndex);
 }
 
 describe("addAnalysisMove", () => {
@@ -136,9 +142,11 @@ describe("addAnalysisMove", () => {
         const newPosition = createFakePosition();
         const addPositionMock = vi.fn();
         const addLegalMovesMock = vi.fn();
+        const reselectPieceMock = vi.fn();
         chessboardStore.setState({
             addPosition: addPositionMock,
             addLegalMoves: addLegalMovesMock,
+            reselectPiece: reselectPieceMock,
         });
 
         getNextAnalysisPositionMock.mockResolvedValue({
@@ -154,6 +162,7 @@ describe("addAnalysisMove", () => {
         expectPositionAndLegalMoves(
             addPositionMock,
             addLegalMovesMock,
+            reselectPieceMock,
             move,
             newPosition.positionId,
             newAnalysisPosition,
@@ -261,10 +270,12 @@ describe("addSidelineAnalysisMove", () => {
         const newPosition = createFakePosition();
         const addSidelinePositionMock = vi.fn();
         const addLegalMovesMock = vi.fn();
+        const reselectPieceMock = vi.fn();
         chessboardStore.setState({
             allowHistoryChanges: true,
             addSidelinePosition: addSidelinePositionMock,
             addLegalMoves: addLegalMovesMock,
+            reselectPiece: reselectPieceMock,
         });
 
         getNextAnalysisPositionMock.mockResolvedValue({
@@ -285,6 +296,7 @@ describe("addSidelineAnalysisMove", () => {
         expectPositionAndLegalMoves(
             addSidelinePositionMock,
             addLegalMovesMock,
+            reselectPieceMock,
             move,
             newPosition.positionId,
             newAnalysisPosition,

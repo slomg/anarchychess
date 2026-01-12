@@ -128,6 +128,53 @@ describe("PiecesSlice", () => {
         });
     });
 
+    describe("reselectPiece", () => {
+        it("should do nothing if no piece is selected", () => {
+            const highlightLegalMovesMock = vi.fn();
+
+            store.setState({
+                selectedPieceId: null,
+                highlightLegalMoves: highlightLegalMovesMock,
+            });
+
+            store.getState().reselectPiece();
+
+            expect(highlightLegalMovesMock).not.toHaveBeenCalled();
+        });
+
+        it("should do nothing if the selected piece does not exist", () => {
+            const highlightLegalMovesMock = vi.fn();
+
+            store.setState({
+                selectedPieceId: "nonexistent",
+                highlightLegalMoves: highlightLegalMovesMock,
+            });
+
+            store.getState().reselectPiece();
+
+            expect(highlightLegalMovesMock).not.toHaveBeenCalled();
+        });
+
+        it("should call highlightLegalMoves with the selected piece if it exists", () => {
+            const piece = createFakePiece({
+                position: logicalPoint({ x: 0, y: 0 }),
+            });
+            const highlightLegalMovesMock = vi.fn();
+
+            store.setState({
+                pieces: BoardPieces.fromPieces(piece),
+                selectedPieceId: piece.id,
+                highlightLegalMoves: highlightLegalMovesMock,
+            });
+
+            store.getState().reselectPiece();
+
+            expect(highlightLegalMovesMock).toHaveBeenCalledExactlyOnceWith(
+                piece,
+            );
+        });
+    });
+
     describe("applyMoveAnimated", () => {
         it("should apply all intermediate steps and final move", async () => {
             const piece = createFakePiece({

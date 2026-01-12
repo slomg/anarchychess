@@ -29,6 +29,7 @@ export interface PiecesSlice {
 
     selectPiece(pieceId: PieceID): boolean;
     unselectPiece(): void;
+    reselectPiece(): void;
 
     handleMousePieceDrop(args: {
         mousePoint: ScreenPoint;
@@ -131,12 +132,11 @@ export function createPiecesSlice(
                 }
                 if (pieceId === selectedPieceId) return false;
 
-                const hasLegalMoves = highlightLegalMoves(piece);
+                highlightLegalMoves(piece);
                 set((state) => {
-                    state.selectedPieceId = hasLegalMoves ? pieceId : null;
+                    state.selectedPieceId = pieceId;
                 });
-
-                return hasLegalMoves;
+                return true;
             },
             unselectPiece() {
                 const { unhighlightLegalMoves } = get();
@@ -145,6 +145,15 @@ export function createPiecesSlice(
                 set((state) => {
                     state.selectedPieceId = null;
                 });
+            },
+            reselectPiece() {
+                const { highlightLegalMoves, selectedPieceId, pieces } = get();
+                if (!selectedPieceId) return;
+
+                const piece = pieces.getById(selectedPieceId);
+                if (!piece) return;
+
+                highlightLegalMoves(piece);
             },
 
             async applyMoveImmediate(move: Move): Promise<void> {

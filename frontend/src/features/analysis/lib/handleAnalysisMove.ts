@@ -23,19 +23,22 @@ export async function addAnalysisMove(args: AnalysisMoveArgs): Promise<void> {
     const result = await fetchNextPosition(args);
     if (result === null) return;
 
-    const { addPosition, addLegalMoves } = args.chessboardStore.getState();
+    const { addPosition, addLegalMoves, reselectPiece } =
+        args.chessboardStore.getState();
     const position = addPosition(result.positionProps);
     addLegalMoves(result.legalMoves, position.positionId);
+    reselectPiece();
 }
 
 export async function addSidelineAnalysisMove(args: AnalysisMoveArgs) {
     const result = await fetchNextPosition(args);
     if (result === null) return;
 
-    const { addSidelinePosition, addLegalMoves } =
+    const { addSidelinePosition, addLegalMoves, reselectPiece } =
         args.chessboardStore.getState();
     const position = addSidelinePosition(result.positionProps);
     addLegalMoves(result.legalMoves, position.positionId);
+    reselectPiece();
 }
 
 async function fetchNextPosition({
