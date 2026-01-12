@@ -203,12 +203,12 @@ export function createHistorySlice(
         },
 
         addLegalMovesForPosition(legalMoves, positionId) {
-            const { unhighlightLegalMoves, unselectPiece } = get();
+            const { unhighlightLegalMoves, reselectPiece } = get();
             set((state) => {
                 state.legalMovesByPosition.set(positionId, legalMoves);
             });
-            unhighlightLegalMoves();
-            unselectPiece();
+            const wasSelected = reselectPiece();
+            if (!wasSelected) unhighlightLegalMoves();
         },
         setLatestLegalMoves(legalMoves) {
             const { positionHistory, addLegalMovesForPosition } = get();
