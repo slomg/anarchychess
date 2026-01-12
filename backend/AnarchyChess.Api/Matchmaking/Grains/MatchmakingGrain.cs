@@ -114,13 +114,19 @@ public class MatchmakingGrain<TPool> : Grain, IMatchmakingGrain<TPool>
             !_state.State.Pool.TryGetSeeker(matchWith, out var matchWithSeeker)
             || !_state.State.SeekObservers.TryGetValue(matchWith, out var matchWithObserver)
         )
+        {
+            await BroadcastSeekRemoval(matchWith);
             return MatchmakingErrors.SeekNotFound;
+        }
 
         if (!seeker.IsCompatibleWith(matchWithSeeker) || !matchWithSeeker.IsCompatibleWith(seeker))
             return MatchmakingErrors.RequestedSeekerNotCompatible;
 
         if (!await matchWithObserver.TryReserveSeekAsync(_poolKey))
+        {
+            await BroadcastSeekRemoval(matchWith);
             return MatchmakingErrors.SeekNotFound;
+        }
 
         try
         {
