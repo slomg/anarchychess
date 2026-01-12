@@ -23,10 +23,8 @@ export async function addAnalysisMove(args: AnalysisMoveArgs): Promise<void> {
     const result = await fetchNextPosition(args);
     if (result === null) return;
 
-    const { addPosition, addLegalMoves, reselectPiece } =
-        args.chessboardStore.getState();
-    const position = addPosition(result.positionProps);
-    addLegalMoves(result.legalMoves, position.positionId);
+    const { addPosition, reselectPiece } = args.chessboardStore.getState();
+    addPosition(result.positionProps, result.legalMoves);
     reselectPiece();
 }
 
@@ -34,10 +32,9 @@ export async function addSidelineAnalysisMove(args: AnalysisMoveArgs) {
     const result = await fetchNextPosition(args);
     if (result === null) return;
 
-    const { addSidelinePosition, addLegalMoves, reselectPiece } =
+    const { addSidelinePosition, reselectPiece } =
         args.chessboardStore.getState();
-    const position = addSidelinePosition(result.positionProps);
-    addLegalMoves(result.legalMoves, position.positionId);
+    addSidelinePosition(result.positionProps, result.legalMoves);
     reselectPiece();
 }
 

@@ -69,9 +69,9 @@ describe("useEnsureLegalMovesForViewedPosition", () => {
             query: { fen: position.fen },
         });
 
-        expect(chessboardStore.getState().getLegalMoves()).toEqual(
-            expectedLegalMoves,
-        );
+        expect(
+            chessboardStore.getState().getViewedPositionLegalMoves(),
+        ).toEqual(expectedLegalMoves);
     });
 
     it("should not fetch legal moves if they already exist for the viewed position", async () => {
@@ -86,9 +86,9 @@ describe("useEnsureLegalMovesForViewedPosition", () => {
         act(() => chessboardStore.getState().setAllowHistoryChanges(true));
 
         expect(getNextLegalMovesMock).not.toHaveBeenCalled();
-        expect(chessboardStore.getState().getLegalMoves()).toEqual(
-            prevLegalMoves,
-        );
+        expect(
+            chessboardStore.getState().getViewedPositionLegalMoves(),
+        ).toEqual(prevLegalMoves);
     });
 
     it("should fetch using initialFen if no viewing position exists", async () => {
@@ -124,6 +124,8 @@ describe("useEnsureLegalMovesForViewedPosition", () => {
         await act(() => chessboardStore.getState().addPosition(position));
 
         expect(getNextLegalMovesMock).not.toHaveBeenCalled();
-        expect(chessboardStore.getState().getLegalMoves().size).toBe(0);
+        expect(
+            chessboardStore.getState().getViewedPositionLegalMoves().size,
+        ).toBe(0);
     });
 });

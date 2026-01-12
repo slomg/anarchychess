@@ -1,124 +1,26 @@
 import { StoreApi } from "zustand";
 
 import {
-    createFakeLegalMoves,
     createFakeMove,
     createFakePiece,
     createRandomPoint,
 } from "@/lib/testUtils/fakers/chessboardFakers";
 
-import { createNFakePositionHistory } from "@/lib/testUtils/fakers/positionHistoryFaker";
-import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
 import { ChessboardStore, createChessboardStore } from "../chessboardStore";
 import { logicalPoint, pointToStr } from "@/features/point/pointUtils";
 import { IntermediateSquare, Piece } from "../../lib/types";
-import { PositionId } from "../../lib/position";
 import { waitFor } from "@testing-library/react";
 import BoardPieces from "../../lib/boardPieces";
 import LegalMoves from "../../lib/legalMoves";
 import { PieceType } from "@/lib/apiClient";
 
-describe("LegalMovesSlice", () => {
+describe("UiLegalMovesSlice", () => {
     let store: StoreApi<ChessboardStore>;
     let piece: Piece;
 
     beforeEach(() => {
         store = createChessboardStore();
         piece = createFakePiece();
-    });
-
-    describe("getLegalMoves", () => {
-        it("should return empty LegalMoves when hideLegalMoves is true", () => {
-            const legalMoves = createFakeLegalMoves();
-            const positionHistory = createNFakePositionHistory(1);
-
-            store.setState({
-                hideLegalMoves: true,
-                positionHistory,
-                legalMovesByPosition: new Map([
-                    [positionHistory.viewingPosition?.positionId, legalMoves],
-                ]),
-            });
-
-            const result = store.getState().getLegalMoves();
-            expect(result).toEqual(new LegalMoves());
-        });
-
-        it("should return empty LegalMoves when viewing a non latest position and history changes are not allowed", () => {
-            const legalMoves = createFakeLegalMoves();
-            const positionHistory = createNFakePositionHistory(2);
-            positionHistory.stepBackward();
-
-            store.setState({
-                allowHistoryChanges: false,
-                positionHistory,
-                legalMovesByPosition: new Map([
-                    [positionHistory.viewingPosition?.positionId, legalMoves],
-                ]),
-            });
-
-            const result = store.getState().getLegalMoves();
-            expect(result).toEqual(new LegalMoves());
-        });
-
-        it("should return legal moves when viewing a non latest position and history changes are allowed", () => {
-            const legalMoves = createFakeLegalMoves();
-            const positionHistory = createNFakePositionHistory(2);
-            positionHistory.stepBackward();
-
-            store.setState({
-                allowHistoryChanges: true,
-                positionHistory,
-                legalMovesByPosition: new Map([
-                    [positionHistory.viewingPosition?.positionId, legalMoves],
-                ]),
-            });
-
-            const result = store.getState().getLegalMoves();
-            expect(result).toEqual(legalMoves);
-        });
-
-        it("should return legal moves for the current viewing position id", () => {
-            const legalMoves = createFakeLegalMoves();
-            const positionHistory = createNFakePositionHistory(1);
-
-            store.setState({
-                positionHistory,
-                legalMovesByPosition: new Map([
-                    [positionHistory.viewingPosition?.positionId, legalMoves],
-                ]),
-            });
-
-            const result = store.getState().getLegalMoves();
-            expect(result).toEqual(legalMoves);
-        });
-
-        it("should return empty LegalMoves when no legal moves exist for the viewing position", () => {
-            const positionHistory = createNFakePositionHistory(1);
-
-            store.setState({
-                positionHistory,
-                legalMovesByPosition: new Map(),
-            });
-
-            const result = store.getState().getLegalMoves();
-            expect(result).toEqual(new LegalMoves());
-        });
-
-        it("should handle undefined viewing position id", () => {
-            const legalMoves = createFakeLegalMoves();
-            const positionHistory = createNFakePositionHistory(1);
-            positionHistory.goToStart();
-
-            store.setState({
-                allowHistoryChanges: true,
-                positionHistory,
-                legalMovesByPosition: new Map([[undefined, legalMoves]]),
-            });
-
-            const result = store.getState().getLegalMoves();
-            expect(result).toEqual(legalMoves);
-        });
     });
 
     describe("getLegalMove", () => {
@@ -341,92 +243,6 @@ describe("LegalMovesSlice", () => {
         });
     });
 
-    describe("addLegalMoves", () => {
-        it("should store legal moves for a given position id and clear highlighted moves", () => {
-            const legalMoves = createFakeLegalMoves();
-            const positionId = "3" as PositionId;
-
-            const legalMovesByPosition = new Map<PositionId, LegalMoves>([
-                ["1" as PositionId, createFakeLegalMoves()],
-            ]);
-            store.setState({
-                highlightedLegalMoves: [
-                    createRandomPoint(),
-                    createRandomPoint(),
-                ],
-                legalMovesByPosition,
-            });
-
-            store.getState().addLegalMoves(legalMoves, positionId);
-
-            const state = store.getState();
-            const expectedlegalMovesByPosition = new Map(legalMovesByPosition);
-            expectedlegalMovesByPosition.set(positionId, legalMoves);
-            expect(state.legalMovesByPosition).toEqual(
-                expectedlegalMovesByPosition,
-            );
-            expect(state.highlightedLegalMoves).toHaveLength(0);
-        });
-    });
-
-    describe("setLatestLegalMoves", () => {
-        it("should store legal moves at the current viewing position id", () => {
-            const legalMoves = createFakeLegalMoves();
-            const positionHistory = createNFakePositionHistory(2);
-
-            store.setState({
-                highlightedLegalMoves: [
-                    createRandomPoint(),
-                    createRandomPoint(),
-                    createRandomPoint(),
-                ],
-                positionHistory,
-            });
-
-            store.getState().setLatestLegalMoves(legalMoves);
-
-            const state = store.getState();
-            expect(
-                state.legalMovesByPosition.get(
-                    positionHistory.viewingPosition?.positionId,
-                ),
-            ).toEqual(legalMoves);
-            expect(state.highlightedLegalMoves).toHaveLength(0);
-        });
-    });
-
-    describe("hasLegalMovesForPosition", () => {
-        it("should return false when no legal moves exist for the position id", () => {
-            const result = store
-                .getState()
-                .hasLegalMovesForPosition("test position id" as PositionId);
-            expect(result).toBe(false);
-        });
-
-        it("should return true when legal moves exist for the position id", () => {
-            const { addPosition, addLegalMoves } = store.getState();
-            const positionId = addPosition(
-                createFakePositionProps(),
-            ).positionId;
-            addPosition(createFakePositionProps());
-            addLegalMoves(createFakeLegalMoves(), positionId);
-
-            const result = store
-                .getState()
-                .hasLegalMovesForPosition(positionId);
-            expect(result).toBe(true);
-        });
-
-        it("should correctly handle undefined position id", () => {
-            const { goToStartPosition, setLatestLegalMoves } = store.getState();
-            goToStartPosition();
-            setLatestLegalMoves(createFakeLegalMoves());
-
-            const result = store.getState().hasLegalMovesForPosition(undefined);
-            expect(result).toBe(true);
-        });
-    });
-
     describe("setHideLegalMoves", () => {
         it("should update hideLegalMoves", () => {
             store.setState({ hideLegalMoves: false });
@@ -434,16 +250,6 @@ describe("LegalMovesSlice", () => {
             store.getState().setHideLegalMoves(true);
 
             expect(store.getState().hideLegalMoves).toBe(true);
-        });
-    });
-
-    describe("setAllowHistoryChanges", () => {
-        it("should update allowHistoryChanges", () => {
-            store.setState({ allowHistoryChanges: false });
-
-            store.getState().setAllowHistoryChanges(true);
-
-            expect(store.getState().allowHistoryChanges).toBe(true);
         });
     });
 });

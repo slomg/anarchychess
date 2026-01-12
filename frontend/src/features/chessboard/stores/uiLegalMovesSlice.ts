@@ -8,23 +8,17 @@ import { ChessboardStore } from "./chessboardStore";
 import { pointToStr } from "@/features/point/pointUtils";
 import { PieceType } from "@/lib/apiClient";
 import BoardPieces from "../lib/boardPieces";
-import LegalMoves from "../lib/legalMoves";
 import { PositionId } from "../lib/position";
 
-export interface LegalMovesSliceProps {
-    legalMovesByPosition: Map<PositionId | undefined, LegalMoves>;
-    allowHistoryChanges?: boolean;
+export interface UiLegalMovesSliceProps {
     hideLegalMoves?: boolean;
 }
 
-export interface LegalMovesSlice {
-    legalMovesByPosition: Map<PositionId | undefined, LegalMoves>;
+export interface UiLegalMovesSlice {
     highlightedLegalMoves: LogicalPoint[];
-    allowHistoryChanges: boolean;
     hideLegalMoves: boolean;
 
     hasLegalMovesForPosition(positionId?: PositionId): boolean;
-    getLegalMoves(): LegalMoves;
     setHideLegalMoves(value: boolean): void;
 
     getLegalMove(
@@ -36,48 +30,20 @@ export interface LegalMovesSlice {
     highlightLegalMoves(piece: Piece): boolean;
     unhighlightLegalMoves(): void;
     flashLegalMoves(): void;
-
-    addLegalMoves(legalMoves: LegalMoves, positionId?: PositionId): void;
-    setLatestLegalMoves(legalMoves: LegalMoves): void;
-
-    setAllowHistoryChanges(value: boolean): void;
 }
 
-export function createLegalMovesSlice(
-    initState: LegalMovesSliceProps,
+export function createUiLegalMovesSlice(
+    initState: UiLegalMovesSliceProps,
 ): StateCreator<
     ChessboardStore,
     [["zustand/immer", never], never],
     [],
-    LegalMovesSlice
+    UiLegalMovesSlice
 > {
     return (set, get) => ({
         ...initState,
-        allowHistoryChanges: initState.allowHistoryChanges ?? false,
         hideLegalMoves: initState.hideLegalMoves ?? false,
         highlightedLegalMoves: [],
-
-        getLegalMoves() {
-            const {
-                legalMovesByPosition,
-                allowHistoryChanges,
-                positionHistory,
-                hideLegalMoves,
-            } = get();
-
-            const cannotModifyHistory =
-                !allowHistoryChanges &&
-                !positionHistory.isViewingLatestPosition;
-            if (hideLegalMoves || cannotModifyHistory) {
-                return new LegalMoves();
-            }
-
-            return (
-                legalMovesByPosition.get(
-                    positionHistory.viewingPosition?.positionId,
-                ) ?? new LegalMoves()
-            );
-        },
 
         setHideLegalMoves(value) {
             set((state) => {
@@ -91,8 +57,11 @@ export function createLegalMovesSlice(
         },
 
         async getLegalMove(dest, pieceId, pieces) {
-            const { getLegalMoves, promptPromotion, disambiguateDestination } =
-                get();
+            const {
+                getViewedPositionLegalMoves,
+                disambiguateDestination,
+                promptPromotion,
+            } = get();
 
             const piece = pieces.getById(pieceId);
             if (!piece) {
@@ -102,7 +71,7 @@ export function createLegalMovesSlice(
                 return null;
             }
 
-            const legalMoves = getLegalMoves();
+            const legalMoves = getViewedPositionLegalMoves();
             const movesFromOrigin = legalMoves.get(piece.position);
             if (!movesFromOrigin) return null;
 
@@ -131,9 +100,9 @@ export function createLegalMovesSlice(
         },
 
         highlightLegalMoves(piece) {
-            const { getLegalMoves } = get();
+            const { getViewedPositionLegalMoves } = get();
 
-            const legalMoves = getLegalMoves();
+            const legalMoves = getViewedPositionLegalMoves();
             const moves = legalMoves.get(piece.position) ?? [];
 
             const toHighlightPoints = new Map<StrPoint, LogicalPoint>();
@@ -167,10 +136,13 @@ export function createLegalMovesSlice(
         },
 
         flashLegalMoves() {
-            const { getLegalMoves, logicalPointToViewPoint, flashOverlay } =
-                get();
+            const {
+                getViewedPositionLegalMoves,
+                logicalPointToViewPoint,
+                flashOverlay,
+            } = get();
 
-            const legalMoves = getLegalMoves();
+            const legalMoves = getViewedPositionLegalMoves();
             for (const movesPerPoint of legalMoves) {
                 for (const move of movesPerPoint) {
                     const from = logicalPointToViewPoint(move.from);
@@ -182,27 +154,6 @@ export function createLegalMovesSlice(
                     });
                 }
             }
-        },
-
-        addLegalMoves(legalMoves, positionId) {
-            set((state) => {
-                state.legalMovesByPosition.set(positionId, legalMoves);
-                state.highlightedLegalMoves = [];
-            });
-        },
-        setLatestLegalMoves(legalMoves) {
-            const { positionHistory, addLegalMoves } = get();
-
-            addLegalMoves(
-                legalMoves,
-                positionHistory.viewingPosition?.positionId,
-            );
-        },
-
-        setAllowHistoryChanges(value) {
-            set((state) => {
-                state.allowHistoryChanges = value;
-            });
         },
     });
 }

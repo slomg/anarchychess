@@ -92,25 +92,6 @@ describe("PiecesSlice", () => {
             expect(store.getState().selectedPieceId).toBe(piece.id);
             expect(highlightLegalMovesMock).toHaveBeenCalledWith(piece);
         });
-
-        it("should not select a piece if it has no legal moves", () => {
-            const piece = createFakePiece({
-                position: logicalPoint({ x: 0, y: 0 }),
-            });
-            const highlightLegalMovesMock = vi.fn(() => false);
-
-            store.setState({
-                pieces: BoardPieces.fromPieces(piece),
-                highlightLegalMoves: highlightLegalMovesMock,
-                selectedPieceId: null,
-            });
-
-            const result = store.getState().selectPiece(piece.id);
-
-            expect(result).toBe(false);
-            expect(store.getState().selectedPieceId).toBeNull();
-            expect(highlightLegalMovesMock).toHaveBeenCalledWith(piece);
-        });
     });
 
     describe("unselectPiece", () => {

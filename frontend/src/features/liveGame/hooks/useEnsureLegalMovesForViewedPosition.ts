@@ -43,7 +43,10 @@ export default function useEnsureLegalMovesForViewedPosition(
                 hasForcedMoves: data.hasForcedMoves,
                 boardWidth: state.boardDimensions.width,
             });
-            state.addLegalMoves(legalMoves, viewingPosition?.positionId);
+            state.addLegalMovesForPosition(
+                legalMoves,
+                viewingPosition?.positionId,
+            );
         });
         return unsub;
     }, [initialFen, chessboardStore]);

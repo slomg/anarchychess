@@ -8,6 +8,7 @@ import { Clocks, MoveSnapshot } from "@/lib/apiClient";
 import { LiveChessStore } from "../stores/liveChessStore";
 import { refetchGame } from "../lib/gameStateProcessor";
 import { useGameEvent } from "./useGameHub";
+import LegalMoves from "@/features/chessboard/lib/legalMoves";
 
 export default function useLiveChessEvents(
     liveChessStore: StoreApi<LiveChessStore>,
@@ -20,6 +21,7 @@ export default function useLiveChessEvents(
         move: MoveSnapshot,
         plyNumber: number,
         clocks: Clocks,
+        legalMoves?: LegalMoves,
     ): Promise<Position | undefined> {
         const {
             positionHistory,
@@ -42,17 +44,20 @@ export default function useLiveChessEvents(
         }
 
         const pieces = chessboardStore.getState().pieces;
-        const position = addPosition({
-            pieces,
-            fen: move.fen,
-            sideToMove: move.nextSideToMove,
-            san: move.san,
-            move: decodedMove,
-            // clocks: {
-            //     whiteClock: clocks.whiteClock,
-            //     blackClock: clocks.blackClock,
-            // },
-        });
+        const position = addPosition(
+            {
+                pieces,
+                fen: move.fen,
+                sideToMove: move.nextSideToMove,
+                san: move.san,
+                move: decodedMove,
+                // clocks: {
+                //     whiteClock: clocks.whiteClock,
+                //     blackClock: clocks.blackClock,
+                // },
+            },
+            legalMoves,
+        );
         receiveLiveMove(clocks, move.nextSideToMove);
         return position;
     }
@@ -82,17 +87,12 @@ export default function useLiveChessEvents(
             const { viewer } = liveChessStore.getState();
             if (viewer.playerColor === null) return;
 
-            const position = await handleMoveUpdate(move, plyNumber, clocks);
-            if (!position) return;
-
             const decodedLegalMoves = decodeLegalMoves({
                 encoded: encodedLegalMoves,
                 boardWidth: boardDimensions.width,
                 hasForcedMoves: hasForcedMoves,
             });
-            chessboardStore
-                .getState()
-                .addLegalMoves(decodedLegalMoves, position.positionId);
+            await handleMoveUpdate(move, plyNumber, clocks, decodedLegalMoves);
         },
     );
 

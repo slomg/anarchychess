@@ -72,13 +72,14 @@ export function createPiecesSlice(
         }
 
         function detectNeedsDoubleClick(dest: LogicalPoint): boolean {
-            const { selectedPieceId, pieces, getLegalMoves } = get();
+            const { selectedPieceId, pieces, getViewedPositionLegalMoves } =
+                get();
             if (!selectedPieceId) return false;
 
             const piece = pieces.getById(selectedPieceId);
             if (!piece) return false;
 
-            const legalMoves = getLegalMoves();
+            const legalMoves = getViewedPositionLegalMoves();
             return (
                 pointEquals(piece.position, dest) &&
                 legalMoves.hasMovesFromTo(piece.position, dest)
@@ -184,7 +185,7 @@ export function createPiecesSlice(
                     screenToLogicalPoint,
                     flashLegalMoves,
                     clearAnimation,
-                    getLegalMoves,
+                    getViewedPositionLegalMoves,
                     isProcessingMove,
                 } = get();
                 if (isProcessingMove) return { success: false };
@@ -207,7 +208,7 @@ export function createPiecesSlice(
                     }
                     clearAnimation();
 
-                    const legalMoves = getLegalMoves();
+                    const legalMoves = getViewedPositionLegalMoves();
                     if (
                         legalMoves.hasForcedMoves &&
                         isDrag // player tried to phyically move the piece, not just click and click somewhere else

@@ -271,9 +271,9 @@ describe("useLiveChessEvents", () => {
                 hasForcedMoves,
             });
             expect(position).toBeDefined();
-            expect(chessboardStore.getState().getLegalMoves()).toEqual(
-                expectedLegalMoves,
-            );
+            expect(
+                chessboardStore.getState().getViewedPositionLegalMoves(),
+            ).toEqual(expectedLegalMoves);
         });
     });
 

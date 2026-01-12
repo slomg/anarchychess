@@ -9,10 +9,10 @@ import {
     IntermediateSlice,
 } from "./intermediateSlice";
 import {
-    createLegalMovesSlice,
-    LegalMovesSlice,
-    LegalMovesSliceProps,
-} from "./legalMovesSlice";
+    createUiLegalMovesSlice,
+    UiLegalMovesSlice,
+    UiLegalMovesSliceProps,
+} from "./uiLegalMovesSlice";
 import {
     AnimationSlice,
     AnimationSliceProps,
@@ -39,7 +39,7 @@ import PositionHistory from "../lib/positionHistory";
 export type ChessboardStore = BoardSlice &
     PiecesSlice &
     PromotionSlice &
-    LegalMovesSlice &
+    UiLegalMovesSlice &
     HistorySlice &
     OverlaySlice &
     InteractionSlice &
@@ -52,7 +52,7 @@ export type ChessboardProps = BoardSliceProps &
     HistorySliceProps &
     AudioSliceProps &
     AnimationSliceProps &
-    LegalMovesSliceProps;
+    UiLegalMovesSliceProps;
 
 enableMapSet();
 export function createChessboardStore(
@@ -73,7 +73,7 @@ export function createChessboardStore(
                 ...createBoardSlice(initState)(...a),
                 ...createPiecesSlice(initState)(...a),
                 ...createPromotionSlice(...a),
-                ...createLegalMovesSlice(initState)(...a),
+                ...createUiLegalMovesSlice(initState)(...a),
                 ...createHistorySlice(initState)(...a),
                 ...createOverlaySlice(...a),
                 ...createInteractionSlice(...a),

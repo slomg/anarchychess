@@ -36,35 +36,33 @@ vi.mock("@/lib/apiClient/definition");
 
 function expectPositionAndLegalMoves(
     addPositionMove: Mock,
-    addLegalMovesMock: Mock,
     reselectPieceMock: Mock,
     move: Move,
     newPositionId: PositionId,
     newAnalysisPosition: AnalysisPosition,
     newPieces: BoardPieces,
 ) {
-    expect(addPositionMove).toHaveBeenCalledExactlyOnceWith<[PositionProps]>({
-        pieces: newPieces,
-        move,
-        sideToMove: newAnalysisPosition.sideToMove,
-        fen: newAnalysisPosition.fen,
-        san: newAnalysisPosition.san,
-    });
-    expect(addLegalMovesMock).toHaveBeenCalledExactlyOnceWith<
-        [LegalMoves, PositionId]
+    expect(addPositionMove).toHaveBeenCalledExactlyOnceWith<
+        [PositionProps, LegalMoves]
     >(
+        {
+            pieces: newPieces,
+            move,
+            sideToMove: newAnalysisPosition.sideToMove,
+            fen: newAnalysisPosition.fen,
+            san: newAnalysisPosition.san,
+        },
         decodeMovePathIntoLegalMoves({
             paths: newAnalysisPosition.moveOptions.legalMoves,
             boardWidth: constants.BOARD_WIDTH,
             hasForcedMoves: newAnalysisPosition.moveOptions.hasForcedMoves,
         }),
-        newPositionId,
     );
     expect(reselectPieceMock).toHaveBeenCalledOnce();
 
-    const addLegalMovesIndex = addLegalMovesMock.mock.invocationCallOrder[0];
+    const addPositionMoveIndex = addPositionMove.mock.invocationCallOrder[0];
     const reselectPieceIndex = reselectPieceMock.mock.invocationCallOrder[0];
-    expect(reselectPieceIndex).toBeGreaterThan(addLegalMovesIndex);
+    expect(reselectPieceIndex).toBeGreaterThan(addPositionMoveIndex);
 }
 
 describe("addAnalysisMove", () => {
@@ -141,11 +139,9 @@ describe("addAnalysisMove", () => {
         const newAnalysisPosition = createFakeAnalysisPosition();
         const newPosition = createFakePosition();
         const addPositionMock = vi.fn();
-        const addLegalMovesMock = vi.fn();
         const reselectPieceMock = vi.fn();
         chessboardStore.setState({
             addPosition: addPositionMock,
-            addLegalMoves: addLegalMovesMock,
             reselectPiece: reselectPieceMock,
         });
 
@@ -161,7 +157,6 @@ describe("addAnalysisMove", () => {
         expect(chessboardStore.getState().pieces).toBe(newPieces);
         expectPositionAndLegalMoves(
             addPositionMock,
-            addLegalMovesMock,
             reselectPieceMock,
             move,
             newPosition.positionId,
@@ -269,12 +264,10 @@ describe("addSidelineAnalysisMove", () => {
         const newAnalysisPosition = createFakeAnalysisPosition();
         const newPosition = createFakePosition();
         const addSidelinePositionMock = vi.fn();
-        const addLegalMovesMock = vi.fn();
         const reselectPieceMock = vi.fn();
         chessboardStore.setState({
             allowHistoryChanges: true,
             addSidelinePosition: addSidelinePositionMock,
-            addLegalMoves: addLegalMovesMock,
             reselectPiece: reselectPieceMock,
         });
 
@@ -295,7 +288,6 @@ describe("addSidelineAnalysisMove", () => {
 
         expectPositionAndLegalMoves(
             addSidelinePositionMock,
-            addLegalMovesMock,
             reselectPieceMock,
             move,
             newPosition.positionId,

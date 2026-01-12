@@ -2,12 +2,17 @@ import { StoreApi } from "zustand";
 
 import { createNFakePositionHistory } from "@/lib/testUtils/fakers/positionHistoryFaker";
 import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
-import { createFakeBoardPieces } from "@/lib/testUtils/fakers/chessboardFakers";
+import {
+    createFakeBoardPieces,
+    createFakeLegalMoves,
+    createRandomPoint,
+} from "@/lib/testUtils/fakers/chessboardFakers";
 import { ChessboardStore, createChessboardStore } from "../chessboardStore";
 import PositionHistory from "../../lib/positionHistory";
 import { PositionId } from "../../lib/position";
 import { mock } from "vitest-mock-extended";
 import { createFakePosition } from "@/lib/testUtils/fakers/positionFaker";
+import LegalMoves from "../../lib/legalMoves";
 
 describe("HistorySlice", () => {
     let store: StoreApi<ChessboardStore>;
@@ -246,38 +251,251 @@ describe("HistorySlice", () => {
     describe("addPosition", () => {
         it("should add the new position to positionHistory", async () => {
             const positionHistoryMock = mock<PositionHistory>();
+            const unhighlightLegalMovesMock = vi.fn();
             const newPosition = createFakePosition();
             const newPositionProps = createFakePositionProps();
-            positionHistoryMock.addNextPosition.mockReturnValue(newPosition);
-            store.setState({ positionHistory: positionHistoryMock });
+            const legalMoves = createFakeLegalMoves();
 
-            const result = store.getState().addPosition(newPositionProps);
+            positionHistoryMock.addNextPosition.mockReturnValue(newPosition);
+            store.setState({
+                positionHistory: positionHistoryMock,
+                legalMovesByPosition: new Map(),
+                unhighlightLegalMoves: unhighlightLegalMovesMock,
+            });
+
+            const result = store
+                .getState()
+                .addPosition(newPositionProps, legalMoves);
 
             expect(result).toBe(newPosition);
             expect(
                 positionHistoryMock.addNextPosition,
             ).toHaveBeenCalledExactlyOnceWith(newPositionProps);
+            expect(unhighlightLegalMovesMock).toHaveBeenCalledOnce();
+            expect(store.getState().legalMovesByPosition).toEqual(
+                new Map([[result.positionId, legalMoves]]),
+            );
         });
     });
 
     describe("addSidelinePosition", () => {
         it("should add the new position as a slideline to positionHistory", async () => {
             const positionHistoryMock = mock<PositionHistory>();
+            const unhighlightLegalMovesMock = vi.fn();
             const newPosition = createFakePosition();
             const newPositionProps = createFakePositionProps();
+            const legalMoves = createFakeLegalMoves();
             positionHistoryMock.addNextSidelinePosition.mockReturnValue(
                 newPosition,
             );
-            store.setState({ positionHistory: positionHistoryMock });
+            store.setState({
+                positionHistory: positionHistoryMock,
+                legalMovesByPosition: new Map(),
+                unhighlightLegalMoves: unhighlightLegalMovesMock,
+            });
 
             const result = store
                 .getState()
-                .addSidelinePosition(newPositionProps);
+                .addSidelinePosition(newPositionProps, legalMoves);
 
             expect(result).toBe(newPosition);
             expect(
                 positionHistoryMock.addNextSidelinePosition,
             ).toHaveBeenCalledExactlyOnceWith(newPositionProps);
+            expect(unhighlightLegalMovesMock).toHaveBeenCalledOnce();
+            expect(store.getState().legalMovesByPosition).toEqual(
+                new Map([[result.positionId, legalMoves]]),
+            );
+        });
+    });
+
+    describe("getViewedPositionLegalMoves", () => {
+        it("should return empty LegalMoves when hideLegalMoves is true", () => {
+            const legalMoves = createFakeLegalMoves();
+            const positionHistory = createNFakePositionHistory(1);
+
+            store.setState({
+                hideLegalMoves: true,
+                positionHistory,
+                legalMovesByPosition: new Map([
+                    [positionHistory.viewingPosition?.positionId, legalMoves],
+                ]),
+            });
+
+            const result = store.getState().getViewedPositionLegalMoves();
+            expect(result).toEqual(new LegalMoves());
+        });
+
+        it("should return empty LegalMoves when viewing a non latest position and history changes are not allowed", () => {
+            const legalMoves = createFakeLegalMoves();
+            const positionHistory = createNFakePositionHistory(2);
+            positionHistory.stepBackward();
+
+            store.setState({
+                allowHistoryChanges: false,
+                positionHistory,
+                legalMovesByPosition: new Map([
+                    [positionHistory.viewingPosition?.positionId, legalMoves],
+                ]),
+            });
+
+            const result = store.getState().getViewedPositionLegalMoves();
+            expect(result).toEqual(new LegalMoves());
+        });
+
+        it("should return legal moves when viewing a non latest position and history changes are allowed", () => {
+            const legalMoves = createFakeLegalMoves();
+            const positionHistory = createNFakePositionHistory(2);
+            positionHistory.stepBackward();
+
+            store.setState({
+                allowHistoryChanges: true,
+                positionHistory,
+                legalMovesByPosition: new Map([
+                    [positionHistory.viewingPosition?.positionId, legalMoves],
+                ]),
+            });
+
+            const result = store.getState().getViewedPositionLegalMoves();
+            expect(result).toEqual(legalMoves);
+        });
+
+        it("should return legal moves for the current viewing position id", () => {
+            const legalMoves = createFakeLegalMoves();
+            const positionHistory = createNFakePositionHistory(1);
+
+            store.setState({
+                positionHistory,
+                legalMovesByPosition: new Map([
+                    [positionHistory.viewingPosition?.positionId, legalMoves],
+                ]),
+            });
+
+            const result = store.getState().getViewedPositionLegalMoves();
+            expect(result).toEqual(legalMoves);
+        });
+
+        it("should return empty LegalMoves when no legal moves exist for the viewing position", () => {
+            const positionHistory = createNFakePositionHistory(1);
+
+            store.setState({
+                positionHistory,
+                legalMovesByPosition: new Map(),
+            });
+
+            const result = store.getState().getViewedPositionLegalMoves();
+            expect(result).toEqual(new LegalMoves());
+        });
+
+        it("should handle undefined viewing position id", () => {
+            const legalMoves = createFakeLegalMoves();
+            const positionHistory = createNFakePositionHistory(1);
+            positionHistory.goToStart();
+
+            store.setState({
+                allowHistoryChanges: true,
+                positionHistory,
+                legalMovesByPosition: new Map([[undefined, legalMoves]]),
+            });
+
+            const result = store.getState().getViewedPositionLegalMoves();
+            expect(result).toEqual(legalMoves);
+        });
+    });
+
+    describe("addLegalMovesForPosition", () => {
+        it("should store legal moves for a given position id and clear highlighted moves", () => {
+            const legalMoves = createFakeLegalMoves();
+            const positionId = "3" as PositionId;
+
+            const legalMovesByPosition = new Map<PositionId, LegalMoves>([
+                ["1" as PositionId, createFakeLegalMoves()],
+            ]);
+            store.setState({
+                highlightedLegalMoves: [
+                    createRandomPoint(),
+                    createRandomPoint(),
+                ],
+                legalMovesByPosition,
+            });
+
+            store.getState().addLegalMovesForPosition(legalMoves, positionId);
+
+            const state = store.getState();
+            const expectedlegalMovesByPosition = new Map(legalMovesByPosition);
+            expectedlegalMovesByPosition.set(positionId, legalMoves);
+            expect(state.legalMovesByPosition).toEqual(
+                expectedlegalMovesByPosition,
+            );
+            expect(state.highlightedLegalMoves).toHaveLength(0);
+        });
+    });
+
+    describe("setLatestLegalMoves", () => {
+        it("should store legal moves at the current viewing position id", () => {
+            const legalMoves = createFakeLegalMoves();
+            const positionHistory = createNFakePositionHistory(2);
+
+            store.setState({
+                highlightedLegalMoves: [
+                    createRandomPoint(),
+                    createRandomPoint(),
+                    createRandomPoint(),
+                ],
+                positionHistory,
+            });
+
+            store.getState().setLatestLegalMoves(legalMoves);
+
+            const state = store.getState();
+            expect(
+                state.legalMovesByPosition.get(
+                    positionHistory.viewingPosition?.positionId,
+                ),
+            ).toEqual(legalMoves);
+            expect(state.highlightedLegalMoves).toHaveLength(0);
+        });
+    });
+
+    describe("hasLegalMovesForPosition", () => {
+        it("should return false when no legal moves exist for the position id", () => {
+            const result = store
+                .getState()
+                .hasLegalMovesForPosition("test position id" as PositionId);
+            expect(result).toBe(false);
+        });
+
+        it("should return true when legal moves exist for the position id", () => {
+            const { addPosition, addLegalMovesForPosition } = store.getState();
+            const positionId = addPosition(
+                createFakePositionProps(),
+            ).positionId;
+            addPosition(createFakePositionProps());
+            addLegalMovesForPosition(createFakeLegalMoves(), positionId);
+
+            const result = store
+                .getState()
+                .hasLegalMovesForPosition(positionId);
+            expect(result).toBe(true);
+        });
+
+        it("should correctly handle undefined position id", () => {
+            const { goToStartPosition, setLatestLegalMoves } = store.getState();
+            goToStartPosition();
+            setLatestLegalMoves(createFakeLegalMoves());
+
+            const result = store.getState().hasLegalMovesForPosition(undefined);
+            expect(result).toBe(true);
+        });
+    });
+
+    describe("setAllowHistoryChanges", () => {
+        it("should update allowHistoryChanges", () => {
+            store.setState({ allowHistoryChanges: false });
+
+            store.getState().setAllowHistoryChanges(true);
+
+            expect(store.getState().allowHistoryChanges).toBe(true);
         });
     });
 });

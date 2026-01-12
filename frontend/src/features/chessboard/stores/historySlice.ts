@@ -7,24 +7,40 @@ import { PositionProps } from "../lib/position";
 
 import { ChessboardStore } from "./chessboardStore";
 import BoardPieces from "../lib/boardPieces";
+import LegalMoves from "../lib/legalMoves";
 
 export interface HistorySliceProps {
+    legalMovesByPosition: Map<PositionId | undefined, LegalMoves>;
     positionHistory?: PositionHistory;
+    allowHistoryChanges?: boolean;
     pieces: BoardPieces;
 }
 
 export interface HistorySlice {
     positionHistory: PositionHistory;
+    legalMovesByPosition: Map<PositionId | undefined, LegalMoves>;
+    allowHistoryChanges: boolean;
 
     goToPosition(positionId: PositionId): Promise<void>;
-
     stepPositionForward(): Promise<void>;
     stepPositionBackward(): Promise<void>;
     goToStartPosition(): Promise<void>;
     goToLatestPosition(): Promise<void>;
 
-    addPosition(props: PositionProps): Position;
-    addSidelinePosition(props: PositionProps): Position;
+    addPosition(props: PositionProps, legalMoves?: LegalMoves): Position;
+    addSidelinePosition(
+        props: PositionProps,
+        legalMoves?: LegalMoves,
+    ): Position;
+
+    getViewedPositionLegalMoves(): LegalMoves;
+    addLegalMovesForPosition(
+        legalMoves: LegalMoves,
+        positionId?: PositionId,
+    ): void;
+    setLatestLegalMoves(legalMoves: LegalMoves): void;
+
+    setAllowHistoryChanges(value: boolean): void;
 }
 
 export function createHistorySlice(
@@ -36,6 +52,8 @@ export function createHistorySlice(
     HistorySlice
 > {
     return (set, get) => ({
+        legalMovesByPosition: initState.legalMovesByPosition,
+        allowHistoryChanges: initState.allowHistoryChanges ?? false,
         positionHistory:
             initState.positionHistory ?? new PositionHistory(initState.pieces),
 
@@ -122,20 +140,85 @@ export function createHistorySlice(
             }
         },
 
-        addPosition(props) {
+        addPosition(props, legalMoves) {
+            const { unhighlightLegalMoves } = get();
+
             let position: Position;
             set((state) => {
                 position = state.positionHistory.addNextPosition(props);
+
+                if (legalMoves) {
+                    state.legalMovesByPosition.set(
+                        position.positionId,
+                        legalMoves,
+                    );
+                }
             });
+            unhighlightLegalMoves();
+
             return position!;
         },
 
-        addSidelinePosition(props) {
+        addSidelinePosition(props, legalMoves) {
+            const { unhighlightLegalMoves } = get();
+
             let position: Position;
             set((state) => {
                 position = state.positionHistory.addNextSidelinePosition(props);
+
+                if (legalMoves) {
+                    state.legalMovesByPosition.set(
+                        position.positionId,
+                        legalMoves,
+                    );
+                }
             });
+            unhighlightLegalMoves();
+
             return position!;
+        },
+
+        getViewedPositionLegalMoves() {
+            const {
+                legalMovesByPosition,
+                allowHistoryChanges,
+                positionHistory,
+                hideLegalMoves,
+            } = get();
+
+            const cannotModifyHistory =
+                !allowHistoryChanges &&
+                !positionHistory.isViewingLatestPosition;
+            if (hideLegalMoves || cannotModifyHistory) {
+                return new LegalMoves();
+            }
+
+            return (
+                legalMovesByPosition.get(
+                    positionHistory.viewingPosition?.positionId,
+                ) ?? new LegalMoves()
+            );
+        },
+
+        addLegalMovesForPosition(legalMoves, positionId) {
+            set((state) => {
+                state.legalMovesByPosition.set(positionId, legalMoves);
+                state.highlightedLegalMoves = [];
+            });
+        },
+        setLatestLegalMoves(legalMoves) {
+            const { positionHistory, addLegalMovesForPosition } = get();
+
+            addLegalMovesForPosition(
+                legalMoves,
+                positionHistory.viewingPosition?.positionId,
+            );
+        },
+
+        setAllowHistoryChanges(value) {
+            set((state) => {
+                state.allowHistoryChanges = value;
+            });
         },
     });
 }
