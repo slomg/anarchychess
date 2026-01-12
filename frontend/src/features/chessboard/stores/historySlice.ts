@@ -141,7 +141,7 @@ export function createHistorySlice(
         },
 
         addPosition(props, legalMoves) {
-            const { unhighlightLegalMoves, unselectPiece } = get();
+            const { unhighlightLegalMoves, reselectPiece } = get();
 
             let position: Position;
             set((state) => {
@@ -154,14 +154,14 @@ export function createHistorySlice(
                     );
                 }
             });
-            unhighlightLegalMoves();
-            unselectPiece();
+            const wasSelected = reselectPiece();
+            if (!wasSelected) unhighlightLegalMoves();
 
             return position!;
         },
 
         addSidelinePosition(props, legalMoves) {
-            const { unselectPiece, unhighlightLegalMoves } = get();
+            const { reselectPiece, unhighlightLegalMoves } = get();
 
             let position: Position;
             set((state) => {
@@ -174,8 +174,8 @@ export function createHistorySlice(
                     );
                 }
             });
-            unhighlightLegalMoves();
-            unselectPiece();
+            const wasSelected = reselectPiece();
+            if (!wasSelected) unhighlightLegalMoves();
 
             return position!;
         },

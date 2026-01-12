@@ -29,7 +29,7 @@ export interface PiecesSlice {
 
     selectPiece(pieceId: PieceID): boolean;
     unselectPiece(): void;
-    reselectPiece(): void;
+    reselectPiece(): boolean;
 
     handleMousePieceDrop(args: {
         mousePoint: ScreenPoint;
@@ -149,12 +149,13 @@ export function createPiecesSlice(
             },
             reselectPiece() {
                 const { highlightLegalMoves, selectedPieceId, pieces } = get();
-                if (!selectedPieceId) return;
+                if (!selectedPieceId) return false;
 
                 const piece = pieces.getById(selectedPieceId);
-                if (!piece) return;
+                if (!piece) return false;
 
                 highlightLegalMoves(piece);
+                return true;
             },
 
             async applyMoveImmediate(move: Move): Promise<void> {
