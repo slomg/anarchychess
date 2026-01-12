@@ -161,7 +161,7 @@ export function createHistorySlice(
         },
 
         addSidelinePosition(props, legalMoves) {
-            const { unhighlightLegalMoves } = get();
+            const { unselectPiece, unhighlightLegalMoves } = get();
 
             let position: Position;
             set((state) => {
