@@ -96,6 +96,11 @@ export default function PrivacyPage() {
                             is used solely to operate and improve Anarchy Chess.
                         </li>
                         <li>
+                            We use analytics services to monitor and improve the
+                            performance of Anarchy Chess. The data collected is
+                            aggregated and used solely for performance analysis.
+                        </li>
+                        <li>
                             Legal Requirements: We may disclose information if
                             required by law, subpoena, or other legal process,
                             or if we believe in good faith that disclosure is
