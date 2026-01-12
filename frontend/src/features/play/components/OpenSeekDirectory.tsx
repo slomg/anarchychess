@@ -73,7 +73,7 @@ const OpenSeekDirectory = () => {
     });
 
     return (
-        <Card className="min-h-60 flex-1">
+        <Card className="min-h-60 min-w-0 flex-1">
             <h2 className="text-center text-3xl">Open Challenges</h2>
 
             <div
