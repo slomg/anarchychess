@@ -1,4 +1,5 @@
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 import { Secular_One } from "next/font/google";
 import { ReactNode } from "react";
 import { Metadata } from "next";
@@ -30,6 +31,7 @@ export default async function RootLayout({
                     secularOne.className,
                 )}
             >
+                <Analytics />
                 <SpeedInsights />
                 {children}
             </body>
