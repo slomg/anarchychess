@@ -83,7 +83,7 @@ export default async function QuestsPage() {
                     >
                         <div
                             className="grid grid-cols-1 gap-5
-                                md:grid-cols-[1fr_auto]"
+                                md:grid-cols-[auto_1fr]"
                         >
                             <DailyQuestTitle />
 
