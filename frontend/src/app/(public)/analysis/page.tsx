@@ -10,7 +10,7 @@ export const metadata: Metadata = {
         "anarchy chess analysis",
         "chess variants analysis",
         "custom chess analysis",
-        "offline chess analysis",
+        "singleplayer chess analysis",
     ],
 };
 
