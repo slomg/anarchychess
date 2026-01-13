@@ -52,13 +52,14 @@ public class QuestGrainStorage
     public void SelectNewQuest(QuestInstance quest)
     {
         // reset streak if last quest was missed, failed, not claimed, or is too old
-        if (
-            Quest is null
-            || !Quest.IsCompleted
-            || !RewardCollected
-            || quest.CreationDate.DayNumber - Quest.CreationDate.DayNumber >= 2
-        )
+        var isSameDay = quest.CreationDate.DayNumber == Quest?.CreationDate.DayNumber;
+        var isTooOld = quest.CreationDate.DayNumber - Quest?.CreationDate.DayNumber > 1;
+        var previousQuestIncomplete =
+            Quest is null || !Quest.IsCompleted || !RewardCollected || isTooOld;
+        if (!isSameDay && previousQuestIncomplete)
+        {
             Streak = 0;
+        }
 
         Quest = quest;
         CanReplace = true;

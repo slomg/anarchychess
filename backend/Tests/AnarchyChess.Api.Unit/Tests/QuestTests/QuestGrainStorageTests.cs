@@ -69,7 +69,7 @@ public class QuestGrainStorageTests
     [Fact]
     public void SelectNewQuest_resets_streak_if_last_quest_was_not_completed()
     {
-        var oldQuest = CreateTestQuest();
+        var oldQuest = CreateTestQuest(daysAgo: 1);
         QuestGrainStorage storage = new()
         {
             Quest = oldQuest,
@@ -86,7 +86,7 @@ public class QuestGrainStorageTests
     [Fact]
     public void SelectNewQuest_resets_streak_if_last_reward_was_not_collected()
     {
-        var oldQuest = CreateTestQuest();
+        var oldQuest = CreateTestQuest(daysAgo: 1);
         oldQuest.ApplySnapshot(new GameQuestSnapshotFaker().Generate());
         QuestGrainStorage storage = new()
         {
@@ -146,5 +146,25 @@ public class QuestGrainStorageTests
 
         storage.RewardCollected.Should().BeTrue();
         storage.Streak.Should().Be(6);
+    }
+
+    [Fact]
+    public void SelectNewQuest_does_not_reset_streak_if_replaced_same_day()
+    {
+        var initialQuest = CreateTestQuest();
+        QuestGrainStorage storage = new()
+        {
+            Quest = initialQuest,
+            Streak = 3,
+            RewardCollected = true,
+        };
+
+        var sameDayQuest = CreateTestQuest();
+        storage.SelectNewQuest(sameDayQuest);
+
+        storage.Quest.Should().Be(sameDayQuest);
+        storage.Streak.Should().Be(3);
+        storage.RewardCollected.Should().BeFalse();
+        storage.CanReplace.Should().BeTrue();
     }
 }
