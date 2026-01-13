@@ -104,7 +104,6 @@ export function createUiLegalMovesSlice(
 
             const legalMoves = getViewedPositionLegalMoves();
             const moves = legalMoves.get(piece.position) ?? [];
-            console.log(legalMoves);
 
             const toHighlightPoints = new Map<StrPoint, LogicalPoint>();
             for (const move of moves) {
