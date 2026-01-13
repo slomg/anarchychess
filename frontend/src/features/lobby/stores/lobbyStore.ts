@@ -12,6 +12,7 @@ interface LobbyStore {
     requestedOpenSeek: boolean;
     ongoingGames: Map<string, OngoingGame>;
     openSeekTracker: OpenSeekTracker;
+    lastSeekingPath: string | null;
 
     clearSeeks(): void;
 
@@ -25,6 +26,8 @@ interface LobbyStore {
 
     addOpenSeeks(newOpenSeek: OpenSeek[]): void;
     removeOpenSeek(userId: string, pool: PoolKey): void;
+
+    setLastSeekingPath(path: string): void;
 }
 
 enableMapSet();
@@ -34,6 +37,7 @@ const useLobbyStore = createWithEqualityFn<LobbyStore>()(
         requestedOpenSeek: false,
         ongoingGames: new Map(),
         openSeekTracker: new OpenSeekTracker(),
+        lastSeekingPath: null,
 
         clearSeeks() {
             set((state) => {
@@ -80,6 +84,12 @@ const useLobbyStore = createWithEqualityFn<LobbyStore>()(
         removeOpenSeek(userId, pool) {
             set((state) => {
                 state.openSeekTracker.removeSeek(userId, pool);
+            });
+        },
+
+        setLastSeekingPath(path) {
+            set((state) => {
+                state.lastSeekingPath = path;
             });
         },
     })),

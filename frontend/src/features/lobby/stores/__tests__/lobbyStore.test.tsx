@@ -152,4 +152,14 @@ describe("lobbyStore", () => {
             ).toEqual([otherSeek1, otherSeek2]);
         });
     });
+
+    describe("setLastSeekingPath", () => {
+        it("should update lastSeekingPath", () => {
+            useLobbyStore.setState({ lastSeekingPath: "path a" });
+
+            useLobbyStore.getState().setLastSeekingPath("path b");
+
+            expect(useLobbyStore.getState().lastSeekingPath).toBe("path b");
+        });
+    });
 });

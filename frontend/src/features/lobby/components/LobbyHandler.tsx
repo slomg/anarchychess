@@ -1,15 +1,15 @@
 "use client";
 
-import constants from "@/lib/constants";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
-import useLobbyStore from "../stores/lobbyStore";
+import { useEffect } from "react";
+
 import { useLobbyEmitter, useLobbyEvent } from "../hooks/useLobbyHub";
+import { usePathname, useRouter } from "next/navigation";
+import useLobbyStore from "../stores/lobbyStore";
+import constants from "@/lib/constants";
 
 const LobbyHandler = () => {
     const router = useRouter();
     const pathname = usePathname();
-    const lastPathnameRef = useRef(pathname);
 
     const sendLobbyEvents = useLobbyEmitter();
 
@@ -28,13 +28,27 @@ const LobbyHandler = () => {
     });
 
     useEffect(() => {
-        if (lastPathnameRef.current === pathname) return;
+        const {
+            seeks,
+            requestedOpenSeek,
+            lastSeekingPath,
+            setLastSeekingPath,
+            setRequestedOpenSeek,
+            clearSeeks,
+        } = useLobbyStore.getState();
 
-        lastPathnameRef.current = pathname;
-        const { seeks, requestedOpenSeek, setRequestedOpenSeek, clearSeeks } =
-            useLobbyStore.getState();
+        if (lastSeekingPath === null) {
+            setLastSeekingPath(pathname);
+            return;
+        }
 
+        if (lastSeekingPath === pathname) {
+            return;
+        }
+
+        setLastSeekingPath(pathname);
         clearSeeks();
+
         if (requestedOpenSeek || seeks.size !== 0) {
             sendLobbyEvents("CleanupConnectionAsync");
             setRequestedOpenSeek(false);

@@ -52,12 +52,13 @@ describe("LobbyHandler", () => {
         useLobbyStore.setState({ seeks });
 
         usePathnameMock.mockReturnValue("/path1");
-        const { rerender } = render(<LobbyHandler />);
+        const { unmount } = render(<LobbyHandler />);
 
         usePathnameMock.mockReturnValue("/path2");
-        rerender(<LobbyHandler />);
+        unmount();
+        render(<LobbyHandler />);
 
-        expect(sendLobbyEventMock).toHaveBeenCalledWith(
+        expect(sendLobbyEventMock).toHaveBeenCalledExactlyOnceWith(
             "CleanupConnectionAsync",
         );
     });
@@ -72,7 +73,7 @@ describe("LobbyHandler", () => {
         rerender(<LobbyHandler />);
 
         expect(useLobbyStore.getState().requestedOpenSeek).toBe(false);
-        expect(sendLobbyEventMock).toHaveBeenCalledWith(
+        expect(sendLobbyEventMock).toHaveBeenCalledExactlyOnceWith(
             "CleanupConnectionAsync",
         );
     });
@@ -82,12 +83,38 @@ describe("LobbyHandler", () => {
         useLobbyStore.setState({ seeks });
 
         usePathnameMock.mockReturnValue("/path1");
-        const { rerender } = render(<LobbyHandler />);
+        const { unmount } = render(<LobbyHandler />);
 
         usePathnameMock.mockReturnValue("/path1");
-        rerender(<LobbyHandler />);
+        unmount();
+        render(<LobbyHandler />);
 
         expect(sendLobbyEventMock).not.toHaveBeenCalled();
+    });
+
+    it("should send cleanup after multiple path changes", () => {
+        const seeks = new Set<PoolKeyStr>([`${PoolType.RATED}-10+5`]);
+        useLobbyStore.setState({ seeks });
+
+        usePathnameMock.mockReturnValue("/path1");
+        const { unmount } = render(<LobbyHandler />);
+
+        usePathnameMock.mockReturnValue("/path2");
+        unmount();
+        const { rerender } = render(<LobbyHandler />);
+
+        expect(sendLobbyEventMock).toHaveBeenCalledExactlyOnceWith(
+            "CleanupConnectionAsync",
+        );
+        sendLobbyEventMock.mockClear();
+        useLobbyStore.setState({ seeks });
+        usePathnameMock.mockReturnValue("/path3");
+
+        rerender(<LobbyHandler />);
+
+        expect(sendLobbyEventMock).toHaveBeenCalledExactlyOnceWith(
+            "CleanupConnectionAsync",
+        );
     });
 
     it("should not send cleanup event if pathname changes but no seeks are present", () => {
