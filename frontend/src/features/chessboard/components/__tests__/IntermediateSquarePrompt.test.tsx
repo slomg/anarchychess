@@ -49,7 +49,49 @@ describe("IntermediateSquarePrompt", () => {
         expect(squares).toHaveLength(points.length);
     });
 
-    it("should call resolveNextIntermediate with the correct point when a square is clicked", async () => {
+    it("should call resolveNextIntermediate(null) when overlay is clicked", async () => {
+        const user = userEvent.setup();
+        const points = [logicalPoint({ x: 1, y: 1 })];
+
+        let resolvedPoint: LogicalPoint | null = logicalPoint({ x: 6, y: 9 });
+        store.setState({
+            nextIntermediates: points,
+            resolveNextIntermediate: (point) => (resolvedPoint = point),
+        });
+
+        renderComponent();
+
+        const overlay = screen.getByTestId("intermediateSquarePromptOverlay");
+        await user.pointer({ target: overlay, keys: "[MouseLeft]" });
+
+        expect(resolvedPoint).toBeNull();
+    });
+
+    it("should skip the first pointer event for the first intermediate", async () => {
+        const user = userEvent.setup();
+        const points = [
+            logicalPoint({ x: 1, y: 1 }),
+            logicalPoint({ x: 2, y: 2 }),
+        ];
+
+        let resolvedPoint: LogicalPoint | null = null;
+        store.setState({
+            nextIntermediates: points,
+            resolveNextIntermediate: (point) => (resolvedPoint = point),
+        });
+
+        renderComponent();
+
+        const squares = screen.getAllByTestId("intermediateSquare");
+
+        await user.pointer({ target: squares[0], keys: "[MouseLeft]" });
+        expect(resolvedPoint).toBeNull();
+
+        await user.pointer({ target: squares[0], keys: "[MouseLeft]" });
+        expect(resolvedPoint).toEqual(points[0]);
+    });
+
+    it("should select the correct intermediate when a non first square is clicked immediately", async () => {
         const user = userEvent.setup();
         const points = [
             logicalPoint({ x: 1, y: 1 }),
@@ -67,23 +109,5 @@ describe("IntermediateSquarePrompt", () => {
         await user.click(squares[1]);
 
         expect(resolvedPoint).toEqual(points[1]);
-    });
-
-    it("should call resolveNextIntermediate(null) when overlay is clicked", async () => {
-        const user = userEvent.setup();
-        const points = [logicalPoint({ x: 1, y: 1 })];
-
-        let resolvedPoint: LogicalPoint | null = logicalPoint({ x: 6, y: 9 });
-        store.setState({
-            nextIntermediates: points,
-            resolveNextIntermediate: (point) => (resolvedPoint = point),
-        });
-
-        renderComponent();
-
-        const overlay = screen.getByTestId("intermediateSquarePromptOverlay");
-        await user.pointer({ target: overlay, keys: "[MouseLeft]" });
-
-        expect(resolvedPoint).toBeNull();
     });
 });
