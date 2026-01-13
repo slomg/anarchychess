@@ -1,7 +1,8 @@
-import { LogicalPoint } from "@/features/point/types";
-import { useChessboardStore } from "../hooks/useChessboard";
-import ChessSquare from "./ChessSquare";
 import { useRef } from "react";
+
+import { useChessboardStore } from "../hooks/useChessboard";
+import { LogicalPoint } from "@/features/point/types";
+import ChessSquare from "./ChessSquare";
 
 const IntermediateSquarePrompt = () => {
     const { nextIntermediates, resolveNextIntermediate } = useChessboardStore(
@@ -22,43 +23,35 @@ const IntermediateSquarePrompt = () => {
             }}
         >
             {nextIntermediates.map((point, i) => (
-                <IntermediateSquare
-                    point={point}
-                    ignoreFirstTap={i === 0}
-                    key={i}
-                />
+                <IntermediateSquare point={point} key={i} />
             ))}
         </div>
     );
 };
 export default IntermediateSquarePrompt;
 
-const IntermediateSquare = ({
-    point,
-    ignoreFirstTap,
-}: {
-    point: LogicalPoint;
-    ignoreFirstTap: boolean;
-}) => {
+const IntermediateSquare = ({ point }: { point: LogicalPoint }) => {
     const resolveNextIntermediate = useChessboardStore(
         (x) => x.resolveNextIntermediate,
     );
-    const hasIgnoredInitialTap = useRef(false);
+    const hadPointerDown = useRef(false);
+
+    function handlePointerUp(event: React.PointerEvent<HTMLDivElement>) {
+        event.stopPropagation();
+        if (hadPointerDown.current) {
+            resolveNextIntermediate?.(point);
+        }
+    }
 
     return (
         <ChessSquare
             data-testid="intermediateSquare"
             position={point}
-            onPointerDown={(e) => e.stopPropagation()}
-            onPointerUp={(e) => {
-                if (ignoreFirstTap && !hasIgnoredInitialTap.current) {
-                    hasIgnoredInitialTap.current = true;
-                    return;
-                }
-
+            onPointerDown={(e) => {
+                hadPointerDown.current = true;
                 e.stopPropagation();
-                resolveNextIntermediate?.(point);
             }}
+            onPointerUp={handlePointerUp}
             className="border-accent z-30 animate-[fadeIn_0.15s_ease-out]
                 cursor-pointer rounded-sm border-4 bg-[length:100%_100%]
                 bg-center bg-no-repeat transition-colors duration-100 ease-out

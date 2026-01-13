@@ -7,9 +7,9 @@ import {
 } from "react";
 
 import { useChessboardStore } from "@/features/chessboard/hooks/useChessboard";
-import { LogicalPoint } from "@/features/point/types";
 import CoordSquare, { ChessSquareRef } from "./CoordSquare";
 import { pointToStr } from "@/features/point/pointUtils";
+import { LogicalPoint } from "@/features/point/types";
 
 type ChessSquareProps = {
     position: LogicalPoint;

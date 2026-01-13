@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { logicalPoint } from "@/features/point/pointUtils";
 import userEvent from "@testing-library/user-event";
 import {
@@ -49,7 +49,7 @@ describe("IntermediateSquarePrompt", () => {
         expect(squares).toHaveLength(points.length);
     });
 
-    it("should call resolveNextIntermediate(null) when overlay is clicked", async () => {
+    it("should call resolve intermediate with null when overlay is clicked", async () => {
         const user = userEvent.setup();
         const points = [logicalPoint({ x: 1, y: 1 })];
 
@@ -67,31 +67,7 @@ describe("IntermediateSquarePrompt", () => {
         expect(resolvedPoint).toBeNull();
     });
 
-    it("should skip the first pointer event for the first intermediate", async () => {
-        const user = userEvent.setup();
-        const points = [
-            logicalPoint({ x: 1, y: 1 }),
-            logicalPoint({ x: 2, y: 2 }),
-        ];
-
-        let resolvedPoint: LogicalPoint | null = null;
-        store.setState({
-            nextIntermediates: points,
-            resolveNextIntermediate: (point) => (resolvedPoint = point),
-        });
-
-        renderComponent();
-
-        const squares = screen.getAllByTestId("intermediateSquare");
-
-        await user.pointer({ target: squares[0], keys: "[MouseLeft]" });
-        expect(resolvedPoint).toBeNull();
-
-        await user.pointer({ target: squares[0], keys: "[MouseLeft]" });
-        expect(resolvedPoint).toEqual(points[0]);
-    });
-
-    it("should select the correct intermediate when a non first square is clicked immediately", async () => {
+    it("should select the correct intermediate when a square is clicked", async () => {
         const user = userEvent.setup();
         const points = [
             logicalPoint({ x: 1, y: 1 }),
@@ -109,5 +85,27 @@ describe("IntermediateSquarePrompt", () => {
         await user.click(squares[1]);
 
         expect(resolvedPoint).toEqual(points[1]);
+    });
+
+    it("should require pointerdown on the square before resolving", () => {
+        const points = [logicalPoint({ x: 7, y: 7 })];
+
+        let resolvedPoint: LogicalPoint | null = null;
+        store.setState({
+            nextIntermediates: points,
+            resolveNextIntermediate: (point) => (resolvedPoint = point),
+        });
+
+        renderComponent();
+
+        const square = screen.getByTestId("intermediateSquare");
+
+        fireEvent.pointerUp(square);
+        expect(resolvedPoint).toBeNull();
+
+        fireEvent.pointerDown(square);
+        fireEvent.pointerUp(square);
+
+        expect(resolvedPoint).toEqual(points[0]);
     });
 });
