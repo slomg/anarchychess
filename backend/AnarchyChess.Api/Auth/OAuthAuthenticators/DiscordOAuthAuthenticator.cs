@@ -19,7 +19,7 @@ public class DiscordOAuthAuthenticator(ILogger<DiscordOAuthAuthenticator> logger
         var discordUserId = claimsPrincipal.GetClaim(ClaimTypes.NameIdentifier);
         if (discordUserId is null)
         {
-            _logger.LogWarning("Could not get email claim from discord claims principal");
+            _logger.LogWarning("Could not get user id claim from discord claims principal");
             return AuthErrors.OAuthInvalid;
         }
 
