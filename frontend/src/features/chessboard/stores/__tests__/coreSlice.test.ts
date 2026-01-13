@@ -12,6 +12,8 @@ import {
 
 import { PositionId } from "../../lib/position";
 import { GameColor } from "@/lib/apiClient";
+import PositionHistory from "../../lib/positionHistory";
+import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
 
 describe("CoreSlice", () => {
     let store: StoreApi<ChessboardStore>;
@@ -22,8 +24,10 @@ describe("CoreSlice", () => {
     });
 
     describe("resetState", () => {
-        it("should reset the state to props", () => {
-            const newChessboardState: ChessboardProps = {
+        let newChessboardState: ChessboardProps;
+
+        beforeEach(() => {
+            newChessboardState = {
                 viewingFrom: GameColor.BLACK,
                 boardDimensions: {
                     width: 6,
@@ -39,7 +43,9 @@ describe("CoreSlice", () => {
                 disableDrag: true,
                 muteAudio: true,
             };
+        });
 
+        it("should reset the state to props", () => {
             store.getState().resetState(newChessboardState);
 
             const state = store.getState();
@@ -47,6 +53,44 @@ describe("CoreSlice", () => {
                 ...store.getInitialState(),
                 ...newChessboardState,
             });
+        });
+
+        it("should animate pieces from the old position if viewingPosition exists", () => {
+            const updatePiecesFromPositionMock = vi.fn();
+            store.setState({
+                updatePiecesFromPosition: updatePiecesFromPositionMock,
+            });
+
+            newChessboardState.positionHistory = new PositionHistory(
+                createFakeBoardPieces(),
+            );
+            const latestPosition =
+                newChessboardState.positionHistory.addNextPosition(
+                    createFakePositionProps({
+                        pieces: newChessboardState.pieces,
+                    }),
+                );
+
+            store.getState().resetState(newChessboardState);
+
+            expect(updatePiecesFromPositionMock).toHaveBeenCalledWith(
+                latestPosition,
+            );
+        });
+
+        it("should not call updatePiecesFromPosition if viewingPosition is undefined", () => {
+            const updatePiecesFromPositionMock = vi.fn();
+            store.setState({
+                updatePiecesFromPosition: updatePiecesFromPositionMock,
+            });
+
+            newChessboardState.positionHistory = new PositionHistory(
+                newChessboardState.pieces,
+            );
+
+            store.getState().resetState(newChessboardState);
+
+            expect(updatePiecesFromPositionMock).not.toHaveBeenCalled();
         });
     });
 });
