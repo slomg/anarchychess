@@ -210,7 +210,7 @@ void ConfigureJwtBearerCookie(JwtBearerOptions options, string cookieName)
         ),
         ValidIssuer = appSettings.Auth.Jwt.Issuer,
         ValidAudience = appSettings.Auth.Jwt.Audience,
-        ClockSkew = TimeSpan.Zero,
+        ClockSkew = TimeSpan.FromSeconds(30),
     };
 
     options.Events = new()
