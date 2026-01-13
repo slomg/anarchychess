@@ -1,5 +1,7 @@
+import { LogicalPoint } from "@/features/point/types";
 import { useChessboardStore } from "../hooks/useChessboard";
 import ChessSquare from "./ChessSquare";
+import { useRef } from "react";
 
 const IntermediateSquarePrompt = () => {
     const { nextIntermediates, resolveNextIntermediate } = useChessboardStore(
@@ -14,27 +16,53 @@ const IntermediateSquarePrompt = () => {
         <div
             data-testid="intermediateSquarePromptOverlay"
             className="absolute inset-0 z-50 flex cursor-auto bg-black/50"
-            onMouseDown={(e) => {
+            onPointerDown={(e) => {
                 resolveNextIntermediate?.(null);
                 e.stopPropagation();
             }}
         >
             {nextIntermediates.map((point, i) => (
-                <ChessSquare
-                    data-testid="intermediateSquare"
-                    position={point}
+                <IntermediateSquare
+                    point={point}
+                    ignoreFirstTap={i === 0}
                     key={i}
-                    onMouseDown={(e) => e.stopPropagation()}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        resolveNextIntermediate?.(point);
-                    }}
-                    className="border-accent z-30 animate-[fadeIn_0.15s_ease-out] cursor-pointer rounded-sm
-                        border-4 bg-[length:100%_100%] bg-center bg-no-repeat transition-colors
-                        duration-100 ease-out hover:bg-[rgba(255,215,0,0.2)]"
                 />
             ))}
         </div>
     );
 };
 export default IntermediateSquarePrompt;
+
+const IntermediateSquare = ({
+    point,
+    ignoreFirstTap,
+}: {
+    point: LogicalPoint;
+    ignoreFirstTap: boolean;
+}) => {
+    const resolveNextIntermediate = useChessboardStore(
+        (x) => x.resolveNextIntermediate,
+    );
+    const hasIgnoredInitialTap = useRef(false);
+
+    return (
+        <ChessSquare
+            data-testid="intermediateSquare"
+            position={point}
+            onPointerDown={(e) => e.stopPropagation()}
+            onPointerUp={(e) => {
+                if (ignoreFirstTap && !hasIgnoredInitialTap.current) {
+                    hasIgnoredInitialTap.current = true;
+                    return;
+                }
+
+                e.stopPropagation();
+                resolveNextIntermediate?.(point);
+            }}
+            className="border-accent z-30 animate-[fadeIn_0.15s_ease-out]
+                cursor-pointer rounded-sm border-4 bg-[length:100%_100%]
+                bg-center bg-no-repeat transition-colors duration-100 ease-out
+                hover:bg-[rgba(255,215,0,0.2)]"
+        />
+    );
+};

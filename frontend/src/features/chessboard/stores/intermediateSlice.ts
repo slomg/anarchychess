@@ -94,8 +94,9 @@ function filterMovesByVisited(
         if (
             (move.intermediates.length === 0 && pointEquals(move.to, dest)) ||
             move.triggers.some((p) => pointEquals(p, dest))
-        )
+        ) {
             return true;
+        }
         return pointArrayStartsWith(
             [...move.intermediates.map((x) => x.position), move.to],
             visited,
