@@ -239,9 +239,16 @@ public class MatchmakingGrain<TPool> : Grain, IMatchmakingGrain<TPool>
             var seeker1Reserved = await seeker1Observer.TryReserveSeekAsync(_poolKey);
             var seeker2Reserved = await seeker2Observer.TryReserveSeekAsync(_poolKey);
             if (!seeker1Reserved || !seeker2Reserved)
+            {
+                _logger.LogInformation(
+                    "Either {Seeker1} or {Seeker2} is reserved, not starting",
+                    seeker1,
+                    seeker2
+                );
                 return false;
+            }
 
-            var gameToken = await gameStarter.StartGameWithRandomColorsAsync(
+            await gameStarter.StartGameWithRandomColorsAsync(
                 seeker1.UserId,
                 seeker2.UserId,
                 _poolKey,
