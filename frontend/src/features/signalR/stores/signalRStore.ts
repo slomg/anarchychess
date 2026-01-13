@@ -98,6 +98,12 @@ function createHubConnection(url: string): HubConnection {
         });
     });
 
+    hubConnection.onreconnecting(() => {
+        updateHub(url, (hub) => {
+            hub.state = HubConnectionState.Reconnecting;
+        });
+    });
+
     hubConnection.onreconnected(() => {
         updateHub(url, (hub) => {
             hub.state = HubConnectionState.Connected;

@@ -112,6 +112,21 @@ describe("signalRStore", () => {
             expect(hub?.state).toBe(HubConnectionState.Disconnected);
         });
 
+        it("should update state to Reconnecting on onreconnecting", async () => {
+            const { mockConnection, handlers } = mockHubConnection(
+                HubConnectionState.Connected,
+            );
+            mockHubBuilder(mockConnection);
+
+            const { joinHub } = renderSignalRStore();
+            act(() => joinHub(url));
+            await flushMicrotasks();
+
+            act(() => handlers.onReconnectingHandler?.());
+            const hub = useSignalRStore.getState().hubs.get(url);
+            expect(hub?.state).toBe(HubConnectionState.Reconnecting);
+        });
+
         it("should update state to Connected on onreconnected", async () => {
             const { mockConnection, handlers } = mockHubConnection(
                 HubConnectionState.Disconnected,

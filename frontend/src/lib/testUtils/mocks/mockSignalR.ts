@@ -31,6 +31,7 @@ export function mockHubConnection(
     const handlers = {
         onCloseHandler: undefined as (() => void) | undefined,
         onReconnectedHandler: undefined as (() => void) | undefined,
+        onReconnectingHandler: undefined as (() => void) | undefined,
     };
 
     const mockConnection = mock<HubConnection>({
@@ -42,6 +43,9 @@ export function mockHubConnection(
         }),
         onreconnected: vi.fn((cb: () => void) => {
             handlers.onReconnectedHandler = cb;
+        }),
+        onreconnecting: vi.fn((cb: () => void) => {
+            handlers.onReconnectingHandler = cb;
         }),
     });
 
