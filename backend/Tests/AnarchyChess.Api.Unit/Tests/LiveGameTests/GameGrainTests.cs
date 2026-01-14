@@ -186,6 +186,12 @@ public class GameGrainTests : BaseGrainTest
         Silo.TimerRegistry.Mock.Reset();
 
         await Silo.DeactivateAsync(grain, cancellationToken: CT);
+
+        int timeLeft = 5000;
+        _clockMock
+            .CalculateTimeLeftMs(GameColor.White, _state.CurrentGame!.ClockState, isTicking: true)
+            .Returns(timeLeft);
+
         await grain.OnActivateAsync(CT);
 
         var context = Silo.GetContextFromGrain(grain);
@@ -194,7 +200,11 @@ public class GameGrainTests : BaseGrainTest
                 context,
                 It.IsAny<Func<It.IsAnyType, CancellationToken, Task>>(),
                 It.IsAny<It.IsAnyType>(),
-                new() { DueTime = TimeSpan.Zero, Period = TimeSpan.FromSeconds(1) }
+                new()
+                {
+                    DueTime = TimeSpan.FromMilliseconds(timeLeft),
+                    Period = Timeout.InfiniteTimeSpan,
+                }
             )
         );
     }

@@ -259,18 +259,16 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             return makeMoveResult.Errors;
         var moveResult = makeMoveResult.Value;
 
-        var timeLeft = _clock.CommitTurn(currentPlayer.Color, game.ClockState);
-        var nextPlayer = game.Players.GetPlayerByColor(_core.SideToMove(game.Core));
+        await HandleDrawForMoveAsync(moveBy: currentPlayer.Color, game);
+        await HandleClockForMoveAsync(game, token);
         var legalMoves = _core.GetLegalMoves(game.Core);
-
-        MoveSnapshot moveSnapshot = new(
-            Path: moveResult.MovePath,
-            Fen: moveResult.Fen.FullFen,
-            NextSideToMove: nextPlayer.Color,
-            San: moveResult.San,
-            timeLeft
+        var nextPlayer = game.Players.GetPlayerByColor(_core.SideToMove(game.Core));
+        var moveSnapshot = BuildAndStoreMove(
+            movedBy: currentPlayer.Color,
+            nextPlayer: nextPlayer.Color,
+            moveResult,
+            game
         );
-        game.MoveSnapshots.Add(moveSnapshot);
 
         if (moveResult.EndStatus is not null)
         {
@@ -289,9 +287,6 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             ),
             game.NotifierState
         );
-
-        await HandleDrawForMoveAsync(moveBy: currentPlayer.Color, game);
-        await HandleClockForMoveAsync(game, token);
         await _state.WriteStateAsync(token);
 
         return Result.Success;
@@ -312,16 +307,32 @@ public class GameGrain : Grain, IGameGrain, IRemindable
 
     public override Task OnActivateAsync(CancellationToken cancellationToken)
     {
-        if (TryGetCurrentGame(out var game) && game.Result is null)
+        if (TryGetOngoingGame(out var game))
         {
-            _clockTimer = this.RegisterGrainTimer(
-                callback: OnClockTimerElapsedAsync,
-                dueTime: TimeSpan.Zero,
-                period: TimeSpan.FromSeconds(1)
-            );
+            ScheduleTimeoutTimer(game);
         }
 
         return base.OnActivateAsync(cancellationToken);
+    }
+
+    private MoveSnapshot BuildAndStoreMove(
+        GameColor movedBy,
+        GameColor nextPlayer,
+        MoveResult moveResult,
+        GameData game
+    )
+    {
+        var timeLeft = _clock.CommitTurn(movedBy, game.ClockState);
+
+        MoveSnapshot moveSnapshot = new(
+            Path: moveResult.MovePath,
+            Fen: moveResult.Fen.FullFen,
+            NextSideToMove: nextPlayer,
+            San: moveResult.San,
+            timeLeft
+        );
+        game.MoveSnapshots.Add(moveSnapshot);
+        return moveSnapshot;
     }
 
     private async Task HandleDrawForMoveAsync(GameColor moveBy, GameData game)
