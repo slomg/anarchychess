@@ -7,6 +7,7 @@ using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Infrastructure;
 using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
+using AnarchyChess.Api.TestInfrastructure.NSubtituteExtenstion;
 using AnarchyChess.Api.TestInfrastructure.Utils;
 using AwesomeAssertions;
 using ErrorOr;
@@ -24,16 +25,21 @@ public class GameGrainTests : BaseGrainTest
     private readonly PoolKey _pool = new(PoolType.Rated, new(600, 5));
     private readonly GamePlayer _whitePlayer = new GamePlayerFaker(GameColor.White).Generate();
     private readonly GamePlayer _blackPlayer = new GamePlayerFaker(GameColor.Black).Generate();
+    private readonly FenNotation _initialFenNotation = new FenNotationFaker().Generate();
 
     private readonly GameGrainState _state;
+    private readonly IGameClock _clockMock;
 
     public GameGrainTests()
     {
         var coreMock = Substitute.For<IGameCore>();
-        coreMock.StartGame(Arg.Any<GameCoreState>()).Returns(new FenNotationFaker().Generate());
+        _clockMock = Substitute.For<IGameClock>();
+
+        coreMock.StartGame(Arg.Any<GameCoreState>()).Returns(_initialFenNotation);
 
         Silo.ServiceProvider.AddService(Options.Create(AppSettingsLoader.LoadAppSettings()));
         Silo.ServiceProvider.AddService(coreMock);
+        Silo.ServiceProvider.AddService(_clockMock);
 
         _state = Silo.StorageManager.GetStorage<GameGrainState>(GameGrain.StateName).State;
     }
@@ -52,11 +58,34 @@ public class GameGrainTests : BaseGrainTest
             Streaming.StreamProvider
         );
 
+        GameData expectedGameData = new()
+        {
+            Players = new(_whitePlayer, _blackPlayer),
+            GameSource = GameSource.Rematch,
+            Pool = _pool,
+            InitialFen = _initialFenNotation.FullFen,
+            MoveSnapshots = [],
+            Core = new(),
+            DrawRequest = new(),
+            ClockState = new() { TimeControl = _pool.TimeControl },
+            NotifierState = new(),
+        };
+
+        int timeLeftMs = _pool.TimeControl.BaseSeconds * 1000;
+        _clockMock
+            .CalculateTimeLeftMs(
+                GameColor.White,
+                ArgEx.FluentAssert<GameClockState>(x =>
+                    x.Should().BeEquivalentTo(expectedGameData.ClockState)
+                ),
+                isTicking: true
+            )
+            .Returns(timeLeftMs);
+
         var grain = await Silo.CreateGrainAsync<GameGrain>(TestGameToken);
         Silo.TimerRegistry.NumberOfActiveTimers.Should().Be(0);
-        GameSource gameSource = GameSource.Rematch;
 
-        await StartGameAsync(grain, gameSource);
+        await StartGameAsync(grain, expectedGameData.GameSource);
 
         Silo.TimerRegistry.NumberOfActiveTimers.Should().Be(1);
         var context = Silo.GetContextFromGrain(grain);
@@ -65,15 +94,19 @@ public class GameGrainTests : BaseGrainTest
                 context,
                 It.IsAny<Func<It.IsAnyType, CancellationToken, Task>>(),
                 It.IsAny<It.IsAnyType>(),
-                new() { DueTime = TimeSpan.Zero, Period = TimeSpan.FromSeconds(1) }
+                new()
+                {
+                    DueTime = TimeSpan.FromMilliseconds(timeLeftMs),
+                    Period = Timeout.InfiniteTimeSpan,
+                }
             )
         );
         Silo.ReminderRegistry.Mock.Verify(x =>
             x.RegisterOrUpdateReminder(
                 Silo.GetGrainId(grain),
                 GameGrain.ClockReactivationReminder,
-                TimeSpan.FromMinutes(5),
-                TimeSpan.FromMinutes(5)
+                dueTime: TimeSpan.FromMinutes(5),
+                period: TimeSpan.FromMinutes(5)
             )
         );
 
@@ -84,7 +117,7 @@ public class GameGrainTests : BaseGrainTest
                     _pool,
                     Opponent: new(UserId: _blackPlayer.UserId, UserName: _blackPlayer.UserName)
                 )
-            && x.GameSource == gameSource
+            && x.GameSource == expectedGameData.GameSource
         );
         blackStartedStreamProbe.VerifySend(x =>
             x.Game
@@ -93,8 +126,17 @@ public class GameGrainTests : BaseGrainTest
                     _pool,
                     Opponent: new(UserId: _whitePlayer.UserId, UserName: _whitePlayer.UserName)
                 )
-            && x.GameSource == gameSource
+            && x.GameSource == expectedGameData.GameSource
         );
+
+        _clockMock
+            .Received(1)
+            .Reset(
+                ArgEx.FluentAssert<GameClockState>(x =>
+                    x.Should().BeEquivalentTo(expectedGameData.ClockState)
+                )
+            );
+        _state.CurrentGame.Should().BeEquivalentTo(expectedGameData);
     }
 
     [Fact]
