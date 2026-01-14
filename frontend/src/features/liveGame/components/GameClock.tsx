@@ -24,13 +24,17 @@ const GameClock = ({ color }: { color: GameColor }) => {
     });
 
     useEffect(() => {
+        updateTimeLeft();
         if (!isTicking) return;
 
-        const interval = setInterval(updateTimeLeft, 100);
+        const interval = setInterval(
+            updateTimeLeft,
+            isInTimeTrouble ? 100 : 1000,
+        );
         return () => {
             clearInterval(interval);
         };
-    }, [isTicking]);
+    }, [isTicking, isInTimeTrouble]);
 
     useEffect(() => {
         if (
