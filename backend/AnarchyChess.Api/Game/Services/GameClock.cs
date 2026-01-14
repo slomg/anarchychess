@@ -37,10 +37,11 @@ public class GameClock(TimeProvider timeProvider) : IGameClock
 
     public ClockSnapshot ToSnapshot(GameClockState state) =>
         new(
-            state.ClocksMs[GameColor.White],
-            state.ClocksMs[GameColor.Black],
-            state.LastUpdatedMs,
-            state.IsFrozen
+            WhiteClock: state.ClocksMs[GameColor.White],
+            BlackClock: state.ClocksMs[GameColor.Black],
+            LastUpdated: state.LastUpdatedMs,
+            ServerTime: _timeProvider.GetUtcNow().ToUnixTimeMilliseconds(),
+            IsFrozen: state.IsFrozen
         );
 
     public void Reset(GameClockState state)

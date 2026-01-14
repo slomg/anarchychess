@@ -67,6 +67,7 @@ public class GameNotifierTests
                 WhiteClock: 10,
                 BlackClock: 20,
                 LastUpdated: 1000,
+                ServerTime: 2000,
                 IsFrozen: false
             ),
             SideToMoveUserId: _userId,
@@ -116,6 +117,7 @@ public class GameNotifierTests
             WhiteClock: 10,
             BlackClock: 20,
             LastUpdated: 1000,
+            ServerTime: 2000,
             IsFrozen: true
         );
 

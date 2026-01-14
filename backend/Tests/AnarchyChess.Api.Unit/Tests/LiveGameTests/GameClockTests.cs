@@ -111,12 +111,22 @@ public class GameClockTests
         _state.LastUpdatedMs = 1234567890;
         _state.IsFrozen = true;
 
+        var now = DateTimeOffset.UtcNow;
+        _timeProviderMock.GetUtcNow().Returns(now);
+
         var snapshot = _clock.ToSnapshot(_state);
 
-        snapshot.WhiteClock.Should().Be(50_000);
-        snapshot.BlackClock.Should().Be(60_000);
-        snapshot.LastUpdated.Should().Be(1234567890);
-        snapshot.IsFrozen.Should().BeTrue();
+        snapshot
+            .Should()
+            .BeEquivalentTo(
+                new ClockSnapshot(
+                    WhiteClock: 50_000,
+                    BlackClock: 60_000,
+                    LastUpdated: 1234567890,
+                    ServerTime: now.ToUnixTimeMilliseconds(),
+                    IsFrozen: true
+                )
+            );
     }
 
     [Fact]

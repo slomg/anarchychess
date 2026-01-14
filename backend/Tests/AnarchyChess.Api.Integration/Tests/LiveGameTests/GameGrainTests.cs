@@ -124,6 +124,7 @@ public class GameGrainTests : BaseOrleansIntegrationTest
             WhiteClock: _pool.TimeControl.BaseSeconds * 1000,
             BlackClock: _pool.TimeControl.BaseSeconds * 1000,
             LastUpdated: _fakeNow.ToUnixTimeMilliseconds(),
+            ServerTime: _fakeNow.ToUnixTimeMilliseconds(),
             IsFrozen: false
         );
         var legalMoves = _gameCore.GetLegalMoves(_state.CurrentGame!.Core);
@@ -230,6 +231,7 @@ public class GameGrainTests : BaseOrleansIntegrationTest
             WhiteClock: expectedTimeLeft,
             BlackClock: _pool.TimeControl.BaseSeconds * 1000,
             LastUpdated: in2Seconds.ToUnixTimeMilliseconds(),
+            ServerTime: in2Seconds.ToUnixTimeMilliseconds(),
             IsFrozen: false
         );
         await _gameNotifierMock

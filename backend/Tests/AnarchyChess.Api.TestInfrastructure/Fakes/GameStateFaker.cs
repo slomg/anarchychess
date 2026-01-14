@@ -30,6 +30,7 @@ public class GameStateFaker : RecordFaker<GameState>
                 WhiteClock: f.Random.Double(1000, 100000),
                 BlackClock: f.Random.Double(1000, 100000),
                 LastUpdated: f.Random.Double(1000000, 10000000),
+                ServerTime: f.Random.Double(1000000, 10000000),
                 IsFrozen: false
             )
         );

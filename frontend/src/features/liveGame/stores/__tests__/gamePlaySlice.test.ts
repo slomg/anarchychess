@@ -6,7 +6,7 @@ import createLiveChessStore, {
 } from "../liveChessStore";
 
 import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
-import { createFakeClock } from "@/lib/testUtils/fakers/clockFaker";
+import { createFakeClocks } from "@/lib/testUtils/fakers/clocksFaker";
 import { Clocks, GameColor } from "@/lib/apiClient";
 import { createFakeGameResultData } from "@/lib/testUtils/fakers/gameResultDataFaker";
 
@@ -17,6 +17,23 @@ describe("gamePlaySlice", () => {
     beforeEach(() => {
         initialProps = createFakeLiveChessStoreProps();
         store = createLiveChessStore(initialProps);
+    });
+
+    describe("initState", () => {
+        it("should set serverClockAheadByMs based on server time - current time", () => {
+            const fakeServerTime = 100;
+            const fakeNow = 95;
+            vi.setSystemTime(fakeNow);
+
+            const store = createLiveChessStore(
+                createFakeLiveChessStoreProps({
+                    clocks: createFakeClocks({ serverTime: fakeServerTime }),
+                }),
+            );
+
+            const expectedDrift = fakeServerTime - fakeNow;
+            expect(store.getState().serverClockAheadByMs).toBe(expectedDrift);
+        });
     });
 
     describe("isInteractionAllowed", () => {
@@ -93,22 +110,12 @@ describe("gamePlaySlice", () => {
 
     describe("receiveLiveMove", () => {
         it("should update clocks, sideToMove, and clear isPendingMoveAck", () => {
-            const newClocks: Clocks = {
-                whiteClock: 500,
-                blackClock: 600,
-                lastUpdated: Date.now().valueOf(),
-                isFrozen: true,
-            };
+            const newClocks: Clocks = createFakeClocks({ whiteClock: 2 });
             const newSideToMove = GameColor.BLACK;
 
             store.setState({
                 isPendingMoveAck: true,
-                clocks: {
-                    whiteClock: 100,
-                    blackClock: 200,
-                    lastUpdated: Date.now().valueOf(),
-                    isFrozen: false,
-                },
+                clocks: createFakeClocks({ whiteClock: 1 }),
                 sideToMove: GameColor.WHITE,
             });
 
@@ -128,9 +135,26 @@ describe("gamePlaySlice", () => {
 
             store
                 .getState()
-                .receiveLiveMove(createFakeClock(), GameColor.WHITE);
+                .receiveLiveMove(createFakeClocks(), GameColor.WHITE);
 
             expect(decrementDrawCooldownMock).toHaveBeenCalledOnce();
+        });
+
+        it("should update serverClockAheadByMs based on the new server time", () => {
+            const fakeNow = 1000;
+            vi.setSystemTime(fakeNow);
+
+            store.setState({ serverClockAheadByMs: 0 });
+
+            const newServerTime = fakeNow + 2000;
+            const newClocks = createFakeClocks({
+                serverTime: newServerTime,
+            });
+
+            store.getState().receiveLiveMove(newClocks, GameColor.BLACK);
+
+            const state = store.getState();
+            expect(state.serverClockAheadByMs).toBe(newServerTime - fakeNow);
         });
     });
 
@@ -147,20 +171,10 @@ describe("gamePlaySlice", () => {
 
     describe("setClocks", () => {
         it("should update clocks", () => {
-            const oldClocks: Clocks = {
-                whiteClock: 10,
-                blackClock: 20,
-                lastUpdated: 1000,
-                isFrozen: false,
-            };
+            const oldClocks = createFakeClocks({ whiteClock: 1 });
             store.setState({ clocks: oldClocks });
 
-            const newClocks: Clocks = {
-                whiteClock: 1,
-                blackClock: 2,
-                lastUpdated: 500,
-                isFrozen: true,
-            };
+            const newClocks = createFakeClocks({ whiteClock: 2 });
             store.getState().setClocks(newClocks);
 
             expect(store.getState().clocks).toEqual(newClocks);

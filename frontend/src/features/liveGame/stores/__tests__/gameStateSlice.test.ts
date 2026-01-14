@@ -8,7 +8,7 @@ import createLiveChessStore, {
 import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
 import { DrawState, GameResult, GameResultData } from "@/lib/apiClient";
 import { createFakeDrawState } from "@/lib/testUtils/fakers/drawStateFaker";
-import { createFakeClock } from "@/lib/testUtils/fakers/clockFaker";
+import { createFakeClocks } from "@/lib/testUtils/fakers/clocksFaker";
 
 describe("GameStateSlice", () => {
     let store: StoreApi<LiveChessStore>;
@@ -76,7 +76,7 @@ describe("GameStateSlice", () => {
                 whiteRatingChange: -10,
                 blackRatingChange: 10,
             };
-            const finalClocks = createFakeClock({ isFrozen: true });
+            const finalClocks = createFakeClocks({ isFrozen: true });
             store.getState().endGame(resultData, finalClocks);
             const state = store.getState();
 

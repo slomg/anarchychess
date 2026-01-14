@@ -310,6 +310,7 @@ export type Clocks = {
     blackClock: number;
     lastUpdated: number;
     isFrozen: boolean;
+    serverTime: number;
 };
 
 export type MoveSnapshot = {

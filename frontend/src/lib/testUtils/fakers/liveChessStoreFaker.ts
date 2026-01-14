@@ -3,7 +3,7 @@ import { faker } from "@faker-js/faker";
 import { LiveChessStoreProps } from "@/features/liveGame/stores/liveChessStore";
 import { GameColor, GamePlayer, PoolType, TimeControl } from "@/lib/apiClient";
 import { createFakePlayer } from "./playerFaker";
-import { createFakeClock } from "./clockFaker";
+import { createFakeClocks } from "./clocksFaker";
 import constants from "@/lib/constants";
 
 export function createFakeLiveChessStoreProps(
@@ -39,7 +39,7 @@ export function createFakeLiveChessStoreProps(
             },
         },
 
-        clocks: createFakeClock(),
+        clocks: createFakeClocks(),
         drawState: {
             activeRequester: null,
             whiteCooldown: 0,

@@ -31,7 +31,7 @@ import { createNFakePositionHistory } from "@/lib/testUtils/fakers/positionHisto
 import { createFakeGameResultData } from "@/lib/testUtils/fakers/gameResultDataFaker";
 import { createFakeMoveSnapshot } from "@/lib/testUtils/fakers/moveSnapshotFaker";
 import { EventHandlers } from "@/features/signalR/hooks/useSignalREvent";
-import { createFakeClock } from "@/lib/testUtils/fakers/clockFaker";
+import { createFakeClocks } from "@/lib/testUtils/fakers/clocksFaker";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
 import { GameClientEvents, useGameEvent } from "../useGameHub";
 import { refetchGame } from "../../lib/gameStateProcessor";
@@ -91,7 +91,7 @@ describe("useLiveChessEvents", () => {
             path: { fromIdx: 11, toIdx: 12, moveKey: "0" },
             nextSideToMove: sideToMove,
         });
-        clocks ??= createFakeClock();
+        clocks ??= createFakeClocks();
         plyNumber ??=
             chessboardStore.getState().positionHistory.mainPlyCount + 1;
 
@@ -259,7 +259,7 @@ describe("useLiveChessEvents", () => {
                     chessboardStore.getState().positionHistory.mainPlyCount + 1,
                     encodedMoves,
                     hasForcedMoves,
-                    createFakeClock(),
+                    createFakeClocks(),
                 );
             });
 
@@ -316,7 +316,7 @@ describe("useLiveChessEvents", () => {
             renderLiveChessEvents();
 
             const gameResult = createFakeGameResultData();
-            const finalClocks = createFakeClock({ isFrozen: true });
+            const finalClocks = createFakeClocks({ isFrozen: true });
 
             await act(async () => {
                 gameEventHandlers.GameEndedAsync?.(gameResult, finalClocks);

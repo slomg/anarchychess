@@ -2,7 +2,7 @@ import type { ChessboardProps, ChessboardStore } from "./chessboardStore";
 import { StateCreator } from "zustand";
 
 export interface CoreSlice {
-    resetState(initState: ChessboardProps): void;
+    resetState(initState: ChessboardProps): Promise<void>;
 }
 
 export const createCoreSlice: StateCreator<
@@ -11,17 +11,17 @@ export const createCoreSlice: StateCreator<
     [],
     CoreSlice
 > = (set, get, store) => ({
-    resetState(initState) {
+    async resetState(initState) {
         const { pieces: oldPieces, updatePiecesFromPosition } = get();
         const latestPosition = initState.positionHistory?.viewingPosition;
 
         set(() => ({
             ...store.getInitialState(),
             ...initState,
-            oldPieces,
+            pieces: latestPosition ? oldPieces : initState.pieces,
         }));
         if (latestPosition) {
-            updatePiecesFromPosition(latestPosition);
+            await updatePiecesFromPosition(latestPosition);
         }
     },
 });

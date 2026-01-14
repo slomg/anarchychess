@@ -17,6 +17,7 @@ export interface GamePlaySliceProps {
 
 export interface GamePlaySlice extends GamePlaySliceProps {
     isPendingMoveAck: boolean;
+    serverClockAheadByMs: number;
 
     isInteractionAllowed(): boolean;
     receiveLiveMove(clocks: Clocks, sideToMove: GameColor): void;
@@ -37,6 +38,8 @@ export function createGamePlaySlice(
         ...initState,
 
         isPendingMoveAck: false,
+        serverClockAheadByMs:
+            initState.clocks.serverTime - new Date().valueOf(),
 
         isInteractionAllowed() {
             const { resultData, viewer, sideToMove } = get();
@@ -51,7 +54,10 @@ export function createGamePlaySlice(
             const { decrementDrawCooldown } = get();
 
             decrementDrawCooldown();
+            const serverClockAheadByMs =
+                clocks.serverTime - new Date().valueOf();
             set((state) => {
+                state.serverClockAheadByMs = serverClockAheadByMs;
                 state.clocks = clocks;
                 state.sideToMove = sideToMove;
                 state.isPendingMoveAck = false;

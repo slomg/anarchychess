@@ -45,8 +45,8 @@ describe("CoreSlice", () => {
             };
         });
 
-        it("should reset the state to props", () => {
-            store.getState().resetState(newChessboardState);
+        it("should reset the state to props", async () => {
+            await store.getState().resetState(newChessboardState);
 
             const state = store.getState();
             expect(state).toEqual({
@@ -55,7 +55,7 @@ describe("CoreSlice", () => {
             });
         });
 
-        it("should animate pieces from the old position if viewingPosition exists", () => {
+        it("should animate pieces from the old position if viewingPosition exists", async () => {
             const updatePiecesFromPositionMock = vi.fn();
             store.setState({
                 updatePiecesFromPosition: updatePiecesFromPositionMock,
@@ -71,14 +71,14 @@ describe("CoreSlice", () => {
                     }),
                 );
 
-            store.getState().resetState(newChessboardState);
+            await store.getState().resetState(newChessboardState);
 
             expect(updatePiecesFromPositionMock).toHaveBeenCalledWith(
                 latestPosition,
             );
         });
 
-        it("should not call updatePiecesFromPosition if viewingPosition is undefined", () => {
+        it("should not call updatePiecesFromPosition if viewingPosition is undefined", async () => {
             const updatePiecesFromPositionMock = vi.fn();
             store.setState({
                 updatePiecesFromPosition: updatePiecesFromPositionMock,
@@ -88,7 +88,7 @@ describe("CoreSlice", () => {
                 newChessboardState.pieces,
             );
 
-            store.getState().resetState(newChessboardState);
+            await store.getState().resetState(newChessboardState);
 
             expect(updatePiecesFromPositionMock).not.toHaveBeenCalled();
         });

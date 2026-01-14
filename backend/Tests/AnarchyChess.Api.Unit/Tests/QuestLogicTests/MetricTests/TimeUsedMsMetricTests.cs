@@ -83,6 +83,7 @@ public class TimeUsedMsMetricTests
             WhiteClock: whiteClock,
             BlackClock: blackClock,
             LastUpdated: 0,
+            ServerTime: 0,
             IsFrozen: true
         );
         var poolKey = new PoolKeyFaker().RuleFor(x => x.TimeControl, timeControl);

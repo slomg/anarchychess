@@ -8,6 +8,7 @@ import { act, render, screen } from "@testing-library/react";
 import LiveChessStoreContext from "@/features/liveGame/contexts/liveChessContext";
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
 import GameClock from "../GameClock";
+import { createFakeClocks } from "@/lib/testUtils/fakers/clocksFaker";
 
 vi.mock("@/features/audio/audioPlayer");
 
@@ -19,12 +20,10 @@ describe("GameClock", () => {
         vi.setSystemTime(1000);
         store = createLiveChessStore(
             createFakeLiveChessStoreProps({
-                clocks: {
+                clocks: createFakeClocks({
                     whiteClock: 300_000,
                     blackClock: 300_000,
-                    lastUpdated: Date.now().valueOf(),
-                    isFrozen: false,
-                },
+                }),
                 sideToMove: GameColor.WHITE,
             }),
         );
@@ -69,13 +68,11 @@ describe("GameClock", () => {
 
     it("should freeze clock when isFrozen is true", () => {
         store.setState({
-            clocks: {
+            clocks: createFakeClocks({
                 whiteClock: 300_000,
                 blackClock: 300_000,
-                lastUpdated: Date.now(),
                 isFrozen: true,
-            },
-            sideToMove: GameColor.WHITE,
+            }),
         });
 
         render(
@@ -94,13 +91,10 @@ describe("GameClock", () => {
 
     it("should show decimal seconds and animate under 20s", () => {
         store.setState({
-            clocks: {
+            clocks: createFakeClocks({
                 whiteClock: 15_000,
                 blackClock: 300_000,
-                lastUpdated: Date.now().valueOf(),
-                isFrozen: false,
-            },
-            sideToMove: GameColor.WHITE,
+            }),
         });
 
         render(
@@ -119,13 +113,11 @@ describe("GameClock", () => {
 
     it("should apply 'text-red-600' class when clock is zero and frozen", () => {
         store.setState({
-            clocks: {
+            clocks: createFakeClocks({
                 whiteClock: 0,
                 blackClock: 300_000,
-                lastUpdated: Date.now(),
                 isFrozen: true,
-            },
-            sideToMove: GameColor.WHITE,
+            }),
         });
 
         render(
@@ -145,13 +137,10 @@ describe("GameClock", () => {
 
     it("should show zero and doesn't go negative", () => {
         store.setState({
-            clocks: {
+            clocks: createFakeClocks({
                 whiteClock: 5000,
                 blackClock: 300_000,
-                lastUpdated: Date.now().valueOf(),
-                isFrozen: false,
-            },
-            sideToMove: GameColor.WHITE,
+            }),
         });
 
         render(
@@ -168,14 +157,11 @@ describe("GameClock", () => {
 
     it("should stop ticking when isFrozen is true", () => {
         store.setState({
-            clocks: {
+            clocks: createFakeClocks({
                 whiteClock: 1000,
                 blackClock: 1000,
-                lastUpdated: Date.now().valueOf(),
-
                 isFrozen: true,
-            },
-            sideToMove: GameColor.WHITE,
+            }),
         });
 
         render(
@@ -192,13 +178,10 @@ describe("GameClock", () => {
 
     it("should apply increment to the clock when turn changes", () => {
         store.setState({
-            clocks: {
+            clocks: createFakeClocks({
                 whiteClock: 300_000,
                 blackClock: 300_000,
-                lastUpdated: Date.now().valueOf(),
-                isFrozen: false,
-            },
-            sideToMove: GameColor.WHITE,
+            }),
         });
 
         render(
@@ -229,12 +212,10 @@ describe("GameClock", () => {
 
     it("should play warning sound once when time goes under 20s", () => {
         store.setState({
-            clocks: {
+            clocks: createFakeClocks({
                 whiteClock: 21_000,
                 blackClock: 300_000,
-                lastUpdated: Date.now(),
-                isFrozen: false,
-            },
+            }),
             sideToMove: GameColor.WHITE,
             viewer: { playerColor: GameColor.WHITE, userId: "id" },
         });
@@ -258,12 +239,10 @@ describe("GameClock", () => {
 
     it("should not play sound if viewer is not the player", () => {
         store.setState({
-            clocks: {
+            clocks: createFakeClocks({
                 whiteClock: 15_000,
                 blackClock: 300_000,
-                lastUpdated: Date.now(),
-                isFrozen: false,
-            },
+            }),
             sideToMove: GameColor.WHITE,
             viewer: { playerColor: GameColor.BLACK, userId: "id" }, // not same color
         });
@@ -279,12 +258,11 @@ describe("GameClock", () => {
 
     it("should not play sound when clock is frozen", () => {
         store.setState({
-            clocks: {
+            clocks: createFakeClocks({
                 whiteClock: 15_000,
                 blackClock: 300_000,
-                lastUpdated: Date.now(),
                 isFrozen: true,
-            },
+            }),
             sideToMove: GameColor.WHITE,
             viewer: { playerColor: GameColor.WHITE, userId: "id" },
         });
@@ -296,5 +274,72 @@ describe("GameClock", () => {
         );
 
         expect(AudioPlayer.playAudio).not.toHaveBeenCalled();
+    });
+
+    it("should account for server clock ahead ", () => {
+        store.setState({
+            clocks: createFakeClocks({
+                whiteClock: 60_000,
+                blackClock: 60_000,
+            }),
+            serverClockAheadByMs: 5_000,
+        });
+
+        render(
+            <LiveChessStoreContext.Provider value={store}>
+                <GameClock color={GameColor.WHITE} />
+            </LiveChessStoreContext.Provider>,
+        );
+
+        act(() => {
+            vi.advanceTimersByTime(1_000);
+        });
+
+        // elapsed = 1s local + 5s drift = 6s
+        // time left = 60 - 6 = 54s
+        expect(screen.getByText("00:54")).toBeInTheDocument();
+    });
+
+    it("should account for server clock behind", () => {
+        store.setState({
+            clocks: createFakeClocks({
+                whiteClock: 60_000,
+                blackClock: 60_000,
+            }),
+            serverClockAheadByMs: -3_000,
+            sideToMove: GameColor.WHITE,
+        });
+
+        render(
+            <LiveChessStoreContext.Provider value={store}>
+                <GameClock color={GameColor.WHITE} />
+            </LiveChessStoreContext.Provider>,
+        );
+
+        act(() => {
+            vi.advanceTimersByTime(2_000);
+        });
+
+        // elapsed = 2s local + (-3s drift) = -1s
+        // time left = 60 - (-1) = 61s
+        expect(screen.getByText("01:01")).toBeInTheDocument();
+    });
+
+    it("should initialize time accounting for server clock drift", () => {
+        store.setState({
+            clocks: createFakeClocks({
+                whiteClock: 60_000,
+                blackClock: 60_000,
+            }),
+            serverClockAheadByMs: 5_000,
+        });
+
+        render(
+            <LiveChessStoreContext.Provider value={store}>
+                <GameClock color={GameColor.WHITE} />
+            </LiveChessStoreContext.Provider>,
+        );
+
+        expect(screen.getByText("00:55")).toBeInTheDocument();
     });
 });

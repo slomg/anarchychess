@@ -8,7 +8,10 @@ import { GameColor } from "@/lib/apiClient";
 const GameClock = ({ color }: { color: GameColor }) => {
     const clocks = useLiveChessStore((x) => x.clocks);
     const viewer = useLiveChessStore((x) => x.viewer);
-    const sideToMove = useLiveChessStore((x) => x.sideToMove);
+    const { sideToMove, serverClockAheadByMs } = useLiveChessStore((x) => ({
+        sideToMove: x.sideToMove,
+        serverClockAheadByMs: x.serverClockAheadByMs,
+    }));
 
     const playedWarningSoundRef = useRef<boolean>(false);
 
@@ -19,10 +22,25 @@ const GameClock = ({ color }: { color: GameColor }) => {
     const [timeLeft, setTimeLeft] = useState<number>(baseTimeLeft);
     const isInTimeTrouble = timeLeft < 20000;
 
+    function calculateTimePassed(
+        lastUpdated: number,
+        serverClockAheadByMs: number,
+    ) {
+        return new Date().valueOf() + serverClockAheadByMs - lastUpdated;
+    }
+
     const initializeNewTimeLeft = useEffectEvent(
-        (baseTimeLeft: number, lastUpdated: number, isTicking: boolean) => {
+        (
+            baseTimeLeft: number,
+            lastUpdated: number,
+            isTicking: boolean,
+            estimatedClockDrift: number,
+        ) => {
             if (isTicking) {
-                const timePassed = new Date().valueOf() - lastUpdated;
+                const timePassed = calculateTimePassed(
+                    lastUpdated,
+                    estimatedClockDrift,
+                );
                 setTimeLeft(baseTimeLeft - timePassed);
             } else {
                 setTimeLeft(baseTimeLeft);
@@ -30,15 +48,23 @@ const GameClock = ({ color }: { color: GameColor }) => {
         },
     );
     useEffect(() => {
-        initializeNewTimeLeft(baseTimeLeft, clocks.lastUpdated, isTicking);
-    }, [baseTimeLeft, clocks.lastUpdated, isTicking]);
+        initializeNewTimeLeft(
+            baseTimeLeft,
+            clocks.lastUpdated,
+            isTicking,
+            serverClockAheadByMs,
+        );
+    }, [baseTimeLeft, clocks.lastUpdated, isTicking, serverClockAheadByMs]);
 
     useEffect(() => {
         if (!isTicking) return;
 
         const interval = setInterval(
             () => {
-                const timePassed = new Date().valueOf() - clocks.lastUpdated;
+                const timePassed = calculateTimePassed(
+                    clocks.lastUpdated,
+                    serverClockAheadByMs,
+                );
                 setTimeLeft(baseTimeLeft - timePassed);
             },
             isInTimeTrouble ? 100 : 1000,
@@ -46,7 +72,13 @@ const GameClock = ({ color }: { color: GameColor }) => {
         return () => {
             clearInterval(interval);
         };
-    }, [isTicking, isInTimeTrouble, baseTimeLeft, clocks.lastUpdated]);
+    }, [
+        isTicking,
+        isInTimeTrouble,
+        baseTimeLeft,
+        clocks.lastUpdated,
+        serverClockAheadByMs,
+    ]);
 
     useEffect(() => {
         if (
