@@ -87,6 +87,8 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             callback: HandleClockTickAsync,
             dueTime: TimeSpan.Zero,
             period: TimeSpan.FromSeconds(1)
+            dueTime: _clock.CalculateTimeLeftMs(GameColor.White, clockState),
+            period: Timeout.InfiniteTimeSpan
         );
         await this.RegisterOrUpdateReminder(
             ClockReactivationReminder,
@@ -342,12 +344,12 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             return;
 
         var sideToMove = _core.SideToMove(game.Core);
-        var whiteTimeLeft = _clock.CalculateTimeLeft(
+        var whiteTimeLeft = _clock.CalculateTimeLeftMs(
             GameColor.White,
             game.ClockState,
             isActivePlayer: sideToMove == GameColor.White
         );
-        var blackTimeLeft = _clock.CalculateTimeLeft(
+        var blackTimeLeft = _clock.CalculateTimeLeftMs(
             GameColor.Black,
             game.ClockState,
             isActivePlayer: sideToMove == GameColor.Black

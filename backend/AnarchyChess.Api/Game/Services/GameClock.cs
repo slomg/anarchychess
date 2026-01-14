@@ -5,7 +5,7 @@ namespace AnarchyChess.Api.Game.Services;
 
 public interface IGameClock
 {
-    double CalculateTimeLeft(GameColor color, GameClockState state, bool isActivePlayer = true);
+    double CalculateTimeLeftMs(GameColor color, GameClockState state, bool isActivePlayer = true);
     void CommitLastTurn(GameColor color, GameClockState state);
     double CommitTurn(GameColor color, GameClockState state);
     void Reset(GameClockState state);
@@ -17,14 +17,14 @@ public interface IGameClock
 public class GameClockState
 {
     [Id(0)]
-    public Dictionary<GameColor, double> Clocks { get; set; } =
+    public Dictionary<GameColor, double> ClocksMs { get; set; } =
         new() { [GameColor.White] = 0, [GameColor.Black] = 0 };
 
     [Id(1)]
     public required TimeControlSettings TimeControl { get; set; }
 
     [Id(2)]
-    public long LastUpdated { get; set; }
+    public long LastUpdatedMs { get; set; }
 
     [Id(3)]
     public bool IsFrozen { get; set; }
@@ -36,39 +36,40 @@ public class GameClock(TimeProvider timeProvider) : IGameClock
 
     public ClockSnapshot ToSnapshot(GameClockState state) =>
         new(
-            state.Clocks[GameColor.White],
-            state.Clocks[GameColor.Black],
-            state.LastUpdated,
+            state.ClocksMs[GameColor.White],
+            state.ClocksMs[GameColor.Black],
+            state.LastUpdatedMs,
             state.IsFrozen
         );
 
     public void Reset(GameClockState state)
     {
-        state.Clocks[GameColor.White] = state.TimeControl.BaseSeconds * 1000;
-        state.Clocks[GameColor.Black] = state.TimeControl.BaseSeconds * 1000;
-        state.LastUpdated = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
+        state.ClocksMs[GameColor.White] = state.TimeControl.BaseSeconds * 1000;
+        state.ClocksMs[GameColor.Black] = state.TimeControl.BaseSeconds * 1000;
+        state.LastUpdatedMs = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
     }
 
     public double CommitTurn(GameColor color, GameClockState state)
     {
-        var timeLeft = CalculateTimeLeft(color, state) + state.TimeControl.IncrementSeconds * 1000;
-        state.Clocks[color] = timeLeft;
-        state.LastUpdated = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
+        var timeLeft =
+            CalculateTimeLeftMs(color, state) + state.TimeControl.IncrementSeconds * 1000;
+        state.ClocksMs[color] = timeLeft;
+        state.LastUpdatedMs = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
 
         return timeLeft;
     }
 
-    public double CalculateTimeLeft(
+    public double CalculateTimeLeftMs(
         GameColor color,
         GameClockState state,
         bool isActivePlayer = true
     )
     {
         if (state.IsFrozen || !isActivePlayer)
-            return state.Clocks[color];
+            return state.ClocksMs[color];
 
-        var elapsedMs = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds() - state.LastUpdated;
-        return state.Clocks[color] - elapsedMs;
+        var elapsedMs = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds() - state.LastUpdatedMs;
+        return state.ClocksMs[color] - elapsedMs;
     }
 
     public void CommitLastTurn(GameColor color, GameClockState state)
