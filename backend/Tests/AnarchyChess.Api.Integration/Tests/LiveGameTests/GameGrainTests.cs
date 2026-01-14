@@ -381,6 +381,43 @@ public class GameGrainTests : BaseOrleansIntegrationTest
     }
 
     [Fact]
+    public async Task MovePieceAsync_ends_game_if_times_out()
+    {
+        var grain = await CreateGrainAsync();
+        await StartGameAsync(grain, timeControl: new(BaseSeconds: 0, IncrementSeconds: 0));
+
+        await MakeLegalMoveAsync(grain, _whitePlayer);
+
+        _state.CurrentGame!.Result.Should().NotBeNull();
+        await TestGameEndedAsync(grain, _gameResultDescriber.Timeout(GameColor.White));
+    }
+
+    [Fact]
+    public async Task MovePieceAsync_reschedules_timer_if_no_timeout()
+    {
+        var grain = await CreateGrainAsync();
+
+        await StartGameAsync(grain, timeControl: new(BaseSeconds: 10, IncrementSeconds: 0));
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromSeconds(3));
+        Silo.TimerRegistry.Mock.Reset();
+
+        await MakeLegalMoveAsync(grain, _whitePlayer);
+
+        _state.CurrentGame!.Result.Should().BeNull();
+
+        var context = Silo.GetContextFromGrain(grain);
+        Silo.TimerRegistry.NumberOfActiveTimers.Should().Be(1);
+        Silo.TimerRegistry.Mock.Verify(x =>
+            x.RegisterGrainTimer(
+                context,
+                It.IsAny<Func<It.IsAnyType, CancellationToken, Task>>(),
+                It.IsAny<It.IsAnyType>(),
+                new() { DueTime = TimeSpan.FromSeconds(10), Period = Timeout.InfiniteTimeSpan }
+            )
+        );
+    }
+
+    [Fact]
     public async Task RequestGameEndAsync_aborts_the_game_if_not_enough_moves_have_been_made()
     {
         var grain = await CreateGrainAsync();
@@ -410,7 +447,7 @@ public class GameGrainTests : BaseOrleansIntegrationTest
     }
 
     [Fact]
-    public async Task TickClock_ends_the_game_when_time_runs_out()
+    public async Task OnClockTimerElapsedAsync_ends_the_game_when_time_runs_out()
     {
         var grain = await CreateGrainAsync();
         await StartGameAsync(grain, timeControl: new(0, 0));
@@ -421,14 +458,26 @@ public class GameGrainTests : BaseOrleansIntegrationTest
     }
 
     [Fact]
-    public async Task TickClock_doesnt_end_the_game_when_not_necessary()
+    public async Task OnClockTimerElapsedAsync_doesnt_end_the_game_when_not_necessary()
     {
         var grain = await CreateGrainAsync();
         await StartGameAsync(grain, timeControl: new(BaseSeconds: 10, 0));
 
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromSeconds(5));
         await Silo.FireAllTimersAsync();
 
         _state.CurrentGame!.Result.Should().BeNull();
+
+        var context = Silo.GetContextFromGrain(grain);
+        Silo.TimerRegistry.NumberOfActiveTimers.Should().Be(1);
+        Silo.TimerRegistry.Mock.Verify(x =>
+            x.RegisterGrainTimer(
+                context,
+                It.IsAny<Func<It.IsAnyType, CancellationToken, Task>>(),
+                It.IsAny<It.IsAnyType>(),
+                new() { DueTime = TimeSpan.FromSeconds(5), Period = Timeout.InfiniteTimeSpan }
+            )
+        );
     }
 
     private Move GetLegalMoves() =>

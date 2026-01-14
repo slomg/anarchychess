@@ -83,11 +83,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         };
         _clock.Reset(clockState);
 
-        _clockTimer = this.RegisterGrainTimer(
-            callback: HandleClockTickAsync,
-            dueTime: TimeSpan.Zero,
-            period: TimeSpan.FromSeconds(1)
-        );
+        ScheduleTimeoutTimer(_state.State.CurrentGame);
         await this.RegisterOrUpdateReminder(
             ClockReactivationReminder,
             dueTime: TimeSpan.FromMinutes(5),
@@ -263,16 +259,6 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             return makeMoveResult.Errors;
         var moveResult = makeMoveResult.Value;
 
-        game.DrawRequest.DecrementCooldown();
-        if (game.DrawRequest.TryDeclineDraw(currentPlayer.Color, _settings.DrawCooldown))
-        {
-            await _gameNotifier.NotifyDrawStateChangeAsync(
-                _token,
-                game.DrawRequest.GetState(),
-                game.NotifierState
-            );
-        }
-
         var timeLeft = _clock.CommitTurn(currentPlayer.Color, game.ClockState);
         var nextPlayer = game.Players.GetPlayerByColor(_core.SideToMove(game.Core));
         var legalMoves = _core.GetLegalMoves(game.Core);
@@ -304,6 +290,8 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             game.NotifierState
         );
 
+        await HandleDrawForMoveAsync(moveBy: currentPlayer.Color, game);
+        await HandleClockForMoveAsync(game, token);
         await _state.WriteStateAsync(token);
 
         return Result.Success;
@@ -327,7 +315,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         if (TryGetCurrentGame(out var game) && game.Result is null)
         {
             _clockTimer = this.RegisterGrainTimer(
-                callback: HandleClockTickAsync,
+                callback: OnClockTimerElapsedAsync,
                 dueTime: TimeSpan.Zero,
                 period: TimeSpan.FromSeconds(1)
             );
@@ -336,39 +324,61 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         return base.OnActivateAsync(cancellationToken);
     }
 
-    private async Task HandleClockTickAsync(CancellationToken token = default)
+    private async Task HandleDrawForMoveAsync(GameColor moveBy, GameData game)
+    {
+        game.DrawRequest.DecrementCooldown();
+        // auto decline the draw if it exists
+        if (game.DrawRequest.TryDeclineDraw(moveBy, _settings.DrawCooldown))
+        {
+            await _gameNotifier.NotifyDrawStateChangeAsync(
+                _token,
+                game.DrawRequest.GetState(),
+                game.NotifierState
+            );
+        }
+    }
+
+    private async Task HandleClockForMoveAsync(GameData game, CancellationToken token = default)
+    {
+        var didTimeOut = await EndGameIfTimedOutAsync(game, token);
+        if (!didTimeOut)
+        {
+            ScheduleTimeoutTimer(game);
+        }
+    }
+
+    private async Task OnClockTimerElapsedAsync(CancellationToken token = default)
     {
         if (!TryGetOngoingGame(out var game))
             return;
 
-        var sideToMove = _core.SideToMove(game.Core);
-        var whiteTimeLeft = _clock.CalculateTimeLeft(
-            GameColor.White,
-            game.ClockState,
-            isActivePlayer: sideToMove == GameColor.White
-        );
-        var blackTimeLeft = _clock.CalculateTimeLeft(
-            GameColor.Black,
-            game.ClockState,
-            isActivePlayer: sideToMove == GameColor.Black
-        );
-
-        GameColor timedOutColor;
-        if (whiteTimeLeft <= 0)
+        var didTimeOut = await EndGameIfTimedOutAsync(game, token);
+        if (!didTimeOut)
         {
-            timedOutColor = GameColor.White;
+            ScheduleTimeoutTimer(game);
+            return;
         }
-        else if (blackTimeLeft <= 0)
+        await _state.WriteStateAsync(token);
+    }
+
+    private async Task<bool> EndGameIfTimedOutAsync(
+        GameData game,
+        CancellationToken token = default
+    )
+    {
+        var timedOutColor = _clock.DetectTimeout(
+            tickingPlayer: _core.SideToMove(game.Core),
+            game.ClockState
+        );
+        if (timedOutColor is null)
         {
-            timedOutColor = GameColor.Black;
+            return false;
         }
         else
         {
-            return;
+            await EndGameAsync(_resultDescriber.Timeout(timedOutColor.Value), game, token);
+            return true;
         }
-
-        await EndGameAsync(_resultDescriber.Timeout(timedOutColor), game, token);
-        await _state.WriteStateAsync(token);
     }
 
     private async Task EndGameAsync(
@@ -377,6 +387,9 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         CancellationToken token = default
     )
     {
+        if (game.Result is not null)
+            return;
+
         _logger.LogInformation("Game {GameToken} eneded by {EndStatus}", _token, endStatus);
 
         _clock.CommitLastTurn(_core.SideToMove(game.Core), game.ClockState);
@@ -431,6 +444,20 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             ResultData: game.Result
         );
         return gameState;
+    }
+
+    private void ScheduleTimeoutTimer(GameData game)
+    {
+        _clockTimer?.Dispose();
+
+        var sideToMove = _core.SideToMove(game.Core);
+        _clockTimer = this.RegisterGrainTimer(
+            callback: OnClockTimerElapsedAsync,
+            dueTime: TimeSpan.FromMilliseconds(
+                _clock.CalculateTimeLeftMs(sideToMove, game.ClockState)
+            ),
+            period: Timeout.InfiniteTimeSpan
+        );
     }
 
     private bool TryGetCurrentGame([NotNullWhen(true)] out GameData? state)

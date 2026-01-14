@@ -20,8 +20,8 @@ describe("GameClock", () => {
         store = createLiveChessStore(
             createFakeLiveChessStoreProps({
                 clocks: {
-                    whiteClock: 300000,
-                    blackClock: 300000,
+                    whiteClock: 300_000,
+                    blackClock: 300_000,
                     lastUpdated: Date.now().valueOf(),
                     isFrozen: false,
                 },
@@ -46,7 +46,7 @@ describe("GameClock", () => {
             </LiveChessStoreContext.Provider>,
         );
         act(() => {
-            vi.advanceTimersByTime(10000); // 10 seconds
+            vi.advanceTimersByTime(10_000);
         });
 
         expect(screen.getByText("04:50")).toBeInTheDocument();
@@ -61,7 +61,7 @@ describe("GameClock", () => {
             </LiveChessStoreContext.Provider>,
         );
         act(() => {
-            vi.advanceTimersByTime(10000);
+            vi.advanceTimersByTime(10_000);
         });
 
         expect(screen.getByText("05:00")).toBeInTheDocument();
@@ -70,8 +70,8 @@ describe("GameClock", () => {
     it("should freeze clock when isFrozen is true", () => {
         store.setState({
             clocks: {
-                whiteClock: 300000,
-                blackClock: 300000,
+                whiteClock: 300_000,
+                blackClock: 300_000,
                 lastUpdated: Date.now(),
                 isFrozen: true,
             },
@@ -85,7 +85,7 @@ describe("GameClock", () => {
         );
 
         act(() => {
-            vi.advanceTimersByTime(10000);
+            vi.advanceTimersByTime(10_000);
         });
 
         // should still show initial time because frozen
@@ -95,8 +95,8 @@ describe("GameClock", () => {
     it("should show decimal seconds and animate under 20s", () => {
         store.setState({
             clocks: {
-                whiteClock: 15000,
-                blackClock: 300000,
+                whiteClock: 15_000,
+                blackClock: 300_000,
                 lastUpdated: Date.now().valueOf(),
                 isFrozen: false,
             },
@@ -121,7 +121,7 @@ describe("GameClock", () => {
         store.setState({
             clocks: {
                 whiteClock: 0,
-                blackClock: 300000,
+                blackClock: 300_000,
                 lastUpdated: Date.now(),
                 isFrozen: true,
             },
@@ -147,7 +147,7 @@ describe("GameClock", () => {
         store.setState({
             clocks: {
                 whiteClock: 5000,
-                blackClock: 300000,
+                blackClock: 300_000,
                 lastUpdated: Date.now().valueOf(),
                 isFrozen: false,
             },
@@ -190,11 +190,48 @@ describe("GameClock", () => {
         expect(screen.getByText("00:01.00")).toBeInTheDocument();
     });
 
+    it("should apply increment to the clock when turn changes", () => {
+        store.setState({
+            clocks: {
+                whiteClock: 300_000,
+                blackClock: 300_000,
+                lastUpdated: Date.now().valueOf(),
+                isFrozen: false,
+            },
+            sideToMove: GameColor.WHITE,
+        });
+
+        render(
+            <LiveChessStoreContext.Provider value={store}>
+                <GameClock color={GameColor.WHITE} />
+            </LiveChessStoreContext.Provider>,
+        );
+
+        act(() => {
+            vi.advanceTimersByTime(5000);
+        });
+
+        expect(screen.getByText("04:55")).toBeInTheDocument();
+
+        act(() => {
+            store.setState({
+                sideToMove: GameColor.BLACK,
+                clocks: {
+                    ...store.getState().clocks,
+                    whiteClock: 305_000,
+                    lastUpdated: Date.now().valueOf(),
+                },
+            });
+        });
+
+        expect(screen.getByText("05:05")).toBeInTheDocument();
+    });
+
     it("should play warning sound once when time goes under 20s", () => {
         store.setState({
             clocks: {
-                whiteClock: 21000,
-                blackClock: 300000,
+                whiteClock: 21_000,
+                blackClock: 300_000,
                 lastUpdated: Date.now(),
                 isFrozen: false,
             },
@@ -222,8 +259,8 @@ describe("GameClock", () => {
     it("should not play sound if viewer is not the player", () => {
         store.setState({
             clocks: {
-                whiteClock: 15000,
-                blackClock: 300000,
+                whiteClock: 15_000,
+                blackClock: 300_000,
                 lastUpdated: Date.now(),
                 isFrozen: false,
             },
@@ -243,8 +280,8 @@ describe("GameClock", () => {
     it("should not play sound when clock is frozen", () => {
         store.setState({
             clocks: {
-                whiteClock: 15000,
-                blackClock: 300000,
+                whiteClock: 15_000,
+                blackClock: 300_000,
                 lastUpdated: Date.now(),
                 isFrozen: true,
             },
