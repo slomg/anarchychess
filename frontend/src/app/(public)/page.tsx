@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     title: "Home - Anarchy Chess",
     description:
         "Play Anarchy Chess online with wild, custom rules and unique pieces inspired by r/AnarchyChess." +
-        "Explore chaotic chess variants, challenge friends, complete quests, climb the ranks, and experience the unpredictable fun of anarchic gameplay.",
+        "Explore chaotic chess variants, challenge friends, complete quests, climb the ranks, and experience the unpredictable fun of anarchychess gameplay.",
     keywords: [
         "chess",
         "anarchy chess",
@@ -21,7 +21,10 @@ export const metadata: Metadata = {
 
 async function HomePage() {
     return (
-        <main className="grid flex-1 grid-cols-1 grid-rows-[min-content_min-content_1fr]">
+        <main
+            className="grid flex-1 grid-cols-1
+                grid-rows-[min-content_min-content_1fr]"
+        >
             <HomeHero />
             <HomeIntroSection />
             <HomeFooter />
