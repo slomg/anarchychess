@@ -160,7 +160,7 @@ public class GameClockTests
     }
 
     [Fact]
-    public void CommitLastTurn_freezes_clock_and_updates_time()
+    public void CommitLastTurn_freezes_clock_and_updates_time_without_increment()
     {
         _state.ClocksMs[GameColor.White] = 100_000;
         _state.TimeControl = new TimeControlSettings(BaseSeconds: 100, IncrementSeconds: 10);
@@ -173,7 +173,7 @@ public class GameClockTests
         _clock.CommitLastTurn(GameColor.White, _state);
 
         _state.IsFrozen.Should().BeTrue();
-        _state.ClocksMs[GameColor.White].Should().Be(108_000); // 100000 - 2000 + 10000
+        _state.ClocksMs[GameColor.White].Should().Be(98_000); // 100000 - 2000
         _state.LastUpdatedMs.Should().Be(now.ToUnixTimeMilliseconds());
     }
 
