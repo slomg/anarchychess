@@ -1,4 +1,5 @@
 ﻿using AnarchyChess.Api.Game.Services;
+using AnarchyChess.Api.GameLogic.Extensions;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AwesomeAssertions;
@@ -72,7 +73,7 @@ public class GameClockTests
     }
 
     [Fact]
-    public void CalculateTimeLeftMs_returns_clock_as_is_when_frozen()
+    public void CalculateTimeLeftMs_does_not_decrease_when_frozen()
     {
         _state.ClocksMs[GameColor.White] = 50_000;
         _state.IsFrozen = true;
@@ -85,6 +86,21 @@ public class GameClockTests
         var timeLeft = _clock.CalculateTimeLeftMs(GameColor.White, _state);
 
         timeLeft.Should().Be(50_000);
+    }
+
+    [Fact]
+    public void CalculateTimeLeftMs_does_not_decrease_when_isTicking_false()
+    {
+        _state.ClocksMs[GameColor.White] = 120_000;
+        _state.LastUpdatedMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        _state.IsFrozen = false;
+
+        var now = DateTimeOffset.FromUnixTimeMilliseconds(_state.LastUpdatedMs + 10_000);
+        _timeProviderMock.GetUtcNow().Returns(now);
+
+        var timeLeft = _clock.CalculateTimeLeftMs(GameColor.White, _state, isTicking: false);
+
+        timeLeft.Should().Be(120_000);
     }
 
     [Fact]
@@ -120,7 +136,7 @@ public class GameClockTests
     }
 
     [Fact]
-    public void CalculateTimeLeftMs_returns_negative_if_elapsed_exceeds_clock()
+    public void CalculateTimeLeftMs_returns_zero_if_elapsed_exceeds_clock()
     {
         _state.ClocksMs[GameColor.White] = 5_000;
         _state.LastUpdatedMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
@@ -130,7 +146,7 @@ public class GameClockTests
 
         var timeLeft = _clock.CalculateTimeLeftMs(GameColor.White, _state);
 
-        timeLeft.Should().Be(-5_000);
+        timeLeft.Should().Be(0);
     }
 
     [Fact]
@@ -149,5 +165,62 @@ public class GameClockTests
         _state.IsFrozen.Should().BeTrue();
         _state.ClocksMs[GameColor.White].Should().Be(108_000); // 100000 - 2000 + 10000
         _state.LastUpdatedMs.Should().Be(now.ToUnixTimeMilliseconds());
+    }
+
+    [Fact]
+    public void DetectTimeout_returns_null_if_no_player_is_timed_out()
+    {
+        _state.ClocksMs[GameColor.White] = 50_000;
+        _state.ClocksMs[GameColor.Black] = 60_000;
+        _state.LastUpdatedMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        _state.IsFrozen = false;
+
+        var now = DateTimeOffset.FromUnixTimeMilliseconds(_state.LastUpdatedMs + 1_000);
+        _timeProviderMock.GetUtcNow().Returns(now);
+
+        var result = _clock.DetectTimeout(GameColor.White, _state);
+
+        result.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData(50, 101, GameColor.White)]
+    [InlineData(101, 50, GameColor.Black)]
+    public void DetectTimeout_returns_the_correct_timed_out_color(
+        int whiteClock,
+        int blackClock,
+        GameColor tickingPlayer
+    )
+    {
+        _state.ClocksMs[GameColor.White] = whiteClock;
+        _state.ClocksMs[GameColor.Black] = blackClock;
+        _state.LastUpdatedMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+        var now = DateTimeOffset.FromUnixTimeMilliseconds(_state.LastUpdatedMs);
+        _timeProviderMock.GetUtcNow().Returns(now);
+
+        var tickingColorResult = _clock.DetectTimeout(tickingPlayer, _state);
+        var otherColorResult = _clock.DetectTimeout(tickingPlayer.Invert(), _state);
+
+        tickingColorResult.Should().Be(tickingPlayer);
+        otherColorResult.Should().Be(tickingPlayer);
+    }
+
+    [Fact]
+    public void DetectTimeout_only_ticks_ticking_player()
+    {
+        _state.ClocksMs[GameColor.White] = 101;
+        _state.ClocksMs[GameColor.Black] = 500;
+        _state.LastUpdatedMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        _state.IsFrozen = false;
+
+        var now = DateTimeOffset.FromUnixTimeMilliseconds(_state.LastUpdatedMs + 450);
+        _timeProviderMock.GetUtcNow().Returns(now);
+
+        var whiteResult = _clock.DetectTimeout(GameColor.White, _state);
+        whiteResult.Should().Be(GameColor.White);
+
+        var blackResult = _clock.DetectTimeout(GameColor.Black, _state);
+        blackResult.Should().Be(GameColor.Black);
     }
 }

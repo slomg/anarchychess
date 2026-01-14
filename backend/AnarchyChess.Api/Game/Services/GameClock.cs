@@ -5,9 +5,10 @@ namespace AnarchyChess.Api.Game.Services;
 
 public interface IGameClock
 {
-    double CalculateTimeLeftMs(GameColor color, GameClockState state, bool isActivePlayer = true);
+    double CalculateTimeLeftMs(GameColor color, GameClockState state, bool isTicking = true);
     void CommitLastTurn(GameColor color, GameClockState state);
     double CommitTurn(GameColor color, GameClockState state);
+    GameColor? DetectTimeout(GameColor tickingPlayer, GameClockState state);
     void Reset(GameClockState state);
     ClockSnapshot ToSnapshot(GameClockState state);
 }
@@ -59,22 +60,44 @@ public class GameClock(TimeProvider timeProvider) : IGameClock
         return timeLeft;
     }
 
-    public double CalculateTimeLeftMs(
-        GameColor color,
-        GameClockState state,
-        bool isActivePlayer = true
-    )
-    {
-        if (state.IsFrozen || !isActivePlayer)
-            return state.ClocksMs[color];
-
-        var elapsedMs = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds() - state.LastUpdatedMs;
-        return state.ClocksMs[color] - elapsedMs;
-    }
-
     public void CommitLastTurn(GameColor color, GameClockState state)
     {
         CommitTurn(color, state);
         state.IsFrozen = true;
+    }
+
+    public double CalculateTimeLeftMs(GameColor color, GameClockState state, bool isTicking = true)
+    {
+        if (state.IsFrozen || !isTicking)
+            return state.ClocksMs[color];
+
+        var elapsedMs = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds() - state.LastUpdatedMs;
+        return Math.Max(0, state.ClocksMs[color] - elapsedMs);
+    }
+
+    public GameColor? DetectTimeout(GameColor tickingPlayer, GameClockState state)
+    {
+        var whiteTimeLeftMs = CalculateTimeLeftMs(
+            GameColor.White,
+            state,
+            isTicking: tickingPlayer is GameColor.White
+        );
+        var blackTimeLeftMs = CalculateTimeLeftMs(
+            GameColor.Black,
+            state,
+            isTicking: tickingPlayer is GameColor.Black
+        );
+
+        GameColor? timedOutColor = null;
+        if (whiteTimeLeftMs <= 100)
+        {
+            timedOutColor = GameColor.White;
+        }
+        else if (blackTimeLeftMs <= 100)
+        {
+            timedOutColor = GameColor.Black;
+        }
+
+        return timedOutColor;
     }
 }
