@@ -259,8 +259,6 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             return makeMoveResult.Errors;
         var moveResult = makeMoveResult.Value;
 
-        await HandleDrawForMoveAsync(moveBy: currentPlayer.Color, game);
-        await HandleClockForMoveAsync(game, token);
         var legalMoves = _core.GetLegalMoves(game.Core);
         var nextPlayer = game.Players.GetPlayerByColor(_core.SideToMove(game.Core));
         var moveSnapshot = BuildAndStoreMove(
@@ -287,6 +285,8 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             ),
             game.NotifierState
         );
+        await HandleDrawForMoveAsync(moveBy: currentPlayer.Color, game);
+        await HandleClockForMoveAsync(game, token);
         await _state.WriteStateAsync(token);
 
         return Result.Success;

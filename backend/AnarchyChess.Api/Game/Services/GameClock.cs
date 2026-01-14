@@ -53,17 +53,17 @@ public class GameClock(TimeProvider timeProvider) : IGameClock
 
     public double CommitTurn(GameColor color, GameClockState state)
     {
-        var timeLeft =
-            CalculateTimeLeftMs(color, state) + state.TimeControl.IncrementSeconds * 1000;
-        state.ClocksMs[color] = timeLeft;
-        state.LastUpdatedMs = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
+        var incrementMs = state.TimeControl.IncrementSeconds * 1000;
+        var timeLeft = CalculateTimeLeftMs(color, state) + incrementMs;
+        UpdateTimeLeft(color, timeLeft, state);
 
         return timeLeft;
     }
 
     public void CommitLastTurn(GameColor color, GameClockState state)
     {
-        CommitTurn(color, state);
+        var timeLeft = CalculateTimeLeftMs(color, state);
+        UpdateTimeLeft(color, timeLeft, state);
         state.IsFrozen = true;
     }
 
@@ -100,5 +100,11 @@ public class GameClock(TimeProvider timeProvider) : IGameClock
         }
 
         return timedOutColor;
+    }
+
+    private void UpdateTimeLeft(GameColor color, double timeLeft, GameClockState state)
+    {
+        state.ClocksMs[color] = timeLeft;
+        state.LastUpdatedMs = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
     }
 }
