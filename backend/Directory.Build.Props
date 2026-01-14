@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <!-- Disable CA1873 (expensive log argument), at the moment it complains about ALL template arguments so it's effectively useless -->
+    <NoWarn>$(NoWarn);CA1873</NoWarn>
+  </PropertyGroup>
+</Project>
