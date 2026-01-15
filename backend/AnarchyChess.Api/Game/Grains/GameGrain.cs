@@ -163,12 +163,10 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         if (!game.Players.TryGetPlayerById(byUserId, out var player))
             return GameErrors.PlayerInvalid;
 
-        GameEndStatus endStatus;
-        var isAbort = game.MoveSnapshots.Count < 2;
-        if (isAbort)
-            endStatus = _resultDescriber.Aborted(player.Color);
-        else
-            endStatus = _resultDescriber.Resignation(player.Color);
+        GameEndStatus endStatus =
+            game.MoveSnapshots.Count < 2
+                ? _resultDescriber.Aborted(player.Color)
+                : _resultDescriber.Resignation(player.Color);
 
         _logger.LogInformation(
             "Game {GameToken} ended by user {UserId}. Result: {Result}",
