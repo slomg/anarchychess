@@ -314,7 +314,7 @@ describe("ChallengePopup", () => {
         act(() => ref.current?.open());
 
         expect(screen.getByTestId("challengePopupCreate")).toHaveTextContent(
-            "Challenge a friend",
+            "Challenge a Friend",
         );
     });
 });
