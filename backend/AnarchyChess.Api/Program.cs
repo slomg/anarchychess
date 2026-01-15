@@ -337,19 +337,12 @@ builder.Host.UseOrleans(siloBuilder =>
         options.Invariant = "Npgsql";
     });
     siloBuilder
-        .AddAzureQueueStreams(
+        .AddAdoNetStreams(
             Streaming.StreamProvider,
-            streamConfigurator =>
+            options =>
             {
-                streamConfigurator.ConfigureAzureQueue(queueOptionsBuilder =>
-                {
-                    queueOptionsBuilder.Configure(options =>
-                    {
-                        options.QueueServiceClient = new(
-                            appSettings.Secrets.QueueStorageConnString
-                        );
-                    });
-                });
+                options.ConnectionString = appSettings.Secrets.DatabaseConnString;
+                options.Invariant = "Npgsql";
             }
         )
         .AddAdoNetGrainStorage(

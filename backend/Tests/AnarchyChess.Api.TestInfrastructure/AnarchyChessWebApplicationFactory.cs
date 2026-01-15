@@ -88,17 +88,12 @@ public class AnarchyChessWebApplicationFactory : WebApplicationFactory<Program>,
             });
 
             siloBuilder
-                .AddAzureQueueStreams(
+                .AddAdoNetStreams(
                     Streaming.StreamProvider,
-                    configurator =>
+                    options =>
                     {
-                        configurator.ConfigureAzureQueue(ob =>
-                        {
-                            ob.Configure(options =>
-                            {
-                                options.QueueServiceClient = new(azuriteConnString);
-                            });
-                        });
+                        options.ConnectionString = dbConnString;
+                        options.Invariant = "Npgsql";
                     }
                 )
                 .AddAdoNetGrainStorage(
