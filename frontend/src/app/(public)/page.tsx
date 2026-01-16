@@ -5,7 +5,7 @@ import HomeFooter from "@/features/home/components/HomeFooter";
 import HomeHero from "@/features/home/components/HomeHero";
 
 export const metadata: Metadata = {
-    title: "Home - Anarchy Chess",
+    title: "Anarchy Chess",
     description:
         "Play Anarchy Chess online with wild, custom rules and unique pieces inspired by r/AnarchyChess." +
         "Explore chaotic chess variants, challenge friends, complete quests, climb the ranks, and experience the unpredictable fun of anarchychess gameplay.",

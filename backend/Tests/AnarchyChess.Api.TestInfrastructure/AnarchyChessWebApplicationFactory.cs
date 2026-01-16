@@ -1,6 +1,4 @@
-﻿using System.Net;
-using System.Text.Json;
-using AnarchyChess.Api.Infrastructure;
+﻿using AnarchyChess.Api.Infrastructure;
 using FluentStorage;
 using FluentStorage.Blobs;
 using Microsoft.AspNetCore.Hosting;
@@ -19,6 +17,8 @@ using Serilog;
 using Serilog.Sinks.XUnit.Injectable;
 using Serilog.Sinks.XUnit.Injectable.Abstract;
 using Serilog.Sinks.XUnit.Injectable.Extensions;
+using System.Net;
+using System.Text.Json;
 using Testcontainers.Azurite;
 using Testcontainers.PostgreSql;
 
@@ -88,14 +88,7 @@ public class AnarchyChessWebApplicationFactory : WebApplicationFactory<Program>,
             });
 
             siloBuilder
-                .AddAdoNetStreams(
-                    Streaming.StreamProvider,
-                    options =>
-                    {
-                        options.ConnectionString = dbConnString;
-                        options.Invariant = "Npgsql";
-                    }
-                )
+                .AddMemoryStreams(Streaming.StreamProvider)
                 .AddAdoNetGrainStorage(
                     ProviderConstants.DEFAULT_PUBSUB_PROVIDER_NAME,
                     options =>

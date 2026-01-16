@@ -66,6 +66,11 @@ dotnet user-secrets set "AppSettings:Secrets:JwtSecret" "<jwt-secret>"
 dotnet user-secrets set "AppSettings:Secrets:DatabaseConnString" "<connection-string>"
 dotnet user-secrets set "AppSettings:Secrets:BlobStorageConnString" "<connection-string>"
 dotnet user-secrets set "AppSettings:Secrets:RedisConnString" "<connection-string>"
+
+dotnet user-secrets set "AppSettings:Secrets:TableCheckpointerConnString" "<connection-string>"
+dotnet user-secrets set "AppSettings:Secrets:EventHubConnString" "<connection-string>"
+dotnet user-secrets set "AppSettings:Secrets:EventHubName" "<connection-string>"
+dotnet user-secrets set "AppSettings:Secrets:EventHubConsumerGroup" "<connection-string>"
 ```
 
 4. Run the backend server
@@ -127,7 +132,7 @@ backend/Scripts/Orleans
 |- 002-reminders.sql
 |- 003-storage.sql
 |- 004-clustering.sql
-|- 004-streaming.sql
+|- 005-streaming.sql
 ```
 
 4. Apply EF Core migrations

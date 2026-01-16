@@ -21,8 +21,12 @@ public class SecretSettings
 
     public required string DatabaseConnString { get; set; }
     public required string BlobStorageConnString { get; set; }
-    public required string QueueStorageConnString { get; set; }
+    public required string TableCheckpointerConnString { get; set; }
     public required string RedisConnString { get; set; }
+
+    public required string EventHubConnString { get; set; }
+    public required string EventHubName { get; set; }
+    public required string EventHubConsumerGroup { get; set; }
 
     public required OAuthClientSettings GoogleOAuth { get; set; }
     public required OAuthClientSettings DiscordOAuth { get; set; }
