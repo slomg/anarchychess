@@ -1,9 +1,4 @@
-﻿using System.Security.Claims;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using AnarchyChess.Api.Analysis.Services;
+﻿using AnarchyChess.Api.Analysis.Services;
 using AnarchyChess.Api.ArchivedGames.Repositories;
 using AnarchyChess.Api.ArchivedGames.Services;
 using AnarchyChess.Api.Auth.Errors;
@@ -68,6 +63,11 @@ using Orleans.Serialization.Serializers;
 using Orleans.Storage;
 using Scalar.AspNetCore;
 using Serilog;
+using System.Security.Claims;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -337,12 +337,27 @@ builder.Host.UseOrleans(siloBuilder =>
         options.Invariant = "Npgsql";
     });
     siloBuilder
-        .AddAdoNetStreams(
+        .AddEventHubStreams(
             Streaming.StreamProvider,
-            options =>
+            configurator =>
             {
-                options.ConnectionString = appSettings.Secrets.DatabaseConnString;
-                options.Invariant = "Npgsql";
+                configurator.ConfigureEventHub(builder =>
+                    builder.Configure(options =>
+                        options.ConfigureEventHubConnection(
+                            connectionString: appSettings.Secrets.EventHubConnString,
+                            eventHubName: appSettings.Secrets.EventHubName,
+                            consumerGroup: appSettings.Secrets.EventHubConsumerGroup
+                        )
+                    )
+                );
+
+                configurator.UseAzureTableCheckpointer(builder =>
+                    builder.Configure(options =>
+                        options.TableServiceClient = new(
+                            appSettings.Secrets.TableCheckpointerConnString
+                        )
+                    )
+                );
             }
         )
         .AddAdoNetGrainStorage(
