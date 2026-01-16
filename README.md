@@ -66,6 +66,11 @@ dotnet user-secrets set "AppSettings:Secrets:JwtSecret" "<jwt-secret>"
 dotnet user-secrets set "AppSettings:Secrets:DatabaseConnString" "<connection-string>"
 dotnet user-secrets set "AppSettings:Secrets:BlobStorageConnString" "<connection-string>"
 dotnet user-secrets set "AppSettings:Secrets:RedisConnString" "<connection-string>"
+
+dotnet user-secrets set "AppSettings:Secrets:TableCheckpointerConnString" "<connection-string>"
+dotnet user-secrets set "AppSettings:Secrets:EventHubConnString" "<connection-string>"
+dotnet user-secrets set "AppSettings:Secrets:EventHubName" "<connection-string>"
+dotnet user-secrets set "AppSettings:Secrets:EventHubConsumerGroup" "<connection-string>"
 ```
 
 4. Run the backend server
