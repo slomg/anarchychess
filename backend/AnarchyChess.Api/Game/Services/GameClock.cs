@@ -88,33 +88,20 @@ public class GameClock(
         };
     }
 
-    public double CommitTurn(GameColor color, GameClockState state)
-    {
-        var incrementMs = state.TimeControl.IncrementSeconds * 1000;
-        var timeLeft = CalculateTimeLeftMs(color, state) + incrementMs;
-        UpdateTimeLeft(color, timeLeft, state);
-
-        return timeLeft;
-    }
+    public double CommitTurn(GameColor color, GameClockState state) =>
+        ApplyTurn(color, doIncrement: true, state);
 
     public void CommitLastTurn(GameColor color, GameClockState state)
     {
-        var timeLeft = CalculateTimeLeftMs(color, state);
-        UpdateTimeLeft(color, timeLeft, state);
+        ApplyTurn(color, doIncrement: false, state);
         state.IsFrozen = true;
     }
 
     public double CalculateTimeLeftMs(GameColor color, GameClockState state, bool isTicking = true)
     {
         var clockPlayer = state.Clocks[color];
-        if (state.IsFrozen || !isTicking)
-        {
-            return clockPlayer.TimeLeftMs;
-        }
-
-        var elapsedMs = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds() - state.LastUpdatedMs;
         var timeLeft = clockPlayer.TimeUntilAbandonMs ?? clockPlayer.TimeLeftMs;
-        return Math.Max(0, timeLeft - elapsedMs);
+        return GetEffectiveTimeLeftMs(timeLeft, clockPlayer, state, isTicking);
     }
 
     public GameEndStatus? DetectTimeout(GameColor tickingPlayer, GameClockState state)
@@ -159,13 +146,37 @@ public class GameClock(
         }
     }
 
-    private void UpdateTimeLeft(GameColor color, double timeLeft, GameClockState state)
+    private double GetEffectiveTimeLeftMs(
+        double prevTimeLeft,
+        ClockPlayer clockPlayer,
+        GameClockState state,
+        bool isTicking = true
+    )
+    {
+        if (state.IsFrozen || !isTicking)
+        {
+            return clockPlayer.TimeLeftMs;
+        }
+
+        var elapsedMs = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds() - state.LastUpdatedMs;
+        return Math.Max(0, prevTimeLeft - elapsedMs);
+    }
+
+    private double ApplyTurn(GameColor color, bool doIncrement, GameClockState state)
     {
         var clockPlayer = state.Clocks[color];
+
+        if (!clockPlayer.IsInGracePeriod)
+        {
+            int increment = doIncrement ? state.TimeControl.IncrementSeconds * 1000 : 0;
+            clockPlayer.TimeLeftMs =
+                GetEffectiveTimeLeftMs(clockPlayer.TimeLeftMs, clockPlayer, state) + increment;
+        }
         clockPlayer.IsInGracePeriod = false;
-        clockPlayer.TimeLeftMs = timeLeft;
         clockPlayer.TimeUntilAbandonMs = null;
 
         state.LastUpdatedMs = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
+
+        return clockPlayer.TimeLeftMs;
     }
 }
