@@ -131,7 +131,7 @@ public class GameGrainTests : BaseGrainTest
 
         _clockMock
             .Received(1)
-            .Reset(
+            .Create(
                 ArgEx.FluentAssert<GameClockState>(x =>
                     x.Should().BeEquivalentTo(expectedGameData.ClockState)
                 )

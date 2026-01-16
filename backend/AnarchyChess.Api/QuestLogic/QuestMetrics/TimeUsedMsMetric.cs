@@ -12,8 +12,8 @@ public class TimeUsedMsMetric : IQuestMetric
         var timeControl = snapshot.FinalGameState.Pool.TimeControl;
 
         double timeLeft = snapshot.PlayerColor.Match(
-            whenWhite: snapshot.FinalGameState.Clocks.WhiteClock,
-            whenBlack: snapshot.FinalGameState.Clocks.BlackClock
+            whenWhite: snapshot.FinalGameState.Clocks.WhiteClock.TimeLeftMs,
+            whenBlack: snapshot.FinalGameState.Clocks.BlackClock.TimeLeftMs
         );
         int playerMoves = snapshot.PlayerColor.Match(
             whenWhite: snapshot.MoveHistory.Count / 2,

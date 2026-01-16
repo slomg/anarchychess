@@ -41,12 +41,12 @@ public class GameArchiveService(IGameArchiveRepository gameArchiveRepository) : 
         var whiteArchive = CreatePlayerArchive(
             state.WhitePlayer,
             ratingChange?.WhiteChange,
-            state.Clocks.WhiteClock
+            state.Clocks.WhiteClock.TimeLeftMs
         );
         var blackArchive = CreatePlayerArchive(
             state.BlackPlayer,
             ratingChange?.BlackChange,
-            state.Clocks.BlackClock
+            state.Clocks.WhiteClock.TimeLeftMs
         );
         List<MoveArchive> moves = [];
         for (int i = 0; i < state.MoveHistory.Count; i++)
@@ -136,18 +136,18 @@ public class GameArchiveService(IGameArchiveRepository gameArchiveRepository) : 
         var path = moveSnapshot.Path;
         var sideEffects =
             path.SideEffects?.Select(x => new MoveSideEffectArchive
-                {
-                    FromIdx = x.FromIdx,
-                    ToIdx = x.ToIdx,
-                })
+            {
+                FromIdx = x.FromIdx,
+                ToIdx = x.ToIdx,
+            })
                 .ToList() ?? [];
         var pieceSpawns =
             path.PieceSpawns?.Select(x => new PieceSpawnArchive
-                {
-                    Type = x.Type,
-                    Color = x.Color,
-                    PosIdx = x.PosIdx,
-                })
+            {
+                Type = x.Type,
+                Color = x.Color,
+                PosIdx = x.PosIdx,
+            })
                 .ToList() ?? [];
 
         return new()

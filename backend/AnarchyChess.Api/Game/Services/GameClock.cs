@@ -1,4 +1,5 @@
-﻿using AnarchyChess.Api.GameLogic.Models;
+﻿using AnarchyChess.Api.Game.Models;
+using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Shared.Models;
 using Microsoft.Extensions.Options;
@@ -7,12 +8,12 @@ namespace AnarchyChess.Api.Game.Services;
 
 public interface IGameClock
 {
+    ClockSnapshot ToSnapshot(GameClockState state);
+    GameClockState Create(TimeControlSettings timeControl);
     double CalculateTimeLeftMs(GameColor color, GameClockState state, bool isTicking = true);
     void CommitLastTurn(GameColor color, GameClockState state);
     double CommitTurn(GameColor color, GameClockState state);
-    GameColor? DetectTimeout(GameColor tickingPlayer, GameClockState state);
-    void Reset(GameClockState state);
-    ClockSnapshot ToSnapshot(GameClockState state);
+    GameEndStatus? DetectTimeout(GameColor tickingPlayer, GameClockState state);
 }
 
 [GenerateSerializer]
@@ -20,8 +21,7 @@ public interface IGameClock
 public class GameClockState
 {
     [Id(0)]
-    public Dictionary<GameColor, double> ClocksMs { get; init; } =
-        new() { [GameColor.White] = 0, [GameColor.Black] = 0 };
+    public required Dictionary<GameColor, ClockPlayer> Clocks { get; init; }
 
     [Id(1)]
     public required TimeControlSettings TimeControl { get; init; }
@@ -31,10 +31,6 @@ public class GameClockState
 
     [Id(3)]
     public bool IsFrozen { get; set; }
-
-    [Id(4)]
-    public Dictionary<GameColor, bool> HasMadeFirstMove { get; init; } =
-        new() { [GameColor.White] = false, [GameColor.Black] = false };
 }
 
 public class GameClock(
@@ -47,23 +43,49 @@ public class GameClock(
     private readonly IGameResultDescriber _gameResultDescriber = gameResultDescriber;
     private readonly TimeProvider _timeProvider = timeProvider;
 
-    public ClockSnapshot ToSnapshot(GameClockState state) =>
-        new(
-            WhiteClock: state.ClocksMs[GameColor.White],
-            BlackClock: state.ClocksMs[GameColor.Black],
+    public ClockSnapshot ToSnapshot(GameClockState state)
+    {
+        var whiteClock = state.Clocks[GameColor.White];
+        var blackClock = state.Clocks[GameColor.Black];
+
+        return new(
+            WhiteClock: new(
+                TimeLeftMs: whiteClock.TimeLeftMs,
+                TimeUntilAbandonMs: whiteClock.TimeUntilAbandonMs,
+                IsInGracePeriod: whiteClock.IsInGracePeriod
+            ),
+            BlackClock: new(
+                TimeLeftMs: blackClock.TimeLeftMs,
+                TimeUntilAbandonMs: blackClock.TimeUntilAbandonMs,
+                IsInGracePeriod: blackClock.IsInGracePeriod
+            ),
             LastUpdated: state.LastUpdatedMs,
             ServerTime: _timeProvider.GetUtcNow().ToUnixTimeMilliseconds(),
             IsFrozen: state.IsFrozen
         );
+    }
 
-    public void Reset(GameClockState state)
+    public GameClockState Create(TimeControlSettings timeControl)
     {
-        state.ClocksMs[GameColor.White] = _settings.FirstMoveGracePeriod.Milliseconds;
-        state.ClocksMs[GameColor.Black] = _settings.FirstMoveGracePeriod.Milliseconds;
-        state.HasMadeFirstMove[GameColor.White] = false;
-        state.HasMadeFirstMove[GameColor.Black] = false;
-
-        state.LastUpdatedMs = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
+        var startingTime = timeControl.BaseSeconds * 1000;
+        ClockPlayer whiteClock = new()
+        {
+            TimeLeftMs = startingTime,
+            TimeUntilAbandonMs = _settings.FirstMoveGracePeriod.TotalMilliseconds,
+            IsInGracePeriod = true,
+        };
+        ClockPlayer blackClock = new()
+        {
+            TimeLeftMs = startingTime,
+            TimeUntilAbandonMs = _settings.FirstMoveGracePeriod.TotalMilliseconds,
+            IsInGracePeriod = true,
+        };
+        return new()
+        {
+            TimeControl = timeControl,
+            Clocks = new() { [GameColor.White] = whiteClock, [GameColor.Black] = blackClock },
+            LastUpdatedMs = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds(),
+        };
     }
 
     public double CommitTurn(GameColor color, GameClockState state)
@@ -84,26 +106,19 @@ public class GameClock(
 
     public double CalculateTimeLeftMs(GameColor color, GameClockState state, bool isTicking = true)
     {
+        var clockPlayer = state.Clocks[color];
         if (state.IsFrozen || !isTicking)
-            return state.ClocksMs[color];
+        {
+            return clockPlayer.TimeLeftMs;
+        }
 
         var elapsedMs = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds() - state.LastUpdatedMs;
-        return Math.Max(0, state.ClocksMs[color] - elapsedMs);
+        var timeLeft = clockPlayer.TimeUntilAbandonMs ?? clockPlayer.TimeLeftMs;
+        return Math.Max(0, timeLeft - elapsedMs);
     }
 
     public GameEndStatus? DetectTimeout(GameColor tickingPlayer, GameClockState state)
     {
-        var nowMs = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
-        foreach (var color in new[] { GameColor.White, GameColor.Black })
-        {
-            if (!state.HasMadeFirstMove[color])
-            {
-                var elapsed = nowMs - state.LastUpdatedMs;
-                if (elapsed >= _settings.FirstMoveGracePeriod.Milliseconds)
-                    return _gameResultDescriber.Aborted(by: color);
-            }
-        }
-
         var whiteTimeLeftMs = CalculateTimeLeftMs(
             GameColor.White,
             state,
@@ -115,7 +130,7 @@ public class GameClock(
             isTicking: tickingPlayer is GameColor.Black
         );
 
-        GameColor? timedOutColor = null;
+        GameColor timedOutColor;
         if (whiteTimeLeftMs <= 100)
         {
             timedOutColor = GameColor.White;
@@ -129,17 +144,28 @@ public class GameClock(
             return null;
         }
 
-        return _gameResultDescriber.Timeout(by: timedOutColor.Value);
+        var clockPlayer = state.Clocks[timedOutColor];
+        if (clockPlayer.IsInGracePeriod)
+        {
+            return _gameResultDescriber.Aborted(by: timedOutColor);
+        }
+        else if (clockPlayer.TimeUntilAbandonMs is not null)
+        {
+            return _gameResultDescriber.Abandoned(by: timedOutColor);
+        }
+        else
+        {
+            return _gameResultDescriber.Timeout(by: timedOutColor);
+        }
     }
 
     private void UpdateTimeLeft(GameColor color, double timeLeft, GameClockState state)
     {
-        state.ClocksMs[color] = timeLeft;
-        state.LastUpdatedMs = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
+        var clockPlayer = state.Clocks[color];
+        clockPlayer.IsInGracePeriod = false;
+        clockPlayer.TimeLeftMs = timeLeft;
+        clockPlayer.TimeUntilAbandonMs = null;
 
-        if (!state.HasMadeFirstMove[color])
-        {
-            state.HasMadeFirstMove[color] = true;
-        }
+        state.LastUpdatedMs = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
     }
 }
