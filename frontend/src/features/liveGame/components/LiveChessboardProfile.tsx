@@ -24,16 +24,23 @@ const LiveChessboardProfile = ({ side }: { side: ProfileSide }) => {
     );
 
     return (
-        <div className="flex max-w-screen items-center justify-between">
-            <div className="flex items-center gap-3">
+        <div className="flex max-w-screen min-w-0 items-center justify-between">
+            <div className="flex min-w-0 items-center gap-3">
                 <ProfileTooltip userId={player.userId}>
-                    <ProfilePicture userId={player.userId} size={50} />
+                    <ProfilePicture
+                        userId={player.userId}
+                        size={50}
+                        minSize={50}
+                    />
                     <p className="truncate">{player.userName}</p>
                 </ProfileTooltip>
                 <Flag countryCode={player.countryCode} size={30} />
 
                 {player.rating && (
-                    <span className="text-text/80 w-fit rounded bg-white/10 px-2 py-0.5 text-xs">
+                    <span
+                        className="text-text/80 w-fit rounded bg-white/10 px-2
+                            py-0.5 text-xs"
+                    >
                         {player.rating}
                     </span>
                 )}

@@ -6,21 +6,27 @@ import useLiveChessStore from "../hooks/useLiveChessStore";
 import { GameColor } from "@/lib/apiClient";
 
 const GameClock = ({ color }: { color: GameColor }) => {
-    const clocks = useLiveChessStore((x) => x.clocks);
+    const clock = useLiveChessStore((x) =>
+        color === GameColor.WHITE ? x.clocks.whiteClock : x.clocks.blackClock,
+    );
     const viewer = useLiveChessStore((x) => x.viewer);
-    const { sideToMove, serverClockAheadByMs } = useLiveChessStore((x) => ({
-        sideToMove: x.sideToMove,
-        serverClockAheadByMs: x.serverClockAheadByMs,
-    }));
+    const { sideToMove, serverClockAheadByMs, clockLastUpdated, isFrozen } =
+        useLiveChessStore((x) => ({
+            sideToMove: x.sideToMove,
+            serverClockAheadByMs: x.serverClockAheadByMs,
+            clockLastUpdated: x.clocks.lastUpdated,
+            isFrozen: x.clocks.isFrozen,
+        }));
+
+    const [timeLeftMs, setTimeLeftMs] = useState<number>(clock.timeLeftMs);
+    const [timeUntilAbandonedMs, setTimeUntilAbandonedMs] = useState<
+        number | null
+    >(clock.timeUntilAbandonMs ?? null);
 
     const playedWarningSoundRef = useRef<boolean>(false);
 
-    const baseTimeLeft =
-        color === GameColor.WHITE ? clocks.whiteClock : clocks.blackClock;
-    const isTicking = sideToMove === color && !clocks.isFrozen;
-
-    const [timeLeft, setTimeLeft] = useState<number>(baseTimeLeft);
-    const isInTimeTrouble = timeLeft < 20000;
+    const isInTimeTrouble = timeLeftMs < 20000;
+    const isTicking = color === sideToMove && !isFrozen;
 
     function calculateTimePassed(
         lastUpdated: number,
@@ -29,60 +35,55 @@ const GameClock = ({ color }: { color: GameColor }) => {
         return new Date().valueOf() + serverClockAheadByMs - lastUpdated;
     }
 
-    const initializeNewTimeLeft = useEffectEvent(
-        (
-            baseTimeLeft: number,
-            lastUpdated: number,
-            isTicking: boolean,
-            estimatedClockDrift: number,
-        ) => {
-            if (isTicking) {
-                const timePassed = calculateTimePassed(
-                    lastUpdated,
-                    estimatedClockDrift,
-                );
-                setTimeLeft(baseTimeLeft - timePassed);
-            } else {
-                setTimeLeft(baseTimeLeft);
-            }
-        },
-    );
-    useEffect(() => {
-        initializeNewTimeLeft(
-            baseTimeLeft,
-            clocks.lastUpdated,
-            isTicking,
+    const updateTimeLeft = useEffectEvent(() => {
+        if (!isTicking) {
+            setTimeUntilAbandonedMs(null);
+            setTimeLeftMs(clock.timeLeftMs);
+            return;
+        }
+
+        const timePassed = calculateTimePassed(
+            clockLastUpdated,
             serverClockAheadByMs,
         );
-    }, [baseTimeLeft, clocks.lastUpdated, isTicking, serverClockAheadByMs]);
+
+        if (!clock.isInGracePeriod) {
+            setTimeLeftMs(clock.timeLeftMs - timePassed);
+        }
+
+        if (typeof clock.timeUntilAbandonMs === "number") {
+            setTimeUntilAbandonedMs(clock.timeUntilAbandonMs - timePassed);
+        } else {
+            setTimeUntilAbandonedMs(null);
+        }
+    });
+
+    useEffect(() => {
+        updateTimeLeft();
+    }, [clock.timeLeftMs, clock.timeUntilAbandonMs, clockLastUpdated]);
 
     useEffect(() => {
         if (!isTicking) return;
 
         const interval = setInterval(
-            () => {
-                const timePassed = calculateTimePassed(
-                    clocks.lastUpdated,
-                    serverClockAheadByMs,
-                );
-                setTimeLeft(baseTimeLeft - timePassed);
-            },
+            updateTimeLeft,
             isInTimeTrouble ? 100 : 1000,
         );
         return () => {
             clearInterval(interval);
         };
     }, [
+        clock.timeLeftMs,
+        clock.timeUntilAbandonMs,
+        clockLastUpdated,
         isTicking,
         isInTimeTrouble,
-        baseTimeLeft,
-        clocks.lastUpdated,
         serverClockAheadByMs,
     ]);
 
     useEffect(() => {
         if (
-            clocks.isFrozen ||
+            isFrozen ||
             !isInTimeTrouble ||
             playedWarningSoundRef.current ||
             viewer.playerColor !== color
@@ -91,10 +92,10 @@ const GameClock = ({ color }: { color: GameColor }) => {
 
         AudioPlayer.playAudio(AudioType.LOW_TIME);
         playedWarningSoundRef.current = true;
-    }, [timeLeft, color, viewer.playerColor, clocks.isFrozen, isInTimeTrouble]);
+    }, [timeLeftMs, color, viewer.playerColor, isFrozen, isInTimeTrouble]);
 
-    const minutes = Math.max(0, Math.floor(timeLeft / 60000));
-    const seconds = Math.max(0, (timeLeft % 60000) / 1000);
+    const minutes = Math.max(0, Math.floor(timeLeftMs / 60000));
+    const seconds = Math.max(0, (timeLeftMs % 60000) / 1000);
 
     const strMinutes = minutes.toString().padStart(2, "0");
 
@@ -103,18 +104,28 @@ const GameClock = ({ color }: { color: GameColor }) => {
         : Math.floor(seconds).toString().padStart(2, "0"); // xx
 
     return (
-        <span
+        <div
             className={clsx(
-                "font-mono text-2xl",
-                isInTimeTrouble && isTicking && "animate-freakout",
-                seconds <= 0 &&
-                    minutes <= 0 &&
-                    clocks.isFrozen &&
-                    "text-red-600",
+                "flex flex-col items-end justify-center font-mono leading-2",
             )}
         >
-            {strMinutes}:{strSeconds}
-        </span>
+            <span
+                className={clsx(
+                    "text-2xl",
+                    isInTimeTrouble && isTicking && "animate-freakout",
+                    seconds <= 0 && minutes <= 0 && isFrozen && "text-red-600",
+                )}
+            >
+                {strMinutes}:{strSeconds}
+            </span>
+
+            {timeUntilAbandonedMs && (
+                <span className="font-bold text-nowrap">
+                    move in{" "}
+                    {Math.max(0, Math.round(timeUntilAbandonedMs / 1000))}s
+                </span>
+            )}
+        </div>
     );
 };
 export default GameClock;

@@ -306,11 +306,17 @@ export enum GameColor {
 }
 
 export type Clocks = {
-    whiteClock: number;
-    blackClock: number;
+    whiteClock: ClockPlayer;
+    blackClock: ClockPlayer;
     lastUpdated: number;
     isFrozen: boolean;
     serverTime: number;
+};
+
+export type ClockPlayer = {
+    timeLeftMs: number;
+    timeUntilAbandonMs?: number | null;
+    isInGracePeriod: boolean;
 };
 
 export type MoveSnapshot = {
