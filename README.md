@@ -127,7 +127,7 @@ backend/Scripts/Orleans
 |- 002-reminders.sql
 |- 003-storage.sql
 |- 004-clustering.sql
-|- 004-streaming.sql
+|- 005-streaming.sql
 ```
 
 4. Apply EF Core migrations
