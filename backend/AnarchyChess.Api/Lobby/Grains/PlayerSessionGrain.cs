@@ -198,13 +198,13 @@ public class PlayerSessionGrain
             nameof(GameStartedEvent),
             this.GetPrimaryKeyString()
         );
-        await startedStream.SubscribeAsync(this);
+        await startedStream.SubscribeOrResumeAsync(OnNextAsync);
 
         var endedStream = streamProvider.GetStream<GameEndedEvent>(
             nameof(GameEndedEvent),
             this.GetPrimaryKeyString()
         );
-        await endedStream.SubscribeAsync(this);
+        await endedStream.SubscribeOrResumeAsync(OnNextAsync);
 
         await base.OnActivateAsync(cancellationToken);
     }
