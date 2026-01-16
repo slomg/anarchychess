@@ -1,15 +1,17 @@
 import { render, screen } from "@testing-library/react";
 import { act } from "react";
 
-import { EventHandlers } from "@/features/signalR/hooks/useSignalREvent";
-import OpenSeekDirectory from "../OpenSeekDirectory";
-import createFakeOpenSeek from "@/lib/testUtils/fakers/openSeekFaker";
-import constants from "@/lib/constants";
 import {
     OpenSeekClientEvents,
     useOpenSeekEmitter,
     useOpenSeekEvent,
 } from "@/features/lobby/hooks/useOpenSeekHub";
+
+import { EventHandlers } from "@/features/signalR/hooks/useSignalREvent";
+import createFakeOpenSeek from "@/lib/testUtils/fakers/openSeekFaker";
+import OpenSeekDirectory from "../OpenSeekDirectory";
+import constants from "@/lib/constants";
+import useLobbyStore from "@/features/lobby/stores/lobbyStore";
 
 vi.mock("@/features/lobby/hooks/useOpenSeekHub");
 vi.mock("@/features/lobby/hooks/useLobbyHub");
@@ -21,6 +23,7 @@ describe("OpenSeekDirectory", () => {
     const useOpenSeekEventMock = vi.mocked(useOpenSeekEvent);
 
     beforeEach(() => {
+        useLobbyStore.setState(useLobbyStore.getInitialState());
         vi.mocked(useOpenSeekEmitter).mockReturnValue(sendOpenSeekEvent);
         useOpenSeekEventMock.mockImplementation((event, handler) => {
             openSeekHandlers[event] = handler;
@@ -98,6 +101,7 @@ describe("OpenSeekDirectory", () => {
         ).not.toBeInTheDocument();
 
         await act(() => vi.advanceTimersByTimeAsync(300));
+
         expect(screen.getByTestId("noOpenChallengesText")).toBeInTheDocument();
     });
 

@@ -17,32 +17,31 @@
     <PackageReference Include="FluentStorage.Azure.Blobs" Version="6.0.0" />
     <PackageReference Include="FluentValidation" Version="12.1.1" />
     <PackageReference Include="IP2Location.IPGeolocation" Version="9.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="10.0.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.1" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.1">
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="10.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.1">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Orleans.Clustering.AdoNet" Version="9.2.1" />
-    <PackageReference Include="Microsoft.Orleans.Persistence.AdoNet" Version="9.2.1" />
-    <PackageReference Include="Microsoft.Orleans.Reminders.AdoNet" Version="9.2.1" />
-    <PackageReference Include="Microsoft.Orleans.Server" Version="9.2.1" />
-    <PackageReference Include="Microsoft.Orleans.Streaming" Version="9.2.1" />
-    <PackageReference Include="Microsoft.Orleans.Streaming.AzureStorage" Version="9.2.1" />
+    <PackageReference Include="Microsoft.Orleans.Clustering.AdoNet" Version="10.0.0-rc.2" />
+    <PackageReference Include="Microsoft.Orleans.Persistence.AdoNet" Version="10.0.0-rc.2" />
+    <PackageReference Include="Microsoft.Orleans.Reminders.AdoNet" Version="10.0.0-rc.2" />
+    <PackageReference Include="Microsoft.Orleans.Server" Version="10.0.0-rc.2" />
+    <PackageReference Include="Microsoft.Orleans.Streaming.AdoNet" Version="10.0.0-rc.2" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
     <PackageReference Include="NSwag.AspNetCore" Version="14.6.3" />
     <PackageReference Include="OpenIddict.Client.AspNetCore" Version="7.2.0" />
     <PackageReference Include="OpenIddict.Client.WebIntegration" Version="7.2.0" />
-    <PackageReference Include="Scalar.AspNetCore" Version="2.12.4" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.12.7" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageReference Include="Serilog.Sinks.Async" Version="2.1.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />

@@ -1,7 +1,7 @@
 "use client";
 
 import { CSSTransition, TransitionGroup } from "react-transition-group";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useEffectEvent, useRef, useState } from "react";
 
 import {
     useOpenSeekEmitter,
@@ -31,6 +31,23 @@ const OpenSeekDirectory = () => {
     const [showNoSeeksText, setShowNoSeeksText] = useState(true);
     const sendOpenSeekEvent = useOpenSeekEmitter();
 
+    const updateNoSeeksText = useEffectEvent((): NodeJS.Timeout | null => {
+        if (openSeeks.length !== 0) {
+            setShowNoSeeksText(false);
+            return null;
+        } else {
+            return setTimeout(() => setShowNoSeeksText(true), 300);
+        }
+    });
+    useEffect(() => {
+        const timer = updateNoSeeksText();
+        return () => {
+            if (timer) {
+                clearTimeout(timer);
+            }
+        };
+    }, [openSeeks.length]);
+
     useEffect(() => {
         const interval = setInterval(
             () => sendOpenSeekEvent("SubscribeAsync"),
@@ -50,8 +67,6 @@ const OpenSeekDirectory = () => {
                 const ref = React.createRef<HTMLDivElement>();
                 copy[key] = ref;
             }
-            setShowNoSeeksText(false);
-
             return copy;
         });
     });
@@ -63,11 +78,6 @@ const OpenSeekDirectory = () => {
             const copy = { ...prev };
             const key = OpenSeekToKeyStr(userId, pool);
             delete copy[key];
-
-            if (Object.keys(copy).length === 0) {
-                setTimeout(() => setShowNoSeeksText(true), 300);
-            }
-
             return copy;
         });
     });

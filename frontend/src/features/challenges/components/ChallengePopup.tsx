@@ -140,7 +140,7 @@ const ChallengePopup: ForwardRefRenderFunction<
                     onClick={onChallenge}
                     data-testid="challengePopupCreate"
                 >
-                    Challenge {recipient?.userName ?? "a friend"}
+                    Challenge {recipient?.userName ?? "a Friend"}
                 </Button>
                 {error && (
                     <span
