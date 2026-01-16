@@ -1,25 +1,30 @@
 import Image from "next/image";
 
-export interface ProfilePictureProps {
-    userId: string;
-    size?: number;
-    className?: string;
-    refreshKey?: number;
-}
-
 const ProfilePicture = ({
     userId,
     size = 120,
+    minSize,
     className,
     refreshKey,
-}: ProfilePictureProps) => {
+}: {
+    userId: string;
+    size?: number;
+    minSize?: number;
+    className?: string;
+    refreshKey?: number;
+}) => {
     let url = `${process.env.NEXT_PUBLIC_API_URL}/api/Profile/profile-picture/${userId}`;
     if (refreshKey !== undefined) url += `?${refreshKey}`;
 
     return (
         <div
             className={className}
-            style={{ width: size, height: size }}
+            style={{
+                width: size,
+                height: size,
+                minWidth: minSize,
+                minHeight: minSize,
+            }}
             data-testid="profilePicture"
         >
             <Image

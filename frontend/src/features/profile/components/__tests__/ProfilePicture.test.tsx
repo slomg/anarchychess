@@ -18,11 +18,13 @@ describe("ProfilePicture", () => {
         const className = "test-class";
         const userId = "testuser";
         const size = 150;
+        const minSize = 100;
 
         render(
             <ProfilePicture
                 userId={userId}
                 size={size}
+                minSize={minSize}
                 className={className}
             />,
         );
@@ -38,7 +40,14 @@ describe("ProfilePicture", () => {
             undefined,
         );
         const pfp = screen.getByAltText("profile picture");
-        expect(pfp.parentElement?.className).toBe(className);
+        const parent = pfp.parentElement;
+        expect(parent?.className).toBe(className);
+        expect(parent).toHaveStyle({
+            width: size + "px",
+            height: size + "px",
+            minWidth: minSize + "px",
+            minHeight: minSize + "px",
+        });
     });
 
     it("should add refreshKey if provided", () => {
