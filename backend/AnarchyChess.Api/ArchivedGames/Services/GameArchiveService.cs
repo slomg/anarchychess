@@ -46,7 +46,7 @@ public class GameArchiveService(IGameArchiveRepository gameArchiveRepository) : 
         var blackArchive = CreatePlayerArchive(
             state.BlackPlayer,
             ratingChange?.BlackChange,
-            state.Clocks.WhiteClock.TimeLeftMs
+            state.Clocks.BlackClock.TimeLeftMs
         );
         List<MoveArchive> moves = [];
         for (int i = 0; i < state.MoveHistory.Count; i++)

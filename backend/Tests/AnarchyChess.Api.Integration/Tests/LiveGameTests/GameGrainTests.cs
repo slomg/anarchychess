@@ -65,7 +65,11 @@ public class GameGrainTests : BaseOrleansIntegrationTest
             IOptions<AppSettings>
         >();
         var gameFinalizer = ApiTestBase.Scope.ServiceProvider.GetRequiredService<IGameFinalizer>();
-        _gameClock = new(_timeProviderMock);
+        _gameClock = new(
+            settings,
+            ApiTestBase.Scope.ServiceProvider.GetRequiredService<IGameResultDescriber>(),
+            _timeProviderMock
+        );
 
         _settings = settings.Value.Game;
         _timeProviderMock.GetUtcNow().Returns(_fakeNow);
@@ -120,9 +124,14 @@ public class GameGrainTests : BaseOrleansIntegrationTest
         var result = await grain.GetStateAsync();
 
         result.IsError.Should().BeFalse();
+        ClockPlayerSnapshot expectedPlyerSnapshot = new(
+            TimeLeftMs: _pool.TimeControl.BaseSeconds * 1000,
+            TimeUntilAbandonMs: _settings.FirstMoveGracePeriod.TotalMilliseconds,
+            IsInGracePeriod: true
+        );
         ClockSnapshot expectedClock = new(
-            WhiteClock: _pool.TimeControl.BaseSeconds * 1000,
-            BlackClock: _pool.TimeControl.BaseSeconds * 1000,
+            WhiteClock: expectedPlyerSnapshot,
+            BlackClock: expectedPlyerSnapshot,
             LastUpdated: _fakeNow.ToUnixTimeMilliseconds(),
             ServerTime: _fakeNow.ToUnixTimeMilliseconds(),
             IsFrozen: false
@@ -209,6 +218,9 @@ public class GameGrainTests : BaseOrleansIntegrationTest
     {
         var grain = await CreateGrainAsync();
         await StartGameAsync(grain);
+        await GoOutOfGracePeriodAsync(grain);
+        _gameNotifierMock.ClearReceivedCalls();
+
         var in2Seconds = _fakeNow + TimeSpan.FromSeconds(2);
         _timeProviderMock.GetUtcNow().Returns(in2Seconds);
 
@@ -228,8 +240,12 @@ public class GameGrainTests : BaseOrleansIntegrationTest
             TimeLeft: expectedTimeLeft
         );
         ClockSnapshot expectedClock = new(
-            WhiteClock: expectedTimeLeft,
-            BlackClock: _pool.TimeControl.BaseSeconds * 1000,
+            WhiteClock: new(expectedTimeLeft, TimeUntilAbandonMs: null, IsInGracePeriod: false),
+            BlackClock: new(
+                _pool.TimeControl.BaseSeconds * 1000,
+                TimeUntilAbandonMs: null,
+                IsInGracePeriod: false
+            ),
             LastUpdated: in2Seconds.ToUnixTimeMilliseconds(),
             ServerTime: in2Seconds.ToUnixTimeMilliseconds(),
             IsFrozen: false
@@ -243,7 +259,7 @@ public class GameGrainTests : BaseOrleansIntegrationTest
                             new MoveNotification(
                                 GameToken: _gameToken,
                                 Move: expectedMoveSnapshot,
-                                PlyNumber: 1,
+                                PlyNumber: 3,
                                 Clocks: expectedClock,
                                 SideToMoveUserId: _blackPlayer.UserId,
                                 EncodedLegalMoves: legalMoves.EncodedMoves,
@@ -398,7 +414,6 @@ public class GameGrainTests : BaseOrleansIntegrationTest
     public async Task MovePieceAsync_reschedules_timer_if_no_timeout()
     {
         var grain = await CreateGrainAsync();
-
         await StartGameAsync(grain, timeControl: new(BaseSeconds: 10, IncrementSeconds: 0));
         _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromSeconds(3));
         Silo.TimerRegistry.Mock.Reset();
@@ -414,7 +429,11 @@ public class GameGrainTests : BaseOrleansIntegrationTest
                 context,
                 It.IsAny<Func<It.IsAnyType, CancellationToken, Task>>(),
                 It.IsAny<It.IsAnyType>(),
-                new() { DueTime = TimeSpan.FromSeconds(10), Period = Timeout.InfiniteTimeSpan }
+                new()
+                {
+                    DueTime = _settings.FirstMoveGracePeriod,
+                    Period = Timeout.InfiniteTimeSpan,
+                }
             )
         );
     }
@@ -452,11 +471,12 @@ public class GameGrainTests : BaseOrleansIntegrationTest
     public async Task OnClockTimerElapsedAsync_ends_the_game_when_time_runs_out()
     {
         var grain = await CreateGrainAsync();
-        await StartGameAsync(grain, timeControl: new(0, 0));
+        await StartGameAsync(grain, timeControl: new(60, 0));
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow + _settings.FirstMoveGracePeriod);
 
         await Silo.FireAllTimersAsync();
 
-        await TestGameEndedAsync(grain, _gameResultDescriber.Timeout(GameColor.White));
+        await TestGameEndedAsync(grain, _gameResultDescriber.Aborted(GameColor.White));
     }
 
     [Fact]
@@ -464,6 +484,7 @@ public class GameGrainTests : BaseOrleansIntegrationTest
     {
         var grain = await CreateGrainAsync();
         await StartGameAsync(grain, timeControl: new(BaseSeconds: 10, 0));
+        await GoOutOfGracePeriodAsync(grain);
 
         _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromSeconds(5));
         await Silo.FireAllTimersAsync();
@@ -559,5 +580,11 @@ public class GameGrainTests : BaseOrleansIntegrationTest
                 It.Is<IGrainReminder>(r => r.ReminderName == GameGrain.ClockReactivationReminder)
             )
         );
+    }
+
+    private async Task GoOutOfGracePeriodAsync(GameGrain grain)
+    {
+        await MakeLegalMoveAsync(grain, _whitePlayer);
+        await MakeLegalMoveAsync(grain, _blackPlayer);
     }
 }

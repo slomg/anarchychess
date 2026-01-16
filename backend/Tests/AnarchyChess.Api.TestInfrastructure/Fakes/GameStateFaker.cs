@@ -24,16 +24,7 @@ public class GameStateFaker : RecordFaker<GameState>
         );
         RuleFor(x => x.WhitePlayer, f => new GamePlayerFaker(GameColor.White).Generate());
         RuleFor(x => x.BlackPlayer, f => new GamePlayerFaker(GameColor.Black).Generate());
-        RuleFor(
-            x => x.Clocks,
-            f => new ClockSnapshot(
-                WhiteClock: f.Random.Double(1000, 100000),
-                BlackClock: f.Random.Double(1000, 100000),
-                LastUpdated: f.Random.Double(1000000, 10000000),
-                ServerTime: f.Random.Double(1000000, 10000000),
-                IsFrozen: false
-            )
-        );
+        RuleFor(x => x.Clocks, f => new ClockSnapshotFaker().Generate());
         RuleFor(x => x.SideToMove, f => f.PickRandom<GameColor>());
         RuleFor(x => x.InitialFen, "10/10/10/10/10/10/10/10/10/10");
         RuleFor(x => x.MoveOptions, f => new MoveOptionsFaker().Generate());

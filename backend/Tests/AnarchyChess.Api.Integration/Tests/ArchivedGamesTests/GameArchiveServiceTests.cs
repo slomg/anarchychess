@@ -30,7 +30,7 @@ public class GameArchiveServiceTests : BaseIntegrationTest
     {
         var gameState = new GameStateFaker().Generate();
         GameEndStatus endStatus = new(GameResult.WhiteWin, "White Won by Resignation");
-        var ratingChange = new RatingChange(WhiteChange: 100, BlackChange: -150);
+        RatingChange ratingChange = new(WhiteChange: 100, BlackChange: -150);
 
         var result = await _gameArchiveService.CreateArchiveAsync(
             _gameToken,
@@ -58,14 +58,14 @@ public class GameArchiveServiceTests : BaseIntegrationTest
             IncrementSeconds = gameState.Pool.TimeControl.IncrementSeconds,
 
             WhitePlayer = CreateExpectedPlayerArchive(
-                gameState.WhitePlayer,
-                ratingChange.WhiteChange,
-                gameState.Clocks.WhiteClock
+                player: gameState.WhitePlayer,
+                ratingChange: ratingChange.WhiteChange,
+                timeLeft: gameState.Clocks.WhiteClock.TimeLeftMs
             ),
             BlackPlayer = CreateExpectedPlayerArchive(
-                gameState.BlackPlayer,
-                ratingChange.BlackChange,
-                gameState.Clocks.BlackClock
+                player: gameState.BlackPlayer,
+                ratingChange: ratingChange.BlackChange,
+                timeLeft: gameState.Clocks.BlackClock.TimeLeftMs
             ),
             Moves = [.. CreateExpectedMoveArchives(gameState.MoveHistory)],
         };
@@ -229,18 +229,18 @@ public class GameArchiveServiceTests : BaseIntegrationTest
                     Triggers = move.Path.TriggerIdxs?.ToList() ?? [],
                     SideEffects =
                         move.Path.SideEffects?.Select(x => new MoveSideEffectArchive
-                            {
-                                FromIdx = x.FromIdx,
-                                ToIdx = x.ToIdx,
-                            })
+                        {
+                            FromIdx = x.FromIdx,
+                            ToIdx = x.ToIdx,
+                        })
                             .ToList() ?? [],
                     PieceSpawns =
                         move.Path.PieceSpawns?.Select(x => new PieceSpawnArchive
-                            {
-                                Type = x.Type,
-                                Color = x.Color,
-                                PosIdx = x.PosIdx,
-                            })
+                        {
+                            Type = x.Type,
+                            Color = x.Color,
+                            PosIdx = x.PosIdx,
+                        })
                             .ToList() ?? [],
                     PromotesTo = move.Path.PromotesTo,
                 }
