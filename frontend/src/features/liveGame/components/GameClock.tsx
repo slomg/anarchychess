@@ -105,22 +105,21 @@ const GameClock = ({ color }: { color: GameColor }) => {
 
     return (
         <div
-            className={clsx(
-                "flex flex-col items-end justify-center font-mono leading-2",
-            )}
+            className="flex h-full flex-col items-end justify-center gap-2
+                font-mono"
         >
-            <span
+            <p
                 className={clsx(
-                    "text-2xl",
+                    "text-2xl leading-4",
                     isInTimeTrouble && isTicking && "animate-freakout",
                     seconds <= 0 && minutes <= 0 && isFrozen && "text-red-600",
                 )}
             >
                 {strMinutes}:{strSeconds}
-            </span>
+            </p>
 
             {timeUntilAbandonedMs && (
-                <span className="font-bold text-nowrap">
+                <span className="leading-3 font-bold text-nowrap">
                     move in{" "}
                     {Math.max(0, Math.round(timeUntilAbandonedMs / 1000))}s
                 </span>
