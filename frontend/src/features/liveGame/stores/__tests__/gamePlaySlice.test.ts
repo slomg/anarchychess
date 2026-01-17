@@ -110,12 +110,12 @@ describe("gamePlaySlice", () => {
 
     describe("receiveLiveMove", () => {
         it("should update clocks, sideToMove, and clear isPendingMoveAck", () => {
-            const newClocks: Clocks = createFakeClocks({ whiteClock: 2 });
+            const newClocks: Clocks = createFakeClocks({ serverTime: 1 });
             const newSideToMove = GameColor.BLACK;
 
             store.setState({
                 isPendingMoveAck: true,
-                clocks: createFakeClocks({ whiteClock: 1 }),
+                clocks: createFakeClocks({ serverTime: 2 }),
                 sideToMove: GameColor.WHITE,
             });
 
@@ -171,10 +171,10 @@ describe("gamePlaySlice", () => {
 
     describe("setClocks", () => {
         it("should update clocks", () => {
-            const oldClocks = createFakeClocks({ whiteClock: 1 });
+            const oldClocks = createFakeClocks({ serverTime: 1 });
             store.setState({ clocks: oldClocks });
 
-            const newClocks = createFakeClocks({ whiteClock: 2 });
+            const newClocks = createFakeClocks({ serverTime: 2 });
             store.getState().setClocks(newClocks);
 
             expect(store.getState().clocks).toEqual(newClocks);

@@ -29,6 +29,7 @@ public class GameGrainTests : BaseGrainTest
 
     private readonly GameGrainState _state;
     private readonly IGameClock _clockMock;
+    private readonly GameClockState _expectedClockState;
 
     public GameGrainTests()
     {
@@ -40,6 +41,13 @@ public class GameGrainTests : BaseGrainTest
         Silo.ServiceProvider.AddService(Options.Create(AppSettingsLoader.LoadAppSettings()));
         Silo.ServiceProvider.AddService(coreMock);
         Silo.ServiceProvider.AddService(_clockMock);
+
+        _expectedClockState = new()
+        {
+            TimeControl = _pool.TimeControl,
+            Clocks = new() { [GameColor.White] = new(), [GameColor.Black] = new() },
+        };
+        _clockMock.Create(_pool.TimeControl).Returns(_expectedClockState);
 
         _state = Silo.StorageManager.GetStorage<GameGrainState>(GameGrain.StateName).State;
     }
@@ -67,7 +75,7 @@ public class GameGrainTests : BaseGrainTest
             MoveSnapshots = [],
             Core = new(),
             DrawRequest = new(),
-            ClockState = new() { TimeControl = _pool.TimeControl },
+            ClockState = _expectedClockState,
             NotifierState = new(),
         };
 
@@ -76,11 +84,12 @@ public class GameGrainTests : BaseGrainTest
             .CalculateTimeLeftMs(
                 GameColor.White,
                 ArgEx.FluentAssert<GameClockState>(x =>
-                    x.Should().BeEquivalentTo(expectedGameData.ClockState)
+                    x.Should().BeEquivalentTo(_expectedClockState)
                 ),
                 isTicking: true
             )
             .Returns(timeLeftMs);
+        _clockMock.Create(_pool.TimeControl).Returns(_expectedClockState);
 
         var grain = await Silo.CreateGrainAsync<GameGrain>(TestGameToken);
         Silo.TimerRegistry.NumberOfActiveTimers.Should().Be(0);
@@ -129,13 +138,6 @@ public class GameGrainTests : BaseGrainTest
             && x.GameSource == expectedGameData.GameSource
         );
 
-        _clockMock
-            .Received(1)
-            .Reset(
-                ArgEx.FluentAssert<GameClockState>(x =>
-                    x.Should().BeEquivalentTo(expectedGameData.ClockState)
-                )
-            );
         _state.CurrentGame.Should().BeEquivalentTo(expectedGameData);
     }
 

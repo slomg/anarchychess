@@ -9,6 +9,7 @@ public interface IGameResultDescriber
     GameEndStatus KingSelfCapture(GameColor by);
     GameEndStatus KingCaptured(GameColor by);
     GameEndStatus Resignation(GameColor by);
+    GameEndStatus Abandoned(GameColor by);
     GameEndStatus Timeout(GameColor by);
     GameEndStatus Aborted(GameColor by);
 
@@ -31,6 +32,9 @@ public class GameResultDescriber : IGameResultDescriber
 
     public GameEndStatus Resignation(GameColor by) =>
         new(GetResultByLoser(by), $"{by.Invert()} Won by Resignation");
+
+    public GameEndStatus Abandoned(GameColor by) =>
+        new(GetResultByLoser(by), $"{by} Abandoned the Game");
 
     public GameEndStatus Timeout(GameColor by) =>
         new(GetResultByLoser(by), $"{by.Invert()} Won by Timeout");

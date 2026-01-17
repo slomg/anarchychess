@@ -79,17 +79,12 @@ public class TimeUsedMsMetricTests
         int totalPlies
     )
     {
-        ClockSnapshot clock = new(
-            WhiteClock: whiteClock,
-            BlackClock: blackClock,
-            LastUpdated: 0,
-            ServerTime: 0,
-            IsFrozen: true
-        );
-        var poolKey = new PoolKeyFaker().RuleFor(x => x.TimeControl, timeControl);
+        var clock = new ClockSnapshotFaker(whiteClock, blackClock).Generate();
+        var poolKey = new PoolKeyFaker().RuleFor(x => x.TimeControl, timeControl).Generate();
         var gameState = new GameStateFaker()
             .RuleFor(x => x.Clocks, clock)
-            .RuleFor(x => x.Pool, poolKey);
+            .RuleFor(x => x.Pool, poolKey)
+            .Generate();
 
         return new GameQuestSnapshotFaker(playerColor)
             .RuleFor(x => x.FinalGameState, gameState)

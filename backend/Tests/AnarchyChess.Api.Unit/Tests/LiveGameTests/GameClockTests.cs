@@ -1,8 +1,11 @@
-﻿using AnarchyChess.Api.Game.Services;
-using AnarchyChess.Api.GameLogic.Extensions;
+﻿using AnarchyChess.Api.Game.Models;
+using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
+using AnarchyChess.Api.Shared.Models;
+using AnarchyChess.Api.TestInfrastructure.Utils;
 using AwesomeAssertions;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 
 namespace AnarchyChess.Api.Unit.Tests.LiveGameTests;
@@ -10,227 +13,344 @@ namespace AnarchyChess.Api.Unit.Tests.LiveGameTests;
 public class GameClockTests
 {
     private readonly GameClock _clock;
-    private readonly GameClockState _state = new()
-    {
-        TimeControl = new(BaseSeconds: 300, IncrementSeconds: 10),
-    };
+    private readonly TimeControlSettings _timeControl = new(BaseSeconds: 300, IncrementSeconds: 10);
+    private readonly GameClockState _state;
+
+    private readonly GameSettings _settings;
+    private readonly GameResultDescriber _gameResultDescriber = new();
 
     private readonly TimeProvider _timeProviderMock = Substitute.For<TimeProvider>();
+    private readonly DateTimeOffset _fakeNow = DateTimeOffset.UtcNow;
 
     public GameClockTests()
     {
-        _clock = new(_timeProviderMock);
+        var settings = AppSettingsLoader.LoadAppSettings();
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow);
+        _settings = settings.Game;
+
+        _clock = new(Options.Create(settings), _gameResultDescriber, _timeProviderMock);
+
+        _state = _clock.Create(_timeControl);
+        _state.Clocks[GameColor.White].IsInGracePeriod = false;
+        _state.Clocks[GameColor.White].TimeUntilAbandonMs = null;
+        _state.Clocks[GameColor.Black].IsInGracePeriod = false;
+        _state.Clocks[GameColor.Black].TimeUntilAbandonMs = null;
     }
 
     [Fact]
-    public void Reset_sets_clocks_to_base_seconds_and_updates_last_updated()
+    public void Create_creates_state_correctly()
     {
-        var now = DateTimeOffset.UtcNow;
-        _timeProviderMock.GetUtcNow().Returns(now);
+        var result = _clock.Create(_timeControl);
 
-        _clock.Reset(_state);
-
-        _state.ClocksMs[GameColor.White].Should().Be(_state.TimeControl.BaseSeconds * 1000);
-        _state.ClocksMs[GameColor.Black].Should().Be(_state.TimeControl.BaseSeconds * 1000);
-        _state.LastUpdatedMs.Should().Be(now.ToUnixTimeMilliseconds());
-        _state.IsFrozen.Should().BeFalse();
-    }
-
-    [Fact]
-    public void CommitTurn_updates_clock_with_elapsed_and_increment()
-    {
-        _state.ClocksMs[GameColor.White] = 120_000;
-        _state.ClocksMs[GameColor.Black] = 120_000;
-        _state.TimeControl = new TimeControlSettings(BaseSeconds: 120, IncrementSeconds: 10);
-        _state.LastUpdatedMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-
-        int elapsed = 5_000;
-        var now = DateTimeOffset.FromUnixTimeMilliseconds(_state.LastUpdatedMs + elapsed);
-        _timeProviderMock.GetUtcNow().Returns(now);
-
-        var result = _clock.CommitTurn(GameColor.White, _state);
-
-        result.Should().Be(125_000); // 120000 - 5000 + 10000
-        _state.ClocksMs[GameColor.White].Should().Be(125_000);
-        _state.LastUpdatedMs.Should().Be(now.ToUnixTimeMilliseconds());
-    }
-
-    [Fact]
-    public void CalculateTimeLeftMs_returns_clock_minus_elapsed_when_not_frozen()
-    {
-        _state.ClocksMs[GameColor.White] = 90_000;
-        _state.ClocksMs[GameColor.Black] = 90_000;
-        _state.LastUpdatedMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        _state.IsFrozen = false;
-
-        int elapsed = 15_000;
-        var now = DateTimeOffset.FromUnixTimeMilliseconds(_state.LastUpdatedMs + elapsed);
-        _timeProviderMock.GetUtcNow().Returns(now);
-
-        var timeLeft = _clock.CalculateTimeLeftMs(GameColor.White, _state);
-
-        timeLeft.Should().Be(75_000); // 90000 - 15000
-    }
-
-    [Fact]
-    public void CalculateTimeLeftMs_does_not_decrease_when_frozen()
-    {
-        _state.ClocksMs[GameColor.White] = 50_000;
-        _state.IsFrozen = true;
-        _state.LastUpdatedMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-
-        // Even if time has passed, frozen clock should not decrease
-        var now = DateTimeOffset.FromUnixTimeMilliseconds(_state.LastUpdatedMs + 10_000);
-        _timeProviderMock.GetUtcNow().Returns(now);
-
-        var timeLeft = _clock.CalculateTimeLeftMs(GameColor.White, _state);
-
-        timeLeft.Should().Be(50_000);
-    }
-
-    [Fact]
-    public void CalculateTimeLeftMs_does_not_decrease_when_isTicking_false()
-    {
-        _state.ClocksMs[GameColor.White] = 120_000;
-        _state.LastUpdatedMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        _state.IsFrozen = false;
-
-        var now = DateTimeOffset.FromUnixTimeMilliseconds(_state.LastUpdatedMs + 10_000);
-        _timeProviderMock.GetUtcNow().Returns(now);
-
-        var timeLeft = _clock.CalculateTimeLeftMs(GameColor.White, _state, isTicking: false);
-
-        timeLeft.Should().Be(120_000);
+        result
+            .Should()
+            .BeEquivalentTo(
+                new GameClockState()
+                {
+                    TimeControl = _timeControl,
+                    IsFrozen = false,
+                    Clocks = new Dictionary<GameColor, ClockPlayer>
+                    {
+                        [GameColor.White] = new ClockPlayer
+                        {
+                            TimeLeftMs = _timeControl.BaseSeconds * 1000,
+                            TimeUntilAbandonMs = _settings.FirstMoveGracePeriod.TotalMilliseconds,
+                            IsInGracePeriod = true,
+                        },
+                        [GameColor.Black] = new ClockPlayer
+                        {
+                            TimeLeftMs = _timeControl.BaseSeconds * 1000,
+                            TimeUntilAbandonMs = _settings.FirstMoveGracePeriod.TotalMilliseconds,
+                            IsInGracePeriod = true,
+                        },
+                    },
+                    LastUpdatedMs = _fakeNow.ToUnixTimeMilliseconds(),
+                }
+            );
     }
 
     [Fact]
     public void ToSnapshot_returns_snapshot_with_correct_values()
     {
-        _state.ClocksMs[GameColor.White] = 50_000;
-        _state.ClocksMs[GameColor.Black] = 60_000;
-        _state.LastUpdatedMs = 1234567890;
         _state.IsFrozen = true;
-
-        var now = DateTimeOffset.UtcNow;
-        _timeProviderMock.GetUtcNow().Returns(now);
 
         var snapshot = _clock.ToSnapshot(_state);
 
+        var whiteClock = _state.Clocks[GameColor.White];
+        var blackClock = _state.Clocks[GameColor.Black];
         snapshot
             .Should()
             .BeEquivalentTo(
                 new ClockSnapshot(
-                    WhiteClock: 50_000,
-                    BlackClock: 60_000,
-                    LastUpdated: 1234567890,
-                    ServerTime: now.ToUnixTimeMilliseconds(),
+                    WhiteClock: new(
+                        TimeLeftMs: whiteClock.TimeLeftMs,
+                        TimeUntilAbandonMs: whiteClock.TimeUntilAbandonMs,
+                        IsInGracePeriod: whiteClock.IsInGracePeriod
+                    ),
+                    BlackClock: new(
+                        TimeLeftMs: blackClock.TimeLeftMs,
+                        TimeUntilAbandonMs: blackClock.TimeUntilAbandonMs,
+                        IsInGracePeriod: blackClock.IsInGracePeriod
+                    ),
+                    LastUpdated: _state.LastUpdatedMs,
+                    ServerTime: _fakeNow.ToUnixTimeMilliseconds(),
                     IsFrozen: true
                 )
             );
     }
 
     [Fact]
-    public void CommitTurn_does_not_affect_opponent_clock()
+    public void CalculateTimeLeftMs_returns_decreased_time_from_time_left()
     {
-        _state.ClocksMs[GameColor.White] = 120_000;
-        _state.ClocksMs[GameColor.Black] = 120_000;
-        _state.TimeControl = new TimeControlSettings(BaseSeconds: 120, IncrementSeconds: 10);
-        _state.LastUpdatedMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        _state.Clocks[GameColor.White].TimeLeftMs = 300_000;
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(50_000));
 
-        var now = DateTimeOffset.FromUnixTimeMilliseconds(_state.LastUpdatedMs + 3_000);
-        _timeProviderMock.GetUtcNow().Returns(now);
+        var result = _clock.CalculateTimeLeftMs(GameColor.White, _state);
+
+        result.Should().Be(250_000);
+    }
+
+    [Fact]
+    public void CalculateTimeLeftMs_returns_decreased_time_from_abandon_timer_if_present()
+    {
+        _state.Clocks[GameColor.White].TimeUntilAbandonMs = 200_000;
+        _state.Clocks[GameColor.White].TimeLeftMs = 1_234_567;
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(50_000));
+
+        var result = _clock.CalculateTimeLeftMs(GameColor.White, _state);
+
+        result.Should().Be(150_000);
+    }
+
+    [Fact]
+    public void CalculateTimeLeftMs_doesnt_decrease_time_from_time_left_if_not_isTicking()
+    {
+        _state.Clocks[GameColor.White].TimeLeftMs = 300_000;
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(50_000));
+
+        var result = _clock.CalculateTimeLeftMs(GameColor.White, _state, isTicking: false);
+
+        result.Should().Be(300_000);
+    }
+
+    [Fact]
+    public void CalculateTimeLeftMs_doesnt_decrease_time_from_abandon_timer_if_not_isTicking()
+    {
+        _state.Clocks[GameColor.White].TimeLeftMs = 300_000;
+        _state.Clocks[GameColor.White].TimeUntilAbandonMs = 1_234_567;
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(50_000));
+
+        var result = _clock.CalculateTimeLeftMs(GameColor.White, _state, isTicking: false);
+
+        result.Should().Be(300_000);
+    }
+
+    [Fact]
+    public void CalculateTimeLeftMs_doesnt_decrease_time_if_frozen()
+    {
+        _state.Clocks[GameColor.White].TimeLeftMs = 300_000;
+        _state.IsFrozen = true;
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(50_000));
+
+        var result = _clock.CalculateTimeLeftMs(GameColor.White, _state);
+
+        result.Should().Be(300_000);
+    }
+
+    [Fact]
+    public void CalculateTimeLeftMs_doesnt_go_bellow_zero()
+    {
+        _state.Clocks[GameColor.White].TimeLeftMs = 50;
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(100));
+
+        var result = _clock.CalculateTimeLeftMs(GameColor.White, _state);
+
+        result.Should().Be(0);
+    }
+
+    [Fact]
+    public void CalculateTimeLeftMs_works_with_black()
+    {
+        _state.Clocks[GameColor.Black].TimeLeftMs = 700_000;
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(50_000));
+
+        var result = _clock.CalculateTimeLeftMs(GameColor.Black, _state);
+
+        result.Should().Be(650_000);
+    }
+
+    [Fact]
+    public void CommitTurn_updates_time_left_with_increment()
+    {
+        _state.Clocks[GameColor.White].TimeLeftMs = 300_000;
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(5_000));
+
+        var result = _clock.CommitTurn(GameColor.White, _state);
+
+        result.Should().Be(305_000); // 300_000 - 5_000 + 10_000
+        _state.Clocks[GameColor.White].TimeLeftMs.Should().Be(305_000);
+    }
+
+    [Fact]
+    public void CommiTurn_doesnt_decrement_time_left_in_grace_period()
+    {
+        _state.Clocks[GameColor.White].TimeLeftMs = 300_000;
+        _state.Clocks[GameColor.White].IsInGracePeriod = true;
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(50_000));
+
+        var result = _clock.CommitTurn(GameColor.White, _state);
+
+        result.Should().Be(300_000);
+        _state.Clocks[GameColor.White].TimeLeftMs.Should().Be(300_000);
+    }
+
+    [Fact]
+    public void CommitTurn_clears_grace_period()
+    {
+        _state.Clocks[GameColor.White].IsInGracePeriod = true;
 
         _clock.CommitTurn(GameColor.White, _state);
 
-        _state.ClocksMs[GameColor.Black].Should().Be(120_000);
+        _state.Clocks[GameColor.White].IsInGracePeriod.Should().BeFalse();
     }
 
     [Fact]
-    public void CalculateTimeLeftMs_returns_zero_if_elapsed_exceeds_clock()
+    public void CommitTurn_clears_abandon_timer()
     {
-        _state.ClocksMs[GameColor.White] = 5_000;
-        _state.LastUpdatedMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        _state.Clocks[GameColor.White].TimeUntilAbandonMs = 50_000;
 
-        var now = DateTimeOffset.FromUnixTimeMilliseconds(_state.LastUpdatedMs + 10_000);
-        _timeProviderMock.GetUtcNow().Returns(now);
+        _clock.CommitTurn(GameColor.White, _state);
 
-        var timeLeft = _clock.CalculateTimeLeftMs(GameColor.White, _state);
-
-        timeLeft.Should().Be(0);
+        _state.Clocks[GameColor.White].TimeUntilAbandonMs.Should().BeNull();
     }
 
     [Fact]
-    public void CommitLastTurn_freezes_clock_and_updates_time_without_increment()
+    public void CommitTurn_updates_last_updated_timestamp()
     {
-        _state.ClocksMs[GameColor.White] = 100_000;
-        _state.TimeControl = new TimeControlSettings(BaseSeconds: 100, IncrementSeconds: 10);
-        _state.LastUpdatedMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        _state.IsFrozen = false;
+        var newTime = _fakeNow + TimeSpan.FromMilliseconds(1234);
+        _timeProviderMock.GetUtcNow().Returns(newTime);
 
-        var now = DateTimeOffset.FromUnixTimeMilliseconds(_state.LastUpdatedMs + 2_000);
-        _timeProviderMock.GetUtcNow().Returns(now);
+        _clock.CommitTurn(GameColor.White, _state);
 
+        _state.LastUpdatedMs.Should().Be(newTime.ToUnixTimeMilliseconds());
+    }
+
+    [Fact]
+    public void CommitTurn_does_not_modify_other_players_clock()
+    {
+        _state.Clocks[GameColor.White].TimeLeftMs = 300_000;
+        _state.Clocks[GameColor.Black].TimeLeftMs = 400_000;
+
+        _clock.CommitTurn(GameColor.White, _state);
+
+        _state.Clocks[GameColor.Black].TimeLeftMs.Should().Be(400_000);
+    }
+
+    [Fact]
+    public void CommitTurn_works_with_black()
+    {
+        _state.Clocks[GameColor.Black].TimeLeftMs = 600_000;
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(10_000));
+
+        var result = _clock.CommitTurn(GameColor.Black, _state);
+
+        result.Should().Be(600_000);
+    }
+
+    [Fact]
+    public void CommitLastTurn_freezes_the_clock()
+    {
         _clock.CommitLastTurn(GameColor.White, _state);
 
         _state.IsFrozen.Should().BeTrue();
-        _state.ClocksMs[GameColor.White].Should().Be(98_000); // 100000 - 2000
-        _state.LastUpdatedMs.Should().Be(now.ToUnixTimeMilliseconds());
     }
 
     [Fact]
-    public void DetectTimeout_returns_null_if_no_player_is_timed_out()
+    public void CommitLastTurn_does_not_apply_increment()
     {
-        _state.ClocksMs[GameColor.White] = 50_000;
-        _state.ClocksMs[GameColor.Black] = 60_000;
-        _state.LastUpdatedMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        _state.IsFrozen = false;
+        _state.Clocks[GameColor.White].TimeLeftMs = 300_000;
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(5_000));
 
-        var now = DateTimeOffset.FromUnixTimeMilliseconds(_state.LastUpdatedMs + 1_000);
-        _timeProviderMock.GetUtcNow().Returns(now);
+        _clock.CommitLastTurn(GameColor.White, _state);
+
+        _state.Clocks[GameColor.White].TimeLeftMs.Should().Be(295_000); // 300_000 - 5_000, no increment
+    }
+
+    [Fact]
+    public void DetectTimeout_returns_null_when_no_player_has_timed_out()
+    {
+        _state.Clocks[GameColor.White].TimeLeftMs = 200_000;
+        _state.Clocks[GameColor.Black].TimeLeftMs = 200_000;
 
         var result = _clock.DetectTimeout(GameColor.White, _state);
 
         result.Should().BeNull();
     }
 
-    [Theory]
-    [InlineData(50, 101, GameColor.White)]
-    [InlineData(101, 50, GameColor.Black)]
-    public void DetectTimeout_returns_the_correct_timed_out_color(
-        int whiteClock,
-        int blackClock,
-        GameColor tickingPlayer
-    )
+    [Fact]
+    public void DetectTimeout_returns_white_timeout_when_white_time_runs_out()
     {
-        _state.ClocksMs[GameColor.White] = whiteClock;
-        _state.ClocksMs[GameColor.Black] = blackClock;
-        _state.LastUpdatedMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        _state.Clocks[GameColor.White].TimeLeftMs = 150;
+        _state.Clocks[GameColor.Black].TimeLeftMs = 200_000;
 
-        var now = DateTimeOffset.FromUnixTimeMilliseconds(_state.LastUpdatedMs);
-        _timeProviderMock.GetUtcNow().Returns(now);
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(100));
 
-        var tickingColorResult = _clock.DetectTimeout(tickingPlayer, _state);
-        var otherColorResult = _clock.DetectTimeout(tickingPlayer.Invert(), _state);
+        var result = _clock.DetectTimeout(GameColor.White, _state);
 
-        tickingColorResult.Should().Be(tickingPlayer);
-        otherColorResult.Should().Be(tickingPlayer);
+        result.Should().BeEquivalentTo(_gameResultDescriber.Timeout(GameColor.White));
     }
 
     [Fact]
-    public void DetectTimeout_only_ticks_ticking_player()
+    public void DetectTimeout_returns_black_timeout_when_black_time_is_exhausted()
     {
-        _state.ClocksMs[GameColor.White] = 101;
-        _state.ClocksMs[GameColor.Black] = 500;
-        _state.LastUpdatedMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        _state.IsFrozen = false;
+        _state.Clocks[GameColor.Black].TimeLeftMs = 150;
+        _state.Clocks[GameColor.White].TimeLeftMs = 200_000;
 
-        var now = DateTimeOffset.FromUnixTimeMilliseconds(_state.LastUpdatedMs + 450);
-        _timeProviderMock.GetUtcNow().Returns(now);
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(100));
 
-        var whiteResult = _clock.DetectTimeout(GameColor.White, _state);
-        whiteResult.Should().Be(GameColor.White);
+        var result = _clock.DetectTimeout(GameColor.Black, _state);
 
-        var blackResult = _clock.DetectTimeout(GameColor.Black, _state);
-        blackResult.Should().Be(GameColor.Black);
+        result.Should().BeEquivalentTo(_gameResultDescriber.Timeout(GameColor.Black));
+    }
+
+    [Fact]
+    public void DetectTimeout_aborts_game_when_player_times_out_in_grace_period()
+    {
+        _state.Clocks[GameColor.White].IsInGracePeriod = true;
+        _state.Clocks[GameColor.White].TimeUntilAbandonMs = 50;
+        _state.Clocks[GameColor.White].TimeLeftMs = 300_000;
+
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(100));
+
+        var result = _clock.DetectTimeout(GameColor.White, _state);
+
+        result.Should().BeEquivalentTo(_gameResultDescriber.Aborted(GameColor.White));
+    }
+
+    [Fact]
+    public void DetectTimeout_abandons_game_when_player_times_out_during_abandon_window()
+    {
+        _state.Clocks[GameColor.White].IsInGracePeriod = false;
+        _state.Clocks[GameColor.White].TimeUntilAbandonMs = 50;
+        _state.Clocks[GameColor.White].TimeLeftMs = 300_000;
+
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(100));
+
+        var result = _clock.DetectTimeout(GameColor.White, _state);
+
+        result.Should().BeEquivalentTo(_gameResultDescriber.Abandoned(GameColor.White));
+    }
+
+    [Fact]
+    public void DetectTimeout_only_considers_ticking_player_for_elapsed_time()
+    {
+        _state.Clocks[GameColor.White].TimeLeftMs = 200_000;
+        _state.Clocks[GameColor.Black].TimeLeftMs = 150;
+
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(100));
+
+        var result = _clock.DetectTimeout(GameColor.White, _state);
+
+        result.Should().BeNull();
     }
 }

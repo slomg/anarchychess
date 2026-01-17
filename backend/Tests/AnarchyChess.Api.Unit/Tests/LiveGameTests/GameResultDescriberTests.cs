@@ -62,6 +62,19 @@ public class GameResultDescriberTests
     }
 
     [Theory]
+    [InlineData(GameColor.White, GameResult.BlackWin, "White Abandoned the Game")]
+    [InlineData(GameColor.Black, GameResult.WhiteWin, "Black Abandoned the Game")]
+    public void Abanoned_returns_the_correct_status(
+        GameColor loser,
+        GameResult expectedResult,
+        string expectedDescription
+    )
+    {
+        var result = _describer.Abandoned(loser);
+        result.Should().Be(new GameEndStatus(expectedResult, expectedDescription));
+    }
+
+    [Theory]
     [InlineData(GameColor.White, GameResult.BlackWin, "Black Won by Timeout")]
     [InlineData(GameColor.Black, GameResult.WhiteWin, "White Won by Timeout")]
     public void Timeout_returns_the_correct_status(

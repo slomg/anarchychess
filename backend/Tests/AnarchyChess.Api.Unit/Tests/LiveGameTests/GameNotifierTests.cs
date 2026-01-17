@@ -63,13 +63,7 @@ public class GameNotifierTests
             GameToken: _gameToken,
             Move: new MoveSnapshotFaker().Generate(),
             PlyNumber: 5,
-            Clocks: new ClockSnapshot(
-                WhiteClock: 10,
-                BlackClock: 20,
-                LastUpdated: 1000,
-                ServerTime: 2000,
-                IsFrozen: false
-            ),
+            Clocks: new ClockSnapshotFaker(),
             SideToMoveUserId: _userId,
             EncodedLegalMoves: [1, 2, 3],
             HasForcedMoves: true
@@ -113,13 +107,7 @@ public class GameNotifierTests
     {
         GameNotifierState state = new() { Revision = 5 };
         GameResultData result = new GameResultDataFaker().Generate();
-        ClockSnapshot finalClocks = new(
-            WhiteClock: 10,
-            BlackClock: 20,
-            LastUpdated: 1000,
-            ServerTime: 2000,
-            IsFrozen: true
-        );
+        ClockSnapshot finalClocks = new ClockSnapshotFaker().Generate();
 
         await _notifier.NotifyGameEndedAsync(_gameToken, result, finalClocks, state);
 

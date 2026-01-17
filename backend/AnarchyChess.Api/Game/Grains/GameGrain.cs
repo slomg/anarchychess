@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using AnarchyChess.Api.Game.Errors;
+﻿using AnarchyChess.Api.Game.Errors;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.GameLogic.Models;
@@ -11,6 +10,7 @@ using AnarchyChess.Api.Streaming;
 using ErrorOr;
 using Microsoft.Extensions.Options;
 using Orleans.Streams;
+using System.Diagnostics.CodeAnalysis;
 
 namespace AnarchyChess.Api.Game.Grains;
 
@@ -67,8 +67,8 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         PlayerRoster players = new(whitePlayer, blackPlayer);
         GameCoreState core = new();
         DrawRequestState drawRequest = new();
-        GameClockState clockState = new() { TimeControl = pool.TimeControl };
         GameNotifierState notifierState = new();
+        GameClockState clockState = _clock.Create(pool.TimeControl);
 
         _state.State.CurrentGame = new()
         {
@@ -81,7 +81,6 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             ClockState = clockState,
             NotifierState = notifierState,
         };
-        _clock.Reset(clockState);
 
         ScheduleTimeoutTimer(_state.State.CurrentGame);
         await this.RegisterOrUpdateReminder(
@@ -163,12 +162,10 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         if (!game.Players.TryGetPlayerById(byUserId, out var player))
             return GameErrors.PlayerInvalid;
 
-        GameEndStatus endStatus;
-        var isAbort = game.MoveSnapshots.Count < 2;
-        if (isAbort)
-            endStatus = _resultDescriber.Aborted(player.Color);
-        else
-            endStatus = _resultDescriber.Resignation(player.Color);
+        GameEndStatus endStatus =
+            game.MoveSnapshots.Count < 2
+                ? _resultDescriber.Aborted(player.Color)
+                : _resultDescriber.Resignation(player.Color);
 
         _logger.LogInformation(
             "Game {GameToken} ended by user {UserId}. Result: {Result}",
@@ -377,19 +374,17 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         CancellationToken token = default
     )
     {
-        var timedOutColor = _clock.DetectTimeout(
+        var timeoutResult = _clock.DetectTimeout(
             tickingPlayer: _core.SideToMove(game.Core),
             game.ClockState
         );
-        if (timedOutColor is null)
+        if (timeoutResult is null)
         {
             return false;
         }
-        else
-        {
-            await EndGameAsync(_resultDescriber.Timeout(timedOutColor.Value), game, token);
-            return true;
-        }
+
+        await EndGameAsync(timeoutResult, game, token);
+        return true;
     }
 
     private async Task EndGameAsync(

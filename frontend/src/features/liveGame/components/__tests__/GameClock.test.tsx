@@ -9,6 +9,7 @@ import LiveChessStoreContext from "@/features/liveGame/contexts/liveChessContext
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
 import GameClock from "../GameClock";
 import { createFakeClocks } from "@/lib/testUtils/fakers/clocksFaker";
+import { createFakeClockPlayer } from "@/lib/testUtils/fakers/createFakeClockPlayer";
 
 vi.mock("@/features/audio/audioPlayer");
 
@@ -21,8 +22,8 @@ describe("GameClock", () => {
         store = createLiveChessStore(
             createFakeLiveChessStoreProps({
                 clocks: createFakeClocks({
-                    whiteClock: 300_000,
-                    blackClock: 300_000,
+                    whiteClock: createFakeClockPlayer({ timeLeftMs: 300_000 }),
+                    blackClock: createFakeClockPlayer({ timeLeftMs: 300_000 }),
                 }),
                 sideToMove: GameColor.WHITE,
             }),
@@ -69,8 +70,7 @@ describe("GameClock", () => {
     it("should freeze clock when isFrozen is true", () => {
         store.setState({
             clocks: createFakeClocks({
-                whiteClock: 300_000,
-                blackClock: 300_000,
+                whiteClock: createFakeClockPlayer({ timeLeftMs: 300_000 }),
                 isFrozen: true,
             }),
         });
@@ -92,8 +92,7 @@ describe("GameClock", () => {
     it("should show decimal seconds and animate under 20s", () => {
         store.setState({
             clocks: createFakeClocks({
-                whiteClock: 15_000,
-                blackClock: 300_000,
+                whiteClock: createFakeClockPlayer({ timeLeftMs: 15_000 }),
             }),
         });
 
@@ -114,8 +113,7 @@ describe("GameClock", () => {
     it("should apply 'text-red-600' class when clock is zero and frozen", () => {
         store.setState({
             clocks: createFakeClocks({
-                whiteClock: 0,
-                blackClock: 300_000,
+                whiteClock: createFakeClockPlayer({ timeLeftMs: 0 }),
                 isFrozen: true,
             }),
         });
@@ -138,8 +136,7 @@ describe("GameClock", () => {
     it("should show zero and doesn't go negative", () => {
         store.setState({
             clocks: createFakeClocks({
-                whiteClock: 5000,
-                blackClock: 300_000,
+                whiteClock: createFakeClockPlayer({ timeLeftMs: 5000 }),
             }),
         });
 
@@ -158,8 +155,7 @@ describe("GameClock", () => {
     it("should stop ticking when isFrozen is true", () => {
         store.setState({
             clocks: createFakeClocks({
-                whiteClock: 1000,
-                blackClock: 1000,
+                whiteClock: createFakeClockPlayer({ timeLeftMs: 1000 }),
                 isFrozen: true,
             }),
         });
@@ -179,8 +175,7 @@ describe("GameClock", () => {
     it("should apply increment to the clock when turn changes", () => {
         store.setState({
             clocks: createFakeClocks({
-                whiteClock: 300_000,
-                blackClock: 300_000,
+                whiteClock: createFakeClockPlayer({ timeLeftMs: 300_000 }),
             }),
         });
 
@@ -201,7 +196,7 @@ describe("GameClock", () => {
                 sideToMove: GameColor.BLACK,
                 clocks: {
                     ...store.getState().clocks,
-                    whiteClock: 305_000,
+                    whiteClock: createFakeClockPlayer({ timeLeftMs: 305_000 }),
                     lastUpdated: Date.now().valueOf(),
                 },
             });
@@ -213,8 +208,7 @@ describe("GameClock", () => {
     it("should play warning sound once when time goes under 20s", () => {
         store.setState({
             clocks: createFakeClocks({
-                whiteClock: 21_000,
-                blackClock: 300_000,
+                whiteClock: createFakeClockPlayer({ timeLeftMs: 21_000 }),
             }),
             sideToMove: GameColor.WHITE,
             viewer: { playerColor: GameColor.WHITE, userId: "id" },
@@ -240,8 +234,7 @@ describe("GameClock", () => {
     it("should not play sound if viewer is not the player", () => {
         store.setState({
             clocks: createFakeClocks({
-                whiteClock: 15_000,
-                blackClock: 300_000,
+                whiteClock: createFakeClockPlayer({ timeLeftMs: 15_000 }),
             }),
             sideToMove: GameColor.WHITE,
             viewer: { playerColor: GameColor.BLACK, userId: "id" }, // not same color
@@ -259,8 +252,7 @@ describe("GameClock", () => {
     it("should not play sound when clock is frozen", () => {
         store.setState({
             clocks: createFakeClocks({
-                whiteClock: 15_000,
-                blackClock: 300_000,
+                whiteClock: createFakeClockPlayer({ timeLeftMs: 15_000 }),
                 isFrozen: true,
             }),
             sideToMove: GameColor.WHITE,
@@ -279,8 +271,7 @@ describe("GameClock", () => {
     it("should account for server clock ahead ", () => {
         store.setState({
             clocks: createFakeClocks({
-                whiteClock: 60_000,
-                blackClock: 60_000,
+                whiteClock: createFakeClockPlayer({ timeLeftMs: 60_000 }),
             }),
             serverClockAheadByMs: 5_000,
         });
@@ -303,11 +294,9 @@ describe("GameClock", () => {
     it("should account for server clock behind", () => {
         store.setState({
             clocks: createFakeClocks({
-                whiteClock: 60_000,
-                blackClock: 60_000,
+                whiteClock: createFakeClockPlayer({ timeLeftMs: 60_000 }),
             }),
             serverClockAheadByMs: -3_000,
-            sideToMove: GameColor.WHITE,
         });
 
         render(
@@ -328,8 +317,7 @@ describe("GameClock", () => {
     it("should initialize time accounting for server clock drift", () => {
         store.setState({
             clocks: createFakeClocks({
-                whiteClock: 60_000,
-                blackClock: 60_000,
+                whiteClock: createFakeClockPlayer({ timeLeftMs: 60_000 }),
             }),
             serverClockAheadByMs: 5_000,
         });
@@ -341,5 +329,86 @@ describe("GameClock", () => {
         );
 
         expect(screen.getByText("00:55")).toBeInTheDocument();
+    });
+
+    it("should render timeUntilAbandonedMs when ticking", () => {
+        store.setState({
+            clocks: createFakeClocks({
+                whiteClock: createFakeClockPlayer({
+                    timeLeftMs: 300_000,
+                    timeUntilAbandonMs: 10_000,
+                }),
+            }),
+        });
+
+        render(
+            <LiveChessStoreContext.Provider value={store}>
+                <GameClock color={GameColor.WHITE} />
+            </LiveChessStoreContext.Provider>,
+        );
+
+        expect(screen.getByText("move in 10s")).toBeInTheDocument();
+    });
+
+    it("should decrement timeUntilAbandonedMs as time passes", () => {
+        store.setState({
+            clocks: createFakeClocks({
+                whiteClock: createFakeClockPlayer({
+                    timeLeftMs: 300_000,
+                    timeUntilAbandonMs: 10_000,
+                }),
+            }),
+        });
+
+        render(
+            <LiveChessStoreContext.Provider value={store}>
+                <GameClock color={GameColor.WHITE} />
+            </LiveChessStoreContext.Provider>,
+        );
+
+        act(() => {
+            vi.advanceTimersByTime(3_000);
+        });
+
+        expect(screen.getByText("move in 7s")).toBeInTheDocument();
+    });
+
+    it("should not render timeUntilAbandonedMs when it is null", () => {
+        store.setState({
+            clocks: createFakeClocks({
+                whiteClock: createFakeClockPlayer({
+                    timeLeftMs: 300_000,
+                    timeUntilAbandonMs: null,
+                }),
+            }),
+        });
+
+        render(
+            <LiveChessStoreContext.Provider value={store}>
+                <GameClock color={GameColor.WHITE} />
+            </LiveChessStoreContext.Provider>,
+        );
+
+        expect(screen.queryByText(/move in \d+s/)).toBeNull();
+    });
+
+    it("should not render timeUntilAbandonedMs when not ticking", () => {
+        store.setState({
+            clocks: createFakeClocks({
+                whiteClock: createFakeClockPlayer({
+                    timeLeftMs: 300_000,
+                    timeUntilAbandonMs: 10_000,
+                }),
+            }),
+            sideToMove: GameColor.BLACK,
+        });
+
+        render(
+            <LiveChessStoreContext.Provider value={store}>
+                <GameClock color={GameColor.WHITE} />
+            </LiveChessStoreContext.Provider>,
+        );
+
+        expect(screen.queryByText(/move in \d+s/)).toBeNull();
     });
 });
