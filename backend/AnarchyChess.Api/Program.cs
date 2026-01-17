@@ -48,8 +48,6 @@ using AnarchyChess.Api.Shared.Models;
 using AnarchyChess.Api.Shared.Services;
 using AnarchyChess.Api.Social.Repository;
 using AnarchyChess.Api.Social.Services;
-using AnarchyChess.Api.Streaks.Repositories;
-using AnarchyChess.Api.Streaks.Services;
 using AnarchyChess.Api.Streaming;
 using AnarchyChess.Api.UserRating.Repositories;
 using AnarchyChess.Api.UserRating.Services;
@@ -517,10 +515,7 @@ builder.Services.AddSingleton<IChallengeNotifier, ChallengeNotifier>();
 builder.Services.AddScoped<IChallengeRequestCreator, ChallengeRequestCreator>();
 #endregion
 
-#region Streaks
-builder.Services.AddScoped<IWinStreakRepository, WinStreakRepository>();
-builder.Services.AddScoped<IWinStreakService, WinStreakService>();
-#endregion
+
 
 builder.Services.AddSingleton<IShardRouter, ShardRouter>();
 builder.Services.AddSingleton<IRandomCodeGenerator, RandomCodeGenerator>();

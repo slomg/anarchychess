@@ -8,7 +8,6 @@ using AnarchyChess.Api.Preferences.DTOs;
 using AnarchyChess.Api.Profile.DTOs;
 using AnarchyChess.Api.Quests.DTOs;
 using AnarchyChess.Api.Shared.Models;
-using AnarchyChess.Api.Streaks.Models;
 using AnarchyChess.Api.UserRating.Models;
 using Refit;
 
@@ -182,15 +181,5 @@ public interface IAnarchyChessApi
 
     [Delete("/api/challenge/incoming")]
     Task<IApiResponse> CancelAllIncomingChallengesAsync();
-    #endregion
-
-    #region Win Streaks
-    [Get("/api/winStreak/leaderboard")]
-    Task<IApiResponse<PagedResult<WinStreakDto>>> GetWinStreakLeaderboardAsync(
-        [Query] PaginationQuery pagination
-    );
-
-    [Get("/api/winStreak/me")]
-    Task<IApiResponse<MyWinStreakStats>> GetMyWinStreakStatsAsync();
     #endregion
 }

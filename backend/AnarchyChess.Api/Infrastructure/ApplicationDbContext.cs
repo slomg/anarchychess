@@ -7,7 +7,6 @@ using AnarchyChess.Api.Profile.Entities;
 using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Quests.Entities;
 using AnarchyChess.Api.Social.Entities;
-using AnarchyChess.Api.Streaks.Entities;
 using AnarchyChess.Api.UserRating.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -38,14 +37,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public required DbSet<UserQuestPoints> QuestPoints { get; set; }
 
-    public required DbSet<UserWinStreak> WinStreaks { get; set; }
-
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.Entity<StarredUser>().Navigation(x => x.Starred).AutoInclude();
         builder.Entity<BlockedUser>().Navigation(x => x.Blocked).AutoInclude();
         builder.Entity<UserQuestPoints>().Navigation(x => x.User).AutoInclude();
-        builder.Entity<UserWinStreak>().Navigation(x => x.User).AutoInclude();
 
         base.OnModelCreating(builder);
     }
