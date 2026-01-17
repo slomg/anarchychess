@@ -1,11 +1,11 @@
 ﻿using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
-using AnarchyChess.Api.Infrastructure;
 using AnarchyChess.Api.Matchmaking.Errors;
 using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.Matchmaking.Services.Pools;
 using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Shared.Models;
+using AnarchyChess.Api.Streaming;
 using ErrorOr;
 using Microsoft.Extensions.Options;
 using Orleans.Streams;
@@ -310,7 +310,7 @@ public class MatchmakingGrain<TPool> : Grain, IMatchmakingGrain<TPool>
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
-        var streamProvider = this.GetStreamProvider(Streaming.StreamProvider);
+        var streamProvider = this.GetStreamProvider(StreamingConstants.StreamProvider);
         _openSeekCreatedStream = streamProvider.GetStream<OpenSeekCreatedEvent>(
             nameof(OpenSeekCreatedEvent)
         );

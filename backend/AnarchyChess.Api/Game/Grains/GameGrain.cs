@@ -4,10 +4,10 @@ using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
-using AnarchyChess.Api.Infrastructure;
 using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Shared.Models;
+using AnarchyChess.Api.Streaming;
 using ErrorOr;
 using Microsoft.Extensions.Options;
 using Orleans.Streams;
@@ -90,7 +90,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             period: TimeSpan.FromMinutes(5)
         );
 
-        var streamProvider = this.GetStreamProvider(Streaming.StreamProvider);
+        var streamProvider = this.GetStreamProvider(StreamingConstants.StreamProvider);
 
         await streamProvider
             .GetStream<GameStartedEvent>(nameof(GameStartedEvent), whitePlayer.UserId)
@@ -414,7 +414,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             game.NotifierState
         );
 
-        var streamProvider = this.GetStreamProvider(Streaming.StreamProvider);
+        var streamProvider = this.GetStreamProvider(StreamingConstants.StreamProvider);
         GameEndedEvent endedEvent = new(_token, game.Result);
 
         await streamProvider

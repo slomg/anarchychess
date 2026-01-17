@@ -1,12 +1,13 @@
-﻿using AnarchyChess.Api.Infrastructure;
-using AnarchyChess.Api.Lobby.Grains;
+﻿using AnarchyChess.Api.Lobby.Grains;
 using AnarchyChess.Api.Lobby.Models;
 using AnarchyChess.Api.Lobby.Services;
 using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Shared.Models;
+using AnarchyChess.Api.Streaming;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
 using NSubstitute;
+using Orleans.Providers.Streams.Common;
 using Orleans.TestKit;
 using Orleans.TestKit.Streams;
 
@@ -27,14 +28,14 @@ public class OpenSeekGrainTests : BaseGrainTest
         Silo.AddStreamProbe<OpenSeekCreatedEvent>(
             nameof(OpenSeekCreatedEvent),
             streamNamespace: null,
-            Streaming.StreamProvider
+            StreamingConstants.StreamProvider
         );
 
     private TestStream<OpenSeekRemovedEvent> ProbeOpenSeekRemovedStream() =>
         Silo.AddStreamProbe<OpenSeekRemovedEvent>(
             nameof(OpenSeekRemovedEvent),
             streamNamespace: null,
-            Streaming.StreamProvider
+            StreamingConstants.StreamProvider
         );
 
     [Fact]
@@ -99,7 +100,10 @@ public class OpenSeekGrainTests : BaseGrainTest
         await Silo.CreateGrainAsync<OpenSeekGrain>(0);
         _trackerMock.AddSeek(entry.Seeker, poolKey).Returns(entry);
 
-        await createStream.OnNextAsync(new OpenSeekCreatedEvent(entry.Seeker, poolKey));
+        await createStream.OnNextAsync(
+            new OpenSeekCreatedEvent(entry.Seeker, poolKey),
+            new EventSequenceToken()
+        );
 
         List<OpenSeek> expectedSeeks = [entry.OpenSeek];
         await _notifierMock
@@ -124,7 +128,10 @@ public class OpenSeekGrainTests : BaseGrainTest
         await Silo.CreateGrainAsync<OpenSeekGrain>(0);
         _trackerMock.AddSeek(entry.Seeker, poolKey).Returns(entry);
 
-        await createStream.OnNextAsync(new OpenSeekCreatedEvent(entry.Seeker, poolKey));
+        await createStream.OnNextAsync(
+            new OpenSeekCreatedEvent(entry.Seeker, poolKey),
+            new EventSequenceToken()
+        );
 
         await _notifierMock
             .DidNotReceiveWithAnyArgs()
@@ -145,7 +152,10 @@ public class OpenSeekGrainTests : BaseGrainTest
         await Silo.CreateGrainAsync<OpenSeekGrain>(0);
         _trackerMock.RemoveSeek(entry.Seeker.UserId, poolKey).Returns(entry);
 
-        await removeStream.OnNextAsync(new OpenSeekRemovedEvent(entry.Seeker.UserId, poolKey));
+        await removeStream.OnNextAsync(
+            new OpenSeekRemovedEvent(entry.Seeker.UserId, poolKey),
+            new EventSequenceToken()
+        );
 
         await _notifierMock
             .Received(1)

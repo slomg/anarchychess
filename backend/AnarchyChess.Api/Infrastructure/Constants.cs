@@ -1,10 +1,5 @@
 ﻿namespace AnarchyChess.Api.Infrastructure;
 
-public static class Streaming
-{
-    public const string StreamProvider = "InMemoryProvider";
-}
-
 public static class AuthPolicies
 {
     public const string AuthedUser = "AuthedUser";

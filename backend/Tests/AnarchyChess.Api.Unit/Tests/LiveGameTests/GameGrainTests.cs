@@ -4,8 +4,8 @@ using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
-using AnarchyChess.Api.Infrastructure;
 using AnarchyChess.Api.Matchmaking.Models;
+using AnarchyChess.Api.Streaming;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AnarchyChess.Api.TestInfrastructure.NSubtituteExtenstion;
 using AnarchyChess.Api.TestInfrastructure.Utils;
@@ -50,12 +50,12 @@ public class GameGrainTests : BaseGrainTest
         var whiteStartedStreamProbe = Silo.AddStreamProbe<GameStartedEvent>(
             _whitePlayer.UserId,
             streamNamespace: nameof(GameStartedEvent),
-            Streaming.StreamProvider
+            StreamingConstants.StreamProvider
         );
         var blackStartedStreamProbe = Silo.AddStreamProbe<GameStartedEvent>(
             _blackPlayer.UserId,
             streamNamespace: nameof(GameStartedEvent),
-            Streaming.StreamProvider
+            StreamingConstants.StreamProvider
         );
 
         GameData expectedGameData = new()

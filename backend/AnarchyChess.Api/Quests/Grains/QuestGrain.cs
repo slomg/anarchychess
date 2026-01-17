@@ -1,12 +1,12 @@
 ﻿using AnarchyChess.Api.Game.Grains;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
-using AnarchyChess.Api.Infrastructure;
 using AnarchyChess.Api.QuestLogic;
 using AnarchyChess.Api.QuestLogic.Models;
 using AnarchyChess.Api.Quests.DTOs;
 using AnarchyChess.Api.Quests.Errors;
 using AnarchyChess.Api.Quests.Services;
+using AnarchyChess.Api.Streaming;
 using ErrorOr;
 using Orleans.Streams;
 
@@ -77,6 +77,8 @@ public class QuestGrainStorage
 public class QuestGrain(
     ILogger<QuestGrain> logger,
     [PersistentState(QuestGrain.StateName)] IPersistentState<QuestGrainStorage> state,
+    [PersistentState(QuestGrain.StateName + "GameEndStream")]
+        IPersistentState<StreamState> gameEndStreamState,
     IQuestService questService,
     IRandomQuestProvider questProvider,
     TimeProvider timeProvider
@@ -86,6 +88,7 @@ public class QuestGrain(
 
     private readonly ILogger<QuestGrain> _logger = logger;
     private readonly IPersistentState<QuestGrainStorage> _state = state;
+    private readonly IPersistentState<StreamState> _gameEndStreamState = gameEndStreamState;
     private readonly IQuestService _questService = questService;
     private readonly IRandomQuestProvider _questProvider = questProvider;
     private readonly TimeProvider _timeProvider = timeProvider;
@@ -129,18 +132,22 @@ public class QuestGrain(
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
-        var streamProvider = this.GetStreamProvider(Streaming.StreamProvider);
+        await base.OnActivateAsync(cancellationToken);
+
+        var streamProvider = this.GetStreamProvider(StreamingConstants.StreamProvider);
         var stream = streamProvider.GetStream<GameEndedEvent>(
             nameof(GameEndedEvent),
             this.GetPrimaryKeyString()
         );
-        await stream.SubscribeAsync(this);
-
-        await base.OnActivateAsync(cancellationToken);
+        await stream.SubscribeAsync(this, _gameEndStreamState.State.SequenceToken);
     }
 
     public async Task OnNextAsync(GameEndedEvent @event, StreamSequenceToken? token = null)
     {
+        if (!_gameEndStreamState.State.TryUpdateSequenceToken(token))
+            return;
+        await _gameEndStreamState.WriteStateAsync();
+
         var quest = GetOrSelectQuest();
         if (quest.IsCompleted)
             return;

@@ -1,11 +1,11 @@
 ﻿using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.GameSnapshot.Models;
-using AnarchyChess.Api.Infrastructure;
 using AnarchyChess.Api.Matchmaking.Errors;
 using AnarchyChess.Api.Matchmaking.Grains;
 using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.Matchmaking.Services.Pools;
+using AnarchyChess.Api.Streaming;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AnarchyChess.Api.TestInfrastructure.Utils;
 using AwesomeAssertions;
@@ -65,14 +65,14 @@ public class MatchmakingGrainTests : BaseGrainTest
         Silo.AddStreamProbe<OpenSeekCreatedEvent>(
             nameof(OpenSeekCreatedEvent),
             null,
-            Streaming.StreamProvider
+            StreamingConstants.StreamProvider
         );
 
     private TestStream<OpenSeekRemovedEvent> ProbeOpenSeekRemovedStream() =>
         Silo.AddStreamProbe<OpenSeekRemovedEvent>(
             nameof(OpenSeekRemovedEvent),
             null,
-            Streaming.StreamProvider
+            StreamingConstants.StreamProvider
         );
 
     private async Task<MatchmakingGrain<CasualMatchmakingPool>> CreateGrainAsync() =>

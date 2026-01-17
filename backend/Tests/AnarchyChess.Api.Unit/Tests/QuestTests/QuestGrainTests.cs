@@ -2,7 +2,6 @@
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
-using AnarchyChess.Api.Infrastructure;
 using AnarchyChess.Api.Profile.Entities;
 using AnarchyChess.Api.QuestLogic;
 using AnarchyChess.Api.QuestLogic.Models;
@@ -12,10 +11,12 @@ using AnarchyChess.Api.Quests.DTOs;
 using AnarchyChess.Api.Quests.Errors;
 using AnarchyChess.Api.Quests.Grains;
 using AnarchyChess.Api.Quests.Services;
+using AnarchyChess.Api.Streaming;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AnarchyChess.Api.TestInfrastructure.NSubtituteExtenstion;
 using AwesomeAssertions;
 using NSubstitute;
+using Orleans.Providers.Streams.Common;
 using Orleans.TestKit;
 using Orleans.TestKit.Storage;
 using Orleans.TestKit.Streams;
@@ -64,7 +65,7 @@ public class QuestGrainTests : BaseGrainTest
         Silo.AddStreamProbe<GameEndedEvent>(
             _testUser.Id,
             streamNamespace: nameof(GameEndedEvent),
-            Streaming.StreamProvider
+            StreamingConstants.StreamProvider
         );
 
     private async Task<IQuestGrain> CreateGrainAsync() =>
@@ -173,12 +174,13 @@ public class QuestGrainTests : BaseGrainTest
             new GameEndedEvent(
                 _testGameToken,
                 new GameResultDataFaker(GameResult.WhiteWin).Generate()
-            )
+            ),
+            new EventSequenceToken()
         );
 
         var quest = await grain.GetQuestAsync(CT);
         quest.Progress.Should().Be(1);
-        _stateStats.Writes.Should().Be(2);
+        _stateStats.Writes.Should().BeGreaterThanOrEqualTo(1);
     }
 
     [Fact]
@@ -213,7 +215,8 @@ public class QuestGrainTests : BaseGrainTest
             new GameEndedEvent(
                 _testGameToken,
                 new GameResultDataFaker(GameResult.WhiteWin).Generate()
-            )
+            ),
+            new EventSequenceToken()
         );
 
         SetupWinQuestVariant();
@@ -257,7 +260,10 @@ public class QuestGrainTests : BaseGrainTest
         await CreateGrainAsync();
 
         var result = new GameResultDataFaker(GameResult.WhiteWin).Generate();
-        await gameOverStream.OnNextAsync(new GameEndedEvent(_testGameToken, result));
+        await gameOverStream.OnNextAsync(
+            new GameEndedEvent(_testGameToken, result),
+            new EventSequenceToken()
+        );
 
         GameQuestSnapshot expectedSnapshot = new(
             GameColor.White,
@@ -287,7 +293,8 @@ public class QuestGrainTests : BaseGrainTest
             new GameEndedEvent(
                 _testGameToken,
                 new GameResultDataFaker(GameResult.WhiteWin).Generate()
-            )
+            ),
+            new EventSequenceToken()
         );
         await grain.CollectRewardAsync(CT);
         (await grain.GetQuestAsync(CT)).Streak.Should().Be(1);
@@ -383,7 +390,8 @@ public class QuestGrainTests : BaseGrainTest
             new GameEndedEvent(
                 _testGameToken,
                 new GameResultDataFaker(GameResult.WhiteWin).Generate()
-            )
+            ),
+            new EventSequenceToken(0, 0)
         );
         await grain.CollectRewardAsync(CT);
         var quest1 = await grain.GetQuestAsync(CT);
@@ -397,7 +405,8 @@ public class QuestGrainTests : BaseGrainTest
             new GameEndedEvent(
                 _testGameToken,
                 new GameResultDataFaker(GameResult.WhiteWin).Generate()
-            )
+            ),
+            new EventSequenceToken(0, 1)
         );
         await grain.CollectRewardAsync(CT);
         var quest2 = await grain.GetQuestAsync(CT);

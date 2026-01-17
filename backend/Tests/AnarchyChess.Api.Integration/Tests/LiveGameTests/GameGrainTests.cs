@@ -6,9 +6,9 @@ using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
-using AnarchyChess.Api.Infrastructure;
 using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.Shared.Models;
+using AnarchyChess.Api.Streaming;
 using AnarchyChess.Api.TestInfrastructure;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AnarchyChess.Api.TestInfrastructure.NSubtituteExtenstion;
@@ -88,7 +88,7 @@ public class GameGrainTests : BaseOrleansIntegrationTest
         Silo.AddStreamProbe<GameEndedEvent>(
             id,
             streamNamespace: nameof(GameEndedEvent),
-            Streaming.StreamProvider
+            StreamingConstants.StreamProvider
         );
 
     private async Task<GameGrain> CreateGrainAsync() =>

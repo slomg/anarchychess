@@ -1,5 +1,4 @@
 ﻿using AnarchyChess.Api.Game.Models;
-using AnarchyChess.Api.Infrastructure;
 using AnarchyChess.Api.Infrastructure.Extensions;
 using AnarchyChess.Api.Lobby.Errors;
 using AnarchyChess.Api.Lobby.Models;
@@ -9,6 +8,7 @@ using AnarchyChess.Api.Matchmaking.Grains;
 using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Shared.Models;
+using AnarchyChess.Api.Streaming;
 using ErrorOr;
 using Microsoft.Extensions.Options;
 using Orleans.Streams;
@@ -54,7 +54,19 @@ public class PlayerSessionState
 
     [Id(1)]
     public Dictionary<GameToken, OngoingGame> OngoingGames { get; } = [];
+
+    [Id(2)]
+    public BoundedSet<GameToken> RecentlyRemoved { get; } = new(10);
 }
+
+// orleans testkit doesn't support 2 persistent states of the same type
+[GenerateSerializer]
+[Alias("AnarchyChess.Api.Lobby.Grains.PlayerSessionStartStreamState")]
+public class PlayerSessionStartStreamState : StreamState;
+
+[GenerateSerializer]
+[Alias("AnarchyChess.Api.Lobby.Grains.PlayerSessionEndStreamState")]
+public class PlayerSessionEndStreamState : StreamState;
 
 [ImplicitStreamSubscription(nameof(GameEndedEvent))]
 [ImplicitStreamSubscription(nameof(GameStartedEvent))]
@@ -71,6 +83,8 @@ public class PlayerSessionGrain
     private readonly Dictionary<PoolKey, ConnectionId> _poolConnectionReservations = [];
     private readonly HashSet<ConnectionId> _connectionsRecentlyMatched = [];
 
+    private readonly IPersistentState<PlayerSessionStartStreamState> _startStreamState;
+    private readonly IPersistentState<PlayerSessionEndStreamState> _endStreamState;
     private readonly IPersistentState<PlayerSessionState> _state;
     private readonly ILogger<PlayerSessionGrain> _logger;
     private readonly ILobbyNotifier _lobbyNotifier;
@@ -78,6 +92,10 @@ public class PlayerSessionGrain
 
     public PlayerSessionGrain(
         [PersistentState(StateName)] IPersistentState<PlayerSessionState> state,
+        [PersistentState(StateName + "GameStartStream")]
+            IPersistentState<PlayerSessionStartStreamState> startStreamState,
+        [PersistentState(StateName + "GameEndStream")]
+            IPersistentState<PlayerSessionEndStreamState> endStreamState,
         ILogger<PlayerSessionGrain> logger,
         ILobbyNotifier lobbyNotifier,
         IOptions<AppSettings> settings
@@ -89,6 +107,9 @@ public class PlayerSessionGrain
         _logger = logger;
         _lobbyNotifier = lobbyNotifier;
         _settings = settings.Value.Lobby;
+
+        _startStreamState = startStreamState;
+        _endStreamState = endStreamState;
     }
 
     public async Task<ErrorOr<Created>> CreateSeekAsync(
@@ -108,7 +129,7 @@ public class PlayerSessionGrain
         await matchmakingGrain.AddSeekAsync(seeker, this.AsSafeReference<ISeekObserver>(), token);
 
         _state.State.ConnectionMap.AddConnectionToPool(connectionId, pool);
-        await WriteStateAsync(token);
+        await _state.WriteStateAsync(token);
 
         return Result.Created;
     }
@@ -120,7 +141,7 @@ public class PlayerSessionGrain
     {
         await RemoveConnectionFromPoolsAsync(connectionId, token);
         _connectionsRecentlyMatched.Remove(connectionId);
-        await WriteStateAsync(token);
+        await _state.WriteStateAsync(token);
     }
 
     public Task CancelSeekAsync(PoolKey pool, CancellationToken token = default) =>
@@ -147,7 +168,7 @@ public class PlayerSessionGrain
         if (startGameResult.IsError)
             return startGameResult.Errors;
 
-        await WriteStateAsync(token);
+        await _state.WriteStateAsync(token);
         return Result.Created;
     }
 
@@ -156,7 +177,7 @@ public class PlayerSessionGrain
         _poolConnectionReservations.Remove(pool);
 
         var poolConnectionIds = _state.State.ConnectionMap.RemovePool(pool);
-        await WriteStateAsync(token);
+        await _state.WriteStateAsync(token);
         await _lobbyNotifier.NotifySeekFailedAsync(poolConnectionIds, pool);
     }
 
@@ -192,34 +213,32 @@ public class PlayerSessionGrain
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
-        var streamProvider = this.GetStreamProvider(Streaming.StreamProvider);
+        await base.OnActivateAsync(cancellationToken);
+
+        var streamProvider = this.GetStreamProvider(StreamingConstants.StreamProvider);
 
         var startedStream = streamProvider.GetStream<GameStartedEvent>(
             nameof(GameStartedEvent),
             this.GetPrimaryKeyString()
         );
-        await startedStream.SubscribeAsync(this);
+        await startedStream.SubscribeAsync(OnNextAsync, _startStreamState.State.SequenceToken);
 
         var endedStream = streamProvider.GetStream<GameEndedEvent>(
             nameof(GameEndedEvent),
             this.GetPrimaryKeyString()
         );
-        await endedStream.SubscribeAsync(this);
-
-        await base.OnActivateAsync(cancellationToken);
-    }
-
-    public async Task OnNextAsync(GameEndedEvent @event, StreamSequenceToken? token = null)
-    {
-        _state.State.OngoingGames.Remove(@event.GameToken);
-        await WriteStateAsync();
-
-        await _lobbyNotifier.NotifyOngoingGameEndedAsync(_userId, @event.GameToken);
+        await endedStream.SubscribeAsync(OnNextAsync, _endStreamState.State.SequenceToken);
     }
 
     public async Task OnNextAsync(GameStartedEvent @event, StreamSequenceToken? token = null)
     {
+        if (!_startStreamState.State.TryUpdateSequenceToken(token))
+            return;
+        await _startStreamState.WriteStateAsync();
+
         var game = @event.Game;
+        if (_state.State.RecentlyRemoved.Has(game.GameToken))
+            return;
 
         _state.State.OngoingGames.TryAdd(game.GameToken, game);
         if (HasReachedGameLimit())
@@ -228,7 +247,20 @@ public class PlayerSessionGrain
         if (@event.GameSource is GameSource.Matchmaking)
             await MatchmakingGameMatchedAsync(game);
 
-        await WriteStateAsync();
+        await _state.WriteStateAsync();
+    }
+
+    public async Task OnNextAsync(GameEndedEvent @event, StreamSequenceToken? token = null)
+    {
+        if (!_endStreamState.State.TryUpdateSequenceToken(token))
+            return;
+        await _endStreamState.WriteStateAsync();
+
+        _state.State.OngoingGames.Remove(@event.GameToken);
+        _state.State.RecentlyRemoved.TryAdd(@event.GameToken);
+        await _state.WriteStateAsync();
+
+        await _lobbyNotifier.NotifyOngoingGameEndedAsync(_userId, @event.GameToken);
     }
 
     public Task OnErrorAsync(Exception ex)
@@ -279,12 +311,4 @@ public class PlayerSessionGrain
     private bool HasReachedGameLimit() =>
         _state.State.OngoingGames.Count + _poolConnectionReservations.Count
         >= _settings.MaxActiveGames;
-
-    private async Task WriteStateAsync(CancellationToken token = default)
-    {
-        if (_state.State.ConnectionMap.IsEmpty() && _state.State.OngoingGames.Count == 0)
-            await _state.ClearStateAsync(token);
-        else
-            await _state.WriteStateAsync(token);
-    }
 }

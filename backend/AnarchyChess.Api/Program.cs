@@ -1,4 +1,9 @@
-﻿using AnarchyChess.Api.Analysis.Services;
+﻿using System.Security.Claims;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using AnarchyChess.Api.Analysis.Services;
 using AnarchyChess.Api.ArchivedGames.Repositories;
 using AnarchyChess.Api.ArchivedGames.Services;
 using AnarchyChess.Api.Auth.Errors;
@@ -45,6 +50,7 @@ using AnarchyChess.Api.Social.Repository;
 using AnarchyChess.Api.Social.Services;
 using AnarchyChess.Api.Streaks.Repositories;
 using AnarchyChess.Api.Streaks.Services;
+using AnarchyChess.Api.Streaming;
 using AnarchyChess.Api.UserRating.Repositories;
 using AnarchyChess.Api.UserRating.Services;
 using ErrorOr;
@@ -63,11 +69,6 @@ using Orleans.Serialization.Serializers;
 using Orleans.Storage;
 using Scalar.AspNetCore;
 using Serilog;
-using System.Security.Claims;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -338,7 +339,7 @@ builder.Host.UseOrleans(siloBuilder =>
     });
     siloBuilder
         .AddEventHubStreams(
-            Streaming.StreamProvider,
+            StreamingConstants.StreamProvider,
             configurator =>
             {
                 configurator.ConfigureEventHub(builder =>
@@ -353,10 +354,11 @@ builder.Host.UseOrleans(siloBuilder =>
 
                 configurator.UseAzureTableCheckpointer(builder =>
                     builder.Configure(options =>
+                    {
                         options.TableServiceClient = new(
                             appSettings.Secrets.TableCheckpointerConnString
-                        )
-                    )
+                        );
+                    })
                 );
             }
         )

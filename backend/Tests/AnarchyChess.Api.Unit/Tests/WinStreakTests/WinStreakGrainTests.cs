@@ -3,16 +3,16 @@ using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.GameLogic.Extensions;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
-using AnarchyChess.Api.Infrastructure;
 using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.Profile.Entities;
 using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Streaks.Grains;
 using AnarchyChess.Api.Streaks.Services;
+using AnarchyChess.Api.Streaming;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AnarchyChess.Api.TestInfrastructure.Utils;
-using ErrorOr;
 using AwesomeAssertions;
+using ErrorOr;
 using Microsoft.AspNetCore.Identity;
 using NSubstitute;
 using Orleans.TestKit;
@@ -59,7 +59,7 @@ public class WinStreakGrainTests : BaseGrainTest
         Silo.AddStreamProbe<GameEndedEvent>(
             userId,
             streamNamespace: nameof(GameEndedEvent),
-            Streaming.StreamProvider
+            StreamingConstants.StreamProvider
         );
 
     [Fact]

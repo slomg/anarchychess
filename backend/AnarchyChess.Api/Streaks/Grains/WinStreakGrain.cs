@@ -2,11 +2,11 @@
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.GameLogic.Extensions;
 using AnarchyChess.Api.GameSnapshot.Models;
-using AnarchyChess.Api.Infrastructure;
 using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.Profile.Entities;
 using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Streaks.Services;
+using AnarchyChess.Api.Streaming;
 using ErrorOr;
 using Microsoft.AspNetCore.Identity;
 using Orleans.Streams;
@@ -31,7 +31,7 @@ public class WinStreakGrain(
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
-        var streamProvider = this.GetStreamProvider(Streaming.StreamProvider);
+        var streamProvider = this.GetStreamProvider(StreamingConstants.StreamProvider);
         var stream = streamProvider.GetStream<GameEndedEvent>(
             nameof(GameEndedEvent),
             this.GetPrimaryKeyString()
