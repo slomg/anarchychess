@@ -5,6 +5,7 @@ import { PieceType } from "@/lib/apiClient";
 import { logicalPoint } from "@/features/point/pointUtils";
 import getPieceImage from "../lib/pieceImage";
 import { PromotionRequest } from "../stores/promotionSlice";
+import { useRef } from "react";
 
 const PromotionPrompt = () => {
     const { pendingPromotion, resolvePromotion } = useChessboardStore((x) => ({
@@ -17,7 +18,7 @@ const PromotionPrompt = () => {
         <div
             data-testid="promotionPromptOverlay"
             className="absolute inset-0 z-50 flex cursor-auto bg-black/50"
-            onMouseDown={() => resolvePromotion?.(null)}
+            onPointerDown={() => resolvePromotion?.(null)}
         >
             {pendingPromotion.pieces.map((piece, i) => (
                 <PromotionPiece
@@ -45,10 +46,13 @@ const PromotionPiece = ({
         resolvePromotion: x.resolvePromotion,
         boardDimensions: x.boardDimensions,
     }));
+    const hadMouseDownRef = useRef(false);
 
     if (!piece) return;
 
-    function choosePiece(event: React.MouseEvent, piece: PieceType) {
+    function choosePiece(event: React.MouseEvent) {
+        if (!hadMouseDownRef.current) return;
+
         event.stopPropagation();
         resolvePromotion?.(piece);
     }
@@ -70,17 +74,21 @@ const PromotionPiece = ({
             data-testid="promotionPiece"
             position={position}
             className={clsx(
-                `border-secondary hover:bg-secondary cursor-pointer rounded-md border-3
-                bg-[length:90%_90%] bg-center bg-no-repeat transition-all duration-200
-                hover:rounded-none hover:bg-[length:110%_110%]`,
+                `border-secondary hover:bg-secondary cursor-pointer rounded-md
+                border-3 bg-[length:90%_90%] bg-center bg-no-repeat
+                transition-all duration-200 hover:rounded-none
+                hover:bg-[length:110%_110%]`,
                 isFirst || "border-t-2",
                 isLast || "border-b-2",
             )}
             style={{
                 backgroundImage: `url("${getPieceImage(piece, pendingPromotion.piece.color)}")`,
             }}
-            onMouseDown={(e) => e.stopPropagation()}
-            onClick={(e) => choosePiece(e, piece)}
+            onPointerDown={(e) => {
+                e.stopPropagation();
+                hadMouseDownRef.current = true;
+            }}
+            onPointerUp={choosePiece}
         />
     );
 };

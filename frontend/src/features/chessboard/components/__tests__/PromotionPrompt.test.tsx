@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import ChessboardStoreContext from "../../contexts/chessboardStoreContext";
 import PromotionPrompt from "../PromotionPrompt";
 import {
@@ -179,6 +179,40 @@ describe("PromotionPrompt", () => {
         expect(second).toHaveAttribute(
             "data-position",
             pointToStr({ x: 5, y: 3 }),
+        );
+    });
+
+    it("should require pointerdown on the square before resolving", () => {
+        const resolvePromotion = vi.fn();
+        store.setState({
+            pendingPromotion: {
+                at: logicalPoint({ x: 5, y: 2 }),
+                piece: {
+                    id: "0",
+                    type: PieceType.PAWN,
+                    color: GameColor.BLACK,
+                    position: logicalPoint({ x: 5, y: 2 }),
+                },
+                pieces: [PieceType.QUEEN, PieceType.ROOK],
+            },
+            resolvePromotion,
+        });
+        render(
+            <ChessboardStoreContext.Provider value={store}>
+                <PromotionPrompt />
+            </ChessboardStoreContext.Provider>,
+        );
+
+        const [piece] = screen.getAllByTestId("promotionPiece");
+
+        fireEvent.pointerUp(piece);
+        expect(resolvePromotion).not.toHaveBeenCalled();
+
+        fireEvent.pointerDown(piece);
+        fireEvent.pointerUp(piece);
+
+        expect(resolvePromotion).toHaveBeenCalledExactlyOnceWith(
+            PieceType.QUEEN,
         );
     });
 });
