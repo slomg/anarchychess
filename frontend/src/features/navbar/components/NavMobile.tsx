@@ -10,7 +10,7 @@ import getSidebarCollapseWidthCls from "../lib/sidebarWidth";
 import LogoText from "@public/assets/logo-text.svg";
 import Sidebar from "./Sidebar";
 
-const NavMobile = ({ hasAccessCookie }: { hasAccessCookie: boolean }) => {
+const NavMobile = () => {
     const [isOpen, setIsOpen] = useState(false);
     const headerRef = useRef<HTMLElement>(null);
     const pathname = usePathname();
@@ -87,10 +87,7 @@ const NavMobile = ({ hasAccessCookie }: { hasAccessCookie: boolean }) => {
                 )}
                 data-testid="sidebarSlider"
             >
-                <Sidebar
-                    isCollapsed={false}
-                    hasAccessCookie={hasAccessCookie}
-                />
+                <Sidebar isCollapsed={false} />
             </section>
         </header>
     );

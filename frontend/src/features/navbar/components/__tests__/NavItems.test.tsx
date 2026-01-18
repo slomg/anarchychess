@@ -5,7 +5,7 @@ import constants from "@/lib/constants";
 
 describe("UpperNavItems", () => {
     it("should render with the correct href when not authenticated", () => {
-        render(<UpperNavItems hasAccessCookie={false} />);
+        render(<UpperNavItems isLoggedIn={false} isCollapsed={false} />);
 
         expect(screen.getByText("Sign In").closest("a")).toHaveAttribute(
             "href",
@@ -32,7 +32,7 @@ describe("UpperNavItems", () => {
     });
 
     it("should render with the correct href when authenticated", () => {
-        render(<UpperNavItems hasAccessCookie={true} />);
+        render(<UpperNavItems isLoggedIn={true} isCollapsed={false} />);
 
         expect(screen.getByText("Profile").closest("a")).toHaveAttribute(
             "href",
@@ -44,7 +44,7 @@ describe("UpperNavItems", () => {
 
 describe("LowerNavItems", () => {
     it("should render with the correct href when not authenticated", () => {
-        render(<LowerNavItems hasAccessCookie={false} />);
+        render(<LowerNavItems isLoggedIn={false} isCollapsed={false} />);
 
         expect(screen.queryByText("Guide")?.closest("a")).toHaveAttribute(
             "href",
@@ -55,7 +55,7 @@ describe("LowerNavItems", () => {
     });
 
     it("should render with the correct href when authenticated", () => {
-        render(<LowerNavItems hasAccessCookie={true} />);
+        render(<LowerNavItems isLoggedIn={true} isCollapsed={false} />);
 
         expect(screen.queryByText("Guide")?.closest("a")).toHaveAttribute(
             "href",

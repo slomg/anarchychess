@@ -1,44 +1,37 @@
 import { useEffect, useState } from "react";
-import Cookies from "js-cookie";
 
+import useLocalPref from "@/hooks/useLocalPref";
 import constants from "@/lib/constants";
 
-function useCollapseState(initial: boolean) {
-    const [isCollapsed, setIsCollapsed] = useState(initial);
+function useCollapseState(): { isCollapsed: boolean; toggleCollapse(): void } {
+    const [isCollapsedPref, setIsCollapsedPref] = useLocalPref(
+        constants.LOCALSTORAGE.IS_SIDEBAR_COLLAPSED,
+        false,
+    );
+    const [isCollapsed, setIsCollapsed] = useState<boolean>(isCollapsedPref);
 
     useEffect(() => {
         const handleResize = () => {
             const isSmallScreen = window.innerWidth < 1024;
             if (isSmallScreen) {
                 setIsCollapsed(true);
-                return;
+            } else {
+                setIsCollapsed(isCollapsedPref);
             }
-
-            const cookie = Cookies.get(constants.COOKIES.SIDEBAR_COLLAPSED);
-            setIsCollapsed(cookie !== undefined);
         };
 
         handleResize();
         window.addEventListener("resize", handleResize);
         return () => window.removeEventListener("resize", handleResize);
-    }, []);
+    }, [isCollapsedPref]);
 
-    const toggleCollapse = () => {
-        setIsCollapsed((prev) => {
-            const next = !prev;
-            if (!next) {
-                Cookies.remove(constants.COOKIES.SIDEBAR_COLLAPSED);
-            } else {
-                const expires = new Date(
-                    Date.now() + 400 * 24 * 60 * 60 * 1000,
-                );
-                Cookies.set(constants.COOKIES.SIDEBAR_COLLAPSED, "true", {
-                    expires,
-                });
-            }
-            return next;
+    function toggleCollapse() {
+        setIsCollapsedPref((prev) => {
+            const newState = !prev;
+            setIsCollapsed(newState);
+            return newState;
         });
-    };
+    }
 
     return { isCollapsed, toggleCollapse };
 }

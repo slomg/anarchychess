@@ -3,7 +3,8 @@ import { ReactNode } from "react";
 import ChallengeNotificationRenderer from "@/features/challenges/components/challengeNotification/ChallengeNotificationRenderer";
 import SessionProvider from "@/features/auth/contexts/sessionContext";
 import LobbyHandler from "@/features/lobby/components/LobbyHandler";
-import Navbar from "@/features/navbar/components/Navbar";
+import NavDesktop from "@/features/navbar/components/NavDesktop";
+import NavMobile from "@/features/navbar/components/NavMobile";
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
     return (
@@ -12,7 +13,8 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
                 className="flex min-h-screen max-w-screen min-w-[300px] flex-col
                     md:flex-row"
             >
-                <Navbar />
+                <NavMobile />
+                <NavDesktop />
                 {children}
             </div>
 

@@ -1,9 +1,15 @@
-import { useEffect, useEffectEvent, useState } from "react";
+import {
+    SetStateAction,
+    useCallback,
+    useEffect,
+    useEffectEvent,
+    useState,
+} from "react";
 
 export default function useLocalPref<T>(
     localStorageName: string,
     defaultValue: T,
-): [T, (newValue: T) => void] {
+): [T, (newValue: SetStateAction<T>) => void] {
     const [value, setValue] = useState<T>(defaultValue);
 
     const setValueFromStorage = useEffectEvent(() => {
@@ -13,10 +19,23 @@ export default function useLocalPref<T>(
     });
     useEffect(() => setValueFromStorage(), []);
 
-    function setNewValue(newValue: T) {
-        setValue(newValue);
-        localStorage.setItem(localStorageName, JSON.stringify(newValue));
-    }
+    const setNewValue = useCallback(
+        (newValue: React.SetStateAction<T>) => {
+            setValue((prev) => {
+                const resolvedValue =
+                    typeof newValue === "function"
+                        ? (newValue as (prev: T) => T)(prev)
+                        : newValue;
+                localStorage.setItem(
+                    localStorageName,
+                    JSON.stringify(resolvedValue),
+                );
+
+                return resolvedValue;
+            });
+        },
+        [localStorageName],
+    );
 
     return [value, setNewValue];
 }

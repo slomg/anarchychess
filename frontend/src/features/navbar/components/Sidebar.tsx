@@ -3,28 +3,33 @@ import Image from "next/image";
 import Link from "next/link";
 import clsx from "clsx";
 
+import getSidebarCollapseWidthCls from "../lib/sidebarWidth";
 import { LowerNavItems, UpperNavItems } from "./NavItems";
 import LogoText from "@public/assets/logo-text.svg";
 import Logo from "@public/assets/logo-no-bg.svg";
+import constants from "@/lib/constants";
 import NavItem from "./NavItem";
-import getSidebarCollapseWidthCls from "../lib/sidebarWidth";
+import useCookieValue from "@/hooks/useCookieValue";
 
 const Sidebar = ({
     isCollapsed,
-    hasAccessCookie,
     toggleCollapse,
 }: {
     isCollapsed: boolean;
-    hasAccessCookie: boolean;
     toggleCollapse?: () => void;
 }) => {
+    const isLoggedIn = useCookieValue(
+        constants.COOKIES.IS_LOGGED_IN,
+        undefined,
+    );
+
     return (
         <aside
             className={clsx(
-                `bg-navbar fixed z-50 flex h-full flex-col justify-between gap-10 overflow-auto
-                border-r border-white/30 p-5 text-3xl transition-[width]`,
+                `bg-navbar fixed z-50 flex h-full flex-col justify-between
+                gap-10 overflow-auto border-r border-white/30 p-5 text-3xl`,
                 isCollapsed && "items-center",
-                getSidebarCollapseWidthCls(isCollapsed),
+                getSidebarCollapseWidthCls(isCollapsed ?? false),
             )}
             data-testid="sidebar"
             data-is-collapsed={isCollapsed}
@@ -55,14 +60,14 @@ const Sidebar = ({
                 </Link>
 
                 <UpperNavItems
-                    hasAccessCookie={hasAccessCookie}
+                    isLoggedIn={isLoggedIn}
                     isCollapsed={isCollapsed}
                 />
             </ul>
 
             <ul className="flex flex-col gap-5 opacity-70">
                 <LowerNavItems
-                    hasAccessCookie={hasAccessCookie}
+                    isLoggedIn={isLoggedIn}
                     isCollapsed={isCollapsed}
                 />
 

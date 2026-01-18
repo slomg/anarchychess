@@ -1,16 +1,16 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
-import NavDesktop from "../NavDesktop";
-import React from "react";
-import useCollapseState from "../../hooks/useCollapseState";
 import {
     SIDEBAR_COLLAPSED_CLS,
     SIDEBAR_EXPANDED_CLS,
 } from "../../lib/sidebarWidth";
 
-vi.mock("../NavItems");
+import useCollapseState from "../../hooks/useCollapseState";
+import NavDesktop from "../NavDesktop";
+
 vi.mock("../../hooks/useCollapseState");
+vi.mock("../NavItems");
 
 describe("NavDesktop", () => {
     const useCollapseStateMock = vi.mocked(useCollapseState);
@@ -25,35 +25,21 @@ describe("NavDesktop", () => {
     });
 
     it("should render sidebar inside the desktop nav", () => {
-        render(
-            <NavDesktop
-                hasAccessCookie={true}
-                isCollapsedInitialState={false}
-            />,
-        );
+        render(<NavDesktop />);
         const sidebar = screen.getByTestId("sidebar");
         expect(sidebar).toBeInTheDocument();
     });
 
     it("should apply the expanded class when initial state is not collapsed", () => {
-        render(
-            <NavDesktop
-                hasAccessCookie={true}
-                isCollapsedInitialState={false}
-            />,
-        );
+        isCollapsed = false;
+        render(<NavDesktop />);
         const navDesktop = screen.getByTestId("navDesktop");
         expect(navDesktop).toHaveClass(SIDEBAR_EXPANDED_CLS);
     });
 
     it("should apply the collapsed class when initial state is collapsed", () => {
         isCollapsed = true;
-        render(
-            <NavDesktop
-                hasAccessCookie={true}
-                isCollapsedInitialState={true}
-            />,
-        );
+        render(<NavDesktop />);
         const navDesktop = screen.getByTestId("navDesktop");
         expect(navDesktop).toHaveClass(SIDEBAR_COLLAPSED_CLS);
     });
@@ -62,12 +48,7 @@ describe("NavDesktop", () => {
         isCollapsed = false;
         const user = userEvent.setup();
 
-        render(
-            <NavDesktop
-                hasAccessCookie={true}
-                isCollapsedInitialState={true}
-            />,
-        );
+        render(<NavDesktop />);
 
         const button = screen.getByTestId("sidebarCollapseButton");
         await user.click(button);

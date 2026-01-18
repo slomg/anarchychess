@@ -5,16 +5,8 @@ import getSidebarCollapseWidthCls from "../lib/sidebarWidth";
 import Sidebar from "./Sidebar";
 import clsx from "clsx";
 
-const NavDesktop = ({
-    hasAccessCookie,
-    isCollapsedInitialState,
-}: {
-    hasAccessCookie: boolean;
-    isCollapsedInitialState: boolean;
-}) => {
-    const { isCollapsed, toggleCollapse } = useCollapseState(
-        isCollapsedInitialState,
-    );
+const NavDesktop = () => {
+    const { isCollapsed, toggleCollapse } = useCollapseState();
 
     return (
         <section
@@ -26,7 +18,6 @@ const NavDesktop = ({
         >
             <Sidebar
                 isCollapsed={isCollapsed}
-                hasAccessCookie={hasAccessCookie}
                 toggleCollapse={toggleCollapse}
             />
         </section>

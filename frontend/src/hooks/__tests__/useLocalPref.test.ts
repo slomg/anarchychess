@@ -67,4 +67,20 @@ describe("useLocalPref", () => {
         expect(valueAfter).toBe(3);
         expect(localStorage.getItem(localStorageKey)).toBe("3");
     });
+
+    it("should handle a setter function correctly", () => {
+        const { result } = renderHook(() =>
+            useLocalPref<number>(localStorageKey, 10),
+        );
+
+        const [, setValue] = result.current;
+
+        act(() => {
+            setValue((prev) => prev + 5);
+        });
+
+        const [valueAfter] = result.current;
+        expect(valueAfter).toBe(15);
+        expect(localStorage.getItem(localStorageKey)).toBe("15");
+    });
 });

@@ -1,33 +1,31 @@
 import { renderHook, act } from "@testing-library/react";
-import Cookies from "js-cookie";
-import useCollapseState from "../useCollapseState";
-import { mockJsCookie } from "@/lib/testUtils/mocks/mockCookies";
-import constants from "@/lib/constants";
-import { setWindowInnerWidth } from "@/lib/testUtils/mocks/mockDom";
 
-vi.mock("js-cookie");
+import { setWindowInnerWidth } from "@/lib/testUtils/mocks/mockDom";
+import useCollapseState from "../useCollapseState";
+import constants from "@/lib/constants";
 
 describe("useCollapseState", () => {
-    afterEach(() => {
-        vi.clearAllMocks();
+    it("should default to not collapsed when there is no localstorage state", () => {
+        const { result } = renderHook(() => useCollapseState());
+
+        expect(result.current.isCollapsed).toBe(false);
     });
 
-    function mockIsCollapsedCookie(isCollapsed: boolean) {
-        const cookieValue = isCollapsed ? "1" : undefined;
-        mockJsCookie({
-            [constants.COOKIES.SIDEBAR_COLLAPSED]: cookieValue,
-        });
-    }
+    it("should load initial value from localStorage", () => {
+        localStorage.setItem(
+            constants.LOCALSTORAGE.IS_SIDEBAR_COLLAPSED,
+            "true",
+        );
 
-    it("should use initial state on mount", () => {
-        const { result } = renderHook(() => useCollapseState(false));
-        expect(result.current.isCollapsed).toBe(false);
+        const { result } = renderHook(() => useCollapseState());
+
+        expect(result.current.isCollapsed).toBe(true);
     });
 
     it("should set isCollapsed true on small screens", () => {
         setWindowInnerWidth(800);
 
-        const { result } = renderHook(() => useCollapseState(false));
+        const { result } = renderHook(() => useCollapseState());
         act(() => {
             window.dispatchEvent(new Event("resize"));
         });
@@ -35,35 +33,69 @@ describe("useCollapseState", () => {
         expect(result.current.isCollapsed).toBe(true);
     });
 
-    it("should read cookie value on larger screens", () => {
-        mockIsCollapsedCookie(true);
+    it("should use localstorage value on larger screens", () => {
+        localStorage.setItem(
+            constants.LOCALSTORAGE.IS_SIDEBAR_COLLAPSED,
+            "true",
+        );
 
-        const { result } = renderHook(() => useCollapseState(false));
+        const { result } = renderHook(() => useCollapseState());
         act(() => {
             window.dispatchEvent(new Event("resize"));
         });
 
         expect(result.current.isCollapsed).toBe(true);
+    });
+
+    it("should preserve localStorage value when resizing from small to large screen", () => {
+        localStorage.setItem(
+            constants.LOCALSTORAGE.IS_SIDEBAR_COLLAPSED,
+            "false",
+        );
+
+        setWindowInnerWidth(800);
+
+        const { result } = renderHook(() => useCollapseState());
+
+        act(() => {
+            window.dispatchEvent(new Event("resize"));
+        });
+
+        expect(result.current.isCollapsed).toBe(true);
+        expect(
+            localStorage.getItem(constants.LOCALSTORAGE.IS_SIDEBAR_COLLAPSED),
+        ).toBe("false");
+
+        setWindowInnerWidth(1200);
+        act(() => {
+            window.dispatchEvent(new Event("resize"));
+        });
+
+        expect(result.current.isCollapsed).toBe(false);
+        expect(
+            localStorage.getItem(constants.LOCALSTORAGE.IS_SIDEBAR_COLLAPSED),
+        ).toBe("false");
     });
 
     it("should toggle state and sets/removes cookie", () => {
-        const setSpy = vi.spyOn(Cookies, "set");
-        const removeSpy = vi.spyOn(Cookies, "remove");
+        const { result } = renderHook(() => useCollapseState());
 
-        const { result } = renderHook(() => useCollapseState(false));
-
-        // Collapse
+        // collapse
         act(() => {
             result.current.toggleCollapse();
         });
         expect(result.current.isCollapsed).toBe(true);
-        expect(setSpy).toHaveBeenCalled();
+        expect(
+            localStorage.getItem(constants.LOCALSTORAGE.IS_SIDEBAR_COLLAPSED),
+        ).toBe("true");
 
-        // Expand
+        // expand
         act(() => {
             result.current.toggleCollapse();
         });
         expect(result.current.isCollapsed).toBe(false);
-        expect(removeSpy).toHaveBeenCalled();
+        expect(
+            localStorage.getItem(constants.LOCALSTORAGE.IS_SIDEBAR_COLLAPSED),
+        ).toBe("false");
     });
 });

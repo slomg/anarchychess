@@ -18,11 +18,11 @@ import NavItem from "./NavItem";
 import constants from "@/lib/constants";
 
 export const UpperNavItems = ({
-    hasAccessCookie,
-    isCollapsed = false,
+    isLoggedIn,
+    isCollapsed,
 }: {
-    hasAccessCookie: boolean;
-    isCollapsed?: boolean;
+    isLoggedIn?: boolean;
+    isCollapsed: boolean;
 }) => {
     return (
         <>
@@ -53,7 +53,7 @@ export const UpperNavItems = ({
                 Quests
             </NavItem>
 
-            {hasAccessCookie && (
+            {isLoggedIn && (
                 <NavItem
                     as={Link}
                     href="/profile"
@@ -72,7 +72,7 @@ export const UpperNavItems = ({
                 Donate
             </NavItem>
 
-            {!hasAccessCookie && (
+            {isLoggedIn === false && (
                 <NavItem
                     as={Link}
                     href={constants.PATHS.SIGNIN}
@@ -90,11 +90,11 @@ export const UpperNavItems = ({
 };
 
 export const LowerNavItems = ({
-    hasAccessCookie,
-    isCollapsed = false,
+    isLoggedIn,
+    isCollapsed,
 }: {
-    hasAccessCookie: boolean;
-    isCollapsed?: boolean;
+    isLoggedIn?: boolean;
+    isCollapsed: boolean;
 }) => {
     const authedLinks = (
         <>
@@ -127,7 +127,7 @@ export const LowerNavItems = ({
             >
                 Guide
             </NavItem>
-            {hasAccessCookie && authedLinks}
+            {isLoggedIn && authedLinks}
         </>
     );
 };

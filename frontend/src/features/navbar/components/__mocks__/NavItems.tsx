@@ -1,19 +1,13 @@
 export const UpperNavItems = vi.fn(
-    ({ hasAccessCookie }: { hasAccessCookie: boolean }) => (
-        <div
-            data-testid="upperNavItems"
-            data-has-access-cookie={hasAccessCookie}
-        >
+    ({ isLoggedIn }: { isLoggedIn: boolean }) => (
+        <div data-testid="upperNavItems" data-is-logged-in={isLoggedIn}>
             UpperNavItems
         </div>
     ),
 );
 export const LowerNavItems = vi.fn(
-    ({ hasAccessCookie }: { hasAccessCookie: boolean }) => (
-        <div
-            data-testid="lowerNavItems"
-            data-has-access-cookie={hasAccessCookie}
-        >
+    ({ isLoggedIn }: { isLoggedIn: boolean }) => (
+        <div data-testid="lowerNavItems" data-is-logged-in={isLoggedIn}>
             LowerNavItems
         </div>
     ),

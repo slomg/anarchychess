@@ -24,7 +24,6 @@ const COOKIES = {
     ACCESS_TOKEN: "accessToken",
     IS_LOGGED_IN: "isLoggedIn",
     AUTH_FAILURE: "authFailed",
-    SIDEBAR_COLLAPSED: "sidebarCollapsed",
 };
 
 const PATHS = {
@@ -57,6 +56,7 @@ const LOCALSTORAGE = {
     PREFERS_CHALLENGE_POOL: "prefersChallengePool",
     PREFERS_TIME_CONTROL_MINUTES_IDX: "prefersTimeControlMinutesIdx",
     PREFERS_TIME_CONTROL_INCREMENT_IDX: "prefersTimeControlIncrementIdx",
+    IS_SIDEBAR_COLLAPSED: "isSidebarCollapsed",
 };
 
 const SIGNALR_PATHS = {
