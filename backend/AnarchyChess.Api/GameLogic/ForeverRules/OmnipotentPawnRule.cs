@@ -27,7 +27,8 @@ public class OmnipotentPawnRule : IForeveRule
             piece: lastMove.Piece,
             captures: [new MoveCapture(lastMove.To, board)],
             pieceSpawns: [new PieceSpawn(PieceType.Pawn, Color: movingPlayer, lastMove.To)],
-            specialMoveType: SpecialMoveType.OmnipotentPawnSpawn
+            specialMoveType: SpecialMoveType.OmnipotentPawnSpawn,
+            highlightSquare: true
         );
     }
 }

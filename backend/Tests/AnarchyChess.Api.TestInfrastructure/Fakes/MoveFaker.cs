@@ -35,6 +35,7 @@ public class MoveFaker : RecordFaker<Move>
         RuleFor(x => x.SpecialMoveType, SpecialMoveType.None);
         RuleFor(x => x.ForcedPriority, ForcedMovePriority.None);
         RuleFor(x => x.PromotesTo, (PieceType?)null);
+        RuleFor(x => x.HighlightSquare, false);
     }
 
     public static Faker<Move> Capture(

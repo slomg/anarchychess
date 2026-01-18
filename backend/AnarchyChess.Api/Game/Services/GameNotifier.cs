@@ -31,8 +31,7 @@ public record MoveNotification(
     int PlyNumber,
     ClockSnapshot Clocks,
     UserId SideToMoveUserId,
-    IReadOnlyCollection<byte> EncodedLegalMoves,
-    bool HasForcedMoves
+    IReadOnlyCollection<byte> EncodedLegalMoves
 );
 
 [GenerateSerializer]
@@ -69,7 +68,6 @@ public class GameNotifier(IHubContext<GameHub, IGameHubClient> hub) : IGameNotif
                 move: notification.Move,
                 plyNumber: notification.PlyNumber,
                 encodedLegalMoves: notification.EncodedLegalMoves,
-                hasForcedMoves: notification.HasForcedMoves,
                 clock: notification.Clocks
             );
     }

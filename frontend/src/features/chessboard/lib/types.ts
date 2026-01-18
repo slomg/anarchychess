@@ -1,4 +1,9 @@
-import { GameColor, PieceType, SpecialMoveType } from "@/lib/apiClient";
+import {
+    ForcedMovePriority,
+    GameColor,
+    PieceType,
+    SpecialMoveType,
+} from "@/lib/apiClient";
 import { LogicalPoint } from "@/features/point/types";
 import BoardPieces from "./boardPieces";
 
@@ -20,7 +25,9 @@ export interface Move {
     sideEffects: MoveSideEffect[];
     pieceSpawns: Piece[];
     promotesTo: PieceType | null;
-    specialType: SpecialMoveType | null;
+    forcedPriority: ForcedMovePriority;
+    specialType: SpecialMoveType;
+    highlightSquare: boolean;
 }
 
 export type MoveKey = string & { __brand: "MoveKey" };

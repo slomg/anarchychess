@@ -1,4 +1,9 @@
-import { GameColor, PieceType } from "@/lib/apiClient";
+import {
+    ForcedMovePriority,
+    GameColor,
+    PieceType,
+    SpecialMoveType,
+} from "@/lib/apiClient";
 import { logicalPoint, pointToStr } from "@/features/point/pointUtils";
 import { LogicalPoint, StrPoint } from "@/features/point/types";
 import { Move, MoveKey } from "@/features/chessboard/lib/types";
@@ -35,7 +40,9 @@ export function createFakeMove(override?: Partial<Move>): Move {
         sideEffects: [],
         pieceSpawns: [],
         promotesTo: null,
-        specialType: null,
+        specialType: SpecialMoveType.NONE,
+        forcedPriority: ForcedMovePriority.NONE,
+        highlightSquare: false,
         ...override,
     };
 }

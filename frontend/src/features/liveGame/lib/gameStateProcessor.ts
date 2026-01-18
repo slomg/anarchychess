@@ -35,9 +35,8 @@ export function createStoreProps(
     const boardWidth = constants.BOARD_WIDTH;
     const boardHeight = constants.BOARD_HEIGHT;
     const legalMoves = decodeMovePathIntoLegalMoves({
-        paths: gameState.moveOptions.legalMoves,
+        paths: gameState.legalMoves,
         boardWidth,
-        hasForcedMoves: gameState.moveOptions.hasForcedMoves,
     });
 
     const viewerColor = getViewerColor(

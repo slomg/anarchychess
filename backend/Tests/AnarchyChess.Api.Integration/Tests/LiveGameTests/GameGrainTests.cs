@@ -148,10 +148,7 @@ public class GameGrainTests : BaseOrleansIntegrationTest
             InitialFen: _state.CurrentGame.InitialFen,
             MoveHistory: [],
             DrawState: new DrawState(),
-            MoveOptions: new(
-                LegalMoves: legalMoves.MovePaths,
-                HasForcedMoves: legalMoves.HasForcedMoves
-            )
+            LegalMoves: legalMoves.MovePaths
         );
         result.Value.Should().BeEquivalentTo(expectedGameState);
     }
@@ -262,8 +259,7 @@ public class GameGrainTests : BaseOrleansIntegrationTest
                                 PlyNumber: 3,
                                 Clocks: expectedClock,
                                 SideToMoveUserId: _blackPlayer.UserId,
-                                EncodedLegalMoves: legalMoves.EncodedMoves,
-                                HasForcedMoves: legalMoves.HasForcedMoves
+                                EncodedLegalMoves: legalMoves.EncodedMoves
                             )
                         )
                 ),
@@ -338,16 +334,8 @@ public class GameGrainTests : BaseOrleansIntegrationTest
         _gameNotifierMock.ClearReceivedCalls();
         await grain.MovePieceAsync(_blackPlayer.UserId, new(new("e9"), new("e6")), ApiTestBase.CT);
 
-        await _gameNotifierMock
-            .Received(1)
-            .NotifyMoveMadeAsync(
-                ArgEx.FluentAssert<MoveNotification>(x => x?.HasForcedMoves.Should().BeTrue()),
-                _state.CurrentGame!.NotifierState
-            );
-
         var state = await grain.GetStateAsync();
-        state.Value.MoveOptions.HasForcedMoves.Should().BeTrue();
-        state.Value.MoveOptions.LegalMoves.Should().HaveCount(1);
+        state.Value.LegalMoves.Should().HaveCount(1);
     }
 
     [Fact]

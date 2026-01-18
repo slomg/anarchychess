@@ -35,21 +35,21 @@ public class PlayableMoveProvider(
 
         Dictionary<MoveKey, Move> moveMap = [];
         List<MovePath> movePaths = [];
+        List<byte> HighlightIdxes = [];
         foreach (var move in legalMoves)
         {
             MoveKey key = new(move);
 
             movePaths.Add(MovePath.FromMove(move, board.Width, moveKey: key));
             moveMap[key] = move;
+            if (move.HighlightSquare)
+            {
+                HighlightIdxes.Add(move.From.AsIndex(board.Width));
+            }
         }
 
         var encodedMoves = _moveEncoder.EncodeMoves(movePaths);
-        return new(
-            MoveMap: moveMap,
-            MovePaths: movePaths,
-            EncodedMoves: encodedMoves,
-            HasForcedMoves: maxPriority > ForcedMovePriority.None
-        );
+        return new(MoveMap: moveMap, MovePaths: movePaths, EncodedMoves: encodedMoves);
     }
 
     public Move? GetPieceMoveByKey(

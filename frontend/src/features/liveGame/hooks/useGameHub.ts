@@ -18,7 +18,6 @@ export type GameClientEvents = {
         move: MoveSnapshot,
         plyNumber: number,
         encodedLegalMoves: string,
-        hasForcedMoves: boolean,
         clocks: Clocks,
     ];
     GameEndedAsync: [result: GameResultData, finalClocks: Clocks];

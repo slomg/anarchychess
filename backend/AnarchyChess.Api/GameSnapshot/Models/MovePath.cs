@@ -15,7 +15,9 @@ public record MovePath(
     IReadOnlyList<MoveSideEffectPath>? SideEffects,
     IReadOnlyList<PieceSpawnPath>? PieceSpawns,
     PieceType? PromotesTo,
-    SpecialMoveType? SpecialType
+    SpecialMoveType? SpecialType,
+    ForcedMovePriority? ForcedPriority,
+    bool? HighlightSquare
 )
 {
     public static MovePath FromMove(Move move, int boardWidth, MoveKey? moveKey = null)
@@ -59,7 +61,11 @@ public record MovePath(
             SideEffects: sideEffects,
             PromotesTo: move.PromotesTo,
             PieceSpawns: spawns,
-            SpecialType: move.SpecialMoveType is SpecialMoveType.None ? null : move.SpecialMoveType
+            SpecialType: move.SpecialMoveType is SpecialMoveType.None ? null : move.SpecialMoveType,
+            ForcedPriority: move.ForcedPriority is ForcedMovePriority.None
+                ? null
+                : move.ForcedPriority,
+            HighlightSquare: move.HighlightSquare ? true : null
         );
     }
 }

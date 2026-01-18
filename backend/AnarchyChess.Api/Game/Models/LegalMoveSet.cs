@@ -8,8 +8,7 @@ namespace AnarchyChess.Api.Game.Models;
 public record LegalMoveSet(
     IReadOnlyDictionary<MoveKey, Move> MoveMap,
     IReadOnlyCollection<MovePath> MovePaths,
-    IReadOnlyCollection<byte> EncodedMoves,
-    bool HasForcedMoves = false
+    IReadOnlyCollection<byte> EncodedMoves
 )
 {
     public IEnumerable<Move> AllMoves => MoveMap.Values;

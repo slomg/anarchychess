@@ -29,12 +29,10 @@ export function createFakeGameState(
             whiteCooldown: 0,
             blackCooldown: 0,
         },
-        moveOptions: {
-            legalMoves: Array.from({
-                length: faker.number.int({ min: 1, max: 5 }),
-            }).map(() => createFakeMovePath()),
-            hasForcedMoves: faker.datatype.boolean(),
-        },
+
+        legalMoves: Array.from({
+            length: faker.number.int({ min: 1, max: 5 }),
+        }).map(() => createFakeMovePath()),
         ...overrides,
     };
 }

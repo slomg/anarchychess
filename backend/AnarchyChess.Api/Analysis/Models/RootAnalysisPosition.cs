@@ -2,4 +2,4 @@
 
 namespace AnarchyChess.Api.Analysis.Models;
 
-public record RootAnalysisPosition(string Fen, MoveOptions MoveOptions);
+public record RootAnalysisPosition(string Fen, IReadOnlyCollection<MovePath> LegalMoves);

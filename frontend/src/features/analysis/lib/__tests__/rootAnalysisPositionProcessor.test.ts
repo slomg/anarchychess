@@ -11,19 +11,15 @@ describe("processRootAnalysis", () => {
 
         const position: RootAnalysisPosition = {
             fen: constants.INITIAL_FEN,
-            moveOptions: {
-                legalMoves: [createFakeMovePath()],
-                hasForcedMoves: true,
-            },
+            legalMoves: [createFakeMovePath()],
         };
 
         const store = processRootAnalysis(position);
         const state = store.getState();
 
         const expectedLegalMoves = decodeMovePathIntoLegalMoves({
-            paths: position.moveOptions.legalMoves,
+            paths: position.legalMoves,
             boardWidth: constants.BOARD_WIDTH,
-            hasForcedMoves: position.moveOptions.hasForcedMoves,
         });
 
         expect(state.pieces).toEqual(constants.DEFAULT_CHESS_BOARD);
@@ -50,10 +46,7 @@ describe("processRootAnalysis", () => {
 
         const position: RootAnalysisPosition = {
             fen: constants.INITIAL_FEN,
-            moveOptions: {
-                legalMoves: [],
-                hasForcedMoves: false,
-            },
+            legalMoves: [],
         };
 
         const store = processRootAnalysis(position);

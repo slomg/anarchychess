@@ -16,7 +16,7 @@ public record GameState(
     GameColor SideToMove,
     string InitialFen,
     IReadOnlyList<MoveSnapshot> MoveHistory,
-    MoveOptions MoveOptions,
+    IReadOnlyCollection<MovePath> LegalMoves,
     DrawState DrawState,
     GameResultData? ResultData = null
 );

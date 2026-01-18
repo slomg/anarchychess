@@ -221,7 +221,7 @@ export type GameState = {
     sideToMove: GameColor;
     initialFen: string;
     moveHistory: Array<MoveSnapshot>;
-    moveOptions: MoveOptions;
+    legalMoves: Array<MovePath>;
     drawState: DrawState;
     resultData?: GameResultData | null;
 };
@@ -319,6 +319,8 @@ export type MovePath = {
     pieceSpawns?: Array<PieceSpawnPath> | null;
     promotesTo?: PieceType | null;
     specialType?: SpecialMoveType | null;
+    forcedPriority?: ForcedMovePriority | null;
+    highlightSquare?: boolean | null;
 };
 
 export type IntermediateSquarePath = {
@@ -427,10 +429,20 @@ export enum SpecialMoveType {
     OMNIPOTENT_PAWN_SPAWN = 8,
 }
 
-export type MoveOptions = {
-    legalMoves: Array<MovePath>;
-    hasForcedMoves: boolean;
-};
+export enum ForcedMovePriority {
+    /**
+     * None
+     */
+    NONE = 0,
+    /**
+     * UnderagePawn
+     */
+    UNDERAGE_PAWN = 1,
+    /**
+     * EnPassant
+     */
+    EN_PASSANT = 2,
+}
 
 export type DrawState = {
     activeRequester?: GameColor | null;
@@ -506,13 +518,13 @@ export type TimeControlSettingsRequest = {
 
 export type RootAnalysisPosition = {
     fen: string;
-    moveOptions: MoveOptions;
+    legalMoves: Array<MovePath>;
 };
 
 export type AnalysisPosition = {
     fen: string;
     san: string;
-    moveOptions: MoveOptions;
+    legalMoves: Array<MovePath>;
     sideToMove: GameColor;
     endStatus?: GameEndStatus | null;
 };
@@ -1488,7 +1500,7 @@ export type GetNextLegalMovesError =
     GetNextLegalMovesErrors[keyof GetNextLegalMovesErrors];
 
 export type GetNextLegalMovesResponses = {
-    200: MoveOptions;
+    200: Array<MovePath>;
 };
 
 export type GetNextLegalMovesResponse =

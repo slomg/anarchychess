@@ -18,10 +18,7 @@ const Sidebar = ({
     isCollapsed: boolean;
     toggleCollapse?: () => void;
 }) => {
-    const isLoggedIn = useCookieValue(
-        constants.COOKIES.IS_LOGGED_IN,
-        undefined,
-    );
+    const isLoggedIn = useCookieValue(constants.COOKIES.IS_LOGGED_IN, false);
 
     return (
         <aside

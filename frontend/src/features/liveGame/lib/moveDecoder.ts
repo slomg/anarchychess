@@ -8,28 +8,37 @@ import {
 } from "@/features/chessboard/lib/types";
 import { Move } from "@/features/chessboard/lib/types";
 import {
+    ForcedMovePriority,
     IntermediateSquarePath,
     MovePath,
     MoveSideEffectPath,
     PieceSpawnPath,
+    SpecialMoveType,
 } from "@/lib/apiClient";
 import { idxToLogicalPoint, pointToStr } from "@/features/point/pointUtils";
 import { createPieceId } from "@/features/chessboard/lib/pieceUtils";
 import LegalMoves from "@/features/chessboard/lib/legalMoves";
-import { StrPoint } from "@/features/point/types";
+import { LogicalPoint, StrPoint } from "@/features/point/types";
 
 export function decodeMovePathIntoLegalMoves({
     paths,
     boardWidth,
-    hasForcedMoves,
 }: {
     paths: MovePath[];
     boardWidth: number;
-    hasForcedMoves: boolean;
 }): LegalMoves {
     const moves = new Map<StrPoint, Move[]>();
+    const highlightSquares: LogicalPoint[] = [];
+    let hasForcedMoves = false;
     for (const path of paths) {
         const move = decodeMovePath(path, boardWidth);
+        if (move.forcedPriority != ForcedMovePriority.NONE) {
+            hasForcedMoves = true;
+        }
+        if (move.highlightSquare) {
+            highlightSquares.push(move.from);
+        }
+
         const fromString = pointToStr(move.from);
         const movesFromPoint = moves.get(fromString) ?? [];
         movesFromPoint.push(move);
@@ -67,8 +76,10 @@ export function decodeMovePath(path: MovePath, boardWidth: number): Move {
         intermediates,
         sideEffects,
         pieceSpawns,
+        specialType: path.specialType ?? SpecialMoveType.NONE,
+        forcedPriority: path.forcedPriority ?? ForcedMovePriority.NONE,
         promotesTo: path.promotesTo ?? null,
-        specialType: path.specialType ?? null,
+        highlightSquare: path.highlightSquare ?? false,
     };
 }
 
@@ -108,14 +119,12 @@ function parseIntermediateSquares(
 export function decodeLegalMoves({
     encoded,
     boardWidth,
-    hasForcedMoves,
 }: {
     encoded: string;
     boardWidth: number;
-    hasForcedMoves: boolean;
 }): LegalMoves {
     if (encoded.length === 0) {
-        return new LegalMoves([], hasForcedMoves);
+        return new LegalMoves([]);
     }
 
     const buffer = Buffer.from(encoded, "base64");
@@ -124,7 +133,6 @@ export function decodeLegalMoves({
     const moves = decodeMovePathIntoLegalMoves({
         paths: JSON.parse(decoded),
         boardWidth,
-        hasForcedMoves,
     });
     return moves;
 }

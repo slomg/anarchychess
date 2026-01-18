@@ -18,7 +18,6 @@ public interface IGameHubClient : IAnarchyChessHubClient
         MoveSnapshot move,
         int plyNumber,
         IEnumerable<byte> encodedLegalMoves,
-        bool hasForcedMoves,
         ClockSnapshot clock
     );
 

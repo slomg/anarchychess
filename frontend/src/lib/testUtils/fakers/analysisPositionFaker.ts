@@ -8,10 +8,7 @@ export function createFakeAnalysisPosition(
     return {
         fen: faker.string.uuid(),
         san: faker.string.alphanumeric(10),
-        moveOptions: {
-            legalMoves: [createFakeMovePath()],
-            hasForcedMoves: faker.datatype.boolean(),
-        },
+        legalMoves: [createFakeMovePath()],
         sideToMove: faker.helpers.enumValue(GameColor),
         ...overrides,
     };

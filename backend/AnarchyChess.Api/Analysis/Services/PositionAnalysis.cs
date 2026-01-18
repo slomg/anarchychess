@@ -10,7 +10,7 @@ public interface IPositionAnalysis
 {
     RootAnalysisPosition GetInitialPosition();
     ErrorOr<AnalysisPosition> GetNextAnalysisPosition(AnalysisMove analMove);
-    ErrorOr<MoveOptions> GetNextLegalMoves(string fen);
+    ErrorOr<IReadOnlyCollection<MovePath>> GetNextLegalMoves(string fen);
 }
 
 public class PositionAnalysis(
@@ -28,12 +28,8 @@ public class PositionAnalysis(
         GameCoreState coreState = new();
         var initialFen = _core.StartGame(coreState);
         var legalMoves = _core.GetLegalMoves(coreState);
-        MoveOptions moveOptions = new(
-            LegalMoves: legalMoves.MovePaths,
-            HasForcedMoves: legalMoves.HasForcedMoves
-        );
 
-        return new(Fen: initialFen.FullFen, MoveOptions: moveOptions);
+        return new(Fen: initialFen.FullFen, legalMoves.MovePaths);
     }
 
     public ErrorOr<AnalysisPosition> GetNextAnalysisPosition(AnalysisMove analMove) // hehe
@@ -55,21 +51,17 @@ public class PositionAnalysis(
         var moveResult = _core.MakeMove(move, coreState);
         var sideToMove = _core.SideToMove(coreState);
         var legalMoves = _core.GetLegalMoves(coreState);
-        MoveOptions moveOptions = new(
-            LegalMoves: legalMoves.MovePaths,
-            HasForcedMoves: legalMoves.HasForcedMoves
-        );
 
         return new AnalysisPosition(
             Fen: moveResult.Fen.FullFen,
             San: moveResult.San,
-            MoveOptions: moveOptions,
+            LegalMoves: legalMoves.MovePaths,
             SideToMove: sideToMove,
             EndStatus: moveResult.EndStatus
         );
     }
 
-    public ErrorOr<MoveOptions> GetNextLegalMoves(string fen)
+    public ErrorOr<IReadOnlyCollection<MovePath>> GetNextLegalMoves(string fen)
     {
         var boardResult = _fenDecoder.DecodeFen(fen);
         if (boardResult.IsError)
@@ -77,11 +69,7 @@ public class PositionAnalysis(
         var board = boardResult.Value;
 
         var legalMoves = _playableMoveProvider.CalculateAllPlayableMoves(board);
-        MoveOptions moveOptions = new(
-            LegalMoves: legalMoves.MovePaths,
-            HasForcedMoves: legalMoves.HasForcedMoves
-        );
 
-        return moveOptions;
+        return legalMoves.MovePaths.ToErrorOr();
     }
 }

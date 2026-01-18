@@ -68,13 +68,10 @@ describe("createStoreProps", () => {
                     timeLeft: 50,
                 },
             ],
-            moveOptions: {
-                legalMoves: [
-                    { fromIdx: 0, toIdx: 1, moveKey: "0" },
-                    { fromIdx: 2, toIdx: 3, moveKey: "1" },
-                ],
-                hasForcedMoves: true,
-            },
+            legalMoves: [
+                { fromIdx: 0, toIdx: 1, moveKey: "0" },
+                { fromIdx: 2, toIdx: 3, moveKey: "1" },
+            ],
             drawState: {
                 activeRequester: GameColor.WHITE,
                 whiteCooldown: 6,
@@ -166,9 +163,8 @@ describe("createStoreProps", () => {
         };
 
         const legalMoves = decodeMovePathIntoLegalMoves({
-            paths: gameState.moveOptions.legalMoves,
+            paths: gameState.legalMoves,
             boardWidth: constants.BOARD_WIDTH,
-            hasForcedMoves: true,
         });
 
         expect(result).toEqual<{

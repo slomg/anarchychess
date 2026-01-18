@@ -248,7 +248,6 @@ describe("useLiveChessEvents", () => {
                 { fromIdx: 10, toIdx: 11, moveKey: "2" },
             ];
             const encodedMoves = encodeMoves(fakeMoves);
-            const hasForcedMoves = true;
 
             await act(async () => {
                 await gameEventHandlers.OpponentMoveMadeAsync?.(
@@ -258,7 +257,6 @@ describe("useLiveChessEvents", () => {
                     }),
                     chessboardStore.getState().positionHistory.mainPlyCount + 1,
                     encodedMoves,
-                    hasForcedMoves,
                     createFakeClocks(),
                 );
             });
@@ -268,7 +266,6 @@ describe("useLiveChessEvents", () => {
             const expectedLegalMoves = decodeMovePathIntoLegalMoves({
                 paths: fakeMoves,
                 boardWidth: 10,
-                hasForcedMoves,
             });
             expect(position).toBeDefined();
             expect(

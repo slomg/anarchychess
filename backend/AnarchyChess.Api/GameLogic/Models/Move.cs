@@ -37,7 +37,8 @@ public record Move(
     IReadOnlyCollection<PieceSpawn> PieceSpawns,
     SpecialMoveType SpecialMoveType,
     ForcedMovePriority ForcedPriority,
-    PieceType? PromotesTo
+    PieceType? PromotesTo,
+    bool HighlightSquare
 )
 {
     public Move(
@@ -51,7 +52,8 @@ public record Move(
         IEnumerable<PieceSpawn>? pieceSpawns = null,
         SpecialMoveType specialMoveType = SpecialMoveType.None,
         ForcedMovePriority forcedPriority = ForcedMovePriority.None,
-        PieceType? promotesTo = null
+        PieceType? promotesTo = null,
+        bool highlightSquare = false
     )
         : this(
             From: from,
@@ -64,7 +66,8 @@ public record Move(
             PieceSpawns: pieceSpawns?.ToList() ?? [],
             SpecialMoveType: specialMoveType,
             ForcedPriority: forcedPriority,
-            PromotesTo: promotesTo
+            PromotesTo: promotesTo,
+            HighlightSquare: highlightSquare
         ) { }
 
     public IEnumerable<(AlgebraicPoint From, AlgebraicPoint To)> Flatten()

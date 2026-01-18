@@ -1,6 +1,5 @@
 ﻿using AnarchyChess.Api.Analysis.Models;
 using AnarchyChess.Api.GameLogic.Models;
-using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.TestInfrastructure;
 using AnarchyChess.Api.TestInfrastructure.TestData;
 using AwesomeAssertions;
@@ -19,7 +18,7 @@ public class AnalysisControllerTests(AnarchyChessWebApplicationFactory factory)
 
         var position = response.Content;
         position.Should().NotBeNull();
-        position.MoveOptions.LegalMoves.Count.Should().BeGreaterThan(0);
+        position.LegalMoves.Count.Should().BeGreaterThan(0);
     }
 
     [Fact]
@@ -39,7 +38,7 @@ public class AnalysisControllerTests(AnarchyChessWebApplicationFactory factory)
         position.Should().NotBeNull();
         position.San.Should().Be("Rc1");
         position.SideToMove.Should().Be(GameColor.Black);
-        position.MoveOptions.LegalMoves.Count.Should().BeGreaterThan(0);
+        position.LegalMoves.Count.Should().BeGreaterThan(0);
         position.EndStatus.Should().BeNull();
     }
 
@@ -52,6 +51,6 @@ public class AnalysisControllerTests(AnarchyChessWebApplicationFactory factory)
 
         var legalMoves = response.Content;
         legalMoves.Should().NotBeNull();
-        legalMoves.Should().NotBeEquivalentTo(new MoveOptions());
+        legalMoves.Count.Should().BeGreaterThan(0);
     }
 }

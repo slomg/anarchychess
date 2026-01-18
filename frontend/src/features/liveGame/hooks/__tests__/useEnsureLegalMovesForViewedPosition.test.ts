@@ -15,8 +15,8 @@ import useEnsureLegalMovesForViewedPosition from "../useEnsureLegalMovesForViewe
 import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
 import { createFakeMovePath } from "@/lib/testUtils/fakers/movePathFaker";
 import { decodeMovePathIntoLegalMoves } from "../../lib/moveDecoder";
-import { getNextLegalMoves, MoveOptions } from "@/lib/apiClient";
 import LegalMoves from "@/features/chessboard/lib/legalMoves";
+import { getNextLegalMoves } from "@/lib/apiClient";
 import constants from "@/lib/constants";
 
 import PositionHistory from "@/features/chessboard/lib/positionHistory";
@@ -35,19 +35,15 @@ describe("useEnsureLegalMovesForViewedPosition", () => {
         chessboardStore = createChessboardStore();
         chessboardStore.setState({ reselectPiece: reselectPieceMock });
 
-        const moveOptions: MoveOptions = {
-            legalMoves: [createFakeMovePath()],
-            hasForcedMoves: false,
-        };
+        const legalMoves = [createFakeMovePath()];
         getNextLegalMovesMock.mockResolvedValue({
             error: undefined,
-            data: moveOptions,
+            data: legalMoves,
             response: new Response(),
         });
 
         expectedLegalMoves = decodeMovePathIntoLegalMoves({
-            paths: moveOptions.legalMoves,
-            hasForcedMoves: moveOptions.hasForcedMoves,
+            paths: legalMoves,
             boardWidth: constants.BOARD_WIDTH,
         });
     });

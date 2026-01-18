@@ -1,4 +1,5 @@
-﻿using AnarchyChess.Api.Game.Errors;
+﻿using System.Diagnostics.CodeAnalysis;
+using AnarchyChess.Api.Game.Errors;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.GameLogic.Models;
@@ -10,7 +11,6 @@ using AnarchyChess.Api.Streaming;
 using ErrorOr;
 using Microsoft.Extensions.Options;
 using Orleans.Streams;
-using System.Diagnostics.CodeAnalysis;
 
 namespace AnarchyChess.Api.Game.Grains;
 
@@ -277,8 +277,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
                 PlyNumber: game.MoveSnapshots.Count,
                 Clocks: _clock.ToSnapshot(game.ClockState),
                 SideToMoveUserId: nextPlayer.UserId,
-                EncodedLegalMoves: legalMoves.EncodedMoves,
-                HasForcedMoves: legalMoves.HasForcedMoves
+                EncodedLegalMoves: legalMoves.EncodedMoves
             ),
             game.NotifierState
         );
@@ -429,12 +428,6 @@ public class GameGrain : Grain, IGameGrain, IRemindable
 
     private GameState GetGameState(GameData game)
     {
-        var legalMoves = _core.GetLegalMoves(game.Core);
-        MoveOptions moveOptions = new(
-            LegalMoves: legalMoves.MovePaths,
-            HasForcedMoves: legalMoves.HasForcedMoves
-        );
-
         GameState gameState = new(
             Revision: game.NotifierState.Revision,
             GameSource: game.GameSource,
@@ -444,7 +437,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             Clocks: _clock.ToSnapshot(game.ClockState),
             SideToMove: _core.SideToMove(game.Core),
             InitialFen: game.InitialFen,
-            MoveOptions: moveOptions,
+            LegalMoves: _core.GetLegalMoves(game.Core).MovePaths,
             MoveHistory: game.MoveSnapshots,
             DrawState: game.DrawRequest.GetState(),
             ResultData: game.Result

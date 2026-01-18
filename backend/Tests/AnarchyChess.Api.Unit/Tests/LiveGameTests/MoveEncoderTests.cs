@@ -43,7 +43,9 @@ public class MoveEncoderTests
                 SideEffects: null,
                 PieceSpawns: null,
                 PromotesTo: null,
-                SpecialType: null
+                SpecialType: null,
+                ForcedPriority: null,
+                HighlightSquare: false
             ),
         ];
 

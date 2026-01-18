@@ -34,13 +34,10 @@ describe("useAnalysisMoveResolver", () => {
         prevPieces = createFakeBoardPieces();
         rootPosition = {
             fen: constants.INITIAL_FEN,
-            moveOptions: {
-                legalMoves: [
-                    { fromIdx: 0, toIdx: 1, moveKey: "0" },
-                    { fromIdx: 2, toIdx: 3, moveKey: "1" },
-                ],
-                hasForcedMoves: true,
-            },
+            legalMoves: [
+                { fromIdx: 0, toIdx: 1, moveKey: "0" },
+                { fromIdx: 2, toIdx: 3, moveKey: "1" },
+            ],
         };
     });
 

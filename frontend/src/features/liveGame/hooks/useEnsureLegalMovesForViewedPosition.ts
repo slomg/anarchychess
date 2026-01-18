@@ -27,10 +27,10 @@ export default function useEnsureLegalMovesForViewedPosition(
                 return;
             }
 
-            const { error, data } = await getNextLegalMoves({
+            const { error, data: movePaths } = await getNextLegalMoves({
                 query: { fen: viewingPosition?.fen ?? initialFen },
             });
-            if (error || data === undefined) {
+            if (error || movePaths === undefined) {
                 console.error(
                     "useEnsureLegalMovesForViewedPosition getNextLegalMoves",
                     error,
@@ -39,8 +39,7 @@ export default function useEnsureLegalMovesForViewedPosition(
             }
 
             const legalMoves = decodeMovePathIntoLegalMoves({
-                paths: data.legalMoves,
-                hasForcedMoves: data.hasForcedMoves,
+                paths: movePaths,
                 boardWidth: state.boardDimensions.width,
             });
             state.addLegalMovesForPosition(

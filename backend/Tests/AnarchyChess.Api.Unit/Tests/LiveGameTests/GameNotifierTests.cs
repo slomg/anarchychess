@@ -65,8 +65,7 @@ public class GameNotifierTests
             PlyNumber: 5,
             Clocks: new ClockSnapshotFaker(),
             SideToMoveUserId: _userId,
-            EncodedLegalMoves: [1, 2, 3],
-            HasForcedMoves: true
+            EncodedLegalMoves: [1, 2, 3]
         );
 
         await _notifier.NotifyMoveMadeAsync(notification, state);
@@ -84,7 +83,6 @@ public class GameNotifierTests
                 move: notification.Move,
                 plyNumber: notification.PlyNumber,
                 encodedLegalMoves: notification.EncodedLegalMoves,
-                hasForcedMoves: notification.HasForcedMoves,
                 clock: notification.Clocks
             );
         state.Revision.Should().Be(1);

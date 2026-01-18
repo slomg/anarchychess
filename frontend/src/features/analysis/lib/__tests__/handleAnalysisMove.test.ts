@@ -52,9 +52,8 @@ function expectPositionAndLegalMoves(
             san: newAnalysisPosition.san,
         },
         decodeMovePathIntoLegalMoves({
-            paths: newAnalysisPosition.moveOptions.legalMoves,
+            paths: newAnalysisPosition.legalMoves,
             boardWidth: constants.BOARD_WIDTH,
-            hasForcedMoves: newAnalysisPosition.moveOptions.hasForcedMoves,
         }),
     );
     expect(reselectPieceMock).toHaveBeenCalledOnce();
@@ -94,10 +93,7 @@ describe("addAnalysisMove", () => {
                 fen: "someFen",
                 san: "e4",
                 sideToMove: GameColor.BLACK,
-                moveOptions: {
-                    legalMoves: [createFakeMovePath()],
-                    hasForcedMoves: false,
-                },
+                legalMoves: [createFakeMovePath()],
             },
             response: new Response(),
         });

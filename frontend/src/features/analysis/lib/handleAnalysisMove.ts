@@ -98,9 +98,8 @@ async function fetchNextPosition({
         san: data.san,
     };
     const legalMoves = decodeMovePathIntoLegalMoves({
-        paths: data.moveOptions.legalMoves,
+        paths: data.legalMoves,
         boardWidth: boardDimensions.width,
-        hasForcedMoves: data.moveOptions.hasForcedMoves,
     });
 
     return { positionProps, legalMoves };

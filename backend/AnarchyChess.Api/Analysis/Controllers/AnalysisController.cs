@@ -31,9 +31,9 @@ public class AnalysisController(IPositionAnalysis positionAnalysis) : Controller
     }
 
     [HttpGet("moves")]
-    [ProducesResponseType<MoveOptions>(StatusCodes.Status200OK)]
+    [ProducesResponseType<IReadOnlyCollection<MovePath>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ApiProblemDetails>(StatusCodes.Status400BadRequest)]
-    public ActionResult<MoveOptions> GetNextLegalMoves(string fen)
+    public ActionResult<IReadOnlyCollection<MovePath>> GetNextLegalMoves(string fen)
     {
         var result = _positionAnalysis.GetNextLegalMoves(fen);
         return result.Match(Ok, errors => errors.ToActionResult());

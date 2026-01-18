@@ -1,6 +1,7 @@
 import brotliCompress from "brotli/compress";
 
 import {
+    ForcedMovePriority,
     GameColor,
     MovePath,
     PieceType,
@@ -21,7 +22,9 @@ const emptyMove = {
     sideEffects: [],
     pieceSpawns: [],
     promotesTo: null,
-    specialType: null,
+    specialType: SpecialMoveType.NONE,
+    forcedPriority: ForcedMovePriority.NONE,
+    highlightSquare: false,
 };
 
 describe("decodeMovePathIntoLegalMoves", () => {
@@ -44,6 +47,8 @@ describe("decodeMovePathIntoLegalMoves", () => {
                 ],
                 promotesTo: PieceType.BISHOP,
                 specialType: SpecialMoveType.EN_PASSANT,
+                forcedPriority: ForcedMovePriority.UNDERAGE_PAWN,
+                highlightSquare: true,
             },
         ];
 
@@ -51,7 +56,6 @@ describe("decodeMovePathIntoLegalMoves", () => {
         const result = decodeMovePathIntoLegalMoves({
             paths,
             boardWidth: 10,
-            hasForcedMoves: false,
         });
 
         expect(result.size).toBe(1);
@@ -85,6 +89,8 @@ describe("decodeMovePathIntoLegalMoves", () => {
             ],
             promotesTo: PieceType.BISHOP,
             specialType: SpecialMoveType.EN_PASSANT,
+            forcedPriority: ForcedMovePriority.UNDERAGE_PAWN,
+            highlightSquare: true,
         });
     });
 
@@ -98,7 +104,6 @@ describe("decodeMovePathIntoLegalMoves", () => {
         const result = decodeMovePathIntoLegalMoves({
             paths,
             boardWidth,
-            hasForcedMoves: false,
         });
 
         expect(result.size).toBe(1);
@@ -123,7 +128,6 @@ describe("decodeMovePathIntoLegalMoves", () => {
         const result = decodeMovePathIntoLegalMoves({
             paths: [],
             boardWidth: 10,
-            hasForcedMoves: false,
         });
         expect(result).toEqual(new LegalMoves());
     });
@@ -163,7 +167,6 @@ describe("decodeLegalMoves", () => {
         const result = decodeLegalMoves({
             encoded,
             boardWidth: 10,
-            hasForcedMoves: false,
         });
 
         expect(result.size).toBe(2);
@@ -195,7 +198,9 @@ describe("decodeLegalMoves", () => {
                     },
                 ],
                 promotesTo: null,
-                specialType: null,
+                specialType: SpecialMoveType.NONE,
+                forcedPriority: ForcedMovePriority.NONE,
+                highlightSquare: false,
             },
         ]);
         expect(result.get(logicalPoint({ x: 0, y: 1 }))).toEqual<Move[]>([
@@ -215,18 +220,15 @@ describe("decodeLegalMoves", () => {
         const result = decodeLegalMoves({
             encoded,
             boardWidth: 10,
-            hasForcedMoves: false,
         });
         expect(result).toEqual(new LegalMoves());
     });
 
     it("should return empty map when given an empty string", () => {
-        const hasForcedMoves = true;
         const result = decodeLegalMoves({
             encoded: "",
             boardWidth: 10,
-            hasForcedMoves,
         });
-        expect(result).toEqual(new LegalMoves([], hasForcedMoves));
+        expect(result).toEqual(new LegalMoves([], false));
     });
 });

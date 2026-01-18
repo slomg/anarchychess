@@ -17,9 +17,8 @@ export default function processRootAnalysis(
 
     const pieces = decodeFen(position.fen);
     const legalMoves = decodeMovePathIntoLegalMoves({
-        paths: position.moveOptions.legalMoves,
+        paths: position.legalMoves,
         boardWidth,
-        hasForcedMoves: position.moveOptions.hasForcedMoves,
     });
     const positionHistory = new PositionHistory(pieces);
 

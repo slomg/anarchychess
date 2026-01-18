@@ -83,14 +83,13 @@ export default function useLiveChessEvents(
     useGameEvent(
         gameToken,
         "OpponentMoveMadeAsync",
-        async (move, plyNumber, encodedLegalMoves, hasForcedMoves, clocks) => {
+        async (move, plyNumber, encodedLegalMoves, clocks) => {
             const { viewer } = liveChessStore.getState();
             if (viewer.playerColor === null) return;
 
             const decodedLegalMoves = decodeLegalMoves({
                 encoded: encodedLegalMoves,
                 boardWidth: boardDimensions.width,
-                hasForcedMoves: hasForcedMoves,
             });
             await handleMoveUpdate(move, plyNumber, clocks, decodedLegalMoves);
         },

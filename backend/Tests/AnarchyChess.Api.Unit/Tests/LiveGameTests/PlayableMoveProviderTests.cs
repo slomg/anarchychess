@@ -57,8 +57,7 @@ public class PlayableMoveProviderTests
         var expected = new LegalMoveSet(
             MoveMap: moveMap,
             MovePaths: movePaths,
-            EncodedMoves: expectedEncodedMoves,
-            HasForcedMoves: false
+            EncodedMoves: expectedEncodedMoves
         );
 
         result.Should().BeEquivalentTo(expected);
@@ -112,8 +111,7 @@ public class PlayableMoveProviderTests
         LegalMoveSet expected = new(
             MoveMap: new Dictionary<MoveKey, Move> { [new MoveKey(move3)] = move3 },
             MovePaths: [MovePath.FromMove(move3, _board.Width, expectedMoveKey)],
-            EncodedMoves: expectedEncodedMoves,
-            HasForcedMoves: true
+            EncodedMoves: expectedEncodedMoves
         );
 
         result.Should().BeEquivalentTo(expected);

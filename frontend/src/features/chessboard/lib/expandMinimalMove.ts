@@ -1,3 +1,4 @@
+import { ForcedMovePriority, SpecialMoveType } from "@/lib/apiClient";
 import { MinimalMove, Move, MoveKey } from "./types";
 
 export default function expandMinimalMove(minimalMove: MinimalMove): Move {
@@ -9,7 +10,9 @@ export default function expandMinimalMove(minimalMove: MinimalMove): Move {
         sideEffects: [],
         pieceSpawns: [],
         promotesTo: null,
-        specialType: null,
+        specialType: SpecialMoveType.NONE,
+        forcedPriority: ForcedMovePriority.NONE,
+        highlightSquare: false,
         ...minimalMove,
     };
 }

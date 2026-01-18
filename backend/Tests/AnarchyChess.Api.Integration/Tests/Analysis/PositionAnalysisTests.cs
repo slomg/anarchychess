@@ -5,7 +5,6 @@ using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Models;
-using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.TestInfrastructure;
 using AnarchyChess.Api.TestInfrastructure.TestData;
 using AwesomeAssertions;
@@ -37,9 +36,11 @@ public class PositionAnalysisTests : BaseIntegrationTest
         GameCoreState state = new();
         var fen = _core.StartGame(state);
         var legalMoves = _core.GetLegalMoves(state);
-        MoveOptions moveOptions = new(legalMoves.MovePaths, legalMoves.HasForcedMoves);
 
-        RootAnalysisPosition expectedPosition = new(Fen: fen.FullFen, MoveOptions: moveOptions);
+        RootAnalysisPosition expectedPosition = new(
+            Fen: fen.FullFen,
+            LegalMoves: legalMoves.MovePaths
+        );
         result.Should().BeEquivalentTo(expectedPosition);
     }
 
@@ -64,14 +65,13 @@ public class PositionAnalysisTests : BaseIntegrationTest
         _core.MakeMove(moveKey, state);
 
         var legalMoves = _core.GetLegalMoves(state);
-        MoveOptions moveOptions = new(legalMoves.MovePaths, legalMoves.HasForcedMoves);
 
         var fen = _fenEncoder.EncodeFen(state.Board);
 
         AnalysisPosition expectedPosition = new(
             Fen: fen.FullFen,
             San: "e4",
-            MoveOptions: moveOptions,
+            LegalMoves: legalMoves.MovePaths,
             SideToMove: GameColor.Black,
             EndStatus: null
         );
@@ -110,11 +110,10 @@ public class PositionAnalysisTests : BaseIntegrationTest
         var result = _positionAnalysis.GetNextLegalMoves(fen);
 
         result.IsError.Should().BeFalse();
-        var moveOptions = result.Value;
+        var legalMoves = result.Value;
 
         var expectedMoves = _playableMoveProvider.CalculateAllPlayableMoves(board);
-        moveOptions.LegalMoves.Should().BeEquivalentTo(expectedMoves.MovePaths);
-        moveOptions.HasForcedMoves.Should().Be(expectedMoves.HasForcedMoves);
+        legalMoves.Should().BeEquivalentTo(expectedMoves.MovePaths);
     }
 
     [Fact]
