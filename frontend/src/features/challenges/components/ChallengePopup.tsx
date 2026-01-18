@@ -36,7 +36,10 @@ const ChallengePopup: ForwardRefRenderFunction<
         PoolType.RATED,
     );
 
-    const isLoggedIn = useCookieValue(constants.COOKIES.IS_LOGGED_IN, false);
+    const isLoggedIn = useCookieValue<boolean | null>(
+        constants.COOKIES.IS_LOGGED_IN,
+        false,
+    );
     const router = useRouter();
 
     async function onChallenge() {

@@ -18,7 +18,7 @@ import useCookieValue from "@/hooks/useCookieValue";
 const PlayOptions = () => {
     const isLoggedIn = useCookieValue<boolean | null>(
         constants.COOKIES.IS_LOGGED_IN,
-        null,
+        false,
     );
     const [poolType, setPoolType] = useLocalPref(
         constants.LOCALSTORAGE.PREFERS_MATCHMAKING_POOL,

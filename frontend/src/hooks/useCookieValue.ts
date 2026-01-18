@@ -3,13 +3,16 @@ import Cookies from "js-cookie";
 
 export default function useCookieValue<T>(
     cookieName: string,
-    initialValue: T,
-): T {
-    const [value, setValue] = useState(initialValue);
+    defaultValue: T,
+): T | null {
+    const [value, setValue] = useState<T | null>(null);
 
     const setValueFromCookie = useEffectEvent(() => {
         const cookieValue = Cookies.get(cookieName);
-        if (!cookieValue) return;
+        if (!cookieValue) {
+            setValue(defaultValue);
+            return;
+        }
         setValue(JSON.parse(cookieValue));
     });
     useEffect(() => setValueFromCookie(), []);
