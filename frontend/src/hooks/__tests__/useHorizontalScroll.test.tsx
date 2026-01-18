@@ -126,4 +126,26 @@ describe("useHorizontalScroll", () => {
 
         expect(el.scrollLeft).toBe(delta);
     });
+
+    it("should not preventDefault if there is no horizontal scroll", () => {
+        const el = setupElement({
+            scrollWidth: 100,
+            clientWidth: 100,
+            scrollLeft: 0,
+        });
+        const ref = { current: el };
+
+        renderHook(() => useHorizontalScroll(ref));
+
+        const wheelEvent = new WheelEvent("wheel", { deltaY: 50 });
+        const preventDefaultSpy = vi.spyOn(wheelEvent, "preventDefault");
+
+        act(() => {
+            el.dispatchEvent(wheelEvent);
+        });
+
+        vi.runAllTimers();
+
+        expect(preventDefaultSpy).not.toHaveBeenCalled();
+    });
 });

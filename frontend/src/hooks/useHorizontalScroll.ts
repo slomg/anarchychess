@@ -27,6 +27,9 @@ export default function useHorizontalScroll(
 
         function onWheel(event: WheelEvent) {
             if (!ref.current) return;
+            // no scroll
+            if (ref.current.scrollWidth <= ref.current.clientWidth) return;
+
             event.preventDefault();
 
             targetScroll += event.deltaY;
