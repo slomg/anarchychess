@@ -1,8 +1,13 @@
 import { logicalPoint, pointToStr } from "@/features/point/pointUtils";
-import { createFakeMove } from "@/lib/testUtils/fakers/chessboardFakers";
-import { Move } from "../types";
-import LegalMoves from "../legalMoves";
+
+import {
+    createFakeMove,
+    createRandomPoint,
+} from "@/lib/testUtils/fakers/chessboardFakers";
+
 import { StrPoint } from "@/features/point/types";
+import LegalMoves from "../legalMoves";
+import { Move } from "../types";
 
 describe("legalMoves", () => {
     describe("constructor", () => {
@@ -10,6 +15,7 @@ describe("legalMoves", () => {
             const legalMoves = new LegalMoves();
             expect(legalMoves.size).toBe(0);
             expect(legalMoves.hasForcedMoves).toBe(false);
+            expect(legalMoves.highlightSquares).toEqual([]);
         });
 
         it("should create a LegalMoves instance from a Map", () => {
@@ -17,10 +23,9 @@ describe("legalMoves", () => {
             const legalMovesMap = new Map<StrPoint, Move[]>([
                 [pointToStr(move.from), [move]],
             ]);
-            const legalMoves = new LegalMoves(legalMovesMap, true);
+            const legalMoves = new LegalMoves(legalMovesMap);
 
             expect(legalMoves.size).toBe(1);
-            expect(legalMoves.hasForcedMoves).toBe(true);
             const movesFromOrigin = legalMoves.get(move.from);
             expect(movesFromOrigin).toEqual([move]);
         });
@@ -31,12 +36,29 @@ describe("legalMoves", () => {
                 [pointToStr(move.from), [move]],
             ];
 
-            const legalMoves = new LegalMoves(legalMovesArray, false);
+            const legalMoves = new LegalMoves(legalMovesArray);
 
             expect(legalMoves.size).toBe(1);
-            expect(legalMoves.hasForcedMoves).toBe(false);
             const movesFromOrigin = legalMoves.get(move.from);
             expect(movesFromOrigin).toEqual([move]);
+        });
+
+        it("should set hasForcedMoves", () => {
+            const hasForcedMoves = true;
+            const legalMoves = new LegalMoves([], hasForcedMoves);
+
+            expect(legalMoves.hasForcedMoves).toBe(true);
+        });
+
+        it("should set highlightSquares", () => {
+            const highlightSquares = [
+                createRandomPoint(),
+                createRandomPoint(),
+                createRandomPoint(),
+            ];
+            const legalMoves = new LegalMoves([], false, highlightSquares);
+
+            expect(legalMoves.highlightSquares).toEqual(highlightSquares);
         });
     });
 

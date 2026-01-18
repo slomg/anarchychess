@@ -46,7 +46,7 @@ export function decodeMovePathIntoLegalMoves({
         moves.set(pointToStr(move.from), movesFromPoint);
     }
 
-    return new LegalMoves(moves, hasForcedMoves);
+    return new LegalMoves(moves, hasForcedMoves, highlightSquares);
 }
 
 export function decodeMovePath(path: MovePath, boardWidth: number): Move {
@@ -124,7 +124,7 @@ export function decodeLegalMoves({
     boardWidth: number;
 }): LegalMoves {
     if (encoded.length === 0) {
-        return new LegalMoves([]);
+        return new LegalMoves();
     }
 
     const buffer = Buffer.from(encoded, "base64");

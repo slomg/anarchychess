@@ -12,6 +12,7 @@ import { Move, MoveKey } from "@/features/chessboard/lib/types";
 import { logicalPoint } from "@/features/point/pointUtils";
 import mockSequentialUUID from "@/lib/testUtils/mocks/mockUuids";
 import LegalMoves from "@/features/chessboard/lib/legalMoves";
+import { createFakeMovePath } from "@/lib/testUtils/fakers/movePathFaker";
 
 vi.mock("brotli/compress");
 
@@ -130,6 +131,40 @@ describe("decodeMovePathIntoLegalMoves", () => {
             boardWidth: 10,
         });
         expect(result).toEqual(new LegalMoves());
+    });
+
+    it("should set hasForcedMoves when at least one move has forcedPriority", () => {
+        const paths: MovePath[] = [
+            createFakeMovePath({ forcedPriority: ForcedMovePriority.NONE }),
+            createFakeMovePath({
+                forcedPriority: ForcedMovePriority.UNDERAGE_PAWN,
+            }),
+        ];
+
+        const result = decodeMovePathIntoLegalMoves({
+            paths,
+            boardWidth: 10,
+        });
+
+        expect(result.hasForcedMoves).toBe(true);
+    });
+
+    it("should collect highlightSquares from moves with highlightSquare = true", () => {
+        const paths: MovePath[] = [
+            createFakeMovePath({ fromIdx: 0, highlightSquare: true }),
+            createFakeMovePath({ fromIdx: 2, highlightSquare: false }),
+            createFakeMovePath({ fromIdx: 4, highlightSquare: true }),
+        ];
+
+        const result = decodeMovePathIntoLegalMoves({
+            paths,
+            boardWidth: 10,
+        });
+
+        expect(result.highlightSquares).toEqual([
+            logicalPoint({ x: 0, y: 0 }),
+            logicalPoint({ x: 4, y: 0 }),
+        ]);
     });
 });
 
