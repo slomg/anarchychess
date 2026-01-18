@@ -1,3 +1,4 @@
+import { pointEquals } from "@/features/point/pointUtils";
 import { useChessboardStore } from "../hooks/useChessboard";
 import ChessSquare from "./ChessSquare";
 
@@ -14,7 +15,7 @@ const LastMoveHighlight = () => {
                     data-testid="highlightedLastMoveFrom"
                 />
             )}
-            {toPosition && (
+            {toPosition && !pointEquals(fromPosition, toPosition) && (
                 <ChessSquare
                     position={toPosition}
                     className="bg-accent/60"

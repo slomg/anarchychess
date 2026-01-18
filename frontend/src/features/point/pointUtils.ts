@@ -30,7 +30,10 @@ export function screenPoint(point: Point): ScreenPoint {
     return point as ScreenPoint;
 }
 
-export function pointEquals(a: Point, b: Point): boolean {
+export function pointEquals(a?: Point, b?: Point): boolean {
+    if (a === undefined && b === undefined) return true;
+    else if (a === undefined || b === undefined) return false;
+
     return a.x === b.x && a.y === b.y;
 }
 

@@ -64,4 +64,26 @@ describe("LastMoveHighlight", () => {
             screen.queryByTestId("highlightedLastMoveTo"),
         ).not.toBeInTheDocument();
     });
+
+    it("should not render last move to if from === to", () => {
+        store.setState({
+            lastMove: {
+                from: logicalPoint({ x: 1, y: 1 }),
+                to: logicalPoint({ x: 1, y: 1 }),
+            },
+        });
+
+        render(
+            <ChessboardStoreContext.Provider value={store}>
+                <LastMoveHighlight />
+            </ChessboardStoreContext.Provider>,
+        );
+
+        expect(
+            screen.queryByTestId("highlightedLastMoveFrom"),
+        ).toBeInTheDocument();
+        expect(
+            screen.queryByTestId("highlightedLastMoveTo"),
+        ).not.toBeInTheDocument();
+    });
 });
