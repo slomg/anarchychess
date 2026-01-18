@@ -1,20 +1,21 @@
-import Popup, { PopupRef } from "@/components/Popup";
-import Button from "@/components/ui/Button";
-import Range from "@/components/ui/Range";
-import Selector from "@/components/ui/Selector";
-import { useSessionUser } from "@/features/auth/hooks/useSessionUser";
-import { isAuthed, isGuest } from "@/features/auth/lib/userGuard";
-import useLocalPref from "@/hooks/useLocalPref";
+import { forwardRef, ForwardRefRenderFunction, useState } from "react";
+import { useRouter } from "next/navigation";
+
 import {
     createChallenge,
     ErrorCode,
     PoolType,
     PublicUser,
 } from "@/lib/apiClient";
+
+import { findMatchingError } from "@/lib/utils/errorUtils";
+import Popup, { PopupRef } from "@/components/Popup";
+import useCookieValue from "@/hooks/useCookieValue";
+import useLocalPref from "@/hooks/useLocalPref";
+import Selector from "@/components/ui/Selector";
+import Button from "@/components/ui/Button";
+import Range from "@/components/ui/Range";
 import constants from "@/lib/constants";
-import { findMatchingError as filterError } from "@/lib/utils/errorUtils";
-import { useRouter } from "next/navigation";
-import { forwardRef, ForwardRefRenderFunction, useState } from "react";
 
 const ChallengePopup: ForwardRefRenderFunction<
     PopupRef,
@@ -35,14 +36,13 @@ const ChallengePopup: ForwardRefRenderFunction<
         PoolType.RATED,
     );
 
-    const user = useSessionUser();
+    const isLoggedIn = useCookieValue(constants.COOKIES.IS_LOGGED_IN, false);
     const router = useRouter();
 
     async function onChallenge() {
         setError(null);
 
-        const isUserGuest = isGuest(user);
-        const effectivePoolType = isUserGuest ? PoolType.CASUAL : poolType;
+        const effectivePoolType = isLoggedIn ? poolType : PoolType.CASUAL;
 
         const { error, data: challenge } = await createChallenge({
             query: { recipientId: recipient?.userId },
@@ -60,7 +60,7 @@ const ChallengePopup: ForwardRefRenderFunction<
         });
         if (error || challenge === undefined) {
             setError(
-                filterError(
+                findMatchingError(
                     error,
                     new Set([
                         ErrorCode.CHALLENGE_RECIPIENT_NOT_ACCEPTING,
@@ -120,7 +120,7 @@ const ChallengePopup: ForwardRefRenderFunction<
                     />
                 </div>
 
-                {isAuthed(user) && (
+                {isLoggedIn && (
                     <Selector
                         options={[
                             { label: "Rated", value: PoolType.RATED },

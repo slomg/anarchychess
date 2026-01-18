@@ -13,13 +13,13 @@ import ChallengePopup from "@/features/challenges/components/ChallengePopup";
 import { PopupRef } from "@/components/Popup";
 import useLobbyStore from "@/features/lobby/stores/lobbyStore";
 import OngoingGamesPopup from "@/features/lobby/components/OngoingGamesPopup";
-import { useSessionUser } from "@/features/auth/hooks/useSessionUser";
-import { isAuthed } from "@/features/auth/lib/userGuard";
+import useCookieValue from "@/hooks/useCookieValue";
 
 const PlayOptions = () => {
-    const user = useSessionUser();
-    const isLoggedIn = isAuthed(user);
-
+    const isLoggedIn = useCookieValue<boolean | null>(
+        constants.COOKIES.IS_LOGGED_IN,
+        null,
+    );
     const [poolType, setPoolType] = useLocalPref(
         constants.LOCALSTORAGE.PREFERS_MATCHMAKING_POOL,
         PoolType.CASUAL,
@@ -32,7 +32,7 @@ const PlayOptions = () => {
     const numberOfOngoingGames = useLobbyStore((x) => x.ongoingGames.size);
 
     useEffect(() => {
-        if (!isLoggedIn) {
+        if (isLoggedIn === false) {
             setPoolType(PoolType.CASUAL);
         }
     }, [isLoggedIn, setPoolType]);

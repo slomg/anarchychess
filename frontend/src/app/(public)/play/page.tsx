@@ -2,7 +2,6 @@ import { Metadata } from "next";
 
 import StaticChessboardWithSidebar from "@/features/chessboard/components/StaticChessboardWithSidebar";
 import OpenSeekDirectory from "@/features/play/components/OpenSeekDirectory";
-import WithOptionalSession from "@/features/auth/hocs/WithOptionalSession";
 import PlayOptions from "@/features/play/components/PlayOptions";
 
 export const metadata: Metadata = {
@@ -20,21 +19,19 @@ export const metadata: Metadata = {
 
 export default function PlayPage() {
     return (
-        <WithOptionalSession>
-            <StaticChessboardWithSidebar
-                prioritizeAside
-                aside={
-                    <aside
-                        className="flex h-full w-full min-w-xs flex-col gap-3
-                            overflow-auto lg:max-w-sm"
-                    >
-                        <PlayOptions />
-                        <div className="flex min-h-fit flex-1">
-                            <OpenSeekDirectory />
-                        </div>
-                    </aside>
-                }
-            />
-        </WithOptionalSession>
+        <StaticChessboardWithSidebar
+            prioritizeAside
+            aside={
+                <aside
+                    className="flex h-full w-full min-w-xs flex-col gap-3
+                        overflow-auto lg:max-w-sm"
+                >
+                    <PlayOptions />
+                    <div className="flex min-h-fit flex-1">
+                        <OpenSeekDirectory />
+                    </div>
+                </aside>
+            }
+        />
     );
 }

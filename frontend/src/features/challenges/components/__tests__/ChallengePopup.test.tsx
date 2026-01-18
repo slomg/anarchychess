@@ -1,58 +1,43 @@
 import { fireEvent, within, render, screen } from "@testing-library/react";
-import { act } from "react";
-import ChallengePopup from "../ChallengePopup";
+import userEvent from "@testing-library/user-event";
+import React, { act } from "react";
+
 import {
     createChallenge,
     ErrorCode,
-    GuestUser,
     PoolType,
-    PrivateUser,
     PublicUser,
 } from "@/lib/apiClient";
-import React from "react";
-import {
-    createFakeGuestUser,
-    createFakePrivateUser,
-    createFakeUser,
-} from "@/lib/testUtils/fakers/userFaker";
-import userEvent from "@testing-library/user-event";
+
 import { createFakeChallengeRequest } from "@/lib/testUtils/fakers/challengeRequestFaker";
+import { createFakeUser } from "@/lib/testUtils/fakers/userFaker";
 import { mockRouter } from "@/lib/testUtils/mocks/mockRouter";
-import constants from "@/lib/constants";
-import SessionProvider from "@/features/auth/contexts/sessionContext";
+import ChallengePopup from "../ChallengePopup";
 import { PopupRef } from "@/components/Popup";
+import constants from "@/lib/constants";
+import { mockJsCookie } from "@/lib/testUtils/mocks/mockCookies";
 
 vi.mock("@/lib/apiClient/definition");
+vi.mock("js-cookie");
 
 describe("ChallengePopup", () => {
     const ref = React.createRef<PopupRef>();
     const createChallengeMock = vi.mocked(createChallenge);
 
     let userMock: PublicUser;
-    let loggedInUserMock: PrivateUser;
-    let guestUserMock: GuestUser;
 
     beforeEach(() => {
         userMock = createFakeUser();
-        loggedInUserMock = createFakePrivateUser();
-        guestUserMock = createFakeGuestUser();
+        mockJsCookie({ [constants.COOKIES.IS_LOGGED_IN]: "true" });
     });
 
     it("should not render popup content by default", async () => {
-        render(
-            <SessionProvider user={loggedInUserMock}>
-                <ChallengePopup ref={ref} recipient={userMock} />
-            </SessionProvider>,
-        );
+        render(<ChallengePopup ref={ref} recipient={userMock} />);
         expect(screen.queryByTestId("challengePopup")).not.toBeInTheDocument();
     });
 
     it("should open the popup when open is called", async () => {
-        render(
-            <SessionProvider user={loggedInUserMock}>
-                <ChallengePopup ref={ref} recipient={userMock} />
-            </SessionProvider>,
-        );
+        render(<ChallengePopup ref={ref} recipient={userMock} />);
         act(() => ref.current?.open());
 
         expect(screen.getByTestId("challengePopup")).toBeInTheDocument();
@@ -63,11 +48,7 @@ describe("ChallengePopup", () => {
     });
 
     it("should show default minutes, increment, and pool type", async () => {
-        render(
-            <SessionProvider user={loggedInUserMock}>
-                <ChallengePopup ref={ref} recipient={userMock} />
-            </SessionProvider>,
-        );
+        render(<ChallengePopup ref={ref} recipient={userMock} />);
         act(() => ref.current?.open());
 
         expect(screen.getByTestId("challengePopupMinutes")).toHaveValue(
@@ -91,11 +72,7 @@ describe("ChallengePopup", () => {
         const routerMock = mockRouter();
         const user = userEvent.setup();
 
-        render(
-            <SessionProvider user={loggedInUserMock}>
-                <ChallengePopup ref={ref} recipient={userMock} />
-            </SessionProvider>,
-        );
+        render(<ChallengePopup ref={ref} recipient={userMock} />);
         act(() => ref.current?.open());
 
         const minutesSlider = screen.getByTestId<HTMLInputElement>(
@@ -149,11 +126,7 @@ describe("ChallengePopup", () => {
         });
         const user = userEvent.setup();
 
-        render(
-            <SessionProvider user={loggedInUserMock}>
-                <ChallengePopup ref={ref} recipient={userMock} />
-            </SessionProvider>,
-        );
+        render(<ChallengePopup ref={ref} recipient={userMock} />);
         act(() => ref.current?.open());
 
         const button = screen.getByTestId("challengePopupCreate");
@@ -166,11 +139,7 @@ describe("ChallengePopup", () => {
 
     it("should close when requested", async () => {
         const user = userEvent.setup();
-        render(
-            <SessionProvider user={loggedInUserMock}>
-                <ChallengePopup ref={ref} recipient={userMock} />
-            </SessionProvider>,
-        );
+        render(<ChallengePopup ref={ref} recipient={userMock} />);
         act(() => ref.current?.open());
 
         const closeButton = screen.getByTestId("closePopup");
@@ -183,9 +152,7 @@ describe("ChallengePopup", () => {
         const user = userEvent.setup();
 
         const { unmount } = render(
-            <SessionProvider user={loggedInUserMock}>
-                <ChallengePopup ref={ref} recipient={userMock} />
-            </SessionProvider>,
+            <ChallengePopup ref={ref} recipient={userMock} />,
         );
         act(() => ref.current?.open());
 
@@ -209,11 +176,7 @@ describe("ChallengePopup", () => {
 
         unmount();
 
-        render(
-            <SessionProvider user={loggedInUserMock}>
-                <ChallengePopup ref={ref} recipient={userMock} />
-            </SessionProvider>,
-        );
+        render(<ChallengePopup ref={ref} recipient={userMock} />);
         act(() => ref.current?.open());
 
         expect(screen.getByTestId("challengePopupMinutes")).toHaveValue("2");
@@ -225,11 +188,7 @@ describe("ChallengePopup", () => {
     });
 
     it("should display the correct minutes and increment text", async () => {
-        render(
-            <SessionProvider user={loggedInUserMock}>
-                <ChallengePopup ref={ref} recipient={userMock} />
-            </SessionProvider>,
-        );
+        render(<ChallengePopup ref={ref} recipient={userMock} />);
         act(() => ref.current?.open());
 
         const minutesText = screen.getByTestId("challengePopupMinutesText");
@@ -253,11 +212,8 @@ describe("ChallengePopup", () => {
     });
 
     it("should not show pool type selector for guest users", async () => {
-        render(
-            <SessionProvider user={guestUserMock}>
-                <ChallengePopup ref={ref} recipient={userMock} />
-            </SessionProvider>,
-        );
+        mockJsCookie({});
+        render(<ChallengePopup ref={ref} recipient={userMock} />);
         act(() => ref.current?.open());
 
         expect(
@@ -272,13 +228,10 @@ describe("ChallengePopup", () => {
             response: new Response(),
         });
         const routerMock = mockRouter();
+        mockJsCookie({});
         const user = userEvent.setup();
 
-        render(
-            <SessionProvider user={guestUserMock}>
-                <ChallengePopup ref={ref} recipient={userMock} />
-            </SessionProvider>,
-        );
+        render(<ChallengePopup ref={ref} recipient={userMock} />);
         act(() => ref.current?.open());
 
         const challengeButton = screen.getByTestId("challengePopupCreate");
@@ -306,11 +259,7 @@ describe("ChallengePopup", () => {
     });
 
     it("should refer to recipient as friend when no recipient is provided", () => {
-        render(
-            <SessionProvider user={loggedInUserMock}>
-                <ChallengePopup ref={ref} />
-            </SessionProvider>,
-        );
+        render(<ChallengePopup ref={ref} />);
         act(() => ref.current?.open());
 
         expect(screen.getByTestId("challengePopupCreate")).toHaveTextContent(
