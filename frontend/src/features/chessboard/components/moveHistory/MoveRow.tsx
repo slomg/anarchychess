@@ -36,7 +36,7 @@ const MoveRow = ({
     const color = moveNumber % 2 === 0 ? "bg-white/10" : "";
     const selectedClass = "bg-blue-300/30";
     return (
-        <div className={clsx("flex", color)} data-testid="moveRow">
+        <div className={clsx("flex text-nowrap", color)} data-testid="moveRow">
             <div className="bg-card w-10 p-3">{moveNumber}.</div>
             <button
                 ref={whiteMoveRef}
