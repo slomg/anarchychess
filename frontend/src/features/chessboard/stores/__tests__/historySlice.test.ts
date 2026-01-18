@@ -21,6 +21,26 @@ describe("HistorySlice", () => {
         store = createChessboardStore();
     });
 
+    describe("setPosition", () => {
+        it("should update viewingPosition when valid positionId is provided", () => {
+            const positionHistory = new PositionHistory(
+                createFakeBoardPieces(),
+            );
+            positionHistory.addNextPosition(createFakePositionProps());
+            const pos = positionHistory.addNextPosition(
+                createFakePositionProps(),
+            );
+            positionHistory.goToStart();
+
+            store.setState({ positionHistory });
+            store.getState().setPosition(pos.positionId);
+
+            expect(
+                store.getState().positionHistory.viewingPosition?.positionId,
+            ).toBe(pos.positionId);
+        });
+    });
+
     describe("goToPosition", () => {
         const applyMoveAnimatedMock = vi.fn();
         const updatePiecesFromPositionMock = vi.fn();

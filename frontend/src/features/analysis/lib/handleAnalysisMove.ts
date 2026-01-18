@@ -53,13 +53,13 @@ async function fetchNextPosition({
         positionHistory,
         hideLegalMoves: initialHideLegalMoves,
         setImmediatePieces,
-        goToPosition,
+        setPosition,
         setHideLegalMoves,
     } = chessboardStore.getState();
 
     const nextPosition = positionHistory.getNextPositionWithKey(move.moveKey);
     if (nextPosition) {
-        await goToPosition(nextPosition.positionId);
+        setPosition(nextPosition.positionId);
         return null;
     }
 

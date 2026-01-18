@@ -21,6 +21,8 @@ export interface HistorySlice {
     legalMovesByPosition: Map<PositionId | undefined, LegalMoves>;
     allowHistoryChanges: boolean;
 
+    setPosition(positionId: PositionId): void;
+
     goToPosition(positionId: PositionId): Promise<void>;
     stepPositionForward(): Promise<void>;
     stepPositionBackward(): Promise<void>;
@@ -56,6 +58,12 @@ export function createHistorySlice(
         allowHistoryChanges: initState.allowHistoryChanges ?? false,
         positionHistory:
             initState.positionHistory ?? new PositionHistory(initState.pieces),
+
+        setPosition(positionId) {
+            set((state) => {
+                state.positionHistory.goToPosition(positionId);
+            });
+        },
 
         async goToPosition(positionId) {
             const { applyMoveAnimated, updatePiecesFromPosition } = get();
