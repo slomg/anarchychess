@@ -28,6 +28,7 @@ export default function useLiveChessEvents(
             addPosition,
             applyMoveAnimated,
             goToLatestPosition,
+            reselectPiece,
         } = chessboardStore.getState();
         const { isPendingMoveAck, receiveLiveMove } = liveChessStore.getState();
 
@@ -58,6 +59,7 @@ export default function useLiveChessEvents(
             },
             legalMoves,
         );
+        reselectPiece();
         receiveLiveMove(clocks, move.nextSideToMove);
         return position;
     }

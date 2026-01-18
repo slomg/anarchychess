@@ -152,6 +152,7 @@ export function createHistorySlice(
             let position: Position;
             set((state) => {
                 position = state.positionHistory.addNextPosition(props);
+                state.hideLegalMoves = false;
 
                 if (legalMoves) {
                     state.legalMovesByPosition.set(
@@ -168,6 +169,7 @@ export function createHistorySlice(
             let position: Position;
             set((state) => {
                 position = state.positionHistory.addNextSidelinePosition(props);
+                state.hideLegalMoves = false;
 
                 if (legalMoves) {
                     state.legalMovesByPosition.set(
@@ -205,6 +207,7 @@ export function createHistorySlice(
         addLegalMovesForPosition(legalMoves, positionId) {
             set((state) => {
                 state.legalMovesByPosition.set(positionId, legalMoves);
+                state.hideLegalMoves = false;
             });
         },
         setLatestLegalMoves(legalMoves) {
