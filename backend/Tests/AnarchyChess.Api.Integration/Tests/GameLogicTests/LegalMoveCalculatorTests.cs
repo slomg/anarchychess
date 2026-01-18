@@ -33,7 +33,7 @@ public class LegalMoveCalculatorTests : BaseIntegrationTest
         Move lastMove = new(
             from: new AlgebraicPoint("g2"),
             to: new AlgebraicPoint("h3"),
-            piece: PieceFactory.Black(),
+            piece: PieceFactory.Black(), // color mismatch so no other move
             captures: [new MoveCapture(PieceFactory.White(), new AlgebraicPoint("h3"))]
         );
         ChessBoard board = new(moves: [lastMove], sideToMove: GameColor.White);
@@ -82,5 +82,24 @@ public class LegalMoveCalculatorTests : BaseIntegrationTest
         var moves = _calculator.CalculateAllLegalMoves(board).ToList();
 
         moves.Should().Contain(move => move.Piece.Type == PieceType.TraitorRook);
+    }
+
+    [Fact]
+    public void CalculateForeverRules_returns_only_forever_moves()
+    {
+        Move lastMove = new(
+            from: new AlgebraicPoint("g2"),
+            to: new AlgebraicPoint("h3"),
+            piece: PieceFactory.White(),
+            captures: [new MoveCapture(PieceFactory.White(), new AlgebraicPoint("h3"))]
+        );
+        ChessBoard board = new(moves: [lastMove], sideToMove: GameColor.White);
+        board.PlacePiece(lastMove.To, lastMove.Piece);
+
+        var moves = _calculator.CalculateForeverRules(board).ToList();
+
+        moves
+            .Should()
+            .ContainSingle(move => move.SpecialMoveType == SpecialMoveType.OmnipotentPawnSpawn);
     }
 }

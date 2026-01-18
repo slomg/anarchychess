@@ -142,12 +142,40 @@ public class FenEncoderTests : BaseIntegrationTest
             [new AlgebraicPoint("a1")] = new Piece(PieceType.Pawn, GameColor.White),
             [new AlgebraicPoint("b1")] = new Piece(PieceType.Pawn, GameColor.Black),
         };
-        List<Move> moves = [new Move(from: new("a1"), to: new("b1"), piece: pieces[new("a1")])];
+        List<Move> moves = [new Move(from: new("a1"), to: new("a2"), piece: pieces[new("a1")])];
+        ChessBoard board = new(pieces, height: 2, width: 2, moves: moves);
+
+        var result = _fenEncoder.EncodeFen(board);
+
+        result.FullFen.Should().Be("2/Pp {\"lastMove\":{\"from\":\"a1\",\"to\":\"a2\"}}");
+    }
+
+    [Fact]
+    public void EncodeFen_returns_correct_fen_with_captures_in_last_move()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new AlgebraicPoint("a1")] = new Piece(PieceType.Pawn, GameColor.White),
+            [new AlgebraicPoint("b1")] = new Piece(PieceType.Pawn, GameColor.Black),
+        };
+        List<Move> moves =
+        [
+            new Move(
+                from: new("a1"),
+                to: new("b1"),
+                piece: pieces[new("a1")],
+                captures: [new MoveCapture(CapturedPiece: pieces[new("b1")], Position: new("b1"))]
+            ),
+        ];
         ChessBoard board = new(pieces, height: 1, width: 2, moves: moves);
 
         var result = _fenEncoder.EncodeFen(board);
 
-        result.FullFen.Should().Be("Pp {\"lastMove\":{\"from\":\"a1\",\"to\":\"b1\"}}");
+        result
+            .FullFen.Should()
+            .Be(
+                "Pp {\"lastMove\":{\"from\":\"a1\",\"to\":\"b1\",\"captures\":[{\"piece\":{\"type\":2,\"color\":1,\"hasMoved\":false},\"pos\":\"b1\"}]}}"
+            );
     }
 
     [Fact]

@@ -150,9 +150,48 @@ public class FenDecoderTests : BaseIntegrationTest
 
         var board = result.Value;
         board.Moves.Should().HaveCount(1);
-        board.Moves[0].From.Should().Be(new AlgebraicPoint("a1"));
-        board.Moves[0].To.Should().Be(new AlgebraicPoint("b2"));
+
+        var movedPiece = board.PeekPieceAt(new("b2"));
+        movedPiece.Should().NotBeNull();
+        board
+            .Moves[0]
+            .Should()
+            .BeEquivalentTo(new Move(from: new("a1"), to: new("b2"), piece: movedPiece));
+
         board.PeekPieceAt(new AlgebraicPoint("b2"))?.HasMoved.Should().BeFalse(); // only movedPieces decides HasMoved
+    }
+
+    [Fact]
+    public void DecodeFen_parses_last_move_with_captures()
+    {
+        var fen =
+            "Pp {\"lastMove\":{\"from\":\"a1\",\"to\":\"b1\",\"captures\":[{\"piece\":{\"type\":2,\"color\":1,\"hasMoved\":false},\"pos\":\"b1\"}]}}";
+        var result = _fenDecoder.DecodeFen(fen);
+
+        result.IsError.Should().BeFalse();
+
+        var board = result.Value;
+        board.Moves.Should().HaveCount(1);
+
+        var movedPiece = board.PeekPieceAt(new("b1"));
+        movedPiece.Should().NotBeNull();
+        board
+            .Moves[0]
+            .Should()
+            .BeEquivalentTo(
+                new Move(
+                    from: new("a1"),
+                    to: new("b1"),
+                    piece: movedPiece,
+                    captures:
+                    [
+                        new MoveCapture(
+                            CapturedPiece: new Piece(Type: PieceType.Pawn, Color: GameColor.Black),
+                            Position: new("b1")
+                        ),
+                    ]
+                )
+            );
     }
 
     [Fact]
@@ -163,6 +202,17 @@ public class FenDecoderTests : BaseIntegrationTest
 
         result.IsError.Should().BeFalse();
         result.Value.Moves.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void DecodeFen_returns_error_for_invalid_last_move_capture()
+    {
+        var fen =
+            "Pp {\"lastMove\":{\"from\":\"a1\",\"to\":\"b1\",\"captures\":[{\"piece\":{\"type\":2,\"color\":1,\"hasMoved\":false},\"pos\":\"z9\"}]}}"; // invalid pos
+        var result = _fenDecoder.DecodeFen(fen);
+
+        result.IsError.Should().BeTrue();
+        result.FirstError.Should().Be(GameErrors.MalformedFenLastMove);
     }
 
     [Fact]

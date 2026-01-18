@@ -61,8 +61,14 @@ public class PlayableMoveProvider(
         if (!BothSidesHaveKing(board))
             return null;
 
-        return _legalMoveCalculator
+        var pieceLegalMove = _legalMoveCalculator
             .CalculateLegalMovesForPiece(board, piecePosition)
+            .FirstOrDefault(x => new MoveKey(x) == moveKey);
+        if (pieceLegalMove is not null)
+            return pieceLegalMove;
+
+        return _legalMoveCalculator
+            .CalculateForeverRules(board)
             .FirstOrDefault(x => new MoveKey(x) == moveKey);
     }
 

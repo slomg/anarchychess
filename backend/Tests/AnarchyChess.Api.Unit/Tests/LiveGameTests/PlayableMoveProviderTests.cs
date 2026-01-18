@@ -150,6 +150,28 @@ public class PlayableMoveProviderTests
         var result = _playableMoveProvider.GetPieceMoveByKey(_board, position, moveKey);
 
         result.Should().Be(move2);
+        _legalMoveCalculatorMock.DidNotReceiveWithAnyArgs().CalculateForeverRules(default!);
+    }
+
+    [Fact]
+    public void GetPieceMoveByKey_returns_forever_rule_move_when_not_found_in_piece_moves()
+    {
+        var piecePosition = new AlgebraicPoint("a1");
+
+        var pieceMove = new MoveFaker().RuleFor(x => x.From, piecePosition).Generate();
+
+        var foreverRuleMove = new MoveFaker().Generate();
+        MoveKey foreverRuleKey = new(foreverRuleMove);
+
+        _legalMoveCalculatorMock
+            .CalculateLegalMovesForPiece(_board, piecePosition)
+            .Returns([pieceMove]);
+
+        _legalMoveCalculatorMock.CalculateForeverRules(_board).Returns([foreverRuleMove]);
+
+        var result = _playableMoveProvider.GetPieceMoveByKey(_board, piecePosition, foreverRuleKey);
+
+        result.Should().Be(foreverRuleMove);
     }
 
     [Fact]
@@ -159,6 +181,7 @@ public class PlayableMoveProviderTests
         _legalMoveCalculatorMock
             .CalculateLegalMovesForPiece(_board, position)
             .Returns(new MoveFaker().Generate(3));
+        _legalMoveCalculatorMock.CalculateForeverRules(_board).Returns(new MoveFaker().Generate(3));
 
         var result = _playableMoveProvider.GetPieceMoveByKey(_board, position, "bad move key");
 

@@ -7,6 +7,7 @@ namespace AnarchyChess.Api.GameLogic;
 public interface ILegalMoveCalculator
 {
     IEnumerable<Move> CalculateAllLegalMoves(IReadOnlyChessBoard board);
+    IEnumerable<Move> CalculateForeverRules(IReadOnlyChessBoard board);
     IEnumerable<Move> CalculateLegalMovesForPiece(
         IReadOnlyChessBoard board,
         AlgebraicPoint position
@@ -35,13 +36,14 @@ public class LegalMoveCalculator : ILegalMoveCalculator
         foreach (var (position, piece) in board.EnumeratePieces())
         {
             foreach (var move in CalculateLegalMovesForPiece(board, position))
+            {
                 yield return move;
+            }
         }
 
-        foreach (var rule in _foreverRules)
+        foreach (var move in CalculateForeverRules(board))
         {
-            foreach (var move in rule.GetBehaviours(board, board.SideToMove))
-                yield return move;
+            yield return move;
         }
     }
 
@@ -61,6 +63,17 @@ public class LegalMoveCalculator : ILegalMoveCalculator
         foreach (var behaviour in pieceBehaviours)
         {
             foreach (var move in behaviour.Evaluate(board, position, piece))
+            {
+                yield return move;
+            }
+        }
+    }
+
+    public IEnumerable<Move> CalculateForeverRules(IReadOnlyChessBoard board)
+    {
+        foreach (var rule in _foreverRules)
+        {
+            foreach (var move in rule.GetBehaviours(board, board.SideToMove))
                 yield return move;
         }
     }

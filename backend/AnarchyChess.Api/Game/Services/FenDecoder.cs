@@ -195,11 +195,14 @@ public class FenDecoder(IPieceLetterMap pieceLetterMap, IOptions<JsonOptions> js
     )
     {
         if (fenParts.LastMove is null)
+        {
             return (Move?)null;
+        }
+        var lastMove = fenParts.LastMove;
 
         if (
             !AlgebraicPoint.TryParse(
-                fenParts.LastMove.From,
+                lastMove.From,
                 maxWidth: width,
                 maxHeight: height,
                 out var fromPoint
@@ -211,7 +214,7 @@ public class FenDecoder(IPieceLetterMap pieceLetterMap, IOptions<JsonOptions> js
 
         if (
             !AlgebraicPoint.TryParse(
-                fenParts.LastMove.To,
+                lastMove.To,
                 maxWidth: width,
                 maxHeight: height,
                 out var toPoint
@@ -222,9 +225,42 @@ public class FenDecoder(IPieceLetterMap pieceLetterMap, IOptions<JsonOptions> js
         }
 
         if (!pieces.TryGetValue(toPoint, out var piece))
+        {
             return (Move?)null;
+        }
+
+        var captures = GetCaptures(lastMove, width, height);
+        if (captures is null)
+        {
+            return GameErrors.MalformedFenLastMove;
+        }
 
         pieces[toPoint] = piece;
-        return new Move(fromPoint, toPoint, piece);
+        return new Move(fromPoint, toPoint, piece, captures: captures);
+    }
+
+    private static List<MoveCapture>? GetCaptures(FenLastMove move, int width, int height)
+    {
+        if (move.Captures is null)
+            return [];
+
+        List<MoveCapture> result = [];
+        foreach (var capture in move.Captures)
+        {
+            if (
+                !AlgebraicPoint.TryParse(
+                    capture.Pos,
+                    maxWidth: width,
+                    maxHeight: height,
+                    out var position
+                )
+            )
+            {
+                return null;
+            }
+
+            result.Add(new MoveCapture(capture.Piece, position));
+        }
+        return result;
     }
 }

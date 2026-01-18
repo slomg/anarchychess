@@ -4,17 +4,36 @@ namespace AnarchyChess.Api.Game.Models;
 
 public record FenParts(
     GameColor? SideToMove,
-    List<AlgebraicString>? MovedPieces,
+    IReadOnlyList<AlgebraicString>? MovedPieces,
     FenLastMove? LastMove,
     int? HalfMoveClock
 );
 
-public record FenLastMove(AlgebraicString From, AlgebraicString To)
+public record FenLastMove(
+    AlgebraicString From,
+    AlgebraicString To,
+    IReadOnlyList<FenCapture>? Captures
+)
 {
     public static FenLastMove? FromMove(Move? move)
     {
         if (move is null)
             return null;
-        return new(move.From.AsAlgebraic(), move.To.AsAlgebraic());
+
+        return new(
+            move.From.AsAlgebraic(),
+            move.To.AsAlgebraic(),
+            Captures: move.Captures.Count > 0
+                ? [.. move.Captures.Select(FenCapture.FromCapture)]
+                : null
+        );
+    }
+}
+
+public record FenCapture(Piece Piece, AlgebraicString Pos)
+{
+    public static FenCapture FromCapture(MoveCapture capture)
+    {
+        return new(capture.CapturedPiece, capture.Position.AsAlgebraic());
     }
 }
