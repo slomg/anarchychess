@@ -19,19 +19,20 @@ public static class GrainExtensions
 
     public static async Task SubscribeOrResumeAsync<T>(
         this IAsyncStream<T> stream,
-        Func<T, StreamSequenceToken, Task> callback
+        Func<T, StreamSequenceToken, Task> callback,
+        StreamSequenceToken? sequenceToken = null
     )
     {
         var existingHandles = await stream.GetAllSubscriptionHandles();
         if (existingHandles.Count == 0)
         {
-            await stream.SubscribeAsync(callback);
+            await stream.SubscribeAsync(callback, sequenceToken);
             return;
         }
 
         foreach (var handle in existingHandles)
         {
-            await handle.ResumeAsync(callback);
+            await handle.ResumeAsync(callback, sequenceToken);
         }
     }
 }

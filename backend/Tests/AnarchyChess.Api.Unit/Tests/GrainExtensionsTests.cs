@@ -1,5 +1,6 @@
 ﻿using AnarchyChess.Api.Infrastructure.Extensions;
 using NSubstitute;
+using Orleans.Providers.Streams.Common;
 using Orleans.Streams;
 
 namespace AnarchyChess.Api.Unit.Tests;
@@ -7,6 +8,7 @@ namespace AnarchyChess.Api.Unit.Tests;
 public class GrainExtensionsTests
 {
     private readonly Func<int, StreamSequenceToken, Task> _callback = (_, _) => Task.CompletedTask;
+    private readonly EventSequenceToken _sequenceToken = new(1, 2);
 
     [Fact]
     public async Task SubscribeOrResumeAsync_subscribes_when_there_are_no_existing_handles()
@@ -14,9 +16,9 @@ public class GrainExtensionsTests
         var streamMock = Substitute.For<IAsyncStream<int>>();
         streamMock.GetAllSubscriptionHandles().Returns([]);
 
-        await streamMock.SubscribeOrResumeAsync(_callback);
+        await streamMock.SubscribeOrResumeAsync(_callback, _sequenceToken);
 
-        await streamMock.Received(1).SubscribeAsync(Arg.Any<IAsyncObserver<int>>());
+        await streamMock.Received(1).SubscribeAsync(Arg.Any<IAsyncObserver<int>>(), _sequenceToken);
     }
 
     [Fact]
@@ -28,10 +30,10 @@ public class GrainExtensionsTests
         var streamMock = Substitute.For<IAsyncStream<int>>();
         streamMock.GetAllSubscriptionHandles().Returns([handleMock1, handleMock2]);
 
-        await streamMock.SubscribeOrResumeAsync(_callback);
+        await streamMock.SubscribeOrResumeAsync(_callback, _sequenceToken);
 
-        await handleMock1.Received(1).ResumeAsync(Arg.Any<IAsyncObserver<int>>());
-        await handleMock2.Received(1).ResumeAsync(Arg.Any<IAsyncObserver<int>>());
+        await handleMock1.Received(1).ResumeAsync(Arg.Any<IAsyncObserver<int>>(), _sequenceToken);
+        await handleMock2.Received(1).ResumeAsync(Arg.Any<IAsyncObserver<int>>(), _sequenceToken);
         await streamMock.DidNotReceiveWithAnyArgs().SubscribeAsync(default!, default);
     }
 }

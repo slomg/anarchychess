@@ -1,4 +1,5 @@
-﻿using AnarchyChess.Api.Lobby.Services;
+﻿using AnarchyChess.Api.Infrastructure.Extensions;
+using AnarchyChess.Api.Lobby.Services;
 using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Shared.Models;
@@ -111,12 +112,18 @@ public class OpenSeekGrain(
         var createdStream = streamProvider.GetStream<OpenSeekCreatedEvent>(
             nameof(OpenSeekCreatedEvent)
         );
-        await createdStream.SubscribeAsync(OnSeekCreated, _createdStreamState.State.SequenceToken);
+        await createdStream.SubscribeOrResumeAsync(
+            OnSeekCreated,
+            _createdStreamState.State.SequenceToken
+        );
 
         var removedStream = streamProvider.GetStream<OpenSeekRemovedEvent>(
             nameof(OpenSeekRemovedEvent)
         );
-        await removedStream.SubscribeAsync(OnSeekEnded, _removedStreamState.State.SequenceToken);
+        await removedStream.SubscribeOrResumeAsync(
+            OnSeekEnded,
+            _removedStreamState.State.SequenceToken
+        );
 
         await base.OnActivateAsync(cancellationToken);
     }
