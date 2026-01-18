@@ -12,7 +12,7 @@ export default function expandMinimalMove(minimalMove: MinimalMove): Move {
         promotesTo: null,
         specialType: SpecialMoveType.NONE,
         forcedPriority: ForcedMovePriority.NONE,
-        highlightSquare: false,
+        emphasizeSquare: false,
         ...minimalMove,
     };
 }

@@ -17,7 +17,7 @@ public record MovePath(
     PieceType? PromotesTo,
     SpecialMoveType? SpecialType,
     ForcedMovePriority? ForcedPriority,
-    bool? HighlightSquare
+    bool? EmphasizeSquare
 )
 {
     public static MovePath FromMove(Move move, int boardWidth, MoveKey? moveKey = null)
@@ -65,7 +65,7 @@ public record MovePath(
             ForcedPriority: move.ForcedPriority is ForcedMovePriority.None
                 ? null
                 : move.ForcedPriority,
-            HighlightSquare: move.HighlightSquare ? true : null
+            EmphasizeSquare: move.EmphasizeSquare ? true : null
         );
     }
 }

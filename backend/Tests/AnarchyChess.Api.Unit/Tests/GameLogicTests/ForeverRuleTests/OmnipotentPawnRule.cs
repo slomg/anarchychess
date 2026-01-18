@@ -77,7 +77,7 @@ public class OmnipotentPawnRuleTests
             captures: [new MoveCapture(spawnPosition, _board)],
             pieceSpawns: [new PieceSpawn(PieceType.Pawn, Color: GameColor.White, spawnPosition)],
             specialMoveType: SpecialMoveType.OmnipotentPawnSpawn,
-            highlightSquare: true
+            emphasizeSquare: true
         );
 
         result.Should().BeEquivalentTo([expectedMove]);
@@ -106,7 +106,7 @@ public class OmnipotentPawnRuleTests
             captures: [new MoveCapture(spawnPosition, _board)],
             pieceSpawns: [new PieceSpawn(PieceType.Pawn, Color: GameColor.Black, spawnPosition)],
             specialMoveType: SpecialMoveType.OmnipotentPawnSpawn,
-            highlightSquare: true
+            emphasizeSquare: true
         );
 
         result.Should().BeEquivalentTo([expectedMove]);

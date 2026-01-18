@@ -320,7 +320,7 @@ export type MovePath = {
     promotesTo?: PieceType | null;
     specialType?: SpecialMoveType | null;
     forcedPriority?: ForcedMovePriority | null;
-    highlightSquare?: boolean | null;
+    emphasizeSquare?: boolean | null;
 };
 
 export type IntermediateSquarePath = {

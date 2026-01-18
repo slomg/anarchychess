@@ -27,7 +27,7 @@ export interface Move {
     promotesTo: PieceType | null;
     forcedPriority: ForcedMovePriority;
     specialType: SpecialMoveType;
-    highlightSquare: boolean;
+    emphasizeSquare: boolean;
 }
 
 export type MoveKey = string & { __brand: "MoveKey" };

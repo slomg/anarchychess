@@ -38,7 +38,7 @@ public record Move(
     SpecialMoveType SpecialMoveType,
     ForcedMovePriority ForcedPriority,
     PieceType? PromotesTo,
-    bool HighlightSquare
+    bool EmphasizeSquare
 )
 {
     public Move(
@@ -53,7 +53,7 @@ public record Move(
         SpecialMoveType specialMoveType = SpecialMoveType.None,
         ForcedMovePriority forcedPriority = ForcedMovePriority.None,
         PieceType? promotesTo = null,
-        bool highlightSquare = false
+        bool emphasizeSquare = false
     )
         : this(
             From: from,
@@ -67,7 +67,7 @@ public record Move(
             SpecialMoveType: specialMoveType,
             ForcedPriority: forcedPriority,
             PromotesTo: promotesTo,
-            HighlightSquare: highlightSquare
+            EmphasizeSquare: emphasizeSquare
         ) { }
 
     public IEnumerable<(AlgebraicPoint From, AlgebraicPoint To)> Flatten()

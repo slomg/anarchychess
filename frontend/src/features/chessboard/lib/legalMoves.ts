@@ -9,12 +9,12 @@ export default class LegalMoves {
 
     _legalMoves: Map<StrPoint, Move[]>;
     _hasForcedMoves: boolean;
-    _highlightSquares: LogicalPoint[];
+    _emphasizedSquares: LogicalPoint[];
 
     constructor(
         legalMoves: Map<StrPoint, Move[]> | [StrPoint, Move[]][] | null = null,
         hasForcedMoves = false,
-        highlightSquares: LogicalPoint[] = [],
+        emphasizedSquares: LogicalPoint[] = [],
     ) {
         if (legalMoves instanceof Map) {
             this._legalMoves = legalMoves;
@@ -25,15 +25,15 @@ export default class LegalMoves {
         }
 
         this._hasForcedMoves = hasForcedMoves;
-        this._highlightSquares = highlightSquares;
+        this._emphasizedSquares = emphasizedSquares;
     }
 
     get hasForcedMoves(): boolean {
         return this._hasForcedMoves;
     }
 
-    get highlightSquares(): readonly LogicalPoint[] {
-        return this._highlightSquares;
+    get emphasizedSquares(): LogicalPoint[] {
+        return this._emphasizedSquares;
     }
 
     hasMovesFromTo(from: LogicalPoint, to: LogicalPoint): boolean {

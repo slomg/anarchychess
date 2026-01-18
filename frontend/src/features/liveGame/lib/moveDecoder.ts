@@ -28,15 +28,15 @@ export function decodeMovePathIntoLegalMoves({
     boardWidth: number;
 }): LegalMoves {
     const moves = new Map<StrPoint, Move[]>();
-    const highlightSquares: LogicalPoint[] = [];
+    const emphasizedSquares: LogicalPoint[] = [];
     let hasForcedMoves = false;
     for (const path of paths) {
         const move = decodeMovePath(path, boardWidth);
         if (move.forcedPriority != ForcedMovePriority.NONE) {
             hasForcedMoves = true;
         }
-        if (move.highlightSquare) {
-            highlightSquares.push(move.from);
+        if (move.emphasizeSquare) {
+            emphasizedSquares.push(move.from);
         }
 
         const fromString = pointToStr(move.from);
@@ -46,7 +46,7 @@ export function decodeMovePathIntoLegalMoves({
         moves.set(pointToStr(move.from), movesFromPoint);
     }
 
-    return new LegalMoves(moves, hasForcedMoves, highlightSquares);
+    return new LegalMoves(moves, hasForcedMoves, emphasizedSquares);
 }
 
 export function decodeMovePath(path: MovePath, boardWidth: number): Move {
@@ -79,7 +79,7 @@ export function decodeMovePath(path: MovePath, boardWidth: number): Move {
         specialType: path.specialType ?? SpecialMoveType.NONE,
         forcedPriority: path.forcedPriority ?? ForcedMovePriority.NONE,
         promotesTo: path.promotesTo ?? null,
-        highlightSquare: path.highlightSquare ?? false,
+        emphasizeSquare: path.emphasizeSquare ?? false,
     };
 }
 

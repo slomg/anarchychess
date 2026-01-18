@@ -25,7 +25,7 @@ const emptyMove = {
     promotesTo: null,
     specialType: SpecialMoveType.NONE,
     forcedPriority: ForcedMovePriority.NONE,
-    highlightSquare: false,
+    emphasizeSquare: false,
 };
 
 describe("decodeMovePathIntoLegalMoves", () => {
@@ -49,7 +49,7 @@ describe("decodeMovePathIntoLegalMoves", () => {
                 promotesTo: PieceType.BISHOP,
                 specialType: SpecialMoveType.EN_PASSANT,
                 forcedPriority: ForcedMovePriority.UNDERAGE_PAWN,
-                highlightSquare: true,
+                emphasizeSquare: true,
             },
         ];
 
@@ -91,7 +91,7 @@ describe("decodeMovePathIntoLegalMoves", () => {
             promotesTo: PieceType.BISHOP,
             specialType: SpecialMoveType.EN_PASSANT,
             forcedPriority: ForcedMovePriority.UNDERAGE_PAWN,
-            highlightSquare: true,
+            emphasizeSquare: true,
         });
     });
 
@@ -149,11 +149,11 @@ describe("decodeMovePathIntoLegalMoves", () => {
         expect(result.hasForcedMoves).toBe(true);
     });
 
-    it("should collect highlightSquares from moves with highlightSquare = true", () => {
+    it("should collect emphasizedSquares from moves with emphasizeSquare = true", () => {
         const paths: MovePath[] = [
-            createFakeMovePath({ fromIdx: 0, highlightSquare: true }),
-            createFakeMovePath({ fromIdx: 2, highlightSquare: false }),
-            createFakeMovePath({ fromIdx: 4, highlightSquare: true }),
+            createFakeMovePath({ fromIdx: 0, emphasizeSquare: true }),
+            createFakeMovePath({ fromIdx: 2, emphasizeSquare: false }),
+            createFakeMovePath({ fromIdx: 4, emphasizeSquare: true }),
         ];
 
         const result = decodeMovePathIntoLegalMoves({
@@ -161,7 +161,7 @@ describe("decodeMovePathIntoLegalMoves", () => {
             boardWidth: 10,
         });
 
-        expect(result.highlightSquares).toEqual([
+        expect(result.emphasizedSquares).toEqual([
             logicalPoint({ x: 0, y: 0 }),
             logicalPoint({ x: 4, y: 0 }),
         ]);
@@ -235,7 +235,7 @@ describe("decodeLegalMoves", () => {
                 promotesTo: null,
                 specialType: SpecialMoveType.NONE,
                 forcedPriority: ForcedMovePriority.NONE,
-                highlightSquare: false,
+                emphasizeSquare: false,
             },
         ]);
         expect(result.get(logicalPoint({ x: 0, y: 1 }))).toEqual<Move[]>([

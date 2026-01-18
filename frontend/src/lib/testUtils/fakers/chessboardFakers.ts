@@ -42,7 +42,7 @@ export function createFakeMove(override?: Partial<Move>): Move {
         promotesTo: null,
         specialType: SpecialMoveType.NONE,
         forcedPriority: ForcedMovePriority.NONE,
-        highlightSquare: false,
+        emphasizeSquare: false,
         ...override,
     };
 }

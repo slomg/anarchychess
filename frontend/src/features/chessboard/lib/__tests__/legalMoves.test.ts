@@ -15,7 +15,7 @@ describe("legalMoves", () => {
             const legalMoves = new LegalMoves();
             expect(legalMoves.size).toBe(0);
             expect(legalMoves.hasForcedMoves).toBe(false);
-            expect(legalMoves.highlightSquares).toEqual([]);
+            expect(legalMoves.emphasizedSquares).toEqual([]);
         });
 
         it("should create a LegalMoves instance from a Map", () => {
@@ -50,15 +50,15 @@ describe("legalMoves", () => {
             expect(legalMoves.hasForcedMoves).toBe(true);
         });
 
-        it("should set highlightSquares", () => {
-            const highlightSquares = [
+        it("should set emphasizedSquares", () => {
+            const emphasizedSquares = [
                 createRandomPoint(),
                 createRandomPoint(),
                 createRandomPoint(),
             ];
-            const legalMoves = new LegalMoves([], false, highlightSquares);
+            const legalMoves = new LegalMoves([], false, emphasizedSquares);
 
-            expect(legalMoves.highlightSquares).toEqual(highlightSquares);
+            expect(legalMoves.emphasizedSquares).toEqual(emphasizedSquares);
         });
     });
 

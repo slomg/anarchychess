@@ -42,7 +42,7 @@ public class PlayableMoveProvider(
 
             movePaths.Add(MovePath.FromMove(move, board.Width, moveKey: key));
             moveMap[key] = move;
-            if (move.HighlightSquare)
+            if (move.EmphasizeSquare)
             {
                 HighlightIdxes.Add(move.From.AsIndex(board.Width));
             }
