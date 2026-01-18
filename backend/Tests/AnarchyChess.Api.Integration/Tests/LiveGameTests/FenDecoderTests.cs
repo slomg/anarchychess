@@ -152,7 +152,7 @@ public class FenDecoderTests : BaseIntegrationTest
         board.Moves.Should().HaveCount(1);
         board.Moves[0].From.Should().Be(new AlgebraicPoint("a1"));
         board.Moves[0].To.Should().Be(new AlgebraicPoint("b2"));
-        board.PeekPieceAt(new AlgebraicPoint("b2"))?.HasMoved.Should().BeTrue();
+        board.PeekPieceAt(new AlgebraicPoint("b2"))?.HasMoved.Should().BeFalse(); // only movedPieces decides HasMoved
     }
 
     [Fact]

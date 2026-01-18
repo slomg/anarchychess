@@ -224,7 +224,7 @@ public class FenDecoder(IPieceLetterMap pieceLetterMap, IOptions<JsonOptions> js
         if (!pieces.TryGetValue(toPoint, out var piece))
             return (Move?)null;
 
-        pieces[toPoint] = piece with { HasMoved = true };
+        pieces[toPoint] = piece;
         return new Move(fromPoint, toPoint, piece);
     }
 }
