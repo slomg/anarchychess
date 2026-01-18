@@ -68,9 +68,6 @@ import type {
     GetMyQuestRankingData,
     GetMyQuestRankingErrors,
     GetMyQuestRankingResponses,
-    GetMyWinStreakStatsData,
-    GetMyWinStreakStatsErrors,
-    GetMyWinStreakStatsResponses,
     GetNextAnalysisPositionData,
     GetNextAnalysisPositionErrors,
     GetNextAnalysisPositionResponses,
@@ -103,8 +100,6 @@ import type {
     GetUserByUsernameResponses,
     GetUserQuestPointsData,
     GetUserQuestPointsResponses,
-    GetWinStreakLeaderboardData,
-    GetWinStreakLeaderboardResponses,
     IndexData,
     IndexResponses,
     LogoutData,
@@ -172,24 +167,6 @@ export const getCurrentRatings = <ThrowOnError extends boolean = false>(
         GetCurrentRatingsErrors,
         ThrowOnError
     >({ url: "/api/Rating/{userId}", ...options });
-
-export const getWinStreakLeaderboard = <ThrowOnError extends boolean = false>(
-    options?: Options<GetWinStreakLeaderboardData, ThrowOnError>,
-) =>
-    (options?.client ?? client).get<
-        GetWinStreakLeaderboardResponses,
-        unknown,
-        ThrowOnError
-    >({ url: "/api/WinStreak/leaderboard", ...options });
-
-export const getMyWinStreakStats = <ThrowOnError extends boolean = false>(
-    options?: Options<GetMyWinStreakStatsData, ThrowOnError>,
-) =>
-    (options?.client ?? client).get<
-        GetMyWinStreakStatsResponses,
-        GetMyWinStreakStatsErrors,
-        ThrowOnError
-    >({ url: "/api/WinStreak/me", ...options });
 
 export const getStarredUsers = <ThrowOnError extends boolean = false>(
     options: Options<GetStarredUsersData, ThrowOnError>,

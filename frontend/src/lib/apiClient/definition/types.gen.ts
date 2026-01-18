@@ -75,36 +75,17 @@ export type CurrentRatingStatus = {
     rating: number;
 };
 
-export type PagedResultOfWinStreakDto = {
-    items: Array<WinStreak>;
-    totalCount: number;
-    page: number;
-    pageSize: number;
-    totalPages: number;
-};
-
-export type WinStreak = {
-    profile: MinimalProfile;
-    highestStreakGameTokens: Array<string>;
-};
-
-export type MinimalProfile = {
-    userId: string;
-    userName: string;
-};
-
-export type MyWinStreakStats = {
-    rank: number;
-    highestStreak: number;
-    currentStreak: number;
-};
-
 export type PagedResultOfMinimalProfile = {
     items: Array<MinimalProfile>;
     totalCount: number;
     page: number;
     pageSize: number;
     totalPages: number;
+};
+
+export type MinimalProfile = {
+    userId: string;
+    userName: string;
 };
 
 export type Quest = {
@@ -648,44 +629,6 @@ export type GetCurrentRatingsResponses = {
 
 export type GetCurrentRatingsResponse =
     GetCurrentRatingsResponses[keyof GetCurrentRatingsResponses];
-
-export type GetWinStreakLeaderboardData = {
-    body?: never;
-    path?: never;
-    query?: {
-        Page?: number;
-        PageSize?: number;
-    };
-    url: "/api/WinStreak/leaderboard";
-};
-
-export type GetWinStreakLeaderboardResponses = {
-    200: PagedResultOfWinStreakDto;
-};
-
-export type GetWinStreakLeaderboardResponse =
-    GetWinStreakLeaderboardResponses[keyof GetWinStreakLeaderboardResponses];
-
-export type GetMyWinStreakStatsData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: "/api/WinStreak/me";
-};
-
-export type GetMyWinStreakStatsErrors = {
-    401: ApiProblemDetails;
-};
-
-export type GetMyWinStreakStatsError =
-    GetMyWinStreakStatsErrors[keyof GetMyWinStreakStatsErrors];
-
-export type GetMyWinStreakStatsResponses = {
-    200: MyWinStreakStats;
-};
-
-export type GetMyWinStreakStatsResponse =
-    GetMyWinStreakStatsResponses[keyof GetMyWinStreakStatsResponses];
 
 export type GetStarredUsersData = {
     body?: never;
