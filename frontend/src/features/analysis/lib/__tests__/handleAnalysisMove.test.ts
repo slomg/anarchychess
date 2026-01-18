@@ -23,10 +23,10 @@ import {
 import { createFakeAnalysisPosition } from "@/lib/testUtils/fakers/analysisPositionFaker";
 import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
 import { decodeMovePathIntoLegalMoves } from "@/features/liveGame/lib/moveDecoder";
-import { PositionId, PositionProps } from "@/features/chessboard/lib/position";
 import { createFakeMovePath } from "@/lib/testUtils/fakers/movePathFaker";
 import { createFakePosition } from "@/lib/testUtils/fakers/positionFaker";
 import PositionHistory from "@/features/chessboard/lib/positionHistory";
+import { PositionProps } from "@/features/chessboard/lib/position";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
 import LegalMoves from "@/features/chessboard/lib/legalMoves";
 import { Move } from "@/features/chessboard/lib/types";
@@ -38,7 +38,6 @@ function expectPositionAndLegalMoves(
     addPositionMove: Mock,
     reselectPieceMock: Mock,
     move: Move,
-    newPositionId: PositionId,
     newAnalysisPosition: AnalysisPosition,
     newPieces: BoardPieces,
 ) {
@@ -159,7 +158,6 @@ describe("addAnalysisMove", () => {
             addPositionMock,
             reselectPieceMock,
             move,
-            newPosition.positionId,
             newAnalysisPosition,
             newPieces,
         );
@@ -290,7 +288,6 @@ describe("addSidelineAnalysisMove", () => {
             addSidelinePositionMock,
             reselectPieceMock,
             move,
-            newPosition.positionId,
             newAnalysisPosition,
             newPieces,
         );

@@ -112,27 +112,35 @@ describe("PiecesSlice", () => {
     describe("reselectPiece", () => {
         it("should do nothing if no piece is selected", () => {
             const highlightLegalMovesMock = vi.fn();
+            const unhighlightLegalMovesMock = vi.fn();
 
             store.setState({
                 selectedPieceId: null,
                 highlightLegalMoves: highlightLegalMovesMock,
+                unhighlightLegalMoves: unhighlightLegalMovesMock,
             });
 
-            store.getState().reselectPiece();
+            const result = store.getState().reselectPiece();
 
+            expect(result).toBe(false);
+            expect(unhighlightLegalMovesMock).toHaveBeenCalledOnce();
             expect(highlightLegalMovesMock).not.toHaveBeenCalled();
         });
 
         it("should do nothing if the selected piece does not exist", () => {
             const highlightLegalMovesMock = vi.fn();
+            const unhighlightLegalMovesMock = vi.fn();
 
             store.setState({
                 selectedPieceId: "nonexistent",
                 highlightLegalMoves: highlightLegalMovesMock,
+                unhighlightLegalMoves: unhighlightLegalMovesMock,
             });
 
-            store.getState().reselectPiece();
+            const result = store.getState().reselectPiece();
 
+            expect(result).toBe(false);
+            expect(unhighlightLegalMovesMock).toHaveBeenCalledOnce();
             expect(highlightLegalMovesMock).not.toHaveBeenCalled();
         });
 
@@ -141,18 +149,22 @@ describe("PiecesSlice", () => {
                 position: logicalPoint({ x: 0, y: 0 }),
             });
             const highlightLegalMovesMock = vi.fn();
+            const unhighlightLegalMovesMock = vi.fn();
 
             store.setState({
                 pieces: BoardPieces.fromPieces(piece),
                 selectedPieceId: piece.id,
                 highlightLegalMoves: highlightLegalMovesMock,
+                unhighlightLegalMoves: unhighlightLegalMovesMock,
             });
 
-            store.getState().reselectPiece();
+            const result = store.getState().reselectPiece();
 
+            expect(result).toBe(true);
             expect(highlightLegalMovesMock).toHaveBeenCalledExactlyOnceWith(
                 piece,
             );
+            expect(unhighlightLegalMovesMock).not.toHaveBeenCalled();
         });
     });
 

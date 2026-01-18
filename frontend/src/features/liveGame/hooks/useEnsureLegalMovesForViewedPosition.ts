@@ -47,6 +47,7 @@ export default function useEnsureLegalMovesForViewedPosition(
                 legalMoves,
                 viewingPosition?.positionId,
             );
+            state.reselectPiece();
         });
         return unsub;
     }, [initialFen, chessboardStore]);

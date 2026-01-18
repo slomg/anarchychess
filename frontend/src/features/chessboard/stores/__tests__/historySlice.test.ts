@@ -1,17 +1,17 @@
+import { mock } from "vitest-mock-extended";
 import { StoreApi } from "zustand";
 
-import { createNFakePositionHistory } from "@/lib/testUtils/fakers/positionHistoryFaker";
-import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
 import {
     createFakeBoardPieces,
     createFakeLegalMoves,
-    createRandomPoint,
 } from "@/lib/testUtils/fakers/chessboardFakers";
+
+import { createNFakePositionHistory } from "@/lib/testUtils/fakers/positionHistoryFaker";
+import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
 import { ChessboardStore, createChessboardStore } from "../chessboardStore";
+import { createFakePosition } from "@/lib/testUtils/fakers/positionFaker";
 import PositionHistory from "../../lib/positionHistory";
 import { PositionId } from "../../lib/position";
-import { mock } from "vitest-mock-extended";
-import { createFakePosition } from "@/lib/testUtils/fakers/positionFaker";
 import LegalMoves from "../../lib/legalMoves";
 
 describe("HistorySlice", () => {
@@ -251,7 +251,6 @@ describe("HistorySlice", () => {
     describe("addPosition", () => {
         it("should add the new position to positionHistory", async () => {
             const positionHistoryMock = mock<PositionHistory>();
-            const unhighlightLegalMovesMock = vi.fn();
             const newPosition = createFakePosition();
             const newPositionProps = createFakePositionProps();
             const legalMoves = createFakeLegalMoves();
@@ -260,7 +259,6 @@ describe("HistorySlice", () => {
             store.setState({
                 positionHistory: positionHistoryMock,
                 legalMovesByPosition: new Map(),
-                unhighlightLegalMoves: unhighlightLegalMovesMock,
             });
 
             const result = store
@@ -271,7 +269,6 @@ describe("HistorySlice", () => {
             expect(
                 positionHistoryMock.addNextPosition,
             ).toHaveBeenCalledExactlyOnceWith(newPositionProps);
-            expect(unhighlightLegalMovesMock).toHaveBeenCalledOnce();
             expect(store.getState().legalMovesByPosition).toEqual(
                 new Map([[result.positionId, legalMoves]]),
             );
@@ -281,7 +278,6 @@ describe("HistorySlice", () => {
     describe("addSidelinePosition", () => {
         it("should add the new position as a slideline to positionHistory", async () => {
             const positionHistoryMock = mock<PositionHistory>();
-            const unhighlightLegalMovesMock = vi.fn();
             const newPosition = createFakePosition();
             const newPositionProps = createFakePositionProps();
             const legalMoves = createFakeLegalMoves();
@@ -291,7 +287,6 @@ describe("HistorySlice", () => {
             store.setState({
                 positionHistory: positionHistoryMock,
                 legalMovesByPosition: new Map(),
-                unhighlightLegalMoves: unhighlightLegalMovesMock,
             });
 
             const result = store
@@ -302,7 +297,6 @@ describe("HistorySlice", () => {
             expect(
                 positionHistoryMock.addNextSidelinePosition,
             ).toHaveBeenCalledExactlyOnceWith(newPositionProps);
-            expect(unhighlightLegalMovesMock).toHaveBeenCalledOnce();
             expect(store.getState().legalMovesByPosition).toEqual(
                 new Map([[result.positionId, legalMoves]]),
             );
@@ -411,13 +405,7 @@ describe("HistorySlice", () => {
             const legalMovesByPosition = new Map<PositionId, LegalMoves>([
                 ["1" as PositionId, createFakeLegalMoves()],
             ]);
-            store.setState({
-                highlightedLegalMoves: [
-                    createRandomPoint(),
-                    createRandomPoint(),
-                ],
-                legalMovesByPosition,
-            });
+            store.setState({ legalMovesByPosition });
 
             store.getState().addLegalMovesForPosition(legalMoves, positionId);
 
@@ -427,7 +415,6 @@ describe("HistorySlice", () => {
             expect(state.legalMovesByPosition).toEqual(
                 expectedlegalMovesByPosition,
             );
-            expect(state.highlightedLegalMoves).toHaveLength(0);
         });
     });
 
@@ -436,14 +423,7 @@ describe("HistorySlice", () => {
             const legalMoves = createFakeLegalMoves();
             const positionHistory = createNFakePositionHistory(2);
 
-            store.setState({
-                highlightedLegalMoves: [
-                    createRandomPoint(),
-                    createRandomPoint(),
-                    createRandomPoint(),
-                ],
-                positionHistory,
-            });
+            store.setState({ positionHistory });
 
             store.getState().setLatestLegalMoves(legalMoves);
 
@@ -453,7 +433,6 @@ describe("HistorySlice", () => {
                     positionHistory.viewingPosition?.positionId,
                 ),
             ).toEqual(legalMoves);
-            expect(state.highlightedLegalMoves).toHaveLength(0);
         });
     });
 

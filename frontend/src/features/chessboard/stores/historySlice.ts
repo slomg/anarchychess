@@ -141,12 +141,9 @@ export function createHistorySlice(
         },
 
         addPosition(props, legalMoves) {
-            const { unhighlightLegalMoves, reselectPiece } = get();
-
             let position: Position;
             set((state) => {
                 position = state.positionHistory.addNextPosition(props);
-                state.hideLegalMoves = false;
 
                 if (legalMoves) {
                     state.legalMovesByPosition.set(
@@ -155,19 +152,14 @@ export function createHistorySlice(
                     );
                 }
             });
-            const wasSelected = reselectPiece();
-            if (!wasSelected) unhighlightLegalMoves();
 
             return position!;
         },
 
         addSidelinePosition(props, legalMoves) {
-            const { reselectPiece, unhighlightLegalMoves } = get();
-
             let position: Position;
             set((state) => {
                 position = state.positionHistory.addNextSidelinePosition(props);
-                state.hideLegalMoves = false;
 
                 if (legalMoves) {
                     state.legalMovesByPosition.set(
@@ -176,8 +168,6 @@ export function createHistorySlice(
                     );
                 }
             });
-            const wasSelected = reselectPiece();
-            if (!wasSelected) unhighlightLegalMoves();
 
             return position!;
         },
@@ -205,13 +195,9 @@ export function createHistorySlice(
         },
 
         addLegalMovesForPosition(legalMoves, positionId) {
-            const { unhighlightLegalMoves, reselectPiece } = get();
             set((state) => {
-                state.hideLegalMoves = false;
                 state.legalMovesByPosition.set(positionId, legalMoves);
             });
-            const wasSelected = reselectPiece();
-            if (!wasSelected) unhighlightLegalMoves();
         },
         setLatestLegalMoves(legalMoves) {
             const { positionHistory, addLegalMovesForPosition } = get();

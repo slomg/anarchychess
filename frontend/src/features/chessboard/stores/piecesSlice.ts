@@ -1,18 +1,20 @@
-import { LogicalPoint } from "@/features/point/types";
-import { ScreenPoint } from "@/features/point/types";
-import { MoveBounds, PieceID } from "../lib/types";
-import { Move } from "../lib/types";
-import type { ChessboardStore } from "./chessboardStore";
 import { StateCreator } from "zustand";
-import { pointEquals } from "@/features/point/pointUtils";
+
 import {
     simulateMove,
     simulateMoveWithIntermediates,
 } from "../lib/simulateMove";
-import BoardPieces from "../lib/boardPieces";
+
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
-import { EventBus } from "@/lib/eventBus";
+import { pointEquals } from "@/features/point/pointUtils";
+import type { ChessboardStore } from "./chessboardStore";
+import { LogicalPoint } from "@/features/point/types";
+import { ScreenPoint } from "@/features/point/types";
+import { MoveBounds, PieceID } from "../lib/types";
+import BoardPieces from "../lib/boardPieces";
 import { Position } from "../lib/position";
+import { EventBus } from "@/lib/eventBus";
+import { Move } from "../lib/types";
 
 export interface PieceSliceProps {
     pieces: BoardPieces;
@@ -148,11 +150,22 @@ export function createPiecesSlice(
                 });
             },
             reselectPiece() {
-                const { highlightLegalMoves, selectedPieceId, pieces } = get();
-                if (!selectedPieceId) return false;
+                const {
+                    unhighlightLegalMoves,
+                    highlightLegalMoves,
+                    selectedPieceId,
+                    pieces,
+                } = get();
+                if (!selectedPieceId) {
+                    unhighlightLegalMoves();
+                    return false;
+                }
 
                 const piece = pieces.getById(selectedPieceId);
-                if (!piece) return false;
+                if (!piece) {
+                    unhighlightLegalMoves();
+                    return false;
+                }
 
                 highlightLegalMoves(piece);
                 return true;
