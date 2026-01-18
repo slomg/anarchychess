@@ -26,14 +26,16 @@ public class GrainExtensionsTests
     {
         var handleMock1 = Substitute.For<StreamSubscriptionHandle<int>>();
         var handleMock2 = Substitute.For<StreamSubscriptionHandle<int>>();
+        var handleMock3 = Substitute.For<StreamSubscriptionHandle<int>>();
 
         var streamMock = Substitute.For<IAsyncStream<int>>();
-        streamMock.GetAllSubscriptionHandles().Returns([handleMock1, handleMock2]);
+        streamMock.GetAllSubscriptionHandles().Returns([handleMock1, handleMock2, handleMock3]);
 
         await streamMock.SubscribeOrResumeAsync(_callback, _sequenceToken);
 
         await handleMock1.Received(1).ResumeAsync(Arg.Any<IAsyncObserver<int>>(), _sequenceToken);
-        await handleMock2.Received(1).ResumeAsync(Arg.Any<IAsyncObserver<int>>(), _sequenceToken);
+        await handleMock2.Received(1).UnsubscribeAsync();
+        await handleMock3.Received(1).UnsubscribeAsync();
         await streamMock.DidNotReceiveWithAnyArgs().SubscribeAsync(default!, default);
     }
 }

@@ -30,9 +30,10 @@ public static class GrainExtensions
             return;
         }
 
-        foreach (var handle in existingHandles)
+        await existingHandles[0].ResumeAsync(callback, sequenceToken);
+        for (int i = 1; i < existingHandles.Count; i++)
         {
-            await handle.ResumeAsync(callback, sequenceToken);
+            await existingHandles[i].UnsubscribeAsync();
         }
     }
 }
