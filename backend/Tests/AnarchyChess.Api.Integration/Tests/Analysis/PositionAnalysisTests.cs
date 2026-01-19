@@ -101,20 +101,6 @@ public class PositionAnalysisTests : BaseIntegrationTest
     }
 
     [Fact]
-    public void GetNextAnalysisPosition_doesnt_return_legal_move_if_the_game_ends()
-    {
-        MoveKey moveKey = new(from: new AlgebraicPoint("a1"), to: new AlgebraicPoint("b1"));
-
-        // king touch draw
-        var result = _positionAnalysis.GetNextAnalysisPosition(
-            new(Fen: "K1kr5", PiecePosition: new("a1"), MoveKey: moveKey)
-        );
-
-        result.IsError.Should().BeFalse();
-        result.Value.LegalMoves.Should().BeEmpty();
-    }
-
-    [Fact]
     public void GetNextLegalMoves_returns_move_options_for_valid_fen()
     {
         ChessBoard board = new();

@@ -81,6 +81,7 @@ public class GameCoreTests : BaseIntegrationTest
         var drawResult = MakeMoves(state, repetitionMoves);
         drawResult.EndStatus.Should().Be(_resultDescriber.ThreeFold());
         drawResult.San.Should().Be("Kc1½");
+        legalMoves.Should().BeEquivalentTo(new LegalMoveSet());
     }
 
     [Fact]

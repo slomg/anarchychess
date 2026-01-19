@@ -55,7 +55,7 @@ public class PositionAnalysis(
         return new AnalysisPosition(
             Fen: moveResult.Fen.FullFen,
             San: moveResult.San,
-            LegalMoves: moveResult.EndStatus is null ? legalMoves.MovePaths : [],
+            LegalMoves: legalMoves.MovePaths,
             SideToMove: sideToMove,
             EndStatus: moveResult.EndStatus
         );
