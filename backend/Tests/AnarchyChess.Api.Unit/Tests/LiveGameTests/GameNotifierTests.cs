@@ -65,7 +65,8 @@ public class GameNotifierTests
             PlyNumber: 5,
             Clocks: new ClockSnapshotFaker(),
             SideToMoveUserId: _userId,
-            EncodedLegalMoves: [1, 2, 3]
+            EncodedLegalMoves: [1, 2, 3],
+            DidMoveEndGame: true
         );
 
         await _notifier.NotifyMoveMadeAsync(notification, state);
@@ -75,7 +76,8 @@ public class GameNotifierTests
             .MoveMadeAsync(
                 move: notification.Move,
                 plyNumber: notification.PlyNumber,
-                clock: notification.Clocks
+                clock: notification.Clocks,
+                didMoveEndGame: notification.DidMoveEndGame
             );
         await _clientUserGameGroupProxyMock
             .Received(1)

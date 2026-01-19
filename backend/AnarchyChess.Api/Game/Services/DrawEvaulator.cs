@@ -81,7 +81,9 @@ public class DrawEvaulator(IGameResultDescriber gameResultDescriber) : IDrawEvau
             for (var y = -1; y <= 1; y++)
             {
                 if (y == 0 && x == 0)
+                {
                     continue;
+                }
 
                 var position = move.To - new Offset(x, y);
                 if (
@@ -89,7 +91,9 @@ public class DrawEvaulator(IGameResultDescriber gameResultDescriber) : IDrawEvau
                     && touchingPiece.Type is PieceType.King
                     && touchingPiece.Color != move.Piece.Color
                 )
+                {
                     return true;
+                }
             }
         }
 

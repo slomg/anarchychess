@@ -276,7 +276,8 @@ public class GameGrain : Grain, IGameGrain, IRemindable
                 PlyNumber: game.MoveSnapshots.Count,
                 Clocks: _clock.ToSnapshot(game.ClockState),
                 SideToMoveUserId: nextPlayer.UserId,
-                EncodedLegalMoves: _core.EncodeLegalMoves(game.Core)
+                EncodedLegalMoves: _core.EncodeLegalMoves(game.Core),
+                DidMoveEndGame: moveResult.EndStatus is not null
             ),
             game.NotifierState
         );

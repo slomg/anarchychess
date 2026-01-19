@@ -261,7 +261,8 @@ public class GameGrainTests : BaseOrleansIntegrationTest
                                 SideToMoveUserId: _blackPlayer.UserId,
                                 EncodedLegalMoves: _gameCore.EncodeLegalMoves(
                                     _state.CurrentGame.Core
-                                )
+                                ),
+                                DidMoveEndGame: false
                             )
                         )
                 ),
@@ -318,7 +319,9 @@ public class GameGrainTests : BaseOrleansIntegrationTest
         _stateStats.Writes.Should().Be(2 * 4);
         await TestGameEndedAsync(grain, _gameResultDescriber.ThreeFold());
         // make sure the state was not deleted before the notification
-        await _gameNotifierMock.ReceivedWithAnyArgs(1).NotifyMoveMadeAsync(default!, default!);
+        await _gameNotifierMock
+            .ReceivedWithAnyArgs(1)
+            .NotifyMoveMadeAsync(Arg.Is<MoveNotification>(x => x.DidMoveEndGame == true), default!);
     }
 
     [Fact]

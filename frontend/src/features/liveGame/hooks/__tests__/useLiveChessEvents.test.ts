@@ -34,6 +34,7 @@ import { EventHandlers } from "@/features/signalR/hooks/useSignalREvent";
 import { createFakeClocks } from "@/lib/testUtils/fakers/clocksFaker";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
 import { GameClientEvents, useGameEvent } from "../useGameHub";
+import LegalMoves from "@/features/chessboard/lib/legalMoves";
 import { refetchGame } from "../../lib/gameStateProcessor";
 import { logicalPoint } from "@/features/point/pointUtils";
 import useLiveChessEvents from "../useLiveChessEvents";
@@ -81,10 +82,12 @@ describe("useLiveChessEvents", () => {
         sideToMove,
         clocks,
         plyNumber,
+        didMoveEndGame,
     }: {
         sideToMove: GameColor;
         clocks?: Clocks;
         plyNumber?: number;
+        didMoveEndGame?: boolean;
     }): Promise<MoveSnapshot> {
         const move = createFakeMoveSnapshot({
             san: "test san",
@@ -96,7 +99,12 @@ describe("useLiveChessEvents", () => {
             chessboardStore.getState().positionHistory.mainPlyCount + 1;
 
         await act(async () => {
-            await gameEventHandlers.MoveMadeAsync?.(move, plyNumber, clocks);
+            await gameEventHandlers.MoveMadeAsync?.(
+                move,
+                plyNumber,
+                clocks,
+                didMoveEndGame ?? false,
+            );
         });
         return move;
     }
@@ -229,6 +237,23 @@ describe("useLiveChessEvents", () => {
             await triggerMoveMade({ sideToMove: GameColor.WHITE });
 
             expect(addPositionMock).not.toHaveBeenCalled();
+        });
+
+        it("should set legal moves to empty if the move ended the game", async () => {
+            const addPositionMock = vi.fn();
+            chessboardStore.setState({ addPosition: addPositionMock });
+
+            setupStandardStoresForMove();
+            renderLiveChessEvents();
+            await triggerMoveMade({
+                sideToMove: GameColor.BLACK,
+                didMoveEndGame: true,
+            });
+
+            expect(addPositionMock).toHaveBeenCalledExactlyOnceWith(
+                expect.anything(),
+                new LegalMoves(),
+            );
         });
     });
 

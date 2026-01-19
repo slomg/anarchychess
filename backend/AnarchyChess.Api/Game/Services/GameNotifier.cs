@@ -31,7 +31,8 @@ public record MoveNotification(
     int PlyNumber,
     ClockSnapshot Clocks,
     UserId SideToMoveUserId,
-    IReadOnlyCollection<byte> EncodedLegalMoves
+    IReadOnlyCollection<byte> EncodedLegalMoves,
+    bool DidMoveEndGame
 );
 
 [GenerateSerializer]
@@ -60,7 +61,8 @@ public class GameNotifier(IHubContext<GameHub, IGameHubClient> hub) : IGameNotif
             .MoveMadeAsync(
                 move: notification.Move,
                 plyNumber: notification.PlyNumber,
-                clock: notification.Clocks
+                clock: notification.Clocks,
+                didMoveEndGame: notification.DidMoveEndGame
             );
         await _hub
             .Clients.Group(UserGameGroup(notification.GameToken, notification.SideToMoveUserId))

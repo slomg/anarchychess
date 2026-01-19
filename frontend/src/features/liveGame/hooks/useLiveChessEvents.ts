@@ -17,12 +17,17 @@ export default function useLiveChessEvents(
     const boardDimensions = useStore(chessboardStore, (x) => x.boardDimensions);
     const gameToken = useStore(liveChessStore, (x) => x.gameToken);
 
-    async function handleMoveUpdate(
-        move: MoveSnapshot,
-        plyNumber: number,
-        clocks: Clocks,
-        legalMoves?: LegalMoves,
-    ): Promise<Position | undefined> {
+    async function handleMoveUpdate({
+        move,
+        plyNumber,
+        clocks,
+        legalMoves,
+    }: {
+        move: MoveSnapshot;
+        plyNumber: number;
+        clocks: Clocks;
+        legalMoves?: LegalMoves;
+    }): Promise<Position | undefined> {
         const {
             positionHistory,
             addPosition,
@@ -74,11 +79,14 @@ export default function useLiveChessEvents(
     useGameEvent(
         gameToken,
         "MoveMadeAsync",
-        async (move, plyNumber, clocks) => {
+        async (move, plyNumber, clocks, didMoveEndGame) => {
             const { viewer } = liveChessStore.getState();
-            if (viewer.playerColor !== move.nextSideToMove) {
-                await handleMoveUpdate(move, plyNumber, clocks);
-            }
+            if (viewer.playerColor === move.nextSideToMove) return;
+
+            // undefined = we don't know the legal moves
+            // defined, but empty = we know the legal moves, there aren't any, no need to fetch them
+            const legalMoves = didMoveEndGame ? new LegalMoves() : undefined;
+            await handleMoveUpdate({ move, plyNumber, clocks, legalMoves });
         },
     );
 
@@ -93,7 +101,12 @@ export default function useLiveChessEvents(
                 encoded: encodedLegalMoves,
                 boardWidth: boardDimensions.width,
             });
-            await handleMoveUpdate(move, plyNumber, clocks, decodedLegalMoves);
+            await handleMoveUpdate({
+                move,
+                plyNumber,
+                clocks,
+                legalMoves: decodedLegalMoves,
+            });
         },
     );
 
