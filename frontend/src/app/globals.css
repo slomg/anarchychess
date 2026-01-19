@@ -61,6 +61,16 @@
     --animate-freakout: blink 0.5s infinite, wiggle 0.1s ease-in-out infinite;
     --animate-flash-once: flash 0.5s ease-in-out;
     --animate-subtle-ping: subtle-ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+    --animate-fade-in: fade-in 0.2s ease-in-out forwards;
+
+    @keyframes fade-in {
+        0% {
+            opacity: 0;
+        }
+        100% {
+            opacity: 1;
+        }
+    }
 
     @keyframes double-tap {
         0%,
