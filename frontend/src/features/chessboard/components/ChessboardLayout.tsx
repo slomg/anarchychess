@@ -3,8 +3,12 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
 
 import { useChessboardStore } from "@/features/chessboard/hooks/useChessboard";
+import HighlightedLegalMovesRenderer from "./HighlightedLegalMove";
+import IntermediateSquarePrompt from "./IntermediateSquarePrompt";
+import EmphasizedSquaresRenderer from "./EmphasizedSquare";
 import LastMoveHighlight from "./LastMoveHighlight";
 import OverlayRenderer from "./OverlayRenderer";
+import PromotionPrompt from "./PromotionPrompt";
 import PieceRenderer from "./PieceRenderer";
 import Coords from "./Coords";
 
@@ -136,8 +140,12 @@ const ChessboardLayout = ({
                 />
             </svg>
 
+            <HighlightedLegalMovesRenderer />
+            <EmphasizedSquaresRenderer />
+            <IntermediateSquarePrompt />
             <LastMoveHighlight />
             <OverlayRenderer />
+            <PromotionPrompt />
             <PieceRenderer />
             <Coords />
         </div>
