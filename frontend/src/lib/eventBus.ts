@@ -1,33 +1,42 @@
 import { MaybePromise } from "@/types/types";
+import AsyncLock from "./asyncLock";
 
 export type EventListener<TArgs extends unknown[], TResult = void> = (
     ...args: TArgs
 ) => MaybePromise<TResult>;
 
-export class EventBus<TArgs extends unknown[], TResult = void> {
+export default class EventBus<TArgs extends unknown[], TResult = void> {
     public readonly listeners: Set<EventListener<TArgs, TResult>> = new Set();
+    _lock = new AsyncLock();
 
-    subscribe(fn: EventListener<TArgs, TResult>) {
-        this.listeners.add(fn);
+    subscribe(fn: EventListener<TArgs, TResult>): Promise<void> {
+        return this._lock.acquire(() => {
+            this.listeners.add(fn);
+        });
     }
 
-    unsubscribe(fn: EventListener<TArgs, TResult>) {
-        this.listeners.delete(fn);
+    unsubscribe(fn: EventListener<TArgs, TResult>): Promise<void> {
+        return this._lock.acquire(() => {
+            this.listeners.delete(fn);
+        });
     }
 
-    async emit(...args: TArgs) {
-        const results: TResult[] = [];
-        for (const listener of this.listeners) {
-            results.push(await listener(...args));
-        }
-        return results;
+    emit(...args: TArgs): Promise<TResult[]> {
+        return this._lock.acquire(async () => {
+            const results: TResult[] = [];
+            for (const listener of this.listeners) {
+                results.push(await listener(...args));
+            }
+            return results;
+        });
     }
 
-    async emitUntilTruthy(...args: TArgs) {
-        for (const listener of this.listeners) {
-            const result = await listener(...args);
-            if (result) return result;
-        }
-        return undefined;
+    emitUntilTruthy(...args: TArgs): Promise<TResult | undefined> {
+        return this._lock.acquire(async () => {
+            for (const listener of this.listeners) {
+                const result = await listener(...args);
+                if (result) return result;
+            }
+        });
     }
 }

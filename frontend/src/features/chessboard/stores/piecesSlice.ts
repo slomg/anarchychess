@@ -13,7 +13,7 @@ import { ScreenPoint } from "@/features/point/types";
 import { MoveBounds, PieceID } from "../lib/types";
 import BoardPieces from "../lib/boardPieces";
 import { Position } from "../lib/position";
-import { EventBus } from "@/lib/eventBus";
+import EventBus from "@/lib/eventBus";
 import { Move } from "../lib/types";
 
 export interface PieceSliceProps {

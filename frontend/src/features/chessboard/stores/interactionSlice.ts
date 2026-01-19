@@ -2,10 +2,10 @@ import { StateCreator } from "zustand";
 import { enableMapSet } from "immer";
 import React from "react";
 
+import { screenPoint } from "@/features/point/pointUtils";
 import type { ChessboardStore } from "./chessboardStore";
 import { ScreenPoint } from "@/features/point/types";
-import { EventBus } from "@/lib/eventBus";
-import { screenPoint } from "@/features/point/pointUtils";
+import EventBus from "@/lib/eventBus";
 
 export interface InteractionInfo {
     point: ScreenPoint;
