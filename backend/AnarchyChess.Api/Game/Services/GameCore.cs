@@ -127,7 +127,7 @@ public class GameCore(
             EndStatus: endStatus
         );
 
-        state.LegalMoves = endStatus is not null
+        state.LegalMoves = endStatus is null
             ? _playableMoveProvider.CalculateAllPlayableMoves(state.Board)
             : new();
         return moveResult;
