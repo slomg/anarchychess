@@ -52,10 +52,9 @@ const IntermediateSquare = ({ point }: { point: LogicalPoint }) => {
                 e.stopPropagation();
             }}
             onPointerUp={handlePointerUp}
-            className="border-accent z-30 animate-[fadeIn_0.15s_ease-out]
-                cursor-pointer rounded-sm border-4 bg-[length:100%_100%]
-                bg-center bg-no-repeat transition-colors duration-100 ease-out
-                hover:bg-[rgba(255,215,0,0.2)]"
+            className="border-accent z-30 cursor-pointer rounded-sm border-4
+                bg-[length:100%_100%] bg-center bg-no-repeat transition-colors
+                duration-100 ease-out hover:bg-[rgba(255,215,0,0.2)]"
         />
     );
 };
