@@ -36,7 +36,6 @@ vi.mock("@/lib/apiClient/definition");
 
 function expectPositionAndLegalMoves(
     addPositionMove: Mock,
-    reselectPieceMock: Mock,
     move: Move,
     newAnalysisPosition: AnalysisPosition,
     newPieces: BoardPieces,
@@ -56,11 +55,6 @@ function expectPositionAndLegalMoves(
             boardWidth: constants.BOARD_WIDTH,
         }),
     );
-    expect(reselectPieceMock).toHaveBeenCalledOnce();
-
-    const addPositionMoveIndex = addPositionMove.mock.invocationCallOrder[0];
-    const reselectPieceIndex = reselectPieceMock.mock.invocationCallOrder[0];
-    expect(reselectPieceIndex).toBeGreaterThan(addPositionMoveIndex);
 }
 
 describe("addAnalysisMove", () => {
@@ -134,11 +128,7 @@ describe("addAnalysisMove", () => {
         const newAnalysisPosition = createFakeAnalysisPosition();
         const newPosition = createFakePosition();
         const addPositionMock = vi.fn();
-        const reselectPieceMock = vi.fn();
-        chessboardStore.setState({
-            addPosition: addPositionMock,
-            reselectPiece: reselectPieceMock,
-        });
+        chessboardStore.setState({ addPosition: addPositionMock });
 
         getNextAnalysisPositionMock.mockResolvedValue({
             error: undefined,
@@ -152,7 +142,6 @@ describe("addAnalysisMove", () => {
         expect(chessboardStore.getState().pieces).toBe(newPieces);
         expectPositionAndLegalMoves(
             addPositionMock,
-            reselectPieceMock,
             move,
             newAnalysisPosition,
             newPieces,
@@ -258,11 +247,9 @@ describe("addSidelineAnalysisMove", () => {
         const newAnalysisPosition = createFakeAnalysisPosition();
         const newPosition = createFakePosition();
         const addSidelinePositionMock = vi.fn();
-        const reselectPieceMock = vi.fn();
         chessboardStore.setState({
             allowHistoryChanges: true,
             addSidelinePosition: addSidelinePositionMock,
-            reselectPiece: reselectPieceMock,
         });
 
         getNextAnalysisPositionMock.mockResolvedValue({
@@ -282,7 +269,6 @@ describe("addSidelineAnalysisMove", () => {
 
         expectPositionAndLegalMoves(
             addSidelinePositionMock,
-            reselectPieceMock,
             move,
             newAnalysisPosition,
             newPieces,

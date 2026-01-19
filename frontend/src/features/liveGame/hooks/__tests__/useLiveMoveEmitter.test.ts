@@ -1,4 +1,4 @@
-import { renderHook } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react";
 import { StoreApi } from "zustand";
 
 import {
@@ -46,7 +46,11 @@ describe("useLiveMoveEmitter", () => {
         renderHook(() => useLiveMoveEmitter(liveChessStore, chessboardStore));
 
         const move = createFakeMove();
-        chessboardStore.getState().pieceMovementEvent.emit(move, prevPieces);
+        await act(() =>
+            chessboardStore
+                .getState()
+                .pieceMovementEvent.emit(move, prevPieces),
+        );
 
         expect(sendGameEventMock).toHaveBeenCalledExactlyOnceWith(
             "MovePieceAsync",
@@ -56,7 +60,7 @@ describe("useLiveMoveEmitter", () => {
         expect(addSidelineAnalysisMoveMock).not.toHaveBeenCalled();
     });
 
-    it("should treat move as analysis when the game is over", () => {
+    it("should treat move as analysis when the game is over", async () => {
         renderHook(() => useLiveMoveEmitter(liveChessStore, chessboardStore));
         const initialFen = "test initial fen";
         liveChessStore.setState({
@@ -68,7 +72,11 @@ describe("useLiveMoveEmitter", () => {
         });
 
         const move = createFakeMove();
-        chessboardStore.getState().pieceMovementEvent.emit(move, prevPieces);
+        await act(() =>
+            chessboardStore
+                .getState()
+                .pieceMovementEvent.emit(move, prevPieces),
+        );
 
         expect(addSidelineAnalysisMoveMock).toHaveBeenCalledExactlyOnceWith<
             [AnalysisMoveArgs]

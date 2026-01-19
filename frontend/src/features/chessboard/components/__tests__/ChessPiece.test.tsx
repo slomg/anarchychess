@@ -53,7 +53,10 @@ describe("ChessPiece", () => {
 
     beforeEach(() => {
         store = createChessboardStore();
-        vi.useFakeTimers({ toFake: ["requestAnimationFrame"] });
+        vi.useFakeTimers({
+            toFake: ["requestAnimationFrame"],
+            shouldAdvanceTime: true,
+        });
         mockBoundingClientRect({
             chessboard: boardRect,
             piece: pieceRect,
@@ -275,24 +278,17 @@ describe("ChessPiece", () => {
 
         const user = userEvent.setup();
 
-        const { chessboard, piece } = renderPiece({
+        const { chessboard, piece, pieceInfo } = renderPiece({
             logicalPosition: startPos,
             legalMoves: [move],
         });
 
-        await user.pointer([
-            {
-                target: chessboard,
-                coords: logicalPointToScreenPoint(startPos),
-                keys: "[MouseLeft]",
-            },
-            {
-                target: chessboard,
-                coords: logicalPointToScreenPoint(destinationPos),
-                keys: "[MouseLeft]",
-            },
-        ]);
-        vi.advanceTimersToNextFrame();
+        await pressPiece(user, pieceInfo, chessboard);
+        await user.pointer({
+            target: chessboard,
+            coords: logicalPointToScreenPoint(destinationPos),
+            keys: "[MouseLeft]",
+        });
 
         const pieces = store.getState().pieces;
         expect(pieces.getById(CREATED_PIECE_ID)?.position).toEqual(move.to);

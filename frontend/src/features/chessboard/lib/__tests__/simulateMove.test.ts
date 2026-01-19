@@ -37,7 +37,7 @@ describe("simulateMove", () => {
             moveBounds: { from: move.from, to: move.to },
             isCapture: false,
             isPromotion: false,
-            specialType: null,
+            specialType: SpecialMoveType.NONE,
         };
         expect(result).toEqual(expectedResult);
     });

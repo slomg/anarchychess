@@ -565,7 +565,7 @@ describe("PiecesSlice", () => {
                 isCapture: false,
                 isPromotion: false,
                 moveBounds: { from: position.move.from, to: position.move.to },
-                specialType: null,
+                specialType: SpecialMoveType.NONE,
             });
         });
 
@@ -591,7 +591,7 @@ describe("PiecesSlice", () => {
                 isCapture: true,
                 isPromotion: false,
                 moveBounds: { from: position.move.from, to: position.move.to },
-                specialType: null,
+                specialType: SpecialMoveType.NONE,
             });
         });
 
@@ -643,7 +643,7 @@ describe("PiecesSlice", () => {
                 isCapture: false,
                 isPromotion: true,
                 moveBounds: { from: position.move.from, to: position.move.to },
-                specialType: null,
+                specialType: SpecialMoveType.NONE,
             });
         });
     });

@@ -2,6 +2,7 @@ import { StoreApi } from "zustand";
 import { ChessboardStore, createChessboardStore } from "../chessboardStore";
 import { InteractionInfo } from "../interactionSlice";
 import { screenPoint } from "@/features/point/pointUtils";
+import { act } from "react";
 
 describe("InteractionSlice", () => {
     let store: StoreApi<ChessboardStore>;
@@ -33,7 +34,7 @@ describe("InteractionSlice", () => {
 
             const evt = mockMouseEvent(50, 60, 2);
 
-            await store.getState().onPointerDown(evt);
+            await act(() => store.getState().onPointerDown(evt));
 
             const expectedInfo: InteractionInfo = {
                 point: screenPoint({ x: 50, y: 60 }),
@@ -67,7 +68,7 @@ describe("InteractionSlice", () => {
 
             const evt = mockMouseEvent(100, 200, 0);
 
-            await store.getState().onPointerUp(evt);
+            await act(() => store.getState().onPointerUp(evt));
 
             const expectedInfo: InteractionInfo = {
                 point: screenPoint({ x: 100, y: 200 }),
@@ -96,7 +97,7 @@ describe("InteractionSlice", () => {
                 button: 0,
             };
 
-            await store.getState().evaluateDragStart(info);
+            await act(() => store.getState().evaluateDragStart(info));
 
             expect(first).toHaveBeenCalledTimes(1);
             expect(second).toHaveBeenCalledTimes(1);
