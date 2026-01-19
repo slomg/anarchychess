@@ -47,13 +47,23 @@ public class SanCalculatorTests : BaseIntegrationTest
     }
 
     [Fact]
-    public void CalculateSan_appends_hash_for_regular_move_with_kind_capture()
+    public void CalculateSan_appends_hash_for_moves_with_kind_capture()
     {
         Move move = new(new("e4"), new("e5"), PieceFactory.White(PieceType.Rook));
 
         var san = _calculator.CalculateSan(move, [move], isKingCapture: true);
 
         san.Should().Be("Re5#");
+    }
+
+    [Fact]
+    public void CalculateSan_appends_draw_smybol_for_draw_moves()
+    {
+        Move move = new(new("e4"), new("e5"), PieceFactory.White(PieceType.Rook));
+
+        var san = _calculator.CalculateSan(move, [move], isDraw: true);
+
+        san.Should().Be("Re5½");
     }
 
     [Fact]

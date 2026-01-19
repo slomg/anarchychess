@@ -112,7 +112,8 @@ public class GameCore(
         var san = _sanCalculator.CalculateSan(
             move,
             state.LegalMoves.AllMoves,
-            isKingCapture: kingCaptureWinStatus is not null
+            isKingCapture: kingCaptureWinStatus is not null,
+            isDraw: endStatus?.Result is GameResult.Draw
         );
         MoveResult moveResult = new(
             Move: move,

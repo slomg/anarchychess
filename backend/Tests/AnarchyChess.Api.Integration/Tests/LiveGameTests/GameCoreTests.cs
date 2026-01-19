@@ -80,6 +80,7 @@ public class GameCoreTests : BaseIntegrationTest
         // now it should be a draw, the initial position happened 3 times
         var drawResult = MakeMoves(state, repetitionMoves);
         drawResult.EndStatus.Should().Be(_resultDescriber.ThreeFold());
+        drawResult.San.Should().Be("Kc1½");
     }
 
     [Fact]

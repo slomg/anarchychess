@@ -7,7 +7,12 @@ namespace AnarchyChess.Api.Game.SanNotation;
 
 public interface ISanCalculator
 {
-    string CalculateSan(Move move, IEnumerable<Move> legalMoves, bool isKingCapture = false);
+    string CalculateSan(
+        Move move,
+        IEnumerable<Move> legalMoves,
+        bool isKingCapture = false,
+        bool isDraw = false
+    );
 }
 
 public class SanCalculator : ISanCalculator
@@ -23,7 +28,12 @@ public class SanCalculator : ISanCalculator
         _defaultNotator = _notators[SpecialMoveType.None];
     }
 
-    public string CalculateSan(Move move, IEnumerable<Move> legalMoves, bool isKingCapture = false)
+    public string CalculateSan(
+        Move move,
+        IEnumerable<Move> legalMoves,
+        bool isKingCapture = false,
+        bool isDraw = false
+    )
     {
         var notator = _notators.GetValueOrDefault(move.SpecialMoveType, _defaultNotator);
 
@@ -37,7 +47,13 @@ public class SanCalculator : ISanCalculator
         }
 
         if (isKingCapture)
+        {
             sb.Append('#');
+        }
+        if (isDraw)
+        {
+            sb.Append('½');
+        }
 
         return sb.ToString();
     }
