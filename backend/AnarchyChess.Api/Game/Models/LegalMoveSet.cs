@@ -7,12 +7,11 @@ namespace AnarchyChess.Api.Game.Models;
 [Alias("AnarchyChess.Api.Game.Models.LegalMoveSet")]
 public record LegalMoveSet(
     IReadOnlyDictionary<MoveKey, Move> MoveMap,
-    IReadOnlyCollection<MovePath> MovePaths,
-    IReadOnlyCollection<byte> EncodedMoves
+    IReadOnlyCollection<MovePath> MovePaths
 )
 {
     public IEnumerable<Move> AllMoves => MoveMap.Values;
 
     public LegalMoveSet()
-        : this(MoveMap: new Dictionary<MoveKey, Move>(), MovePaths: [], EncodedMoves: []) { }
+        : this(MoveMap: new Dictionary<MoveKey, Move>(), MovePaths: []) { }
 }

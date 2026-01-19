@@ -15,13 +15,9 @@ public interface IPlayableMoveProvider
     );
 }
 
-public class PlayableMoveProvider(
-    ILegalMoveCalculator legalMoveCalculator,
-    IMoveEncoder moveEncoder
-) : IPlayableMoveProvider
+public class PlayableMoveProvider(ILegalMoveCalculator legalMoveCalculator) : IPlayableMoveProvider
 {
     private readonly ILegalMoveCalculator _legalMoveCalculator = legalMoveCalculator;
-    private readonly IMoveEncoder _moveEncoder = moveEncoder;
 
     public LegalMoveSet CalculateAllPlayableMoves(IReadOnlyChessBoard board)
     {
@@ -48,8 +44,7 @@ public class PlayableMoveProvider(
             }
         }
 
-        var encodedMoves = _moveEncoder.EncodeMoves(movePaths);
-        return new(MoveMap: moveMap, MovePaths: movePaths, EncodedMoves: encodedMoves);
+        return new(MoveMap: moveMap, MovePaths: movePaths);
     }
 
     public Move? GetPieceMoveByKey(

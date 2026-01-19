@@ -259,7 +259,9 @@ public class GameGrainTests : BaseOrleansIntegrationTest
                                 PlyNumber: 3,
                                 Clocks: expectedClock,
                                 SideToMoveUserId: _blackPlayer.UserId,
-                                EncodedLegalMoves: legalMoves.EncodedMoves
+                                EncodedLegalMoves: _gameCore.EncodeLegalMoves(
+                                    _state.CurrentGame.Core
+                                )
                             )
                         )
                 ),

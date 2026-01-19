@@ -6,7 +6,6 @@ using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.TestInfrastructure.Factories;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
-using AnarchyChess.Api.TestInfrastructure.NSubtituteExtenstion;
 using AwesomeAssertions;
 using NSubstitute;
 
@@ -16,14 +15,13 @@ public class PlayableMoveProviderTests
 {
     private readonly ILegalMoveCalculator _legalMoveCalculatorMock =
         Substitute.For<ILegalMoveCalculator>();
-    private readonly IMoveEncoder _moveEncoderMock = Substitute.For<IMoveEncoder>();
     private readonly ChessBoard _board = new();
 
     private readonly PlayableMoveProvider _playableMoveProvider;
 
     public PlayableMoveProviderTests()
     {
-        _playableMoveProvider = new(_legalMoveCalculatorMock, _moveEncoderMock);
+        _playableMoveProvider = new(_legalMoveCalculatorMock);
         _board.PlacePiece(new("a1"), PieceFactory.White(PieceType.King));
         _board.PlacePiece(new("a8"), PieceFactory.Black(PieceType.King));
     }
@@ -37,16 +35,6 @@ public class PlayableMoveProviderTests
 
         _legalMoveCalculatorMock.CalculateAllLegalMoves(_board).Returns(allMoves);
 
-        byte[] expectedEncodedMoves = [12, 34, 56];
-        List<MoveKey> expectedMoveKeys = [.. allMoves.Select(x => new MoveKey(x))];
-        _moveEncoderMock
-            .EncodeMoves(
-                ArgEx.FluentAssert<List<MovePath>>(x =>
-                    x?.Select(x => x.MoveKey).Should().BeEquivalentTo(expectedMoveKeys)
-                )
-            )
-            .Returns(expectedEncodedMoves);
-
         var result = _playableMoveProvider.CalculateAllPlayableMoves(_board);
 
         var moveMap = allMoves.ToDictionary(x => new MoveKey(x));
@@ -54,11 +42,7 @@ public class PlayableMoveProviderTests
             .Select(m => MovePath.FromMove(m, _board.Width, new MoveKey(m)))
             .ToList();
 
-        var expected = new LegalMoveSet(
-            MoveMap: moveMap,
-            MovePaths: movePaths,
-            EncodedMoves: expectedEncodedMoves
-        );
+        var expected = new LegalMoveSet(MoveMap: moveMap, MovePaths: movePaths);
 
         result.Should().BeEquivalentTo(expected);
     }
@@ -97,21 +81,11 @@ public class PlayableMoveProviderTests
 
         _legalMoveCalculatorMock.CalculateAllLegalMoves(_board).Returns([move1, move2, move3]);
 
-        byte[] expectedEncodedMoves = [12, 34];
-        _moveEncoderMock
-            .EncodeMoves(
-                ArgEx.FluentAssert<List<MovePath>>(x =>
-                    x.Should().ContainSingle().Which.MoveKey.Should().Be(expectedMoveKey)
-                )
-            )
-            .Returns(expectedEncodedMoves);
-
         var result = _playableMoveProvider.CalculateAllPlayableMoves(_board);
 
         LegalMoveSet expected = new(
             MoveMap: new Dictionary<MoveKey, Move> { [new MoveKey(move3)] = move3 },
-            MovePaths: [MovePath.FromMove(move3, _board.Width, expectedMoveKey)],
-            EncodedMoves: expectedEncodedMoves
+            MovePaths: [MovePath.FromMove(move3, _board.Width, expectedMoveKey)]
         );
 
         result.Should().BeEquivalentTo(expected);

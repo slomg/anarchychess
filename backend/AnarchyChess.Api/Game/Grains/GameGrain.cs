@@ -256,7 +256,6 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             return makeMoveResult.Errors;
         var moveResult = makeMoveResult.Value;
 
-        var legalMoves = _core.GetLegalMoves(game.Core);
         var nextPlayer = game.Players.GetPlayerByColor(_core.SideToMove(game.Core));
         var moveSnapshot = BuildAndStoreMove(
             movedBy: currentPlayer.Color,
@@ -277,7 +276,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
                 PlyNumber: game.MoveSnapshots.Count,
                 Clocks: _clock.ToSnapshot(game.ClockState),
                 SideToMoveUserId: nextPlayer.UserId,
-                EncodedLegalMoves: legalMoves.EncodedMoves
+                EncodedLegalMoves: _core.EncodeLegalMoves(game.Core)
             ),
             game.NotifierState
         );

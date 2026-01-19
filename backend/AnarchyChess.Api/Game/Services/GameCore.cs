@@ -11,6 +11,7 @@ namespace AnarchyChess.Api.Game.Services;
 
 public interface IGameCore
 {
+    byte[] EncodeLegalMoves(GameCoreState state);
     LegalMoveSet GetLegalMoves(GameCoreState state);
     ErrorOr<MoveResult> MakeMove(MoveKey key, GameCoreState state);
     MoveResult MakeMove(Move move, GameCoreState state);
@@ -51,7 +52,8 @@ public class GameCore(
     IPlayableMoveProvider playableMoveProvider,
     ISanCalculator sanCalculator,
     IDrawEvaulator drawEvaulator,
-    IGameResultDescriber resultDescriber
+    IGameResultDescriber resultDescriber,
+    IMoveEncoder moveEncoder
 ) : IGameCore
 {
     private readonly ILogger<GameCore> _logger = logger;
@@ -60,6 +62,7 @@ public class GameCore(
     private readonly ISanCalculator _sanCalculator = sanCalculator;
     private readonly IDrawEvaulator _drawEvaulator = drawEvaulator;
     private readonly IGameResultDescriber _resultDescriber = resultDescriber;
+    private readonly IMoveEncoder _moveEncoder = moveEncoder;
 
     public GameColor SideToMove(GameCoreState state) => state.Board.SideToMove;
 
@@ -129,6 +132,12 @@ public class GameCore(
     }
 
     public LegalMoveSet GetLegalMoves(GameCoreState state) => state.LegalMoves;
+
+    public byte[] EncodeLegalMoves(GameCoreState state)
+    {
+        var legalMoves = GetLegalMoves(state);
+        return _moveEncoder.EncodeMoves(legalMoves.MovePaths);
+    }
 
     private GameEndStatus? EvaluateKingCaptureResult(
         Move move,
