@@ -20,7 +20,7 @@ const EmphasizedSquare = ({ position }: { position: LogicalPoint }) => {
             data-testid="emphasizedSquare"
             className="before:animate-freakout animate-fade-in z-20
                 before:absolute before:inset-0 before:border-4
-                before:border-red-500"
+                before:border-red-500 sm:before:border-6"
             position={position}
         />
     );
