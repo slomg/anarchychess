@@ -139,7 +139,7 @@ public class GameCoreTests : BaseIntegrationTest
         );
 
         result.EndStatus.Should().Be(_resultDescriber.MutualKingCapture());
-        result.San.Should().Be("Rxb1xc1xa1=N#");
+        result.San.Should().Be("Rxb1xc1xa1=N½");
         var legalMoves = _gameCore.GetLegalMoves(state);
         legalMoves.Should().BeEquivalentTo(new LegalMoveSet());
     }

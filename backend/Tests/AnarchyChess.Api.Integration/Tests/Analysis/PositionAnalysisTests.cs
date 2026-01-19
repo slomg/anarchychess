@@ -107,7 +107,7 @@ public class PositionAnalysisTests : BaseIntegrationTest
 
         // king touch draw
         var result = _positionAnalysis.GetNextAnalysisPosition(
-            new(Fen: "k1KR5", PiecePosition: new("a1"), MoveKey: moveKey)
+            new(Fen: "K1kr5", PiecePosition: new("a1"), MoveKey: moveKey)
         );
 
         result.IsError.Should().BeFalse();
