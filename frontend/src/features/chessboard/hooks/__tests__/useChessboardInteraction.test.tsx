@@ -6,6 +6,7 @@ import {
 import useBoardInteraction from "../useBoardInteraction";
 import ChessboardStoreContext from "../../contexts/chessboardStoreContext";
 import { act, renderHook } from "@testing-library/react";
+import { screenPoint } from "@/features/point/pointUtils";
 
 function createMouseEvent(
     x = 100,
@@ -50,28 +51,6 @@ describe("useBoardInteraction", () => {
 
         expect(onPress).toHaveBeenCalledWith({
             point: { x: 10, y: 20 },
-            button: 0,
-        });
-    });
-
-    it("should call onClick on pointer up when not dragging", async () => {
-        const onClick = vi.fn();
-        renderHook(
-            () =>
-                useBoardInteraction({
-                    shouldStartDrag: vi.fn().mockResolvedValue(false),
-                    onClick,
-                }),
-            { wrapper },
-        );
-
-        await act(async () => {
-            await store.getState().onPointerDown(createMouseEvent(0, 0));
-            await store.getState().onPointerUp(createMouseEvent(50, 60));
-        });
-
-        expect(onClick).toHaveBeenCalledWith({
-            point: { x: 50, y: 60 },
             button: 0,
         });
     });
@@ -154,5 +133,37 @@ describe("useBoardInteraction", () => {
         });
 
         expect(result.current).toBe(false);
+    });
+
+    it("should not start dragging if pointer is not down", async () => {
+        const onDragStart = vi.fn();
+        const onDragMove = vi.fn();
+        const onDragEnd = vi.fn();
+
+        const shouldStartDrag = vi.fn().mockResolvedValue(true);
+
+        renderHook(
+            () =>
+                useBoardInteraction({
+                    shouldStartDrag,
+                    onDragStart,
+                    onDragMove,
+                    onDragEnd,
+                }),
+            { wrapper },
+        );
+
+        // fire dragStartQuery without pointer down
+        // this can happen if the piece is created between pointer down event and start drag query
+        await act(async () => {
+            store.getState().dragStartQuery.emit({
+                point: screenPoint({ x: 50, y: 50 }),
+                button: 0,
+            });
+        });
+
+        expect(onDragStart).not.toHaveBeenCalled();
+        expect(onDragMove).not.toHaveBeenCalled();
+        expect(onDragEnd).not.toHaveBeenCalled();
     });
 });

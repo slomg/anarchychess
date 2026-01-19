@@ -13,7 +13,6 @@ export default function useBoardInteraction({
     onDragEnd,
 
     onPress,
-    onClick,
 }: {
     shouldStartDrag: (info: InteractionInfo) => MaybePromise<boolean>;
 
@@ -22,7 +21,6 @@ export default function useBoardInteraction({
     onDragEnd?: (point: ScreenPoint) => MaybePromise<void>;
 
     onPress?: (info: InteractionInfo) => MaybePromise<void>;
-    onClick?: (info: InteractionInfo) => MaybePromise<void>;
 }): boolean {
     const callbacksRef = useRef({
         shouldStartDrag,
@@ -30,7 +28,6 @@ export default function useBoardInteraction({
         onDragMove,
         onDragEnd,
         onPress,
-        onClick,
     });
 
     useEffect(() => {
@@ -40,14 +37,13 @@ export default function useBoardInteraction({
             onDragMove,
             onDragEnd,
             onPress,
-            onClick,
         };
-    }, [shouldStartDrag, onDragStart, onDragMove, onDragEnd, onPress, onClick]);
+    }, [shouldStartDrag, onDragStart, onDragMove, onDragEnd, onPress]);
 
     const [isDragging, setIsDragging] = useState(false);
 
     const isDraggingRef = useRef(false);
-    const hasHandledPointerUpRef = useRef(false);
+    const isPointerDown = useRef(false);
 
     const { pointerDownEvent, dragStartQuery, pointerUpEvent } =
         useChessboardStore((x) => ({
@@ -57,9 +53,7 @@ export default function useBoardInteraction({
         }));
 
     const startDragging = useCallback(async (startFrom: ScreenPoint) => {
-        setIsDragging(true);
-        await callbacksRef.current.onDragStart?.(startFrom);
-        isDraggingRef.current = true;
+        if (!isPointerDown.current) return;
 
         let animationFrameId: number | null = null;
         let lastMouseX = startFrom.x;
@@ -87,8 +81,7 @@ export default function useBoardInteraction({
         }
 
         async function stopDragging(event: PointerEvent) {
-            if (hasHandledPointerUpRef.current || !isDraggingRef.current)
-                return;
+            if (!isDraggingRef.current) return;
             isDraggingRef.current = false;
 
             await callbacksRef.current.onDragEnd?.(
@@ -101,11 +94,14 @@ export default function useBoardInteraction({
             window.removeEventListener("pointerup", stopDragging);
 
             setIsDragging(false);
-            hasHandledPointerUpRef.current = true;
         }
 
         window.addEventListener("pointermove", handleMove);
         window.addEventListener("pointerup", stopDragging);
+        await callbacksRef.current.onDragStart?.(startFrom);
+        isDraggingRef.current = true;
+        setIsDragging(true);
+
         await emitDrag();
     }, []);
 
@@ -113,7 +109,7 @@ export default function useBoardInteraction({
         async function pointerDownHandler(
             info: InteractionInfo,
         ): Promise<void> {
-            hasHandledPointerUpRef.current = false;
+            isPointerDown.current = true;
             await callbacksRef.current.onPress?.(info);
         }
 
@@ -127,11 +123,8 @@ export default function useBoardInteraction({
             return shouldStart;
         }
 
-        async function pointerUpHandler(info: InteractionInfo): Promise<void> {
-            if (isDraggingRef.current || hasHandledPointerUpRef.current) return;
-
-            await callbacksRef.current.onClick?.(info);
-            hasHandledPointerUpRef.current = true;
+        async function pointerUpHandler(): Promise<void> {
+            isPointerDown.current = false;
         }
 
         pointerDownEvent.subscribe(pointerDownHandler);
