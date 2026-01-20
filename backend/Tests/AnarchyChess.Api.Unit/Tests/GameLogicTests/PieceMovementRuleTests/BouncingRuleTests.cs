@@ -279,7 +279,7 @@ public class BouncingRuleTests
             ruleCreator: (_, _) => _subRuleMock,
             stopBouncingPredicate: (_, _) => false
         );
-        var moves = rule.Evaluate(board, origin, _piece);
+        var moves = rule.Evaluate(board, origin, _piece).ToList();
 
         moves
             .Should()

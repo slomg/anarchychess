@@ -99,7 +99,7 @@ public class BouncingRule(
                 movingPiece,
                 visited: visited,
                 intermediates: [.. intermediates, intermediate],
-                captured: [.. captured, .. lastMove.Captures],
+                captured: [.. lastMove.Captures],
                 currentOffset
             )
         )
