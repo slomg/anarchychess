@@ -290,10 +290,10 @@ public class GameClockTests
     [Fact]
     public void DetectTimeout_returns_white_timeout_when_white_time_runs_out()
     {
-        _state.Clocks[GameColor.White].TimeLeftMs = 150;
+        _state.Clocks[GameColor.White].TimeLeftMs = 100;
         _state.Clocks[GameColor.Black].TimeLeftMs = 200_000;
 
-        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(100));
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(90));
 
         var result = _clock.DetectTimeout(GameColor.White, _state);
 
@@ -303,10 +303,10 @@ public class GameClockTests
     [Fact]
     public void DetectTimeout_returns_black_timeout_when_black_time_is_exhausted()
     {
-        _state.Clocks[GameColor.Black].TimeLeftMs = 150;
+        _state.Clocks[GameColor.Black].TimeLeftMs = 100;
         _state.Clocks[GameColor.White].TimeLeftMs = 200_000;
 
-        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(100));
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(90));
 
         var result = _clock.DetectTimeout(GameColor.Black, _state);
 

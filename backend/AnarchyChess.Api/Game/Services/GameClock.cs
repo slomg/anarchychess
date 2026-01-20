@@ -118,11 +118,11 @@ public class GameClock(
         );
 
         GameColor timedOutColor;
-        if (whiteTimeLeftMs <= 100)
+        if (whiteTimeLeftMs <= 10)
         {
             timedOutColor = GameColor.White;
         }
-        else if (blackTimeLeftMs <= 100)
+        else if (blackTimeLeftMs <= 10)
         {
             timedOutColor = GameColor.Black;
         }
