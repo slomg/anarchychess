@@ -1,136 +1,276 @@
+import { createFakeMove } from "@/lib/testUtils/fakers/chessboardFakers";
 import { logicalPoint, pointToStr } from "@/features/point/pointUtils";
-
-import {
-    createFakeMove,
-    createRandomPoint,
-} from "@/lib/testUtils/fakers/chessboardFakers";
-
-import { StrPoint } from "@/features/point/types";
+import { ForcedMovePriority } from "@/lib/apiClient";
 import LegalMoves from "../legalMoves";
-import { Move } from "../types";
+import { IntermediateSquare } from "../types";
 
-describe("legalMoves", () => {
+describe("LegalMoves", () => {
+    let legalMoves: LegalMoves;
+
+    beforeEach(() => {
+        legalMoves = new LegalMoves();
+    });
+
     describe("constructor", () => {
-        it("should create an empty LegalMoves instance when no arguments are provided", () => {
-            const legalMoves = new LegalMoves();
-            expect(legalMoves.size).toBe(0);
+        it("should initialize empty byOrigin map", () => {
+            expect(legalMoves.byOrigin.size).toBe(0);
             expect(legalMoves.hasForcedMoves).toBe(false);
             expect(legalMoves.emphasizedSquares).toEqual([]);
         });
 
-        it("should create a LegalMoves instance from a Map", () => {
-            const move = createFakeMove();
-            const legalMovesMap = new Map<StrPoint, Move[]>([
-                [pointToStr(move.from), [move]],
-            ]);
-            const legalMoves = new LegalMoves(legalMovesMap);
+        it("should add moves if provided", () => {
+            const move1 = createFakeMove({
+                from: logicalPoint({ x: 1, y: 1 }),
+            });
+            const move2 = createFakeMove({
+                from: logicalPoint({ x: 2, y: 1 }),
+            });
 
-            expect(legalMoves.size).toBe(1);
-            const movesFromOrigin = legalMoves.get(move.from);
-            expect(movesFromOrigin).toEqual([move]);
+            const legalMoves = new LegalMoves([move1, move2]);
+
+            expect([...legalMoves.getFromOrigin(move1.from)]).toHaveLength(1);
+            expect([...legalMoves.getFromOrigin(move2.from)]).toHaveLength(1);
+            expect(legalMoves.hasForcedMoves).toBe(false);
+            expect(legalMoves.emphasizedSquares).toEqual([]);
+        });
+    });
+
+    describe("addMove", () => {
+        it("should add a move to byOrigin", () => {
+            const move = createFakeMove();
+
+            legalMoves.addMove(move);
+
+            const node = legalMoves.getDirectNode(move.from, move.to);
+            expect(node).toBeDefined();
+            expect(node?.terminalMoves).toContain(move);
+            expect(legalMoves.byOrigin.has(pointToStr(move.from))).toBe(true);
+            expect(legalMoves.hasMovesDirectlyFromTo(move.from, move.to)).toBe(
+                true,
+            );
         });
 
-        it("should create a LegalMoves instance from an array of entries", () => {
-            const move = createFakeMove();
-            const legalMovesArray: [StrPoint, Move[]][] = [
-                [pointToStr(move.from), [move]],
-            ];
-
-            const legalMoves = new LegalMoves(legalMovesArray);
-
-            expect(legalMoves.size).toBe(1);
-            const movesFromOrigin = legalMoves.get(move.from);
-            expect(movesFromOrigin).toEqual([move]);
-        });
-
-        it("should set hasForcedMoves", () => {
-            const hasForcedMoves = true;
-            const legalMoves = new LegalMoves([], hasForcedMoves);
+        it("should mark hasForcedMoves if move is forced", () => {
+            const move = createFakeMove({
+                forcedPriority: ForcedMovePriority.EN_PASSANT,
+            });
+            legalMoves.addMove(move);
 
             expect(legalMoves.hasForcedMoves).toBe(true);
         });
 
-        it("should set emphasizedSquares", () => {
-            const emphasizedSquares = [
-                createRandomPoint(),
-                createRandomPoint(),
-                createRandomPoint(),
-            ];
-            const legalMoves = new LegalMoves([], false, emphasizedSquares);
+        it("should add emphasized squares if move has emphasizeSquare", () => {
+            const emphasizedMove = createFakeMove({ emphasizeSquare: true });
+            legalMoves.addMove(emphasizedMove);
 
-            expect(legalMoves.emphasizedSquares).toEqual(emphasizedSquares);
-        });
-    });
-
-    describe("hasMovesFromTo", () => {
-        it("should return false if there are no moves from the given 'from' position", () => {
-            const move = createFakeMove({
-                from: logicalPoint({ x: 0, y: 0 }),
-                to: logicalPoint({ x: 2, y: 2 }),
-            });
-
-            const legalMoves = new LegalMoves([
-                [pointToStr(move.from), [move]],
-            ]);
-
-            const result = legalMoves.hasMovesFromTo(
-                logicalPoint({ x: 1, y: 1 }),
-                move.to,
-            );
-            expect(result).toBe(false);
+            expect(legalMoves.emphasizedSquares).toContain(emphasizedMove.from);
         });
 
-        it("should return false if there are moves from 'from' but none to the 'to' position", () => {
-            const move = createFakeMove({
-                from: logicalPoint({ x: 0, y: 0 }),
-                to: logicalPoint({ x: 2, y: 2 }),
-            });
-
-            const legalMoves = new LegalMoves([
-                [pointToStr(move.from), [move]],
-            ]);
-
-            const result = legalMoves.hasMovesFromTo(
-                move.from,
-                logicalPoint({ x: 1, y: 1 }),
-            );
-            expect(result).toBe(false);
-        });
-
-        it("should return true if there is at least one move from 'from' to 'to'", () => {
+        it("should handle adding multiple moves with intermediates", () => {
             const move1 = createFakeMove({
-                from: logicalPoint({ x: 0, y: 0 }),
-                to: logicalPoint({ x: 1, y: 1 }),
-            });
-            const move2 = createFakeMove({
-                from: logicalPoint({ x: 0, y: 0 }),
+                from: logicalPoint({ x: 1, y: 1 }),
                 to: logicalPoint({ x: 2, y: 2 }),
             });
+            legalMoves.addMove(move1);
 
-            const legalMoves = new LegalMoves([
-                [pointToStr(move1.from), [move1, move2]],
-            ]);
+            let node = legalMoves.getDirectNode(move1.from, move1.to);
+            expect(node).toBeDefined();
+            expect(node?.terminalMoves).toEqual([move1]);
+            expect(node?.nextIntermediates.size).toBe(0);
 
-            const result = legalMoves.hasMovesFromTo(
-                logicalPoint({ x: 0, y: 0 }),
-                logicalPoint({ x: 1, y: 1 }),
+            const move2 = createFakeMove({
+                from: logicalPoint({ x: 1, y: 1 }),
+                to: logicalPoint({ x: 4, y: 4 }),
+                intermediates: [
+                    {
+                        position: logicalPoint({ x: 3, y: 3 }),
+                        isCapture: false,
+                    },
+                    {
+                        position: logicalPoint({ x: 2, y: 3 }),
+                        isCapture: false,
+                    },
+                ],
+            });
+            legalMoves.addMove(move2);
+
+            node = legalMoves.getDirectNode(move1.from, move1.to);
+            expect(node).toBeDefined();
+            expect(node?.terminalMoves).toEqual([move1]);
+
+            const firstIntermediate = legalMoves.getDirectNode(
+                move2.from,
+                logicalPoint({
+                    x: 3,
+                    y: 3,
+                }),
             );
-            expect(result).toBe(true);
+            expect(firstIntermediate).toBeDefined();
+            expect(firstIntermediate?.terminalMoves.length).toBe(0);
+
+            const secondIntermediate = firstIntermediate?.nextIntermediates.get(
+                pointToStr({ x: 2, y: 3 }),
+            );
+            expect(secondIntermediate).toBeDefined();
+            expect(secondIntermediate?.terminalMoves.length).toBe(0);
+
+            const destination = secondIntermediate?.nextIntermediates.get(
+                pointToStr(move2.to),
+            );
+            expect(destination).toBeDefined();
+            expect(destination?.terminalMoves).toEqual([move2]);
+        });
+
+        it("should add moves for each trigger in addition to the main destination", () => {
+            const triggerPoint1 = logicalPoint({ x: 3, y: 3 });
+            const triggerPoint2 = logicalPoint({ x: 4, y: 4 });
+            const mainDestination = logicalPoint({ x: 5, y: 5 });
+
+            const moveWithTriggers = createFakeMove({
+                to: mainDestination,
+                triggers: [triggerPoint1, triggerPoint2],
+            });
+
+            legalMoves.addMove(moveWithTriggers);
+
+            // original destination node
+            const mainNode = legalMoves.getDirectNode(
+                moveWithTriggers.from,
+                mainDestination,
+            );
+            expect(mainNode).toBeDefined();
+            expect(mainNode?.terminalMoves).toContain(moveWithTriggers);
+
+            // trigger nodes
+            const triggerNode1 = legalMoves.getDirectNode(
+                moveWithTriggers.from,
+                triggerPoint1,
+            );
+            expect(triggerNode1).toBeDefined();
+            expect(triggerNode1?.terminalMoves).toContain(moveWithTriggers);
+
+            const triggerNode2 = legalMoves.getDirectNode(
+                moveWithTriggers.from,
+                triggerPoint2,
+            );
+            expect(triggerNode2).toBeDefined();
+            expect(triggerNode2?.terminalMoves).toContain(moveWithTriggers);
+        });
+
+        it("should add moves with one intermediate for main destination and each trigger", () => {
+            const intermediate: IntermediateSquare = {
+                position: logicalPoint({ x: 2, y: 2 }),
+                isCapture: false,
+            };
+            const mainDestination = logicalPoint({ x: 5, y: 5 });
+            const triggerPoint1 = logicalPoint({ x: 3, y: 3 });
+            const triggerPoint2 = logicalPoint({ x: 4, y: 4 });
+
+            const move = createFakeMove({
+                to: mainDestination,
+                intermediates: [intermediate],
+                triggers: [triggerPoint1, triggerPoint2],
+            });
+
+            legalMoves.addMove(move);
+
+            // main destination node
+            const mainIntermediateNode = legalMoves.getDirectNode(
+                move.from,
+                intermediate.position,
+            );
+            expect(mainIntermediateNode).toBeDefined();
+
+            const mainTerminalNode =
+                mainIntermediateNode?.nextIntermediates.get(
+                    pointToStr(mainDestination),
+                );
+            expect(mainTerminalNode).toBeDefined();
+            expect(mainTerminalNode?.terminalMoves).toContain(move);
+
+            // trigger nodes
+            const triggerIntermediateNode1 = legalMoves
+                .getDirectNode(move.from, intermediate.position)
+                ?.nextIntermediates.get(pointToStr(triggerPoint1));
+            expect(triggerIntermediateNode1).toBeDefined();
+            expect(triggerIntermediateNode1?.terminalMoves).toContain(move);
+
+            const triggerIntermediateNode2 = legalMoves
+                .getDirectNode(move.from, intermediate.position)
+                ?.nextIntermediates.get(pointToStr(triggerPoint2));
+            expect(triggerIntermediateNode2).toBeDefined();
+            expect(triggerIntermediateNode2?.terminalMoves).toContain(move);
         });
     });
 
-    describe("iterator", () => {
-        it("should iterate over all move arrays in the LegalMoves instance", () => {
-            const move1 = createFakeMove();
-            const move2 = createFakeMove();
+    describe("getDirectNode", () => {
+        it("should return null if no move exists", () => {
+            expect(
+                legalMoves.getDirectNode(
+                    logicalPoint({ x: 0, y: 0 }),
+                    logicalPoint({ x: 1, y: 1 }),
+                ),
+            ).toBeNull();
+        });
 
-            const legalMoves = new LegalMoves([
-                [pointToStr(move1.from), [move1]],
-                [pointToStr(move2.from), [move2]],
+        it("should return the node if it exists", () => {
+            const move = createFakeMove();
+            legalMoves.addMove(move);
+
+            const node = legalMoves.getDirectNode(move.from, move.to);
+
+            expect(node).toBeDefined();
+            expect(node?.from).toEqual(move.from);
+            expect(node?.at).toEqual(move.to);
+            expect(node?.terminalMoves).toEqual([move]);
+        });
+    });
+
+    describe("hasMovesDirectlyFromTo", () => {
+        it("should return true if a move exists", () => {
+            const move = createFakeMove();
+
+            legalMoves.addMove(move);
+            expect(legalMoves.hasMovesDirectlyFromTo(move.from, move.to)).toBe(
+                true,
+            );
+        });
+
+        it("should return false if no move exists", () => {
+            const move = createFakeMove({ to: logicalPoint({ x: 2, y: 2 }) });
+
+            expect(
+                legalMoves.hasMovesDirectlyFromTo(
+                    move.from,
+                    logicalPoint({ x: 3, y: 3 }),
+                ),
+            ).toBe(false);
+        });
+    });
+
+    describe("getFromOrigin", () => {
+        it("should return an empty iterator if no moves exist", () => {
+            const result = [
+                ...legalMoves.getFromOrigin(logicalPoint({ x: 0, y: 0 })),
+            ];
+            expect(result).toEqual([]);
+        });
+
+        it("should return all moves from a given origin", () => {
+            const move1 = createFakeMove({ to: logicalPoint({ x: 2, y: 2 }) });
+            const move2 = createFakeMove({
+                from: move1.from,
+                to: logicalPoint({ x: 3, y: 3 }),
+            });
+            legalMoves.addMove(move1);
+            legalMoves.addMove(move2);
+
+            const movesFromOrigin = [...legalMoves.getFromOrigin(move1.from)];
+            expect(movesFromOrigin).toHaveLength(2);
+            expect(movesFromOrigin.map((n) => n.at)).toEqual([
+                move1.to,
+                move2.to,
             ]);
-
-            const movesArray = Array.from(legalMoves);
-            expect(movesArray).toEqual([[move1], [move2]]);
         });
     });
 });

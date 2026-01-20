@@ -7,6 +7,18 @@ using AnarchyChess.Api.TestInfrastructure.Fakes;
 
 namespace AnarchyChess.Api.TestInfrastructure.Utils;
 
+public record MoveTestCase(
+    string To,
+    IEnumerable<string>? Trigger = null,
+    IEnumerable<string>? Captures = null,
+    IEnumerable<IntermediateSquare>? Intermediates = null,
+    IEnumerable<MoveSideEffect>? SideEffects = null,
+    IEnumerable<PieceSpawn>? Spawns = null,
+    SpecialMoveType SpecialMoveType = SpecialMoveType.None,
+    ForcedMovePriority ForcedPriority = ForcedMovePriority.None,
+    PieceType? PromotesTo = null
+);
+
 public class PieceTestCase
 {
     public required Piece Piece { get; init; }
@@ -86,6 +98,25 @@ public class PieceTestCase
         foreach (var position in to)
         {
             GoesTo(position);
+        }
+        return this;
+    }
+
+    public PieceTestCase GoesTo(params MoveTestCase[] moves)
+    {
+        foreach (var move in moves)
+        {
+            GoesTo(
+                move.To,
+                move.Trigger,
+                move.Captures,
+                move.Intermediates,
+                move.SideEffects,
+                move.Spawns,
+                move.SpecialMoveType,
+                move.ForcedPriority,
+                move.PromotesTo
+            );
         }
         return this;
     }

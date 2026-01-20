@@ -1,25 +1,26 @@
-import { render, screen } from "@testing-library/react";
-
-import { LogicalPoint } from "@/features/point/types";
-import { Point } from "@/features/point/types";
-import { Move, Piece } from "../../lib/types";
-import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardStoreContext";
 import userEvent, { UserEvent } from "@testing-library/user-event";
+import { render, screen } from "@testing-library/react";
 import { StoreApi } from "zustand";
+
 import {
     ChessboardStore,
     createChessboardStore,
 } from "@/features/chessboard/stores/chessboardStore";
-import ChessboardLayout from "../ChessboardLayout";
-import { mockBoundingClientRect } from "@/lib/testUtils/mocks/mockDom";
-import { logicalPoint, pointToStr } from "@/features/point/pointUtils";
 import {
-    createFakeLegalMovesFromMoves,
     createFakeMove,
     createFakePiece,
 } from "@/lib/testUtils/fakers/chessboardFakers";
+
+import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardStoreContext";
+import { mockBoundingClientRect } from "@/lib/testUtils/mocks/mockDom";
+import { logicalPoint, pointToStr } from "@/features/point/pointUtils";
+import { LogicalPoint } from "@/features/point/types";
+import ChessboardLayout from "../ChessboardLayout";
 import getPieceImage from "../../lib/pieceImage";
 import BoardPieces from "../../lib/boardPieces";
+import { Point } from "@/features/point/types";
+import { Move, Piece } from "../../lib/types";
+import LegalMoves from "../../lib/legalMoves";
 
 describe("ChessPiece", () => {
     const CREATED_PIECE_ID = "0";
@@ -92,11 +93,7 @@ describe("ChessPiece", () => {
         });
         const boardPieces = BoardPieces.fromPieces(pieceInfo);
         store.setState({ pieces: boardPieces });
-        store.getState().setLatestLegalMoves(
-            createFakeLegalMovesFromMoves({
-                moves: legalMoves,
-            }),
-        );
+        store.getState().setLatestLegalMoves(new LegalMoves(legalMoves));
 
         const renderResults = render(
             <ChessboardStoreContext.Provider value={store}>

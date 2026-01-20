@@ -22,29 +22,107 @@ public class BishopDefinitionTestData : TheoryData<PieceTestCase>
         var friendyUnderagePawn = PieceFactory.White(PieceType.UnderagePawn);
         var enemyUnderagePawn = PieceFactory.Black(PieceType.UnderagePawn);
 
-        string[] openE5Moves =
+        IntermediateSquare[] diagonalUpLeftIntermediate1 = [new(new("a9"), IsCapture: false)];
+        IntermediateSquare[] diagonalUpLeftIntermediate2 =
         [
-            // diagonal up-left
-            "d6",
-            "c7",
-            "b8",
-            "a9",
-            // diagonal up-right
-            "f6",
-            "g7",
-            "h8",
-            "i9",
-            "j10",
-            // diagonal down-left
-            "d4",
-            "c3",
-            "b2",
-            "a1",
-            // diagonal down-right
-            "f4",
-            "g3",
-            "h2",
-            "i1",
+            new(new("a9"), IsCapture: false),
+            new(new("b10"), IsCapture: false),
+        ];
+        IntermediateSquare[] diagonalUpLeftIntermediate3 =
+        [
+            new(new("a9"), IsCapture: false),
+            new(new("b10"), IsCapture: false),
+            new(new("j2"), IsCapture: false),
+        ];
+        IntermediateSquare[] diagonalUpLeftIntermediate4 =
+        [
+            new(new("a9"), IsCapture: false),
+            new(new("b10"), IsCapture: false),
+            new(new("j2"), IsCapture: false),
+            new(new("i1"), IsCapture: false),
+        ];
+        IntermediateSquare[] diagonalDownRightIntermediate1 = [new(new("i1"), IsCapture: false)];
+        IntermediateSquare[] diagonalDownRightIntermediate2 =
+        [
+            new(new("i1"), IsCapture: false),
+            new(new("j2"), IsCapture: false),
+        ];
+        IntermediateSquare[] diagonalDownRightIntermediate3 =
+        [
+            new(new("i1"), IsCapture: false),
+            new(new("j2"), IsCapture: false),
+            new(new("b10"), IsCapture: false),
+        ];
+        IntermediateSquare[] diagonalDownRightIntermediate4 =
+        [
+            new(new("i1"), IsCapture: false),
+            new(new("j2"), IsCapture: false),
+            new(new("b10"), IsCapture: false),
+            new(new("a9"), IsCapture: false),
+        ];
+
+        MoveTestCase[] openE5UpLeft =
+        [
+            new(To: "d6"),
+            new(To: "c7"),
+            new(To: "b8"),
+            new(To: "a9"),
+            new(To: "b10", Intermediates: diagonalUpLeftIntermediate1),
+            new(To: "c9", Intermediates: diagonalUpLeftIntermediate2),
+            new(To: "d8", Intermediates: diagonalUpLeftIntermediate2),
+            new(To: "e7", Intermediates: diagonalUpLeftIntermediate2),
+            new(To: "f6", Intermediates: diagonalUpLeftIntermediate2),
+            new(To: "g5", Intermediates: diagonalUpLeftIntermediate2),
+            new(To: "h4", Intermediates: diagonalUpLeftIntermediate2),
+            new(To: "i3", Intermediates: diagonalUpLeftIntermediate2),
+            new(To: "j2", Intermediates: diagonalUpLeftIntermediate2),
+            new(To: "i1", Intermediates: diagonalUpLeftIntermediate3),
+            new(To: "h2", Intermediates: diagonalUpLeftIntermediate4),
+            new(To: "g3", Intermediates: diagonalUpLeftIntermediate4),
+            new(To: "f4", Intermediates: diagonalUpLeftIntermediate4),
+        ];
+        MoveTestCase[] openE5UpRight =
+        [
+            new(To: "f6"),
+            new(To: "g7"),
+            new(To: "h8"),
+            new(To: "i9"),
+            new(To: "j10"),
+        ];
+        MoveTestCase[] openE5DownLeft =
+        [
+            new(To: "d4"),
+            new(To: "c3"),
+            new(To: "b2"),
+            new(To: "a1"),
+        ];
+        MoveTestCase[] openE5DownRight =
+        [
+            new(To: "f4"),
+            new(To: "g3"),
+            new(To: "h2"),
+            new(To: "i1"),
+            new(To: "j2", Intermediates: diagonalDownRightIntermediate1),
+            new(To: "i3", Intermediates: diagonalDownRightIntermediate2),
+            new(To: "h4", Intermediates: diagonalDownRightIntermediate2),
+            new(To: "g5", Intermediates: diagonalDownRightIntermediate2),
+            new(To: "f6", Intermediates: diagonalDownRightIntermediate2),
+            new(To: "e7", Intermediates: diagonalDownRightIntermediate2),
+            new(To: "d8", Intermediates: diagonalDownRightIntermediate2),
+            new(To: "c9", Intermediates: diagonalDownRightIntermediate2),
+            new(To: "b10", Intermediates: diagonalDownRightIntermediate2),
+            new(To: "a9", Intermediates: diagonalDownRightIntermediate3),
+            new(To: "b8", Intermediates: diagonalDownRightIntermediate4),
+            new(To: "c7", Intermediates: diagonalDownRightIntermediate4),
+            new(To: "d6", Intermediates: diagonalDownRightIntermediate4),
+        ];
+
+        MoveTestCase[] openE5Moves =
+        [
+            .. openE5UpLeft,
+            .. openE5UpRight,
+            .. openE5DownLeft,
+            .. openE5DownRight,
         ];
 
         Add(
@@ -72,72 +150,30 @@ public class BishopDefinitionTestData : TheoryData<PieceTestCase>
 
         Add(
             PieceTestCase
-                .From("a5", bishop)
-                // diagonal up-right
-                .GoesTo("b6")
-                .GoesTo("c7")
-                .GoesTo("d8")
-                .GoesTo("e9")
-                .GoesTo("f10")
-                // diagonal down-right
-                .GoesTo("b4")
-                .GoesTo("c3")
-                .GoesTo("d2")
-                .GoesTo("e1")
-                .WithDescription("Edge case: bishop at a5")
-        );
-
-        Add(
-            PieceTestCase
                 .From("e5", bishop)
                 .WithFriendlyPieceAt("g7", excludePieces: [PieceType.UnderagePawn]) // blocks beyond f6
-                // diagonal up-left
-                .GoesTo("d6")
-                .GoesTo("c7")
-                .GoesTo("b8")
-                .GoesTo("a9")
+                .GoesTo(openE5UpLeft)
                 // diagonal up-right, stops before g7
                 .GoesTo("f6")
                 // cannot go to g7 (blocked by friendly)
-                // diagonal down-left
-                .GoesTo("d4")
-                .GoesTo("c3")
-                .GoesTo("b2")
-                .GoesTo("a1")
-                // diagonal down-right
-                .GoesTo("f4")
-                .GoesTo("g3")
-                .GoesTo("h2")
-                .GoesTo("i1")
-                .WithDescription("Blocked by friendly piece in diagonal up-right direction")
+                .GoesTo(openE5DownLeft)
+                .GoesTo(openE5DownRight)
+                .WithDescription("Blocked by friendly piece")
         );
 
         Add(
             PieceTestCase
                 .From("e5", bishop)
-                .WithEnemyPieceAt("g3", excludePieces: [PieceType.UnderagePawn]) // enemy can be captured, blocks beyond
-                .WithFriendlyPieceAt("h2") // friendly beyond enemy
-                // diagonal up-left
-                .GoesTo("d6")
-                .GoesTo("c7")
-                .GoesTo("b8")
-                .GoesTo("a9")
-                // diagonal up-right
-                .GoesTo("f6")
-                .GoesTo("g7")
-                .GoesTo("h8")
-                .GoesTo("i9")
-                .GoesTo("j10")
+                .WithEnemyPieceAt("c3", excludePieces: [PieceType.UnderagePawn]) // enemy can be captured, blocks beyond
+                .WithFriendlyPieceAt("b2") // friendly beyond enemy
+                .GoesTo(openE5UpLeft)
+                .GoesTo(openE5UpRight)
                 // diagonal down-left
                 .GoesTo("d4")
-                .GoesTo("c3")
-                .GoesTo("b2")
-                .GoesTo("a1")
-                // diagonal down-right
-                .GoesTo("f4")
-                .GoesTo("g3", captures: ["g3"])
-                // cannot go beyond g3 because of enemy blocker
-                .WithDescription("Blocked by enemy piece in diagonal down-right direction")
+                .GoesTo("c3", captures: ["c3"])
+                // cannot go beyond c3 because of enemy blocker
+                .GoesTo(openE5DownRight)
+                .WithDescription("Blocked by enemy piece")
         );
 
         Add(
@@ -215,14 +251,18 @@ public class BishopDefinitionTestData : TheoryData<PieceTestCase>
         );
 
         var partnerIlVaticano = PieceFactory.White(PieceType.Bishop);
-        var resgularEnemy = PieceFactory.Black(PieceType.Rook);
+        var regularEnemy = PieceFactory.Black(PieceType.Rook);
         Add(
             PieceTestCase
                 .From("e5", bishop)
                 .WithPieceAt("h5", partnerIlVaticano)
-                .WithPieceAt("f5", resgularEnemy)
-                .WithPieceAt("g5", resgularEnemy)
-                .GoesTo(openE5Moves)
+                .WithPieceAt("f5", regularEnemy)
+                .WithPieceAt("g5", regularEnemy)
+                // I don't wanna deal with bounces here :)
+                .WithFriendlyPieceAt("d6", excludePieces: [PieceType.UnderagePawn])
+                .WithFriendlyPieceAt("f6", excludePieces: [PieceType.UnderagePawn])
+                .WithFriendlyPieceAt("d4", excludePieces: [PieceType.UnderagePawn])
+                .WithFriendlyPieceAt("f4", excludePieces: [PieceType.UnderagePawn])
                 .GoesTo(
                     "h5",
                     trigger: ["f5", "g5"],
@@ -240,8 +280,8 @@ public class BishopDefinitionTestData : TheoryData<PieceTestCase>
             PieceTestCase
                 .From("e5", bishop)
                 .WithPieceAt("b5", partnerIlVaticano)
-                .WithPieceAt("c5", resgularEnemy)
-                .WithPieceAt("d5", resgularEnemy)
+                .WithPieceAt("c5", regularEnemy)
+                .WithPieceAt("d5", regularEnemy)
                 .GoesTo(openE5Moves)
                 .GoesTo(
                     "b5",
@@ -260,9 +300,12 @@ public class BishopDefinitionTestData : TheoryData<PieceTestCase>
             PieceTestCase
                 .From("e5", bishop)
                 .WithPieceAt("e8", partnerIlVaticano)
-                .WithPieceAt("e7", resgularEnemy)
-                .WithPieceAt("e6", resgularEnemy)
-                .GoesTo(openE5Moves)
+                .WithPieceAt("e7", regularEnemy)
+                .WithPieceAt("e6", regularEnemy)
+                .WithFriendlyPieceAt("d6", excludePieces: [PieceType.UnderagePawn])
+                .WithFriendlyPieceAt("f6", excludePieces: [PieceType.UnderagePawn])
+                .WithFriendlyPieceAt("d4", excludePieces: [PieceType.UnderagePawn])
+                .WithFriendlyPieceAt("f4", excludePieces: [PieceType.UnderagePawn])
                 .GoesTo(
                     "e8",
                     trigger: ["e6", "e7"],
@@ -280,8 +323,8 @@ public class BishopDefinitionTestData : TheoryData<PieceTestCase>
             PieceTestCase
                 .From("e5", bishop)
                 .WithPieceAt("e2", partnerIlVaticano)
-                .WithPieceAt("e3", resgularEnemy)
-                .WithPieceAt("e4", resgularEnemy)
+                .WithPieceAt("e3", regularEnemy)
+                .WithPieceAt("e4", regularEnemy)
                 .GoesTo(openE5Moves)
                 .GoesTo(
                     "e2",
@@ -300,9 +343,12 @@ public class BishopDefinitionTestData : TheoryData<PieceTestCase>
             PieceTestCase
                 .From("e5", bishop)
                 .WithPieceAt("h5", partnerIlVaticano)
-                .WithPieceAt("f5", resgularEnemy)
+                .WithPieceAt("f5", regularEnemy)
                 .WithPieceAt("g5", enemyUnderagePawn)
-                .GoesTo(openE5Moves)
+                .WithFriendlyPieceAt("d6", excludePieces: [PieceType.UnderagePawn])
+                .WithFriendlyPieceAt("f6", excludePieces: [PieceType.UnderagePawn])
+                .WithFriendlyPieceAt("d4", excludePieces: [PieceType.UnderagePawn])
+                .WithFriendlyPieceAt("f4", excludePieces: [PieceType.UnderagePawn])
                 .GoesTo(
                     "h5",
                     trigger: ["f5", "g5"],

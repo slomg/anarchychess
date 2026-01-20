@@ -1,16 +1,18 @@
+import { faker } from "@faker-js/faker";
+
 import {
     ForcedMovePriority,
     GameColor,
     PieceType,
     SpecialMoveType,
 } from "@/lib/apiClient";
-import { logicalPoint, pointToStr } from "@/features/point/pointUtils";
-import { LogicalPoint, StrPoint } from "@/features/point/types";
+
 import { Move, MoveKey } from "@/features/chessboard/lib/types";
-import { Piece } from "@/features/chessboard/lib/types";
-import { faker } from "@faker-js/faker";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
 import LegalMoves from "@/features/chessboard/lib/legalMoves";
+import { logicalPoint } from "@/features/point/pointUtils";
+import { Piece } from "@/features/chessboard/lib/types";
+import { LogicalPoint } from "@/features/point/types";
 
 export function createRandomPoint(): LogicalPoint {
     return logicalPoint({
@@ -76,25 +78,25 @@ export function createFakeLegalMovesFromPieces({
 }: { pieces?: Piece[]; hasForcedMoves?: boolean } = {}): LegalMoves {
     pieces ??= [];
 
-    const map = new Map<StrPoint, Move[]>();
+    const legalMoves = new LegalMoves();
+
+    const forcedPriority = hasForcedMoves
+        ? ForcedMovePriority.EN_PASSANT
+        : ForcedMovePriority.NONE;
     for (const piece of pieces) {
-        map.set(pointToStr(piece.position), [
-            createFakeMove({ from: piece.position }),
-            createFakeMove({ from: piece.position }),
-        ]);
+        legalMoves.addMove(
+            createFakeMove({
+                from: piece.position,
+                forcedPriority,
+            }),
+        );
+        legalMoves.addMove(
+            createFakeMove({
+                from: piece.position,
+                forcedPriority,
+            }),
+        );
     }
-    return new LegalMoves(map, hasForcedMoves);
-}
 
-export function createFakeLegalMovesFromMoves({
-    moves,
-    hasForcedMoves,
-}: { moves?: Move[]; hasForcedMoves?: boolean } = {}): LegalMoves {
-    moves ??= [];
-
-    const map = new Map<StrPoint, Move[]>();
-    for (const move of moves) {
-        map.set(pointToStr(move.from), [move]);
-    }
-    return new LegalMoves(map, hasForcedMoves);
+    return legalMoves;
 }

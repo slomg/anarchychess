@@ -14,13 +14,10 @@ public class BishopDefinition : IPieceDefinition
             priority: ForcedMovePriority.UnderagePawn,
             predicate: (board, move) =>
                 move.Captures.Any(c => c.CapturedPiece.Type == PieceType.UnderagePawn),
-            CaptureRule.WithFriendlyFire(
-                allowFriendlyFireWhen: (board, piece) => piece.Type == PieceType.UnderagePawn,
-                new SlideBehaviour(new Offset(X: 1, Y: 1)),
-                new SlideBehaviour(new Offset(X: 1, Y: -1)),
-                new SlideBehaviour(new Offset(X: -1, Y: 1)),
-                new SlideBehaviour(new Offset(X: -1, Y: -1))
-            ),
+            CreateBouncingRule(new Offset(X: 1, Y: 1)),
+            CreateBouncingRule(new Offset(X: 1, Y: -1)),
+            CreateBouncingRule(new Offset(X: -1, Y: -1)),
+            CreateBouncingRule(new Offset(X: -1, Y: 1)),
             new IlVaticanoRule(new Offset(-1, 0)),
             new IlVaticanoRule(new Offset(1, 0)),
             new IlVaticanoRule(new Offset(0, -1)),
@@ -33,4 +30,15 @@ public class BishopDefinition : IPieceDefinition
         AlgebraicPoint position,
         Piece movingPiece
     ) => _behaviours;
+
+    private static BouncingRule CreateBouncingRule(Offset initialOffset) =>
+        new(
+            initialOffset,
+            ruleCreator: (board, newOffset) =>
+                CaptureRule.WithFriendlyFire(
+                    allowFriendlyFireWhen: (board, piece) => piece.Type == PieceType.UnderagePawn,
+                    new SlideBehaviour(newOffset)
+                ),
+            stopBouncingPredicate: (board, move) => !board.IsEmpty(move.To)
+        );
 }

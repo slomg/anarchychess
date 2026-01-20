@@ -84,7 +84,7 @@ export function createPiecesSlice(
             const legalMoves = getViewedPositionLegalMoves();
             return (
                 pointEquals(piece.position, dest) &&
-                legalMoves.hasMovesFromTo(piece.position, dest)
+                legalMoves.hasMovesDirectlyFromTo(piece.position, dest)
             );
         }
 

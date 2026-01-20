@@ -1,3 +1,4 @@
+import { waitFor } from "@testing-library/react";
 import { StoreApi } from "zustand";
 
 import {
@@ -7,9 +8,8 @@ import {
 } from "@/lib/testUtils/fakers/chessboardFakers";
 
 import { ChessboardStore, createChessboardStore } from "../chessboardStore";
-import { logicalPoint, pointToStr } from "@/features/point/pointUtils";
 import { IntermediateSquare, Piece } from "../../lib/types";
-import { waitFor } from "@testing-library/react";
+import { logicalPoint } from "@/features/point/pointUtils";
 import BoardPieces from "../../lib/boardPieces";
 import LegalMoves from "../../lib/legalMoves";
 import { PieceType } from "@/lib/apiClient";
@@ -50,7 +50,7 @@ describe("UiLegalMovesSlice", () => {
                 from: origin,
                 to: logicalPoint({ x: 2, y: 2 }),
             });
-            const legalMoves = new LegalMoves([[pointToStr(origin), [move]]]);
+            const legalMoves = new LegalMoves([move]);
             const { setLatestLegalMoves, getLegalMove } = store.getState();
             setLatestLegalMoves(legalMoves);
 
@@ -65,7 +65,7 @@ describe("UiLegalMovesSlice", () => {
             const pieces = BoardPieces.fromPieces(piece);
 
             const move = createFakeMove({ from: origin, to: dest });
-            const legalMoves = new LegalMoves([[pointToStr(origin), [move]]]);
+            const legalMoves = new LegalMoves([move]);
             const { setLatestLegalMoves, getLegalMove } = store.getState();
             setLatestLegalMoves(legalMoves);
 
@@ -87,9 +87,7 @@ describe("UiLegalMovesSlice", () => {
             });
             const regularMove = createFakeMove({ from: origin, to: dest });
 
-            const legalMoves = new LegalMoves([
-                [pointToStr(origin), [triggerMove, regularMove]],
-            ]);
+            const legalMoves = new LegalMoves([triggerMove, regularMove]);
 
             const { setLatestLegalMoves, getLegalMove } = store.getState();
             setLatestLegalMoves(legalMoves);
@@ -110,9 +108,7 @@ describe("UiLegalMovesSlice", () => {
                 to: dest,
                 triggers: [trigger],
             });
-            const legalMoves = new LegalMoves([
-                [pointToStr(origin), [triggerMove]],
-            ]);
+            const legalMoves = new LegalMoves([triggerMove]);
             const { setLatestLegalMoves, getLegalMove } = store.getState();
             setLatestLegalMoves(legalMoves);
 
@@ -137,9 +133,7 @@ describe("UiLegalMovesSlice", () => {
                 promotesTo: PieceType.ROOK,
             });
 
-            const legalMoves = new LegalMoves([
-                [pointToStr(origin), [queenMove, rookMove]],
-            ]);
+            const legalMoves = new LegalMoves([queenMove, rookMove]);
 
             const { setLatestLegalMoves, getLegalMove } = store.getState();
             store.setState({
@@ -180,9 +174,7 @@ describe("UiLegalMovesSlice", () => {
                 triggers: [],
             });
 
-            const legalMoves = new LegalMoves([
-                [pointToStr(piece.position), [move1, move2]],
-            ]);
+            const legalMoves = new LegalMoves([move1, move2]);
 
             const { setLatestLegalMoves, highlightLegalMoves } =
                 store.getState();
@@ -210,9 +202,7 @@ describe("UiLegalMovesSlice", () => {
                 intermediates: [intermediate],
             });
 
-            const legalMoves = new LegalMoves([
-                [pointToStr(piece.position), [move]],
-            ]);
+            const legalMoves = new LegalMoves([move]);
 
             const { setLatestLegalMoves, highlightLegalMoves } =
                 store.getState();

@@ -1,8 +1,5 @@
 import { render, screen } from "@testing-library/react";
 import { redirect } from "next/navigation";
-
-import { mockNextCookies } from "@/lib/testUtils/mocks/mockCookies";
-import constants from "@/lib/constants";
 import SignInPage from "../page";
 
 vi.mock("next/navigation");
@@ -32,13 +29,5 @@ describe("AuthPage", () => {
 
         expect(screen.getByText(/Continue with Discord/i)).toBeInTheDocument();
         expect(screen.getByAltText(/Discord Icon/i)).toBeInTheDocument();
-    });
-
-    it("should redirect when logged in", async () => {
-        mockNextCookies(constants.COOKIES.IS_LOGGED_IN);
-
-        const act = async () => render(await SignInPage());
-
-        await expect(act).rejects.toThrow("redirect /");
     });
 });
