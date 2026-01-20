@@ -6,15 +6,16 @@ import {
     createFakePiece,
 } from "@/lib/testUtils/fakers/chessboardFakers";
 import {
-    logicalPoint,
-    pointToStr,
-    screenPoint,
-} from "@/features/point/pointUtils";
+    ForcedMovePriority,
+    GameColor,
+    PieceType,
+    SpecialMoveType,
+} from "@/lib/apiClient";
 
 import { ChessboardStore, createChessboardStore } from "../chessboardStore";
 import { AnimationStep, IntermediateSquare, Move } from "../../lib/types";
 import { createFakePosition } from "@/lib/testUtils/fakers/positionFaker";
-import { GameColor, PieceType, SpecialMoveType } from "@/lib/apiClient";
+import { logicalPoint, screenPoint } from "@/features/point/pointUtils";
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
 import flushMicrotasks from "@/lib/testUtils/flushMicrotasks";
 import { LogicalPoint } from "@/features/point/types";
@@ -265,9 +266,7 @@ describe("PiecesSlice", () => {
                 });
 
                 const pieces = BoardPieces.fromPieces(piece);
-                const legalMoves = new LegalMoves([
-                    [pointToStr(piece.position), [move]],
-                ]);
+                const legalMoves = new LegalMoves([move]);
 
                 const {
                     handleMousePieceDrop,
@@ -311,9 +310,7 @@ describe("PiecesSlice", () => {
             });
 
             const pieces = BoardPieces.fromPieces(piece);
-            const legalMoves = new LegalMoves([
-                [pointToStr(piece.position), [move]],
-            ]);
+            const legalMoves = new LegalMoves([move]);
 
             const { handleMousePieceDrop, setLatestLegalMoves } =
                 store.getState();
@@ -344,9 +341,7 @@ describe("PiecesSlice", () => {
             });
 
             const pieces = BoardPieces.fromPieces(piece);
-            const legalMoves = new LegalMoves([
-                [pointToStr(piece.position), [move]],
-            ]);
+            const legalMoves = new LegalMoves([move]);
 
             const { handleMousePieceDrop, setLatestLegalMoves } =
                 store.getState();
@@ -395,7 +390,13 @@ describe("PiecesSlice", () => {
                 pieces,
                 flashLegalMoves: flashLegalMovesMock,
             });
-            setLatestLegalMoves(new LegalMoves([], true));
+            setLatestLegalMoves(
+                new LegalMoves([
+                    createFakeMove({
+                        forcedPriority: ForcedMovePriority.EN_PASSANT,
+                    }),
+                ]),
+            );
 
             const result = await handleMousePieceDrop({
                 mousePoint: screenPoint({ x: 10, y: 10 }),
@@ -419,7 +420,13 @@ describe("PiecesSlice", () => {
                 pieces,
                 flashLegalMoves: flashLegalMovesMock,
             });
-            setLatestLegalMoves(new LegalMoves([], true));
+            setLatestLegalMoves(
+                new LegalMoves([
+                    createFakeMove({
+                        forcedPriority: ForcedMovePriority.EN_PASSANT,
+                    }),
+                ]),
+            );
 
             const result = await handleMousePieceDrop({
                 mousePoint: screenPoint({ x: 10, y: 10 }),
@@ -459,9 +466,7 @@ describe("PiecesSlice", () => {
                 from: piece.position,
                 to: piece.position,
             });
-            const legalMoves = new LegalMoves([
-                [pointToStr(piece.position), [move]],
-            ]);
+            const legalMoves = new LegalMoves([move]);
 
             const { handleMousePieceDrop, setLatestLegalMoves } =
                 store.getState();
@@ -489,9 +494,7 @@ describe("PiecesSlice", () => {
                 from: piece.position,
                 to: logicalPoint({ x: 1, y: 1 }),
             });
-            const legalMoves = new LegalMoves([
-                [pointToStr(piece.position), [move]],
-            ]);
+            const legalMoves = new LegalMoves([move]);
 
             const { handleMousePieceDrop, setLatestLegalMoves } =
                 store.getState();

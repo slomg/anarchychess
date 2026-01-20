@@ -10,6 +10,7 @@ import ChessboardStoreContext from "../../contexts/chessboardStoreContext";
 import EmphasizedSquaresRenderer from "../EmphasizedSquare";
 import { logicalPoint } from "@/features/point/pointUtils";
 import LegalMoves from "../../lib/legalMoves";
+import { createFakeMove } from "@/lib/testUtils/fakers/chessboardFakers";
 
 describe("EmphasizedSquaresRenderer", () => {
     let store: StoreApi<ChessboardStore>;
@@ -24,7 +25,13 @@ describe("EmphasizedSquaresRenderer", () => {
             logicalPoint({ x: 3, y: 4 }),
         ];
 
-        const legalMoves = new LegalMoves([], false, squares);
+        const legalMoves = new LegalMoves();
+        for (const square of squares) {
+            legalMoves.addMove(
+                createFakeMove({ from: square, emphasizeSquare: true }),
+            );
+        }
+
         store.setState({
             getViewedPositionLegalMoves: () => legalMoves,
         });

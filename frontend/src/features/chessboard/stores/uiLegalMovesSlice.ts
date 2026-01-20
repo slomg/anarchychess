@@ -1,14 +1,15 @@
-import { LogicalPoint } from "@/features/point/types";
-import { PieceID } from "../lib/types";
-import { Move } from "../lib/types";
-import { StrPoint } from "@/features/point/types";
-import { Piece } from "../lib/types";
 import { StateCreator } from "zustand";
-import { ChessboardStore } from "./chessboardStore";
+
 import { pointToStr } from "@/features/point/pointUtils";
-import { PieceType } from "@/lib/apiClient";
+import { LogicalPoint } from "@/features/point/types";
+import { ChessboardStore } from "./chessboardStore";
+import { StrPoint } from "@/features/point/types";
 import BoardPieces from "../lib/boardPieces";
 import { PositionId } from "../lib/position";
+import { PieceType } from "@/lib/apiClient";
+import { PieceID } from "../lib/types";
+import { Piece } from "../lib/types";
+import { Move } from "../lib/types";
 
 export interface UiLegalMovesSliceProps {
     hideLegalMoves?: boolean;
@@ -59,7 +60,7 @@ export function createUiLegalMovesSlice(
         async getLegalMove(dest, pieceId, pieces) {
             const {
                 getViewedPositionLegalMoves,
-                disambiguateDestination,
+                disambiguateIntermediates,
                 promptPromotion,
             } = get();
 
@@ -72,12 +73,12 @@ export function createUiLegalMovesSlice(
             }
 
             const legalMoves = getViewedPositionLegalMoves();
-            const movesFromOrigin = legalMoves.get(piece.position);
-            if (!movesFromOrigin) return null;
+            const moveNode = legalMoves.getDirectNode(piece.position, dest);
+            if (!moveNode) return null;
 
-            const movesToDest = await disambiguateDestination(
+            const movesToDest = await disambiguateIntermediates(
                 dest,
-                movesFromOrigin,
+                moveNode,
                 pieceId,
                 pieces,
             );
@@ -103,22 +104,25 @@ export function createUiLegalMovesSlice(
             const { getViewedPositionLegalMoves } = get();
 
             const legalMoves = getViewedPositionLegalMoves();
-            const moves = legalMoves.get(piece.position) ?? [];
+            const moveNodes = legalMoves.getFromOrigin(piece.position);
 
             const toHighlightPoints = new Map<StrPoint, LogicalPoint>();
-            for (const move of moves) {
-                if (move.intermediates.length != 0) {
-                    toHighlightPoints.set(
-                        pointToStr(move.intermediates[0].position),
-                        move.intermediates[0].position,
-                    );
-                    continue;
+            for (const moveNode of moveNodes) {
+                for (const move of moveNode.terminalMoves) {
+                    for (const trigger of move.triggers) {
+                        toHighlightPoints.set(pointToStr(trigger), trigger);
+                    }
+
+                    if (move.intermediates.length != 0) {
+                        toHighlightPoints.set(
+                            pointToStr(move.intermediates[0].position),
+                            move.intermediates[0].position,
+                        );
+                        continue;
+                    }
                 }
 
-                for (const trigger of move.triggers) {
-                    toHighlightPoints.set(pointToStr(trigger), trigger);
-                }
-                toHighlightPoints.set(pointToStr(move.to), move.to);
+                toHighlightPoints.set(pointToStr(moveNode.at), moveNode.at);
             }
 
             set((state) => {
@@ -126,7 +130,7 @@ export function createUiLegalMovesSlice(
                     toHighlightPoints.values(),
                 );
             });
-            return moves.length > 0;
+            return toHighlightPoints.size > 0;
         },
 
         unhighlightLegalMoves() {
@@ -143,13 +147,13 @@ export function createUiLegalMovesSlice(
             } = get();
 
             const legalMoves = getViewedPositionLegalMoves();
-            for (const movesPerPoint of legalMoves) {
-                for (const move of movesPerPoint) {
-                    const from = logicalPointToViewPoint(move.from);
-                    const to = logicalPointToViewPoint(move.to);
+            for (const from of legalMoves.byOrigin.values()) {
+                for (const nodes of from.values()) {
+                    const from = logicalPointToViewPoint(nodes.from);
+                    const to = logicalPointToViewPoint(nodes.at);
                     flashOverlay({
-                        from: from,
-                        to: to,
+                        from,
+                        to,
                         color: "red",
                     });
                 }

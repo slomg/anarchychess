@@ -2,11 +2,11 @@ import brotliDecompress from "brotli/decompress";
 
 import {
     IntermediateSquare,
+    Move,
     MoveKey,
     MoveSideEffect,
     Piece,
 } from "@/features/chessboard/lib/types";
-import { Move } from "@/features/chessboard/lib/types";
 import {
     ForcedMovePriority,
     IntermediateSquarePath,
@@ -15,10 +15,10 @@ import {
     PieceSpawnPath,
     SpecialMoveType,
 } from "@/lib/apiClient";
-import { idxToLogicalPoint, pointToStr } from "@/features/point/pointUtils";
+
+import { idxToLogicalPoint } from "@/features/point/pointUtils";
 import { createPieceId } from "@/features/chessboard/lib/pieceUtils";
 import LegalMoves from "@/features/chessboard/lib/legalMoves";
-import { LogicalPoint, StrPoint } from "@/features/point/types";
 
 export function decodeMovePathIntoLegalMoves({
     paths,
@@ -27,26 +27,13 @@ export function decodeMovePathIntoLegalMoves({
     paths: MovePath[];
     boardWidth: number;
 }): LegalMoves {
-    const moves = new Map<StrPoint, Move[]>();
-    const emphasizedSquares: LogicalPoint[] = [];
-    let hasForcedMoves = false;
+    const legalMoves = new LegalMoves();
     for (const path of paths) {
         const move = decodeMovePath(path, boardWidth);
-        if (move.forcedPriority != ForcedMovePriority.NONE) {
-            hasForcedMoves = true;
-        }
-        if (move.emphasizeSquare) {
-            emphasizedSquares.push(move.from);
-        }
-
-        const fromString = pointToStr(move.from);
-        const movesFromPoint = moves.get(fromString) ?? [];
-        movesFromPoint.push(move);
-
-        moves.set(pointToStr(move.from), movesFromPoint);
+        legalMoves.addMove(move);
     }
 
-    return new LegalMoves(moves, hasForcedMoves, emphasizedSquares);
+    return legalMoves;
 }
 
 export function decodeMovePath(path: MovePath, boardWidth: number): Move {

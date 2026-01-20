@@ -7,12 +7,12 @@ import {
     PieceType,
     SpecialMoveType,
 } from "@/lib/apiClient";
+
 import { decodeLegalMoves, decodeMovePathIntoLegalMoves } from "../moveDecoder";
-import { Move, MoveKey } from "@/features/chessboard/lib/types";
-import { logicalPoint } from "@/features/point/pointUtils";
 import mockSequentialUUID from "@/lib/testUtils/mocks/mockUuids";
+import { Move, MoveKey } from "@/features/chessboard/lib/types";
 import LegalMoves from "@/features/chessboard/lib/legalMoves";
-import { createFakeMovePath } from "@/lib/testUtils/fakers/movePathFaker";
+import { logicalPoint } from "@/features/point/pointUtils";
 
 vi.mock("brotli/compress");
 
@@ -29,6 +29,8 @@ const emptyMove = {
 };
 
 describe("decodeMovePathIntoLegalMoves", () => {
+    const addMoveSpy = vi.spyOn(LegalMoves.prototype, "addMove");
+
     it("should decode single path into correct LegalMoveMap entry", () => {
         const paths: MovePath[] = [
             {
@@ -54,18 +56,12 @@ describe("decodeMovePathIntoLegalMoves", () => {
         ];
 
         mockSequentialUUID();
-        const result = decodeMovePathIntoLegalMoves({
+        decodeMovePathIntoLegalMoves({
             paths,
             boardWidth: 10,
         });
 
-        expect(result.size).toBe(1);
-        const moves = result.get(logicalPoint({ x: 0, y: 0 }));
-        expect(moves).toBeDefined();
-        expect(moves).toHaveLength(1);
-
-        const move = moves![0];
-        expect(move).toEqual<Move>({
+        expect(addMoveSpy).toHaveBeenCalledExactlyOnceWith<[Move]>({
             from: logicalPoint({ x: 0, y: 0 }),
             to: logicalPoint({ x: 1, y: 0 }),
             moveKey: "2" as MoveKey,
@@ -102,27 +98,24 @@ describe("decodeMovePathIntoLegalMoves", () => {
         ];
         const boardWidth = 10;
 
-        const result = decodeMovePathIntoLegalMoves({
+        decodeMovePathIntoLegalMoves({
             paths,
             boardWidth,
         });
 
-        expect(result.size).toBe(1);
-        const moves = result.get(logicalPoint({ x: 0, y: 0 }));
-        expect(moves).toEqual([
-            {
-                ...emptyMove,
-                from: { x: 0, y: 0 },
-                to: { x: 1, y: 0 },
-                moveKey: "2",
-            },
-            {
-                ...emptyMove,
-                from: { x: 0, y: 0 },
-                to: { x: 2, y: 0 },
-                moveKey: "3",
-            },
-        ]);
+        expect(addMoveSpy).toBeCalledTimes(2);
+        expect(addMoveSpy).toHaveBeenCalledWith<Move[]>({
+            ...emptyMove,
+            from: logicalPoint({ x: 0, y: 0 }),
+            to: logicalPoint({ x: 1, y: 0 }),
+            moveKey: "2" as MoveKey,
+        });
+        expect(addMoveSpy).toHaveBeenCalledWith<Move[]>({
+            ...emptyMove,
+            from: logicalPoint({ x: 0, y: 0 }),
+            to: logicalPoint({ x: 2, y: 0 }),
+            moveKey: "3" as MoveKey,
+        });
     });
 
     it("should return empty map when paths is empty", () => {
@@ -132,43 +125,11 @@ describe("decodeMovePathIntoLegalMoves", () => {
         });
         expect(result).toEqual(new LegalMoves());
     });
-
-    it("should set hasForcedMoves when at least one move has forcedPriority", () => {
-        const paths: MovePath[] = [
-            createFakeMovePath({ forcedPriority: ForcedMovePriority.NONE }),
-            createFakeMovePath({
-                forcedPriority: ForcedMovePriority.UNDERAGE_PAWN,
-            }),
-        ];
-
-        const result = decodeMovePathIntoLegalMoves({
-            paths,
-            boardWidth: 10,
-        });
-
-        expect(result.hasForcedMoves).toBe(true);
-    });
-
-    it("should collect emphasizedSquares from moves with emphasizeSquare = true", () => {
-        const paths: MovePath[] = [
-            createFakeMovePath({ fromIdx: 0, emphasizeSquare: true }),
-            createFakeMovePath({ fromIdx: 2, emphasizeSquare: false }),
-            createFakeMovePath({ fromIdx: 4, emphasizeSquare: true }),
-        ];
-
-        const result = decodeMovePathIntoLegalMoves({
-            paths,
-            boardWidth: 10,
-        });
-
-        expect(result.emphasizedSquares).toEqual([
-            logicalPoint({ x: 0, y: 0 }),
-            logicalPoint({ x: 4, y: 0 }),
-        ]);
-    });
 });
 
 describe("decodeLegalMoves", () => {
+    const addMoveSpy = vi.spyOn(LegalMoves.prototype, "addMove");
+
     it("should decode a valid base64 gzipped encoded move string", () => {
         const moves: MovePath[] = [
             {
@@ -199,53 +160,49 @@ describe("decodeLegalMoves", () => {
         const encoded = Buffer.from(compressed).toString("base64");
 
         mockSequentialUUID();
-        const result = decodeLegalMoves({
+        decodeLegalMoves({
             encoded,
             boardWidth: 10,
         });
 
-        expect(result.size).toBe(2);
-        expect(result.get(logicalPoint({ x: 0, y: 0 }))).toEqual<Move[]>([
-            {
-                from: logicalPoint({ x: 0, y: 0 }),
-                to: logicalPoint({ x: 1, y: 0 }),
-                moveKey: "1" as MoveKey,
-                triggers: [logicalPoint({ x: 2, y: 0 })],
-                captures: [logicalPoint({ x: 3, y: 0 })],
-                intermediates: [
-                    {
-                        position: logicalPoint({ x: 4, y: 0 }),
-                        isCapture: false,
-                    },
-                ],
-                sideEffects: [
-                    {
-                        from: logicalPoint({ x: 5, y: 0 }),
-                        to: logicalPoint({ x: 6, y: 0 }),
-                    },
-                ],
-                pieceSpawns: [
-                    {
-                        id: "0",
-                        type: PieceType.CHECKER,
-                        color: GameColor.BLACK,
-                        position: logicalPoint({ x: 7, y: 0 }),
-                    },
-                ],
-                promotesTo: null,
-                specialType: SpecialMoveType.NONE,
-                forcedPriority: ForcedMovePriority.NONE,
-                emphasizeSquare: false,
-            },
-        ]);
-        expect(result.get(logicalPoint({ x: 0, y: 1 }))).toEqual<Move[]>([
-            {
-                from: logicalPoint({ x: 0, y: 1 }),
-                to: logicalPoint({ x: 1, y: 1 }),
-                moveKey: "5" as MoveKey,
-                ...emptyMove,
-            },
-        ]);
+        expect(addMoveSpy).toHaveBeenCalledTimes(2);
+        expect(addMoveSpy).toHaveBeenCalledWith<[Move]>({
+            from: logicalPoint({ x: 0, y: 0 }),
+            to: logicalPoint({ x: 1, y: 0 }),
+            moveKey: "1" as MoveKey,
+            triggers: [logicalPoint({ x: 2, y: 0 })],
+            captures: [logicalPoint({ x: 3, y: 0 })],
+            intermediates: [
+                {
+                    position: logicalPoint({ x: 4, y: 0 }),
+                    isCapture: false,
+                },
+            ],
+            sideEffects: [
+                {
+                    from: logicalPoint({ x: 5, y: 0 }),
+                    to: logicalPoint({ x: 6, y: 0 }),
+                },
+            ],
+            pieceSpawns: [
+                {
+                    id: "0",
+                    type: PieceType.CHECKER,
+                    color: GameColor.BLACK,
+                    position: logicalPoint({ x: 7, y: 0 }),
+                },
+            ],
+            promotesTo: null,
+            specialType: SpecialMoveType.NONE,
+            forcedPriority: ForcedMovePriority.NONE,
+            emphasizeSquare: false,
+        });
+        expect(addMoveSpy).toHaveBeenCalledWith<[Move]>({
+            from: logicalPoint({ x: 0, y: 1 }),
+            to: logicalPoint({ x: 1, y: 1 }),
+            moveKey: "5" as MoveKey,
+            ...emptyMove,
+        });
     });
 
     it("should return empty map when given encoded empty move list", () => {
@@ -264,6 +221,6 @@ describe("decodeLegalMoves", () => {
             encoded: "",
             boardWidth: 10,
         });
-        expect(result).toEqual(new LegalMoves([], false));
+        expect(result).toEqual(new LegalMoves());
     });
 });

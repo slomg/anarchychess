@@ -126,7 +126,7 @@ describe("useEnsureLegalMovesForViewedPosition", () => {
         expect(getNextLegalMovesMock).not.toHaveBeenCalled();
         expect(reselectPieceMock).not.toHaveBeenCalledOnce();
         expect(
-            chessboardStore.getState().getViewedPositionLegalMoves().size,
-        ).toBe(0);
+            chessboardStore.getState().getViewedPositionLegalMoves(),
+        ).toEqual(new LegalMoves());
     });
 });
