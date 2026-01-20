@@ -51,6 +51,10 @@ const PATHS = {
     REDDIT: "https://reddit.com/user/Slim_Bun",
 };
 
+const DISALLOW_AUTH_PATHS: ReadonlySet<string> = new Set<string>([
+    PATHS.SIGNIN,
+]);
+
 const LOCALSTORAGE = {
     PREFERS_MATCHMAKING_POOL: "prefersMatchmakingPool",
     PREFERS_CHALLENGE_POOL: "prefersChallengePool",
@@ -268,6 +272,7 @@ const constants = {
     OPEN_SEEK_RESUBSCRIBE_INTERAVAL_MS,
     COOKIES,
     PATHS,
+    DISALLOW_AUTH_PATHS,
     LOCALSTORAGE,
     ALLOW_ABORTION_UNTIL_MOVE,
     INITIAL_FEN,
