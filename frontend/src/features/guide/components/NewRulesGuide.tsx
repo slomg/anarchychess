@@ -1,6 +1,9 @@
 import verticalcastling1 from "@public/assets/examples/verticalcastling1.png";
 import verticalcastling2 from "@public/assets/examples/verticalcastling2.png";
 import verticalcastling3 from "@public/assets/examples/verticalcastling3.png";
+import bouncingbishop1 from "@public/assets/examples/bouncingbishop1.png";
+import bouncingbishop2 from "@public/assets/examples/bouncingbishop2.png";
+import bouncingbishop3 from "@public/assets/examples/bouncingbishop3.png";
 import ilvaticano1 from "@public/assets/examples/ilvaticano1.png";
 import ilvaticano2 from "@public/assets/examples/ilvaticano2.png";
 import longpassant1 from "@public/assets/examples/longpassant1.png";
@@ -74,6 +77,18 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
                     "If the chain ends on the back rank, your pawn promotes as normal.",
                 ]}
                 images={[longpassant1, longpassant2, longpassant3]}
+            />
+
+            <GuideCard
+                title="Bouncing Bishop"
+                points={[
+                    "You can bounce your bishop off the edge of the board.",
+                    "You may bounce multiple times in a single move.",
+                    "To bounce, first click your bishop, then click on the edge of the board you want to bounce off of, then you will be able to choose your bouncing path. Repeat this for multiple bounces.",
+                    "You cannot bounce off other pieces.",
+                    "If your bishop is able to capture an Underage Pawn through bouncing, it still must do so.",
+                ]}
+                images={[bouncingbishop1, bouncingbishop2, bouncingbishop3]}
             />
 
             <GuideCard
