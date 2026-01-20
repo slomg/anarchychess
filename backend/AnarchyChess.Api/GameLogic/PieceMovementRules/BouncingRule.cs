@@ -44,7 +44,7 @@ public class BouncingRule(
         Piece movingPiece,
         HashSet<AlgebraicPoint> visited,
         HashSet<IntermediateSquare> intermediates,
-        HashSet<MoveCapture> captured,
+        List<MoveCapture> captured,
         Offset currentOffset
     )
     {
@@ -72,15 +72,6 @@ public class BouncingRule(
             yield break;
         }
 
-        intermediates =
-        [
-            .. intermediates,
-            new IntermediateSquare(
-                lastMove.To,
-                IsCapture: lastMove.Captures.Count > captured.Count
-            ),
-        ];
-        captured = [.. captured, .. lastMove.Captures];
         currentPosition = lastMove.To;
         if (currentPosition.X >= board.Width - 1 || currentPosition.X <= 0)
         {
@@ -95,15 +86,19 @@ public class BouncingRule(
             yield break;
         }
 
+        IntermediateSquare intermediate = new(
+            lastMove.To,
+            IsCapture: lastMove.Captures.Count > captured.Count
+        );
         foreach (
             var move in FindBounces(
                 board,
                 originPosition,
                 currentPosition,
                 movingPiece,
-                visited,
-                intermediates,
-                captured,
+                visited: [.. visited],
+                intermediates: [.. intermediates, intermediate],
+                captured: [.. captured, .. lastMove.Captures],
                 currentOffset
             )
         )
