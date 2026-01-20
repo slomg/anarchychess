@@ -28,14 +28,6 @@ public abstract class PieceDefinitionTestBase : BaseIntegrationTest
             .CalculateLegalMovesForPiece(board, testCase.Origin)
             .ToList();
 
-        result.Sort(
-            (a, b) =>
-                (a.From.X, a.From.Y, a.To.X, a.To.Y).CompareTo((b.From.X, b.From.Y, b.To.X, b.To.Y))
-        );
-        testCase.ExpectedMoves.Sort(
-            (a, b) =>
-                (a.From.X, a.From.Y, a.To.X, a.To.Y).CompareTo((b.From.X, b.From.Y, b.To.X, b.To.Y))
-        );
         result.Should().BeEquivalentTo(testCase.ExpectedMoves);
     }
 }
