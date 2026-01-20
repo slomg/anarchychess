@@ -17,16 +17,22 @@ public class SlideBehaviour(Offset offset, int? max = null) : IMovementBehaviour
         while (true)
         {
             if (_max is not null && steps >= _max)
+            {
                 yield break;
+            }
 
             position += _offset;
             if (!board.IsWithinBoundaries(position))
+            {
                 yield break;
+            }
 
             yield return position;
 
             if (!board.IsEmpty(position))
+            {
                 yield break;
+            }
 
             steps++;
         }
