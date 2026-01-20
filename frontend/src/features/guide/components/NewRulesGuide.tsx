@@ -83,7 +83,7 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
                 title="Bouncing Bishop"
                 points={[
                     "You can bounce your bishop off the edge of the board.",
-                    "You may chain bounces multiple times in a single move.",
+                    "You may chain multiple bounces in a single move.",
                     "To bounce, first click your bishop, then click on the edge of the board you want to bounce off of, then you will be able to choose your bouncing path. Repeat this for multiple bounces.",
                     "You cannot bounce off other pieces.",
                     "If your bishop is able to capture an Underage Pawn through bouncing, it still must do so.",
