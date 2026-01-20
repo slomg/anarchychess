@@ -59,11 +59,12 @@ public class BouncingRule(
             }
             visited.Add(currentPosition);
 
+            List<MoveCapture> newCaptures = [.. move.Captures, .. captured];
             lastMove = move with
             {
                 From = originPosition,
                 IntermediateSquares = intermediates,
-                Captures = [.. captured, .. move.Captures],
+                Captures = newCaptures,
             };
             yield return lastMove;
         }
@@ -96,7 +97,7 @@ public class BouncingRule(
                 originPosition,
                 currentPosition,
                 movingPiece,
-                visited: [.. visited],
+                visited: visited,
                 intermediates: [.. intermediates, intermediate],
                 captured: [.. captured, .. lastMove.Captures],
                 currentOffset
