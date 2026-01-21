@@ -1,5 +1,6 @@
 [
     {
+        "_comment": "castle self bishop capture",
         "startingFen": "r1nbqkbcar/pppdp1dppp/2h7/10/5p3+/+4P4/10/7A2/PPPDP1DPPP/RHNBQKBC1R",
         "moves": [
             {
@@ -21,6 +22,7 @@
         ]
     },
     {
+        "_comment": "checker jumps and king promotion",
         "startingFen": "r1nb1r2k1/ppp2a2pp/2hd1c1p2/6dq2/4pp3+/+6b2/4P3C1/2HN1P1A1P/PPPDBBDPP1/R3QK3R",
         "moves": [
             {
@@ -44,6 +46,7 @@
         ]
     },
     {
+        "_comment": "long passant",
         "startingFen": "r1nbqkbcar/pp2ppdppp/h1p7/3d6/5P3+/+9/10/10/PPPDP1DPPP/RHNBQKBCAR",
         "moves": [
             {
@@ -64,6 +67,7 @@
         ]
     },
     {
+        "_comment": "il vaticano",
         "startingFen": "rhnbqkbcar/ppp4ppp/3d2d3/10/4ppB2+/+1B7/5P4/4P5/PPPD2DPPP/RHN1QK1CAR",
         "moves": [
             {
@@ -127,6 +131,7 @@
         ]
     },
     {
+        "_comment": "knooklear fusion",
         "startingFen": "r3q1r3/ppp1badkpp/2hn1c1p2/4p5/2b2p1H1+/+4P4/3BP1R1Q1/5C1A2/PPPDN1DPPP/R2B3K2",
         "moves": [
             {
@@ -159,6 +164,7 @@
         ]
     },
     {
+        "_comment": "omnipotent pawn",
         "startingFen": "1r8/2R7/3n1c3r/p4p4/1p2p5/6k3/3D1H4/2PK6/1P1N6/10",
         "moves": [
             {
@@ -195,6 +201,7 @@
         ]
     },
     {
+        "_comment": "vertical castling",
         "startingFen": "10/5P4/1b6b1/10/6q1qp/7pp1/10/R9/2k7/5K3R",
         "moves": [
             {
