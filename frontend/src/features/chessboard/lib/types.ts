@@ -72,6 +72,7 @@ export interface MoveAnimation {
 }
 
 export interface GameReplay {
+    _comment?: string;
     startingFen: string;
     moves: MinimalMove[];
 }
