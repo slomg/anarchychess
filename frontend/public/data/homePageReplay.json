@@ -95,6 +95,28 @@
         ]
     },
     {
+        "_comment": "bouncing bishop",
+        "startingFen": "10/4H5/10/p9/1p8/6b3/10/4k5/1K8/10",
+        "moves": [
+            {
+                "from": { "x": 4, "y": 8 },
+                "to": { "x": 2, "y": 7 }
+            },
+            {
+                "from": { "x": 6, "y": 4 },
+                "to": { "x": 1, "y": 1 },
+                "intermediates": [
+                    { "position": { "x": 9, "y": 7 }, "isCapture": false },
+                    { "position": { "x": 7, "y": 9 }, "isCapture": false },
+                    { "position": { "x": 0, "y": 2 }, "isCapture": false },
+                    { "position": { "x": 1, "y": 1 }, "isCapture": true }
+                ],
+                "captures": [{ "x": 1, "y": 1 }]
+            }
+        ]
+    },
+    {
+        "_comment": "queen beta decay",
         "startingFen": "rhnbqkbcar/pppdp1dppp/10/10/5p3+/+4P4/10/10/PPPDP1DPPP/RHNBQKBCAR",
         "moves": [
             { "from": { "x": 4, "y": 0 }, "to": { "x": 7, "y": 3 } },
