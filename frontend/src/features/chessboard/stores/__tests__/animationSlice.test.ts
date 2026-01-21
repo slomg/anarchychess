@@ -5,6 +5,7 @@ import { createFakePiece } from "@/lib/testUtils/fakers/chessboardFakers";
 import { logicalPoint } from "@/features/point/pointUtils";
 import BoardPieces from "../../lib/boardPieces";
 import flushMicrotasks from "@/lib/testUtils/flushMicrotasks";
+import constants from "@/lib/constants";
 
 describe("AnimationSlice", () => {
     let store: StoreApi<ChessboardStore>;
@@ -36,7 +37,7 @@ describe("AnimationSlice", () => {
                 new Set([piece.id]),
             );
 
-            vi.advanceTimersByTime(100);
+            vi.advanceTimersByTime(constants.PIECE_ANIMATION_LENGTH_MS);
             await promise;
 
             expect(store.getState().animatingPieces).toBeNull();
@@ -79,7 +80,7 @@ describe("AnimationSlice", () => {
                 secondAnimation.steps[0].newPieces,
             );
 
-            vi.advanceTimersByTime(100);
+            vi.advanceTimersByTime(constants.PIECE_ANIMATION_LENGTH_MS);
             await Promise.all([firstPromise, secondPromise]);
 
             expect(store.getState().animatingPieces).toBeNull();
@@ -106,7 +107,7 @@ describe("AnimationSlice", () => {
                 new Set([removedPiece.id]),
             );
 
-            vi.advanceTimersByTime(100);
+            vi.advanceTimersByTime(constants.PIECE_ANIMATION_LENGTH_MS);
             await promise;
 
             expect(store.getState().removingPieceIds).toEqual(new Set());
@@ -176,7 +177,9 @@ describe("AnimationSlice", () => {
                 playAudioForAnimationStepMock,
             ).toHaveBeenCalledExactlyOnceWith(animation.steps[0]);
 
-            vi.advanceTimersByTime(100);
+            vi.advanceTimersByTime(constants.PIECE_ANIMATION_LENGTH_MS);
+            await flushMicrotasks();
+            vi.advanceTimersByTime(constants.ANIMATION_STEP_DELAY_MS);
             await flushMicrotasks();
             expect(playAudioForAnimationStepMock).toHaveBeenCalledTimes(2);
             expect(playAudioForAnimationStepMock).toHaveBeenCalledWith(
@@ -223,11 +226,15 @@ describe("AnimationSlice", () => {
 
             expect(store.getState().lastMove).toEqual(moveBounds1);
 
-            vi.advanceTimersByTime(100);
+            vi.advanceTimersByTime(constants.PIECE_ANIMATION_LENGTH_MS);
+            await flushMicrotasks();
+            vi.advanceTimersByTime(constants.ANIMATION_STEP_DELAY_MS);
             await flushMicrotasks();
             expect(store.getState().lastMove).toEqual(null);
 
-            vi.advanceTimersByTime(100);
+            vi.advanceTimersByTime(constants.PIECE_ANIMATION_LENGTH_MS);
+            await flushMicrotasks();
+            vi.advanceTimersByTime(constants.ANIMATION_STEP_DELAY_MS);
             await flushMicrotasks();
             expect(store.getState().lastMove).toEqual(moveBounds3);
 
@@ -265,7 +272,7 @@ describe("AnimationSlice", () => {
                 new Set([piece.id]),
             );
 
-            vi.advanceTimersByTime(100);
+            vi.advanceTimersByTime(constants.PIECE_ANIMATION_LENGTH_MS);
             await promise;
 
             expect(store.getState().animatingPieces).toBeNull();

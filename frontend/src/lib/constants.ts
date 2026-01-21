@@ -246,6 +246,9 @@ const DEFAULT_CHESS_BOARD = BoardPieces.fromPieces(
     { position: logicalPoint({ x: 9, y: 9 }), type: PieceType.ROOK, color: GameColor.BLACK, id: "41", },
 );
 
+const ANIMATION_STEP_DELAY_MS = 30;
+const PIECE_ANIMATION_LENGTH_MS = 100;
+
 const QUEST_WEEKDAY_NAMES: Record<number, string> = {
     0: "Savage Sunday",
     1: "Mundane Monday",
@@ -281,5 +284,7 @@ const constants = {
     SIGNALR_PATHS,
     PAGINATION_PAGE_SIZE,
     QUEST_WEEKDAY_NAMES,
+    ANIMATION_STEP_DELAY_MS,
+    PIECE_ANIMATION_LENGTH_MS,
 } as const;
 export default constants;

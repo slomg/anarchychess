@@ -8,6 +8,7 @@ import {
 } from "../lib/types";
 import { LogicalPoint } from "@/features/point/types";
 import BoardPieces from "../lib/boardPieces";
+import constants from "@/lib/constants";
 
 export interface AnimationSliceProps {
     lastMove?: MoveBounds;
@@ -59,9 +60,10 @@ export function createAnimationSlice(
                 state.removingPieceIds = new Set(animation.removedPieceIds);
             });
 
-            for (const step of animation.steps) {
+            for (let i = 0; i < animation.steps.length; i++) {
                 if (cancelToken.canceled) break;
 
+                const step = animation.steps[i];
                 playAudioForAnimationStep(step);
                 if (step.initialSpawnPositions) {
                     await spawnPieces(step.initialSpawnPositions);
@@ -72,6 +74,15 @@ export function createAnimationSlice(
                     state.lastMove = step.moveBounds ?? null;
                 });
                 await markPiecesAsAnimating(step.movedPieceIds);
+
+                if (i < animation.steps.length - 1) {
+                    await new Promise<void>((resolve) =>
+                        setTimeout(
+                            () => resolve(),
+                            constants.ANIMATION_STEP_DELAY_MS,
+                        ),
+                    );
+                }
             }
 
             if (!cancelToken.canceled && !persistent) {
@@ -108,7 +119,7 @@ export function createAnimationSlice(
                             state.animatingPieceIds.delete(pieceId);
                     });
                     resolve();
-                }, 100),
+                }, constants.PIECE_ANIMATION_LENGTH_MS),
             );
         }
 
