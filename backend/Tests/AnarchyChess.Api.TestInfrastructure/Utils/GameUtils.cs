@@ -80,9 +80,7 @@ public static class GameUtils
             Pool = pool,
             InitialFen = gameCore.StartGame(coreState).FullFen,
             Core = coreState,
-            DrawRequest = new(),
             ClockState = clocks.Create(pool.TimeControl),
-            NotifierState = new(),
         };
     }
 

@@ -27,13 +27,14 @@ public class GameData
     public required GameCoreState Core { get; init; }
 
     [Id(7)]
-    public required DrawRequestState DrawRequest { get; init; }
+    public DrawRequestState DrawRequest { get; init; } = new();
 
     [Id(8)]
     public required GameClockState ClockState { get; init; }
 
     [Id(9)]
-    public required GameNotifierState NotifierState { get; init; }
+    public GameNotifierState NotifierState { get; init; } = new();
+
 
     [Id(10)]
     public GameResultData? Result { get; set; }

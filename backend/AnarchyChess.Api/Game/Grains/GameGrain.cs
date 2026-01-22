@@ -66,22 +66,15 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         CancellationToken token = default
     )
     {
-        PlayerRoster players = new(whitePlayer, blackPlayer);
         GameCoreState core = new();
-        DrawRequestState drawRequest = new();
-        GameNotifierState notifierState = new();
-        GameClockState clockState = _clock.Create(pool.TimeControl);
-
         _state.State.CurrentGame = new()
         {
-            Players = players,
+            Players = new(whitePlayer, blackPlayer),
             GameSource = gameSource,
             Pool = pool,
             InitialFen = _core.StartGame(core).FullFen,
             Core = core,
-            DrawRequest = drawRequest,
-            ClockState = clockState,
-            NotifierState = notifierState,
+            ClockState = _clock.Create(pool.TimeControl),
         };
 
         ScheduleTimeoutTimer(_state.State.CurrentGame);
