@@ -21,6 +21,8 @@ public interface IGameHubClient : IAnarchyChessHubClient
         ClockSnapshot clock
     );
 
+    Task ReceiveOvertimePositionsAsync(IEnumerable<OvertimePosition> overtimePositions);
+
     Task DrawStateChangeAsync(DrawState drawState);
     Task GameEndedAsync(GameResultData result, ClockSnapshot finalClocks);
 

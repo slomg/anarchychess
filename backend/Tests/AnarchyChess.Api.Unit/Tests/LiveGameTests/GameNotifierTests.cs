@@ -91,6 +91,23 @@ public class GameNotifierTests
     }
 
     [Fact]
+    public async Task NotifyOvertimePositionsAsync_sends_positions_and_increments_revision()
+    {
+        GameNotifierState state = new() { Revision = 0 };
+        List<OvertimePosition> positions =
+        [
+            new([1, 2, 3], new("a1")),
+            new([4, 5, 6], new("a2")),
+            new([7, 8, 9], new("a3")),
+        ];
+
+        await _notifier.NotifyOvertimePositionsAsync(_userId, positions, _gameToken, state);
+
+        await _clientUserGameGroupProxyMock.Received(1).ReceiveOvertimePositionsAsync(positions);
+        state.Revision.Should().Be(1);
+    }
+
+    [Fact]
     public async Task NotifyDrawStateChangeAsync_sends_draw_state_and_increments_revision()
     {
         GameNotifierState state = new() { Revision = 3 };

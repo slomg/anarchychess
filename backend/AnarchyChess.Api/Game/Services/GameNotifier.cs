@@ -23,6 +23,12 @@ public interface IGameNotifier
         GameNotifierState state
     );
     Task NotifyMoveMadeAsync(MoveNotification notification, GameNotifierState state);
+    Task NotifyOvertimePositionsAsync(
+        UserId userId,
+        IEnumerable<OvertimePosition> overtimePositions,
+        GameToken gameToken,
+        GameNotifierState state
+    );
 }
 
 public record MoveNotification(
@@ -72,6 +78,19 @@ public class GameNotifier(IHubContext<GameHub, IGameHubClient> hub) : IGameNotif
                 encodedLegalMoves: notification.EncodedLegalMoves,
                 clock: notification.Clocks
             );
+    }
+
+    public async Task NotifyOvertimePositionsAsync(
+        UserId userId,
+        IEnumerable<OvertimePosition> overtimePositions,
+        GameToken gameToken,
+        GameNotifierState state
+    )
+    {
+        state.Revision++;
+        await _hub
+            .Clients.Group(UserGameGroup(gameToken, userId))
+            .ReceiveOvertimePositionsAsync(overtimePositions);
     }
 
     public Task NotifyDrawStateChangeAsync(
