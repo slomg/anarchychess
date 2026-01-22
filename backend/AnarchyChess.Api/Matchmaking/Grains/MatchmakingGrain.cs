@@ -181,6 +181,7 @@ public class MatchmakingGrain<TPool> : Grain, IMatchmakingGrain<TPool>
         if (_state.State.Pool.SeekerCount == 0)
         {
             _waveTimer?.Dispose();
+            _waveTimer = null;
         }
     }
 
