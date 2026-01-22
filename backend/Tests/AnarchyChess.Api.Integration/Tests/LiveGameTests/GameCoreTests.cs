@@ -173,6 +173,16 @@ public class GameCoreTests : BaseIntegrationTest
         legalMoves.Should().NotBeEquivalentTo(new LegalMoveSet());
     }
 
+    [Fact]
+    public void GetChessBoard_returns_the_chessboard()
+    {
+        var state = StartGame();
+
+        var result = _gameCore.GetChessBoard(state);
+
+        result.Should().Be(state.Board);
+    }
+
     private MoveResult MakeMoves(GameCoreState state, params IEnumerable<MoveKey> moves)
     {
         MoveResult lastResult = default;
