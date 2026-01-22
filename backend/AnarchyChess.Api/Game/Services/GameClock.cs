@@ -168,9 +168,7 @@ public class GameClock(
 
         if (!clockPlayer.IsInGracePeriod)
         {
-            int increment = doIncrement ? state.TimeControl.IncrementSeconds * 1000 : 0;
-            clockPlayer.TimeLeftMs =
-                GetEffectiveTimeLeftMs(clockPlayer.TimeLeftMs, clockPlayer, state) + increment;
+            UpdateClock(clockPlayer, doIncrement, state);
         }
         clockPlayer.IsInGracePeriod = false;
         clockPlayer.TimeUntilAbandonMs = null;
@@ -178,5 +176,19 @@ public class GameClock(
         state.LastUpdatedMs = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
 
         return clockPlayer.TimeLeftMs;
+    }
+
+    private void UpdateClock(ClockPlayer clockPlayer, bool doIncrement, GameClockState state)
+    {
+        double timeLeft = GetEffectiveTimeLeftMs(clockPlayer.TimeLeftMs, clockPlayer, state);
+        if (timeLeft <= 10)
+        {
+            clockPlayer.TimeLeftMs = 0;
+            return;
+        }
+
+        int increment = doIncrement ? state.TimeControl.IncrementSeconds * 1000 : 0;
+        clockPlayer.TimeLeftMs =
+            GetEffectiveTimeLeftMs(clockPlayer.TimeLeftMs, clockPlayer, state) + increment;
     }
 }

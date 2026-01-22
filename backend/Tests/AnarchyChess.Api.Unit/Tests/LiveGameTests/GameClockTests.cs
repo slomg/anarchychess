@@ -258,6 +258,18 @@ public class GameClockTests
     }
 
     [Fact]
+    public void CommitTurn_does_not_apply_increment_after_timeout()
+    {
+        _state.Clocks[GameColor.White].TimeLeftMs = 5;
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(10));
+
+        var result = _clock.CommitTurn(GameColor.White, _state);
+
+        result.Should().Be(0);
+        _state.Clocks[GameColor.White].TimeLeftMs.Should().Be(0);
+    }
+
+    [Fact]
     public void CommitLastTurn_freezes_the_clock()
     {
         _clock.CommitLastTurn(GameColor.White, _state);
