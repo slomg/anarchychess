@@ -14,6 +14,7 @@ public interface IGameClock
     void CommitLastTurn(GameColor color, GameClockState state);
     double CommitTurn(GameColor color, GameClockState state);
     GameEndStatus? DetectTimeout(GameColor tickingPlayer, GameClockState state);
+    bool IsOvertime(GameColor player, bool isTicking, GameClockState state);
 }
 
 [GenerateSerializer]
