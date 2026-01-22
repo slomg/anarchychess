@@ -48,8 +48,6 @@ public class MatchmakingGrainState<TPool>
 public class MatchmakingGrain<TPool> : Grain, IMatchmakingGrain<TPool>
     where TPool : IMatchmakingPool, new()
 {
-    public const int WaveTimer = 0;
-    public const int TimeoutTimer = 1;
     public const string StateName = "matchmaking";
 
     private readonly PoolKey _poolKey;
@@ -61,6 +59,7 @@ public class MatchmakingGrain<TPool> : Grain, IMatchmakingGrain<TPool>
 
     private IAsyncStream<OpenSeekCreatedEvent> _openSeekCreatedStream = null!;
     private IAsyncStream<OpenSeekRemovedEvent> _openSeekRemovedStream = null!;
+    private IGrainTimer? _waveTimer = null;
 
     private readonly Dictionary<UserId, Seeker> _pendingSeekBroadcast = [];
 
@@ -94,6 +93,7 @@ public class MatchmakingGrain<TPool> : Grain, IMatchmakingGrain<TPool>
         await _state.WriteStateAsync(token);
 
         _pendingSeekBroadcast[seeker.UserId] = seeker;
+        ScheduleWaveTimerIfNeeded();
     }
 
     public async Task<bool> TryCancelSeekAsync(UserId userId, CancellationToken token = default)
@@ -176,6 +176,11 @@ public class MatchmakingGrain<TPool> : Grain, IMatchmakingGrain<TPool>
                 ))
             );
             _pendingSeekBroadcast.Clear();
+        }
+
+        if (_state.State.Pool.SeekerCount == 0)
+        {
+            _waveTimer?.Dispose();
         }
     }
 
@@ -308,6 +313,18 @@ public class MatchmakingGrain<TPool> : Grain, IMatchmakingGrain<TPool>
         }
     }
 
+    private void ScheduleWaveTimerIfNeeded()
+    {
+        if (_state.State.Pool.SeekerCount > 0 && _waveTimer == null)
+        {
+            _waveTimer = this.RegisterGrainTimer(
+                callback: ExecuteWaveAsync,
+                dueTime: TimeSpan.Zero,
+                period: _settings.MatchWaveEvery
+            );
+        }
+    }
+
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
         var streamProvider = this.GetStreamProvider(StreamingConstants.StreamProvider);
@@ -318,11 +335,7 @@ public class MatchmakingGrain<TPool> : Grain, IMatchmakingGrain<TPool>
             nameof(OpenSeekRemovedEvent)
         );
 
-        this.RegisterGrainTimer(
-            callback: ExecuteWaveAsync,
-            dueTime: TimeSpan.Zero,
-            period: _settings.MatchWaveEvery
-        );
+        ScheduleWaveTimerIfNeeded();
         this.RegisterGrainTimer(
             callback: TimeoutSeeksAsync,
             dueTime: TimeSpan.FromMinutes(1),

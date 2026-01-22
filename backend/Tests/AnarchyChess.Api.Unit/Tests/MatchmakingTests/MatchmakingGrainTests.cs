@@ -5,12 +5,14 @@ using AnarchyChess.Api.Matchmaking.Errors;
 using AnarchyChess.Api.Matchmaking.Grains;
 using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.Matchmaking.Services.Pools;
+using AnarchyChess.Api.Shared.Models;
 using AnarchyChess.Api.Streaming;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AnarchyChess.Api.TestInfrastructure.Utils;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Moq;
 using NSubstitute;
 using Orleans.TestKit;
 using Orleans.TestKit.Storage;
@@ -28,6 +30,8 @@ public class MatchmakingGrainTests : BaseGrainTest
         new TimeControlSettings(BaseSeconds: 600, IncrementSeconds: 10)
     );
 
+    private readonly LobbySettings _settings;
+
     private readonly MatchmakingGrainState<CasualMatchmakingPool> _state;
     private readonly TestStorageStats _stateStats;
 
@@ -35,6 +39,7 @@ public class MatchmakingGrainTests : BaseGrainTest
     {
         _timeProviderMock.GetUtcNow().Returns(_fakeNow);
         var settings = Options.Create(AppSettingsLoader.LoadAppSettings());
+        _settings = settings.Value.Lobby;
 
         var serviceProviderMock = Substitute.For<IServiceProvider>();
         serviceProviderMock.GetService(typeof(IGameStarter)).Returns(_gameStarterMock);
@@ -80,12 +85,6 @@ public class MatchmakingGrainTests : BaseGrainTest
             _testPoolKey.ToGrainKey()
         );
 
-    private Task FireWave() =>
-        Silo.FireTimerAsync(MatchmakingGrain<CasualMatchmakingPool>.WaveTimer);
-
-    private Task TimeoutWave() =>
-        Silo.FireTimerAsync(MatchmakingGrain<CasualMatchmakingPool>.TimeoutTimer);
-
     [Fact]
     public async Task AddSeekAsync_adds_the_seek_and_doesnt_broadcast()
     {
@@ -99,6 +98,30 @@ public class MatchmakingGrainTests : BaseGrainTest
         _state.Pool.Seekers.Should().ContainSingle().Which.Should().Be(seeker);
         _stateStats.Writes.Should().BeGreaterThanOrEqualTo(1);
         createdStream.Sends.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task AddSeekAsync_schedules_wave_timer_if_needed()
+    {
+        var grain = await CreateGrainAsync();
+        Silo.TimerRegistry.NumberOfActiveTimers.Should().Be(1);
+
+        await grain.AddSeekAsync(
+            new CasualSeekerFaker().Generate(),
+            Substitute.For<ISeekObserver>(),
+            CT
+        );
+
+        var context = Silo.GetContextFromGrain(grain);
+        Silo.TimerRegistry.Mock.Verify(x =>
+            x.RegisterGrainTimer(
+                context,
+                It.IsAny<Func<It.IsAnyType, CancellationToken, Task>>(),
+                It.IsAny<It.IsAnyType>(),
+                new() { DueTime = TimeSpan.Zero, Period = _settings.MatchWaveEvery }
+            )
+        );
+        Silo.TimerRegistry.NumberOfActiveTimers.Should().Be(2);
     }
 
     [Fact]
@@ -139,7 +162,7 @@ public class MatchmakingGrainTests : BaseGrainTest
         await grain.AddSeekAsync(seeker, observer, CT);
 
         // simulate a wave to broadcast the seeker
-        await FireWave();
+        await Silo.FireAllTimersAsync();
 
         await grain.TryCancelSeekAsync(seeker.UserId, CT);
 
@@ -173,7 +196,7 @@ public class MatchmakingGrainTests : BaseGrainTest
             )
             .Returns(gameToken);
 
-        await FireWave();
+        await Silo.FireAllTimersAsync();
 
         await observer1.Received(1).ReleaseReservationAsync(_testPoolKey);
         await observer2.Received(1).ReleaseReservationAsync(_testPoolKey);
@@ -197,7 +220,7 @@ public class MatchmakingGrainTests : BaseGrainTest
         await grain.AddSeekAsync(seeker1, observer1, CT);
         await grain.AddSeekAsync(seeker2, observer2, CT);
 
-        await FireWave();
+        await Silo.FireAllTimersAsync();
 
         await observer1.Received(1).ReleaseReservationAsync(_testPoolKey);
         await observer2.Received(1).ReleaseReservationAsync(_testPoolKey);
@@ -216,13 +239,52 @@ public class MatchmakingGrainTests : BaseGrainTest
 
         await grain.AddSeekAsync(seeker, observer, CT);
 
-        await FireWave();
+        await Silo.FireAllTimersAsync();
         createdStream.VerifySend(e => e.Seeker == seeker && e.Pool == _testPoolKey);
         createdStream.VerifySendBatch();
 
         // second wave does not re-broadcast already cleared pending
-        await FireWave();
+        await Silo.FireAllTimersAsync();
         createdStream.Sends.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task ExecuteWaveAsync_disposes_wave_timer_if_seeker_count_too_low()
+    {
+        var grain = await CreateGrainAsync();
+        var observer1 = Substitute.For<ISeekObserver>();
+        var observer2 = Substitute.For<ISeekObserver>();
+        observer1.TryReserveSeekAsync(_testPoolKey).Returns(Task.FromResult(true));
+        observer2.TryReserveSeekAsync(_testPoolKey).Returns(Task.FromResult(true));
+
+        await grain.AddSeekAsync(new CasualSeekerFaker().Generate(), observer1, CT);
+        await grain.AddSeekAsync(new CasualSeekerFaker().Generate(), observer1, CT);
+
+        Silo.TimerRegistry.NumberOfActiveTimers.Should().Be(2);
+
+        await Silo.FireAllTimersAsync();
+
+        Silo.TimerRegistry.NumberOfActiveTimers.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task ExecuteWaveAsync_does_not_dispose_wave_timer_if_seekers_remain()
+    {
+        var grain = await CreateGrainAsync();
+        var observer1 = Substitute.For<ISeekObserver>();
+        var observer2 = Substitute.For<ISeekObserver>();
+
+        observer1.TryReserveSeekAsync(_testPoolKey).Returns(true);
+        observer2.TryReserveSeekAsync(_testPoolKey).Returns(false);
+
+        await grain.AddSeekAsync(new CasualSeekerFaker().Generate(), observer1, CT);
+        await grain.AddSeekAsync(new CasualSeekerFaker().Generate(), observer2, CT);
+
+        Silo.TimerRegistry.NumberOfActiveTimers.Should().Be(2);
+
+        await Silo.FireAllTimersAsync();
+
+        Silo.TimerRegistry.NumberOfActiveTimers.Should().Be(2);
     }
 
     [Fact]
@@ -239,7 +301,7 @@ public class MatchmakingGrainTests : BaseGrainTest
         await grain.AddSeekAsync(timedOutSeeker, observerTimedOut, CT);
         await grain.AddSeekAsync(otherSeeker, observerOther, CT);
 
-        await TimeoutWave();
+        await Silo.FireAllTimersAsync();
 
         _state.Pool.Seekers.Should().ContainSingle().Which.Should().Be(otherSeeker);
         _stateStats.Writes.Should().BeGreaterThanOrEqualTo(1);
@@ -298,7 +360,7 @@ public class MatchmakingGrainTests : BaseGrainTest
         await grain.AddSeekAsync(matchWithSeeker, matchWithObserver, CT);
 
         // simulate a wave so the seeker is no longer pending
-        await FireWave();
+        await Silo.FireAllTimersAsync();
 
         matchWithObserver.TryReserveSeekAsync(_testPoolKey).Returns(Task.FromResult(true));
         _gameStarterMock
