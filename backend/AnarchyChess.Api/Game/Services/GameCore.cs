@@ -16,6 +16,11 @@ public interface IGameCore
     LegalMoveSet GetLegalMoves(GameCoreState state);
     ErrorOr<MoveResult> MakeMove(MoveKey key, GameCoreState state);
     MoveResult MakeMove(Move move, GameCoreState state);
+    void RemovePieces(
+        IEnumerable<AlgebraicPoint> positions,
+        LegalMoveSet newLegalMoves,
+        GameCoreState state
+    );
     GameColor SideToMove(GameCoreState state);
     FenNotation StartGame(GameCoreState state);
 }
@@ -132,6 +137,20 @@ public class GameCore(
             ? _playableMoveProvider.CalculateAllPlayableMoves(state.Board)
             : new();
         return moveResult;
+    }
+
+    public void RemovePieces(
+        IEnumerable<AlgebraicPoint> positions,
+        LegalMoveSet newLegalMoves,
+        GameCoreState state
+    )
+    {
+        foreach (var point in positions)
+        {
+            state.Board.RemovePiece(point);
+        }
+
+        state.LegalMoves = newLegalMoves;
     }
 
     public LegalMoveSet GetLegalMoves(GameCoreState state) => state.LegalMoves;

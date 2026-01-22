@@ -5,6 +5,7 @@ using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.TestInfrastructure;
 using AnarchyChess.Api.TestInfrastructure.Factories;
+using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AnarchyChess.Api.TestInfrastructure.TestData;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
@@ -181,6 +182,31 @@ public class GameCoreTests : BaseIntegrationTest
         var result = _gameCore.GetChessBoard(state);
 
         result.Should().Be(state.Board);
+    }
+
+    [Fact]
+    public void RemovePieces_removes_specified_pieces_from_board()
+    {
+        ChessBoard board = new();
+        board.PlacePiece(new("a1"), PieceFactory.White());
+        board.PlacePiece(new("a2"), PieceFactory.Black());
+        board.PlacePiece(new("a3"), PieceFactory.White());
+        board.PlacePiece(new("a4"), PieceFactory.Black());
+        var state = StartGame(new() { Board = board });
+        List<AlgebraicPoint> positionsToRemove = [new("a1"), new("a2")];
+
+        ChessBoard expectedBoard = new(board);
+        expectedBoard.RemovePiece(new("a1"));
+        expectedBoard.RemovePiece(new("a2"));
+
+        var newLegalMoves = new LegalMoveSet(
+            MoveMap: new Dictionary<MoveKey, Move>(),
+            MovePaths: new MovePathFaker().Generate(3)
+        );
+        _gameCore.RemovePieces(positionsToRemove, newLegalMoves, state);
+
+        state.Board.Should().BeEquivalentTo(expectedBoard);
+        state.LegalMoves.Should().BeEquivalentTo(newLegalMoves);
     }
 
     private MoveResult MakeMoves(GameCoreState state, params IEnumerable<MoveKey> moves)
