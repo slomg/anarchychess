@@ -36,6 +36,38 @@ public class ChessBoardTests
     }
 
     [Fact]
+    public void Clone_creates_independent_copy_of_board_with_moves()
+    {
+        ChessBoard original = new();
+        var whitePawn = PieceFactory.White(PieceType.Pawn, hasMoved: true);
+        var blackRook = PieceFactory.Black(PieceType.Rook);
+        original.PlacePiece(new("a2"), whitePawn);
+        original.PlacePiece(new("h8"), blackRook);
+
+        Move move = new(from: new("a2"), to: new("a4"), piece: whitePawn);
+        original.PlayMove(move);
+
+        ChessBoard clone = new(original);
+
+        clone.PeekPieceAt(new("a4")).Should().Be(whitePawn);
+        clone.PeekPieceAt(new("h8")).Should().Be(blackRook);
+
+        clone.Moves.Should().BeEquivalentTo(original.Moves);
+
+        clone.RemovePiece(move.To);
+        var newPiece = PieceFactory.White(PieceType.Bishop);
+        Move newMove = new(from: new("b2"), to: new("d4"), newPiece);
+        clone.PlacePiece(newMove.From, newPiece);
+        clone.PlayMove(newMove);
+        clone.Moves.Count.Should().Be(2);
+        clone.PeekPieceAt(newMove.To).Should().Be(newPiece);
+
+        original.PeekPieceAt(move.To).Should().Be(whitePawn);
+        original.PeekPieceAt(newMove.To).Should().BeNull();
+        original.Moves.Should().HaveCount(1);
+    }
+
+    [Fact]
     public void TryGetPieceAt_returns_false_when_the_piece_is_not_found()
     {
         ChessBoard board = new();

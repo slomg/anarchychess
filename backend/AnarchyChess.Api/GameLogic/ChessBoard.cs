@@ -52,6 +52,18 @@ public class ChessBoard : IReadOnlyChessBoard
             InitializeBoard(pieces);
     }
 
+    public ChessBoard(IReadOnlyChessBoard other)
+    {
+        _board = new Piece[other.Height, other.Width];
+        _moves = [.. other.Moves];
+        Width = other.Width;
+        Height = other.Height;
+        SideToMove = other.SideToMove;
+        HalfMoveClock = other.HalfMoveClock;
+
+        InitializeBoard(other.EnumeratePieces().ToDictionary());
+    }
+
     private void InitializeBoard(Dictionary<AlgebraicPoint, Piece> pieces)
     {
         foreach (var (pt, piece) in pieces)
