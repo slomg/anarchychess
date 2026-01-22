@@ -357,12 +357,49 @@ public class GameClockTests
     public void DetectTimeout_only_considers_ticking_player_for_elapsed_time()
     {
         _state.Clocks[GameColor.White].TimeLeftMs = 200_000;
-        _state.Clocks[GameColor.Black].TimeLeftMs = 150;
+        _state.Clocks[GameColor.Black].TimeLeftMs = 100;
 
-        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(100));
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(90));
 
         var result = _clock.DetectTimeout(GameColor.White, _state);
 
         result.Should().BeNull();
+    }
+
+    [Fact]
+    public void IsOvertime_returns_true_for_time_under_10_ms()
+    {
+        _state.Clocks[GameColor.White].TimeLeftMs = 100;
+
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(90));
+
+        var result = _clock.IsOvertime(GameColor.White, isTicking: true, _state);
+
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsOvertime_returns_false_for_time_over_10_ms()
+    {
+        _state.Clocks[GameColor.White].TimeLeftMs = 100;
+
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(89));
+
+        var result = _clock.IsOvertime(GameColor.White, isTicking: true, _state);
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsOvertime_only_ticks_when_asked()
+    {
+        _state.Clocks[GameColor.Black].TimeLeftMs = 100;
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(90));
+
+        var tickingResult = _clock.IsOvertime(GameColor.Black, isTicking: true, _state);
+        var notTickingResult = _clock.IsOvertime(GameColor.Black, isTicking: false, _state);
+
+        tickingResult.Should().BeTrue();
+        notTickingResult.Should().BeFalse();
     }
 }

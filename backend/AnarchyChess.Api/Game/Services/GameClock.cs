@@ -106,23 +106,23 @@ public class GameClock(
 
     public GameEndStatus? DetectTimeout(GameColor tickingPlayer, GameClockState state)
     {
-        var whiteTimeLeftMs = CalculateTimeLeftMs(
+        var isWhiteOvertime = IsOvertime(
             GameColor.White,
-            state,
-            isTicking: tickingPlayer is GameColor.White
+            isTicking: tickingPlayer is GameColor.White,
+            state
         );
-        var blackTimeLeftMs = CalculateTimeLeftMs(
+        var isBlackOvertime = IsOvertime(
             GameColor.Black,
-            state,
-            isTicking: tickingPlayer is GameColor.Black
+            isTicking: tickingPlayer is GameColor.Black,
+            state
         );
 
         GameColor timedOutColor;
-        if (whiteTimeLeftMs <= 10)
+        if (isWhiteOvertime)
         {
             timedOutColor = GameColor.White;
         }
-        else if (blackTimeLeftMs <= 10)
+        else if (isBlackOvertime)
         {
             timedOutColor = GameColor.Black;
         }
@@ -144,6 +144,12 @@ public class GameClock(
         {
             return _gameResultDescriber.Timeout(by: timedOutColor);
         }
+    }
+
+    public bool IsOvertime(GameColor player, bool isTicking, GameClockState state)
+    {
+        var timeLeftMs = CalculateTimeLeftMs(player, state, isTicking);
+        return timeLeftMs <= 10;
     }
 
     private double GetEffectiveTimeLeftMs(
