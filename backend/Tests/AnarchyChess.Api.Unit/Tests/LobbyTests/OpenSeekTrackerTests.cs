@@ -1,5 +1,6 @@
 ﻿using AnarchyChess.Api.Lobby.Models;
 using AnarchyChess.Api.Lobby.Services;
+using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Shared.Models;
 using AnarchyChess.Api.Shared.Services;
@@ -358,10 +359,10 @@ public class OpenSeekTrackerTests
     public void RemoveSeek_returns_null_if_pool_does_not_exist_for_user()
     {
         var seeker = new CasualSeekerFaker().Generate();
-        var existingPool = new PoolKeyFaker().Generate();
+        var existingPool = new PoolKeyFaker(PoolType.Rated).Generate();
         _tracker.AddSeek(seeker, existingPool);
 
-        var nonExistentPool = new PoolKeyFaker().Generate();
+        var nonExistentPool = new PoolKeyFaker(PoolType.Casual).Generate();
 
         var result = _tracker.RemoveSeek(seeker.UserId, nonExistentPool);
 
