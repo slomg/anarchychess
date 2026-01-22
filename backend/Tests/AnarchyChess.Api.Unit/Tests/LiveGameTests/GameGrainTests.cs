@@ -298,15 +298,6 @@ public class GameGrainTests : BaseGrainTest
         );
 
     [Fact]
-    public Task MovePieceAsync_rejects_invalid_users() =>
-        AssertRejectsForInvalidPlayerAsync(async grain =>
-            await grain.MovePieceAsync(
-                _blackPlayer.UserId,
-                new(from: new AlgebraicPoint("a2"), to: new AlgebraicPoint("c4"))
-            )
-        );
-
-    [Fact]
     public Task MovePieceAsync_rejects_when_not_playing() =>
         AssertRejectsForNotPlayingAsync(async grain =>
             await grain.MovePieceAsync(

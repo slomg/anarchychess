@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using AnarchyChess.Api.Game.Errors;
+using AnarchyChess.Api.Game.GameHandlers;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.GameLogic.Models;
@@ -19,11 +20,11 @@ public class GameGrain : Grain, IGameGrain, IRemindable
     public const string ClockReactivationReminder = "clockReactivationReminder";
     public const string StateName = "game";
 
-    private readonly string _token;
+    private readonly string _gameToken;
 
     private readonly ILogger<GameGrain> _logger;
     private readonly IPersistentState<GameGrainState> _state;
-
+    private readonly IMoveHandler _moveHandler;
     private readonly GameSettings _settings;
     private readonly IGameCore _core;
     private readonly IGameResultDescriber _resultDescriber;
@@ -37,6 +38,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         ILogger<GameGrain> logger,
         [PersistentState(StateName)] IPersistentState<GameGrainState> state,
         IOptions<AppSettings> settings,
+        IMoveHandler moveHandler,
         IGameCore core,
         IGameClock clock,
         IGameResultDescriber resultDescriber,
@@ -44,10 +46,11 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         IGameFinalizer gameFinalizer
     )
     {
-        _token = this.GetPrimaryKeyString();
+        _gameToken = this.GetPrimaryKeyString();
 
         _logger = logger;
         _state = state;
+        _moveHandler = moveHandler;
         _settings = settings.Value.Game;
         _core = core;
         _clock = clock;
@@ -96,7 +99,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             .OnNextAsync(
                 new GameStartedEvent(
                     new OngoingGame(
-                        _token,
+                        _gameToken,
                         pool,
                         Opponent: new(UserId: blackPlayer.UserId, UserName: blackPlayer.UserName)
                     ),
@@ -109,7 +112,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             .OnNextAsync(
                 new GameStartedEvent(
                     new OngoingGame(
-                        _token,
+                        _gameToken,
                         pool,
                         Opponent: new(UserId: whitePlayer.UserId, UserName: whitePlayer.UserName)
                     ),
@@ -169,7 +172,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
 
         _logger.LogInformation(
             "Game {GameToken} ended by user {UserId}. Result: {Result}",
-            _token,
+            _gameToken,
             byUserId,
             endStatus.Result
         );
@@ -201,7 +204,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             return requestResult.Errors;
 
         await _gameNotifier.NotifyDrawStateChangeAsync(
-            _token,
+            _gameToken,
             game.DrawRequest.GetState(),
             game.NotifierState
         );
@@ -223,7 +226,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             return GameErrors.DrawNotRequested;
 
         await _gameNotifier.NotifyDrawStateChangeAsync(
-            _token,
+            _gameToken,
             game.DrawRequest.GetState(),
             game.NotifierState
         );
@@ -232,7 +235,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
     }
 
     public async Task<ErrorOr<Success>> MovePieceAsync(
-        UserId byUserId,
+        UserId moveMadeBy,
         MoveKey key,
         CancellationToken token = default
     )
@@ -240,49 +243,21 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         if (!TryGetOngoingGame(out var game))
             return GameErrors.GameNotFound;
 
-        var currentPlayer = game.Players.GetPlayerByColor(_core.SideToMove(game.Core));
-        if (currentPlayer.UserId != byUserId)
-        {
-            _logger.LogWarning(
-                "User {UserId} attmpted to move a piece, but their id doesn't match the current player {PlayingUserId}",
-                byUserId,
-                currentPlayer?.UserId
-            );
-            return GameErrors.PlayerInvalid;
-        }
-
-        var makeMoveResult = _core.MakeMove(key, game.Core);
-        if (makeMoveResult.IsError)
-            return makeMoveResult.Errors;
-        var moveResult = makeMoveResult.Value;
-
-        var nextPlayer = game.Players.GetPlayerByColor(_core.SideToMove(game.Core));
-        var moveSnapshot = BuildAndStoreMove(
-            movedBy: currentPlayer.Color,
-            nextPlayer: nextPlayer.Color,
-            moveResult,
-            game
+        var moveResult = await _moveHandler.HandleMoveAsync(
+            moveMadeBy,
+            key,
+            _gameToken,
+            game,
+            token
         );
+        if (moveResult.IsError)
+            return moveResult.Errors;
 
-        if (moveResult.EndStatus is not null)
+        var endStatus = moveResult.Value;
+        if (endStatus is not null)
         {
-            await EndGameAsync(moveResult.EndStatus, game, token);
+            await EndGameAsync(endStatus, game, token);
         }
-
-        await _gameNotifier.NotifyMoveMadeAsync(
-            notification: new(
-                GameToken: _token,
-                Move: moveSnapshot,
-                PlyNumber: game.MoveSnapshots.Count,
-                Clocks: _clock.ToSnapshot(game.ClockState),
-                SideToMoveUserId: nextPlayer.UserId,
-                EncodedLegalMoves: _core.EncodeLegalMoves(game.Core),
-                DidMoveEndGame: moveResult.EndStatus is not null
-            ),
-            game.NotifierState
-        );
-        await HandleDrawForMoveAsync(moveBy: currentPlayer.Color, game);
-        await HandleClockForMoveAsync(game, token);
         await _state.WriteStateAsync(token);
 
         return Result.Success;
@@ -311,79 +286,23 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         return base.OnActivateAsync(cancellationToken);
     }
 
-    private MoveSnapshot BuildAndStoreMove(
-        GameColor movedBy,
-        GameColor nextPlayer,
-        MoveResult moveResult,
-        GameData game
-    )
-    {
-        var timeLeft = _clock.CommitTurn(movedBy, game.ClockState);
-
-        MoveSnapshot moveSnapshot = new(
-            Path: moveResult.MovePath,
-            Fen: moveResult.Fen.FullFen,
-            NextSideToMove: nextPlayer,
-            San: moveResult.San,
-            timeLeft
-        );
-        game.MoveSnapshots.Add(moveSnapshot);
-        return moveSnapshot;
-    }
-
-    private async Task HandleDrawForMoveAsync(GameColor moveBy, GameData game)
-    {
-        game.DrawRequest.DecrementCooldown();
-        // auto decline the draw if it exists
-        if (game.DrawRequest.TryDeclineDraw(moveBy, _settings.DrawCooldown))
-        {
-            await _gameNotifier.NotifyDrawStateChangeAsync(
-                _token,
-                game.DrawRequest.GetState(),
-                game.NotifierState
-            );
-        }
-    }
-
-    private async Task HandleClockForMoveAsync(GameData game, CancellationToken token = default)
-    {
-        var didTimeOut = await EndGameIfTimedOutAsync(game, token);
-        if (!didTimeOut)
-        {
-            ScheduleTimeoutTimer(game);
-        }
-    }
-
     private async Task OnClockTimerElapsedAsync(CancellationToken token = default)
     {
         if (!TryGetOngoingGame(out var game))
             return;
 
-        var didTimeOut = await EndGameIfTimedOutAsync(game, token);
-        if (!didTimeOut)
-        {
-            ScheduleTimeoutTimer(game);
-            return;
-        }
-        await _state.WriteStateAsync(token);
-    }
-
-    private async Task<bool> EndGameIfTimedOutAsync(
-        GameData game,
-        CancellationToken token = default
-    )
-    {
         var timeoutResult = _clock.DetectTimeout(
             tickingPlayer: _core.SideToMove(game.Core),
             game.ClockState
         );
         if (timeoutResult is null)
         {
-            return false;
+            ScheduleTimeoutTimer(game);
+            return;
         }
 
         await EndGameAsync(timeoutResult, game, token);
-        return true;
+        await _state.WriteStateAsync(token);
     }
 
     private async Task EndGameAsync(
@@ -395,21 +314,21 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         if (game.Result is not null)
             return;
 
-        _logger.LogInformation("Game {GameToken} eneded by {EndStatus}", _token, endStatus);
+        _logger.LogInformation("Game {GameToken} eneded by {EndStatus}", _gameToken, endStatus);
 
         _clock.CommitLastTurn(_core.SideToMove(game.Core), game.ClockState);
         var state = GetGameState(game);
 
-        game.Result = await _gameFinalizer.FinalizeGameAsync(_token, state, endStatus, token);
+        game.Result = await _gameFinalizer.FinalizeGameAsync(_gameToken, state, endStatus, token);
         await _gameNotifier.NotifyGameEndedAsync(
-            _token,
+            _gameToken,
             game.Result,
             _clock.ToSnapshot(game.ClockState),
             game.NotifierState
         );
 
         var streamProvider = this.GetStreamProvider(StreamingConstants.StreamProvider);
-        GameEndedEvent endedEvent = new(_token, game.Result);
+        GameEndedEvent endedEvent = new(_gameToken, game.Result);
 
         await streamProvider
             .GetStream<GameEndedEvent>(nameof(GameEndedEvent), game.Players.WhitePlayer.UserId)

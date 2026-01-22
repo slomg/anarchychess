@@ -16,6 +16,7 @@ using AnarchyChess.Api.CountryCodes.Services;
 using AnarchyChess.Api.ErrorHandling.Extensions;
 using AnarchyChess.Api.ErrorHandling.Infrastructure;
 using AnarchyChess.Api.ErrorHandling.OpenApi;
+using AnarchyChess.Api.Game.GameHandlers;
 using AnarchyChess.Api.Game.Repositories;
 using AnarchyChess.Api.Game.SanNotation;
 using AnarchyChess.Api.Game.SanNotation.Notators;
@@ -423,6 +424,8 @@ builder.Services.AddSingleton<IFenDecoder, FenDecoder>();
 builder.Services.AddSingleton<IPieceLetterMap, PieceLetterMap>();
 builder.Services.AddSingleton<ILegalMoveCalculator, LegalMoveCalculator>();
 builder.Services.AddSingleton<IMoveEncoder, MoveEncoder>();
+
+builder.Services.AddSingleton<IMoveHandler, MoveHandler>();
 
 builder.Services.AddSingleton<IPositionAnalysis, PositionAnalysis>();
 
