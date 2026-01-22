@@ -17,11 +17,30 @@ public class MoveEncoder(IOptions<JsonOptions> jsonOptions) : IMoveEncoder
 
     public byte[] EncodeMoves(IEnumerable<MovePath> moves)
     {
-        using var output = new MemoryStream();
-        using (var brotli = new BrotliStream(output, CompressionLevel.Optimal, leaveOpen: true))
+        byte[] jsonBytes = JsonSerializer.SerializeToUtf8Bytes(moves, _jsonOptions);
+        int maxCompressedLength = BrotliEncoder.GetMaxCompressedLength(jsonBytes.Length);
+        byte[] compressed = new byte[maxCompressedLength];
+
+        if (
+            !BrotliEncoder.TryCompress(
+                source: jsonBytes,
+                destination: compressed,
+                out int bytesWritten,
+                quality: 1,
+                window: 16
+            )
+        )
         {
-            JsonSerializer.Serialize(brotli, moves, _jsonOptions);
+            throw new InvalidOperationException("Brotli compression failed.");
         }
-        return output.ToArray();
+
+        if (bytesWritten == compressed.Length)
+        {
+            return compressed;
+        }
+
+        byte[] result = new byte[bytesWritten];
+        Array.Copy(compressed, result, bytesWritten);
+        return result;
     }
 }
