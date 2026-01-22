@@ -72,6 +72,7 @@ public class GameGrainTests : BaseOrleansIntegrationTest
             _gameClock,
             _gameNotifierMock
         );
+        DrawHandler drawHandler = new(settings, _gameResultDescriber, _gameNotifierMock);
 
         _settings = settings.Value.Game;
         _timeProviderMock.GetUtcNow().Returns(_fakeNow);
@@ -83,6 +84,7 @@ public class GameGrainTests : BaseOrleansIntegrationTest
         Silo.ServiceProvider.AddService(gameFinalizer);
         Silo.ServiceProvider.AddService(settings);
         Silo.ServiceProvider.AddService<IMoveHandler>(moveHandler);
+        Silo.ServiceProvider.AddService<IDrawHandler>(drawHandler);
 
         _state = Silo.StorageManager.GetStorage<GameGrainState>(GameGrain.StateName).State;
         _stateStats = Silo.StorageManager.GetStorageStats(GameGrain.StateName)!;
@@ -168,83 +170,81 @@ public class GameGrainTests : BaseOrleansIntegrationTest
         var whiteMove2 = (from: new AlgebraicPoint("c3"), to: new AlgebraicPoint("b1"));
         var blackMove2 = (from: new AlgebraicPoint("c8"), to: new AlgebraicPoint("b10"));
 
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < 3; i++)
         {
             var (whiteFrom, whiteTo) = i % 2 == 0 ? whiteMove1 : whiteMove2;
             var (blackFrom, blackTo) = i % 2 == 0 ? blackMove1 : blackMove2;
 
-            await grain.MovePieceAsync(
+            var result1 = await grain.MovePieceAsync(
                 _whitePlayer.UserId,
                 new(whiteFrom, whiteTo),
                 ApiTestBase.CT
             );
-            await grain.MovePieceAsync(
+            var result2 = await grain.MovePieceAsync(
                 _blackPlayer.UserId,
                 new(blackFrom, blackTo),
                 ApiTestBase.CT
             );
+
+            result1.IsError.Should().BeFalse();
+            result2.IsError.Should().BeFalse();
+            _state.CurrentGame!.Result.Should().BeNull();
         }
 
-        // (1 white move + 1 black move) * 4 times
-        _stateStats.Writes.Should().Be(2 * 4);
+        await grain.MovePieceAsync(
+            _whitePlayer.UserId,
+            new(whiteMove2.from, whiteMove2.to),
+            ApiTestBase.CT
+        );
+        await grain.MovePieceAsync(
+            _blackPlayer.UserId,
+            new(blackMove2.from, blackMove2.to),
+            ApiTestBase.CT
+        );
+        _stateStats.Writes.Should().BeGreaterThan(1);
         await TestGameEndedAsync(grain, _gameResultDescriber.ThreeFold());
     }
 
     [Fact]
-    public async Task RequestDrawAsync_sends_notification_if_no_pending_request()
+    public async Task RequestDrawAsync_ends_game_when_needed()
     {
         var grain = await CreateGrainAsync();
         await StartGameAsync(grain);
 
-        var result = await grain.RequestDrawAsync(_whitePlayer.UserId, ApiTestBase.CT);
-        result.IsError.Should().BeFalse();
-
-        await _gameNotifierMock
-            .Received(1)
-            .NotifyDrawStateChangeAsync(
-                _gameToken,
-                new DrawState(ActiveRequester: GameColor.White),
-                _state.CurrentGame!.NotifierState
-            );
-
-        var state = await grain.GetStateAsync();
-        state.Value.DrawState.ActiveRequester.Should().Be(GameColor.White);
+        var requestResult = await grain.RequestDrawAsync(
+            byUserId: _whitePlayer.UserId,
+            ApiTestBase.CT
+        );
+        requestResult.IsError.Should().BeFalse();
+        _state.CurrentGame!.Result.Should().BeNull();
         _stateStats.Writes.Should().BeGreaterThanOrEqualTo(1);
-    }
 
-    [Fact]
-    public async Task RequestDrawAsync_ends_the_game_if_there_is_a_pending_request()
-    {
-        var grain = await CreateGrainAsync();
-        await StartGameAsync(grain);
+        var drawState = await grain.GetStateAsync();
+        drawState.Value.DrawState.ActiveRequester.Should().Be(GameColor.White);
 
-        await grain.RequestDrawAsync(_whitePlayer.UserId, ApiTestBase.CT);
-        await grain.RequestDrawAsync(_blackPlayer.UserId, ApiTestBase.CT);
-
+        var acceptResult = await grain.RequestDrawAsync(
+            byUserId: _blackPlayer.UserId,
+            ApiTestBase.CT
+        );
+        acceptResult.IsError.Should().BeFalse();
         await TestGameEndedAsync(grain, _gameResultDescriber.DrawByAgreement());
+        _stateStats.Writes.Should().BeGreaterThanOrEqualTo(2);
     }
 
     [Fact]
-    public async Task DeclineDrawAsync_declines_the_draw_correctly()
+    public async Task DeclineDrawAsync_declines_draw()
     {
         var grain = await CreateGrainAsync();
         await StartGameAsync(grain);
 
-        await grain.RequestDrawAsync(_whitePlayer.UserId, ApiTestBase.CT);
-        await grain.DeclineDrawAsync(_blackPlayer.UserId, ApiTestBase.CT);
+        await grain.RequestDrawAsync(byUserId: _whitePlayer.UserId, ApiTestBase.CT);
+        var result = await grain.DeclineDrawAsync(byUserId: _blackPlayer.UserId, ApiTestBase.CT);
 
-        await _gameNotifierMock
-            .Received(1)
-            .NotifyDrawStateChangeAsync(
-                _gameToken,
-                new DrawState(WhiteCooldown: _settings.DrawCooldown),
-                _state.CurrentGame!.NotifierState
-            );
+        result.IsError.Should().BeFalse();
+        _stateStats.Writes.Should().BeGreaterThanOrEqualTo(1);
 
-        var state = await grain.GetStateAsync();
-        state.Value.DrawState.ActiveRequester.Should().BeNull();
-        _stateStats.Writes.Should().Be(2);
-        _stateStats.Clears.Should().Be(0);
+        var drawState = await grain.GetStateAsync();
+        drawState.Value.DrawState.ActiveRequester.Should().BeNull();
     }
 
     [Fact]

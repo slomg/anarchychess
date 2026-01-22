@@ -10,7 +10,6 @@ using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Shared.Models;
 using AnarchyChess.Api.Streaming;
 using ErrorOr;
-using Microsoft.Extensions.Options;
 using Orleans.Streams;
 
 namespace AnarchyChess.Api.Game.Grains;
@@ -25,7 +24,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
     private readonly ILogger<GameGrain> _logger;
     private readonly IPersistentState<GameGrainState> _state;
     private readonly IMoveHandler _moveHandler;
-    private readonly GameSettings _settings;
+    private readonly IDrawHandler _drawHandler;
     private readonly IGameCore _core;
     private readonly IGameResultDescriber _resultDescriber;
     private readonly IGameNotifier _gameNotifier;
@@ -37,8 +36,8 @@ public class GameGrain : Grain, IGameGrain, IRemindable
     public GameGrain(
         ILogger<GameGrain> logger,
         [PersistentState(StateName)] IPersistentState<GameGrainState> state,
-        IOptions<AppSettings> settings,
         IMoveHandler moveHandler,
+        IDrawHandler drawHandler,
         IGameCore core,
         IGameClock clock,
         IGameResultDescriber resultDescriber,
@@ -51,7 +50,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         _logger = logger;
         _state = state;
         _moveHandler = moveHandler;
-        _settings = settings.Value.Game;
+        _drawHandler = drawHandler;
         _core = core;
         _clock = clock;
         _resultDescriber = resultDescriber;
@@ -192,22 +191,15 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         if (!game.Players.TryGetPlayerById(byUserId, out var player))
             return GameErrors.PlayerInvalid;
 
-        if (game.DrawRequest.HasPendingRequest(player.Color))
+        var result = await _drawHandler.HandleDrawRequestAsync(player, _gameToken, game);
+        if (result.IsError)
+            return result.Errors;
+
+        var endStatus = result.Value;
+        if (endStatus is not null)
         {
-            await EndGameAsync(_resultDescriber.DrawByAgreement(), game, token);
-            await _state.WriteStateAsync(token);
-            return Result.Success;
+            await EndGameAsync(endStatus, game, token);
         }
-
-        var requestResult = game.DrawRequest.RequestDraw(player.Color);
-        if (requestResult.IsError)
-            return requestResult.Errors;
-
-        await _gameNotifier.NotifyDrawStateChangeAsync(
-            _gameToken,
-            game.DrawRequest.GetState(),
-            game.NotifierState
-        );
         await _state.WriteStateAsync(token);
         return Result.Success;
     }
@@ -222,14 +214,10 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         if (!game.Players.TryGetPlayerById(byUserId, out var player))
             return GameErrors.PlayerInvalid;
 
-        if (!game.DrawRequest.TryDeclineDraw(player.Color, _settings.DrawCooldown))
-            return GameErrors.DrawNotRequested;
+        var result = await _drawHandler.HandleDeclineDrawAsync(player, _gameToken, game);
+        if (result.IsError)
+            return result.Errors;
 
-        await _gameNotifier.NotifyDrawStateChangeAsync(
-            _gameToken,
-            game.DrawRequest.GetState(),
-            game.NotifierState
-        );
         await _state.WriteStateAsync(token);
         return Result.Success;
     }
@@ -243,23 +231,16 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         if (!TryGetOngoingGame(out var game))
             return GameErrors.GameNotFound;
 
-        var moveResult = await _moveHandler.HandleMoveAsync(
-            moveMadeBy,
-            key,
-            _gameToken,
-            game,
-            token
-        );
-        if (moveResult.IsError)
-            return moveResult.Errors;
+        var result = await _moveHandler.HandleMoveAsync(moveMadeBy, key, _gameToken, game, token);
+        if (result.IsError)
+            return result.Errors;
 
-        var endStatus = moveResult.Value;
+        var endStatus = result.Value;
         if (endStatus is not null)
         {
             await EndGameAsync(endStatus, game, token);
         }
         await _state.WriteStateAsync(token);
-
         return Result.Success;
     }
 

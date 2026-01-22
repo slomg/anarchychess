@@ -426,6 +426,7 @@ builder.Services.AddSingleton<ILegalMoveCalculator, LegalMoveCalculator>();
 builder.Services.AddSingleton<IMoveEncoder, MoveEncoder>();
 
 builder.Services.AddSingleton<IMoveHandler, MoveHandler>();
+builder.Services.AddSingleton<IDrawHandler, DrawHandler>();
 
 builder.Services.AddSingleton<IPositionAnalysis, PositionAnalysis>();
 
