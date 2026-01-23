@@ -559,4 +559,35 @@ public class ChessBoardTests
 
         enumerated.Should().BeEquivalentTo(piecesToPlace);
     }
+
+    [Fact]
+    public void Boards_are_equal_if_they_have_same_state()
+    {
+        ChessBoard board1 = new();
+        ChessBoard board2 = new(board1);
+
+        board1.Equals(board2).Should().BeTrue();
+        (board1 == board2).Should().BeTrue();
+        (board1 != board2).Should().BeFalse();
+        board1.GetHashCode().Should().Be(board2.GetHashCode());
+    }
+
+    [Fact]
+    public void Boards_are_not_equal_if_any_state_differs()
+    {
+        ChessBoard board1 = new();
+        ChessBoard board2 = new();
+        board2.PlacePiece(new("a1"), PieceFactory.White());
+
+        board1.Equals(board2).Should().BeFalse();
+        (board1 == board2).Should().BeFalse();
+        (board1 != board2).Should().BeTrue();
+    }
+
+    [Fact]
+    public void Equals_returns_false_for_null()
+    {
+        ChessBoard board = new();
+        board.Equals(null).Should().BeFalse();
+    }
 }

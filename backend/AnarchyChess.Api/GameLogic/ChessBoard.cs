@@ -6,7 +6,7 @@ namespace AnarchyChess.Api.GameLogic;
 
 [GenerateSerializer]
 [Alias("AnarchyChess.Api.GameLogic.ChessBoard")]
-public class ChessBoard : IReadOnlyChessBoard
+public class ChessBoard : IReadOnlyChessBoard, IEquatable<ChessBoard>
 {
     [Id(0)]
     private readonly Piece?[,] _board;
@@ -241,5 +241,58 @@ public class ChessBoard : IReadOnlyChessBoard
                     yield return (position, piece);
             }
         }
+    }
+
+    public bool Equals(ChessBoard? other)
+    {
+        if (ReferenceEquals(this, other))
+            return true;
+        if (other is null)
+            return false;
+
+        return Height == other.Height
+            && Width == other.Width
+            && SideToMove == other.SideToMove
+            && HalfMoveClock == other.HalfMoveClock
+            && _board.Cast<Piece?>().SequenceEqual(other._board.Cast<Piece?>())
+            && _moves.SequenceEqual(other._moves);
+    }
+
+    public static bool operator ==(ChessBoard? left, ChessBoard? right) =>
+        left?.Equals(right) ?? false;
+
+    public static bool operator !=(ChessBoard? left, ChessBoard? right) => !(left == right);
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is not ChessBoard board)
+        {
+            return false;
+        }
+        else
+        {
+            return Equals(board);
+        }
+    }
+
+    public override int GetHashCode()
+    {
+        int hash = HashCode.Combine(Height, Width, SideToMove, HalfMoveClock);
+
+        for (int y = 0; y < Height; y++)
+        {
+            for (int x = 0; x < Width; x++)
+            {
+                var piece = _board[y, x];
+                hash = HashCode.Combine(hash, piece);
+            }
+        }
+
+        foreach (var move in _moves)
+        {
+            hash = HashCode.Combine(hash, move);
+        }
+
+        return hash;
     }
 }
