@@ -35,6 +35,8 @@ public class GameData
     [Id(9)]
     public GameNotifierState NotifierState { get; init; } = new();
 
+    [Id(11)]
+    public OvertimeState OvertimeState { get; init; } = new();
 
     [Id(10)]
     public GameResultData? Result { get; set; }
