@@ -1,5 +1,6 @@
 ﻿using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.SignalR;
+using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Shared.Models;
@@ -24,7 +25,7 @@ public interface IGameNotifier
     );
     Task NotifyMoveMadeAsync(MoveNotification notification, GameNotifierState state);
     Task NotifyOvertimePositionsAsync(
-        UserId userId,
+        GameColor overtimedPlayer,
         IEnumerable<OvertimePosition> overtimePositions,
         GameToken gameToken,
         GameNotifierState state
@@ -81,7 +82,7 @@ public class GameNotifier(IHubContext<GameHub, IGameHubClient> hub) : IGameNotif
     }
 
     public async Task NotifyOvertimePositionsAsync(
-        UserId userId,
+        GameColor overtimedPlayer,
         IEnumerable<OvertimePosition> overtimePositions,
         GameToken gameToken,
         GameNotifierState state
@@ -89,8 +90,8 @@ public class GameNotifier(IHubContext<GameHub, IGameHubClient> hub) : IGameNotif
     {
         state.Revision++;
         await _hub
-            .Clients.Group(UserGameGroup(gameToken, userId))
-            .ReceiveOvertimePositionsAsync(overtimePositions);
+            .Clients.Group(gameToken)
+            .ReceiveOvertimePositionsAsync(overtimedPlayer, overtimePositions);
     }
 
     public Task NotifyDrawStateChangeAsync(

@@ -101,9 +101,11 @@ public class GameNotifierTests
             new([7, 8, 9], new("a3")),
         ];
 
-        await _notifier.NotifyOvertimePositionsAsync(_userId, positions, _gameToken, state);
+        await _notifier.NotifyOvertimePositionsAsync(GameColor.Black, positions, _gameToken, state);
 
-        await _clientUserGameGroupProxyMock.Received(1).ReceiveOvertimePositionsAsync(positions);
+        await _clientGameGroupProxyMock
+            .Received(1)
+            .ReceiveOvertimePositionsAsync(GameColor.Black, positions);
         state.Revision.Should().Be(1);
     }
 

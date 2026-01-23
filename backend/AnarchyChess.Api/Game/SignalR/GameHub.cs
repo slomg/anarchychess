@@ -1,6 +1,7 @@
 ﻿using AnarchyChess.Api.Game.Grains;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
+using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Infrastructure;
 using AnarchyChess.Api.Infrastructure.SignalR;
@@ -21,7 +22,10 @@ public interface IGameHubClient : IAnarchyChessHubClient
         ClockSnapshot clock
     );
 
-    Task ReceiveOvertimePositionsAsync(IEnumerable<OvertimePosition> overtimePositions);
+    Task ReceiveOvertimePositionsAsync(
+        GameColor overtimedPlayer,
+        IEnumerable<OvertimePosition> overtimePositions
+    );
 
     Task DrawStateChangeAsync(DrawState drawState);
     Task GameEndedAsync(GameResultData result, ClockSnapshot finalClocks);
