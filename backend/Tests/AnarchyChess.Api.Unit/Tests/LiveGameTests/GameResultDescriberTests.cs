@@ -75,15 +75,15 @@ public class GameResultDescriberTests
     }
 
     [Theory]
-    [InlineData(GameColor.White, GameResult.BlackWin, "Black Won by Timeout")]
-    [InlineData(GameColor.Black, GameResult.WhiteWin, "White Won by Timeout")]
-    public void Timeout_returns_the_correct_status(
+    [InlineData(GameColor.White, GameResult.BlackWin, "The White King Got Bored and Left")]
+    [InlineData(GameColor.Black, GameResult.WhiteWin, "The Black King Got Bored and Left")]
+    public void Overtime_returns_the_correct_status(
         GameColor loser,
         GameResult expectedResult,
         string expectedDescription
     )
     {
-        var result = _describer.Timeout(loser);
+        var result = _describer.Overtime(loser);
         result.Should().Be(new GameEndStatus(expectedResult, expectedDescription));
     }
 
