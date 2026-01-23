@@ -92,6 +92,52 @@ public class OvertimeTests
     }
 
     [Fact]
+    public void StartOvertimeTurn_never_picks_king_first()
+    {
+        ChessBoard board = new();
+        board.PlacePiece(new("a1"), PieceFactory.White(PieceType.King));
+        board.PlacePiece(new("a2"), PieceFactory.White(PieceType.Queen));
+        board.PlacePiece(new("a3"), PieceFactory.White(PieceType.Rook));
+        board.PlacePiece(new("b5"), PieceFactory.Black(PieceType.King));
+
+        // first would be the king, but the king shouldn't be picked first
+        _randomMock.Next(Arg.Any<int>()).Returns(0);
+
+        var legalMoves = new LegalMoveSetFaker().Generate();
+        _playableMoveProviderMock
+            .CalculateAllPlayableMoves(Arg.Any<ChessBoard>())
+            .Returns(legalMoves);
+        _moveEncoderMock.EncodeMoves(Arg.Any<IReadOnlyList<MovePath>>()).Returns([1]);
+
+        var result = _overtime.StartOvertimeTurn(GameColor.White, board, _state);
+
+        result.Should().NotBeEmpty();
+        result[0].RemovedPiece.Should().NotBe(new AlgebraicPoint("a1"));
+    }
+
+    [Fact]
+    public void StartOvertimeTurn_picks_king_first_if_it_is_the_only_piece()
+    {
+        ChessBoard board = new();
+        board.PlacePiece(new("e1"), PieceFactory.White(PieceType.King));
+        board.PlacePiece(new("d1"), PieceFactory.Black(PieceType.King));
+
+        _randomMock.Next(1).Returns(0);
+
+        var legalMoves = new LegalMoveSetFaker().Generate();
+        _playableMoveProviderMock
+            .CalculateAllPlayableMoves(Arg.Any<IReadOnlyChessBoard>())
+            .Returns(legalMoves);
+
+        _moveEncoderMock.EncodeMoves(Arg.Any<IReadOnlyList<MovePath>>()).Returns([42]);
+
+        var result = _overtime.StartOvertimeTurn(GameColor.White, board, _state);
+
+        result.Should().HaveCount(1);
+        result[0].RemovedPiece.Should().Be(new AlgebraicPoint("e1"));
+    }
+
+    [Fact]
     public void ToSnapshot_creates_the_right_snapshot_when_there_are_no_pending_positions()
     {
         var result = _overtime.ToSnapshot(_state);

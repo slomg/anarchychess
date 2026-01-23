@@ -168,6 +168,18 @@ public class Overtime(
             .. board.EnumeratePieces().Where(x => x.Occupant.Color == overtimedPlayerColor),
         ];
 
+        // make sure the king is not picked first
+        var nonKings = squares.Where(x => x.occupant.Type is not PieceType.King).ToList();
+        if (nonKings.Count > 0)
+        {
+            var firstIdx = _randomProvider.Next(nonKings.Count);
+            var (position, _) = nonKings[firstIdx];
+            yield return position;
+
+            squares[firstIdx] = squares[^1];
+            squares.RemoveAt(squares.Count - 1);
+        }
+
         int kingCount = board.GetAllPiecesWith(PieceType.King, overtimedPlayerColor).Count;
         while (kingCount > 0 && squares.Count > 0)
         {
