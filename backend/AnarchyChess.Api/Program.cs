@@ -424,6 +424,7 @@ builder.Services.AddSingleton<IFenDecoder, FenDecoder>();
 builder.Services.AddSingleton<IPieceLetterMap, PieceLetterMap>();
 builder.Services.AddSingleton<ILegalMoveCalculator, LegalMoveCalculator>();
 builder.Services.AddSingleton<IMoveEncoder, MoveEncoder>();
+builder.Services.AddSingleton<IOvertime, Overtime>();
 
 builder.Services.AddSingleton<IMoveHandler, MoveHandler>();
 builder.Services.AddSingleton<IDrawHandler, DrawHandler>();
