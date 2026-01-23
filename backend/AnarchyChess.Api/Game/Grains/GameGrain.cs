@@ -25,6 +25,8 @@ public class GameGrain : Grain, IGameGrain, IRemindable
     private readonly IPersistentState<GameGrainState> _state;
     private readonly IMoveHandler _moveHandler;
     private readonly IDrawHandler _drawHandler;
+    private readonly IClockHandler _clockHandler;
+    private readonly IOvertime _overtime;
     private readonly IGameCore _core;
     private readonly IGameResultDescriber _resultDescriber;
     private readonly IGameNotifier _gameNotifier;
@@ -38,6 +40,8 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         [PersistentState(StateName)] IPersistentState<GameGrainState> state,
         IMoveHandler moveHandler,
         IDrawHandler drawHandler,
+        IClockHandler clockHandler,
+        IOvertime overtime,
         IGameCore core,
         IGameClock clock,
         IGameResultDescriber resultDescriber,
@@ -51,6 +55,8 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         _state = state;
         _moveHandler = moveHandler;
         _drawHandler = drawHandler;
+        _clockHandler = clockHandler;
+        _overtime = overtime;
         _core = core;
         _clock = clock;
         _resultDescriber = resultDescriber;
@@ -77,7 +83,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             ClockState = _clock.Create(pool.TimeControl),
         };
 
-        ScheduleTimeoutTimer(_state.State.CurrentGame);
+        ScheduleTimeoutTimer(_clockHandler.GetClockDueTime(_state.State.CurrentGame));
         await this.RegisterOrUpdateReminder(
             ClockReactivationReminder,
             dueTime: TimeSpan.FromMinutes(5),
@@ -233,6 +239,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         {
             await EndGameAsync(endStatus, game, token);
         }
+        ScheduleTimeoutTimer(_clockHandler.GetClockDueTime(game));
         await _state.WriteStateAsync(token);
         return Result.Success;
     }
@@ -254,7 +261,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
     {
         if (TryGetOngoingGame(out var game))
         {
-            ScheduleTimeoutTimer(game);
+            ScheduleTimeoutTimer(_clockHandler.GetClockDueTime(game));
         }
 
         return base.OnActivateAsync(cancellationToken);
@@ -265,18 +272,16 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         if (!TryGetOngoingGame(out var game))
             return;
 
-        var timeoutResult = _clock.DetectTimeout(
-            tickingPlayer: _core.SideToMove(game.Core),
-            game.ClockState
-        );
-        if (timeoutResult is null)
+        var (rescheduleTo, endResult) = await _clockHandler.OnClockTickAsync(_gameToken, game);
+        if (endResult is not null)
         {
-            ScheduleTimeoutTimer(game);
-            return;
+            await EndGameAsync(endResult, game, token);
+            await _state.WriteStateAsync(token);
         }
-
-        await EndGameAsync(timeoutResult, game, token);
-        await _state.WriteStateAsync(token);
+        if (rescheduleTo is not null)
+        {
+            ScheduleTimeoutTimer(rescheduleTo.Value);
+        }
     }
 
     private async Task EndGameAsync(
@@ -333,21 +338,18 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             LegalMoves: _core.GetLegalMoves(game.Core).MovePaths,
             MoveHistory: game.MoveSnapshots,
             DrawState: game.DrawRequest.GetState(),
+            Overtime: _overtime.ToSnapshot(game.OvertimeState),
             ResultData: game.Result
         );
         return gameState;
     }
 
-    private void ScheduleTimeoutTimer(GameData game)
+    private void ScheduleTimeoutTimer(TimeSpan dueTime)
     {
         _clockTimer?.Dispose();
-
-        var sideToMove = _core.SideToMove(game.Core);
         _clockTimer = this.RegisterGrainTimer(
             callback: OnClockTimerElapsedAsync,
-            dueTime: TimeSpan.FromMilliseconds(
-                _clock.CalculateTimeLeftMs(sideToMove, game.ClockState)
-            ),
+            dueTime: dueTime,
             period: Timeout.InfiniteTimeSpan
         );
     }
