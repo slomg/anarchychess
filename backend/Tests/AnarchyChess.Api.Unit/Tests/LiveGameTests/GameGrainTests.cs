@@ -1,4 +1,5 @@
 ﻿using AnarchyChess.Api.Game.Errors;
+using AnarchyChess.Api.Game.GameHandlers;
 using AnarchyChess.Api.Game.Grains;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
@@ -28,19 +29,20 @@ public class GameGrainTests : BaseGrainTest
     private readonly FenNotation _initialFenNotation = new FenNotationFaker().Generate();
 
     private readonly GameGrainState _state;
-    private readonly IGameClock _clockMock;
+    private readonly IGameClock _clockMock = Substitute.For<IGameClock>();
+    private readonly IClockHandler _clockHandler = Substitute.For<IClockHandler>();
     private readonly GameClockState _expectedClockState;
 
     public GameGrainTests()
     {
         var coreMock = Substitute.For<IGameCore>();
-        _clockMock = Substitute.For<IGameClock>();
 
         coreMock.StartGame(Arg.Any<GameCoreState>()).Returns(_initialFenNotation);
 
         Silo.ServiceProvider.AddService(Options.Create(AppSettingsLoader.LoadAppSettings()));
         Silo.ServiceProvider.AddService(coreMock);
         Silo.ServiceProvider.AddService(_clockMock);
+        Silo.ServiceProvider.AddService(_clockHandler);
 
         _expectedClockState = new()
         {
@@ -79,16 +81,12 @@ public class GameGrainTests : BaseGrainTest
             NotifierState = new(),
         };
 
-        int timeLeftMs = _pool.TimeControl.BaseSeconds * 1000;
-        _clockMock
-            .CalculateTimeLeftMs(
-                GameColor.White,
-                ArgEx.FluentAssert<GameClockState>(x =>
-                    x.Should().BeEquivalentTo(_expectedClockState)
-                ),
-                isTicking: true
+        var timeLeft = TimeSpan.FromSeconds(_pool.TimeControl.BaseSeconds);
+        _clockHandler
+            .GetClockDueTime(
+                ArgEx.FluentAssert<GameData>(x => x.Should().BeEquivalentTo(expectedGameData))
             )
-            .Returns(timeLeftMs);
+            .Returns(timeLeft);
         _clockMock.Create(_pool.TimeControl).Returns(_expectedClockState);
 
         var grain = await Silo.CreateGrainAsync<GameGrain>(TestGameToken);
@@ -103,11 +101,7 @@ public class GameGrainTests : BaseGrainTest
                 context,
                 It.IsAny<Func<It.IsAnyType, CancellationToken, Task>>(),
                 It.IsAny<It.IsAnyType>(),
-                new()
-                {
-                    DueTime = TimeSpan.FromMilliseconds(timeLeftMs),
-                    Period = Timeout.InfiniteTimeSpan,
-                }
+                new() { DueTime = timeLeft, Period = Timeout.InfiniteTimeSpan }
             )
         );
         Silo.ReminderRegistry.Mock.Verify(x =>
@@ -189,10 +183,8 @@ public class GameGrainTests : BaseGrainTest
 
         await Silo.DeactivateAsync(grain, cancellationToken: CT);
 
-        int timeLeft = 5000;
-        _clockMock
-            .CalculateTimeLeftMs(GameColor.White, _state.CurrentGame!.ClockState, isTicking: true)
-            .Returns(timeLeft);
+        var timeLeft = TimeSpan.FromSeconds(5);
+        _clockHandler.GetClockDueTime(_state.CurrentGame!).Returns(timeLeft);
 
         await grain.OnActivateAsync(CT);
 
@@ -202,11 +194,7 @@ public class GameGrainTests : BaseGrainTest
                 context,
                 It.IsAny<Func<It.IsAnyType, CancellationToken, Task>>(),
                 It.IsAny<It.IsAnyType>(),
-                new()
-                {
-                    DueTime = TimeSpan.FromMilliseconds(timeLeft),
-                    Period = Timeout.InfiniteTimeSpan,
-                }
+                new() { DueTime = timeLeft, Period = Timeout.InfiniteTimeSpan }
             )
         );
     }

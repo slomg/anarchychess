@@ -52,9 +52,9 @@ public class FenDecoderTests : BaseIntegrationTest
 
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
-            [new AlgebraicPoint(2, 2)] = new Piece(PieceType.King, GameColor.White),
-            [new AlgebraicPoint(1, 1)] = new Piece(PieceType.Pawn, GameColor.Black),
-            [new AlgebraicPoint(2, 1)] = new Piece(PieceType.Rook, null),
+            [new AlgebraicPoint("c3")] = new Piece(PieceType.King, GameColor.White),
+            [new AlgebraicPoint("b2")] = new Piece(PieceType.Pawn, GameColor.Black),
+            [new AlgebraicPoint("c2")] = new Piece(PieceType.TraitorRook, null),
         };
 
         ChessBoard expectedBoard = new(pieces, height: 3, width: 4);
@@ -116,8 +116,8 @@ public class FenDecoderTests : BaseIntegrationTest
         result.IsError.Should().BeFalse();
 
         var board = result.Value;
-        board.PeekPieceAt(new AlgebraicPoint(0, 0))?.HasMoved.Should().BeTrue();
-        board.PeekPieceAt(new AlgebraicPoint(1, 0))?.HasMoved.Should().BeTrue();
+        board.PeekPieceAt(new AlgebraicPoint("a1"))?.HasMoved.Should().BeTrue();
+        board.PeekPieceAt(new AlgebraicPoint("b1"))?.HasMoved.Should().BeTrue();
     }
 
     [Fact]
