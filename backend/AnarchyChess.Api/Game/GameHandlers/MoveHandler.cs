@@ -26,7 +26,8 @@ public class MoveHandler(
     IOptions<AppSettings> settings,
     IGameCore core,
     IGameClock clock,
-    IGameNotifier notifier
+    IGameNotifier notifier,
+    IOvertime overtime
 ) : IMoveHandler
 {
     private readonly ILogger<MoveHandler> _logger = logger;
@@ -34,6 +35,7 @@ public class MoveHandler(
     private readonly IGameCore _core = core;
     private readonly IGameClock _clock = clock;
     private readonly IGameNotifier _notifier = notifier;
+    private readonly IOvertime _overtime = overtime;
 
     public async Task<ErrorOr<GameEndStatus?>> HandleMoveAsync(
         UserId moveMadeBy,
@@ -81,12 +83,10 @@ public class MoveHandler(
         );
 
         await HandleDrawForMoveAsync(moveBy: currentPlayer.Color, gameToken, game);
-        var timeoutStatus = _clock.DetectTimeout(
-            tickingPlayer: _core.SideToMove(game.Core),
-            game.ClockState
-        );
+        RemovePiecesForOvertime(currentPlayer: currentPlayer.Color, game);
+        await StartNextOvertimeTurnAsync(sideToMove: nextPlayer.Color, gameToken, game);
 
-        return moveResult.EndStatus ?? timeoutStatus;
+        return moveResult.EndStatus;
     }
 
     private MoveSnapshot BuildAndStoreMove(
@@ -121,5 +121,43 @@ public class MoveHandler(
                 game.NotifierState
             );
         }
+    }
+
+    private void RemovePiecesForOvertime(GameColor currentPlayer, GameData game)
+    {
+        if (!_overtime.HasStartedOvertime(currentPlayer, game.OvertimeState))
+        {
+            return;
+        }
+
+        var (piecePositions, newLegalMoves, _) = _overtime.GetRemovedPiecesSinceLastMove(
+            currentPlayer,
+            game.OvertimeState
+        );
+        _core.RemovePieces(piecePositions, newLegalMoves, game.Core);
+    }
+
+    private async Task StartNextOvertimeTurnAsync(
+        GameColor sideToMove,
+        GameToken gameToken,
+        GameData game
+    )
+    {
+        if (!_clock.IsTimeout(sideToMove, isTicking: true, game.ClockState))
+        {
+            return;
+        }
+
+        var overtimePositions = _overtime.StartOvertimeTurn(
+            overtimedPlayerColor: sideToMove,
+            board: _core.GetReadOnlyBoard(game.Core),
+            game.OvertimeState
+        );
+        await _notifier.NotifyOvertimePositionsAsync(
+            sideToMove,
+            overtimePositions,
+            gameToken,
+            game.NotifierState
+        );
     }
 }

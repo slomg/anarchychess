@@ -7,6 +7,7 @@ using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Shared.Models;
+using AnarchyChess.Api.Shared.Services;
 using AnarchyChess.Api.TestInfrastructure;
 using AnarchyChess.Api.TestInfrastructure.Factories;
 using AnarchyChess.Api.TestInfrastructure.NSubtituteExtenstion;
@@ -24,7 +25,8 @@ public class MoveHandlerTests : BaseIntegrationTest
     private readonly MoveHandler _handler;
 
     private readonly GameSettings _settings;
-    private readonly GameClock _gameClock;
+    private readonly GameClock _clock;
+    private readonly Overtime _overtime;
     private readonly IFenEncoder _fenEncoder;
     private readonly ISanCalculator _sanCalculator;
     private readonly IGameCore _gameCore;
@@ -49,22 +51,25 @@ public class MoveHandlerTests : BaseIntegrationTest
         var settings = Scope.ServiceProvider.GetRequiredService<IOptions<AppSettings>>();
         _settings = settings.Value.Game;
 
-        _gameClock = new(
-            settings,
-            Scope.ServiceProvider.GetRequiredService<IGameResultDescriber>(),
-            _timeProviderMock
+        _clock = new(settings, _timeProviderMock);
+        _overtime = new(
+            Scope.ServiceProvider.GetRequiredService<IRandomProvider>(),
+            _timeProviderMock,
+            Scope.ServiceProvider.GetRequiredService<IPlayableMoveProvider>(),
+            Scope.ServiceProvider.GetRequiredService<IMoveEncoder>()
         );
 
         _handler = new MoveHandler(
             Scope.ServiceProvider.GetRequiredService<ILogger<MoveHandler>>(),
             Scope.ServiceProvider.GetRequiredService<IOptions<AppSettings>>(),
             Scope.ServiceProvider.GetRequiredService<IGameCore>(),
-            _gameClock,
-            _notifierMock
+            _clock,
+            _notifierMock,
+            _overtime
         );
 
         _timeProviderMock.GetUtcNow().Returns(_fakeNow);
-        _gameData = GameUtils.CreateGameData(_gameCore, _gameClock);
+        _gameData = GameUtils.CreateGameData(_gameCore, _clock);
     }
 
     [Fact]
@@ -154,7 +159,7 @@ public class MoveHandlerTests : BaseIntegrationTest
         board.PlacePiece(new("a1"), PieceFactory.White(PieceType.Queen));
         board.PlacePiece(new("a3"), PieceFactory.Black(PieceType.King));
         board.PlacePiece(new("b1"), PieceFactory.White(PieceType.King));
-        var gameData = GameUtils.CreateGameData(_gameCore, _gameClock, board: board);
+        var gameData = GameUtils.CreateGameData(_gameCore, _clock, board: board);
 
         var result = await _handler.HandleMoveAsync(
             gameData.Players.WhitePlayer.UserId,
@@ -224,23 +229,84 @@ public class MoveHandlerTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task HandleMoveAsync_ends_game_if_times_out()
+    public async Task HandleMoveAsync_starts_overtime_turn_for_next_player()
     {
-        var gameData = GameUtils.CreateGameData(
-            _gameCore,
-            _gameClock,
-            timeControl: new TimeControlSettings(BaseSeconds: 0, IncrementSeconds: 0)
-        );
+        await GameUtils.GoOutOfGracePeriodAsync(_handler, _gameCore, _gameToken, _gameData);
 
-        var result = await _handler.HandleMoveAsync(
-            gameData.Players.WhitePlayer.UserId,
-            new MoveKey(GameUtils.GetLegalMove(_gameCore, gameData)),
+        _timeProviderMock
+            .GetUtcNow()
+            .Returns(_fakeNow.AddSeconds(_gameData.Pool.TimeControl.BaseSeconds));
+
+        await _handler.HandleMoveAsync(
+            _gameData.Players.WhitePlayer.UserId,
+            new MoveKey(GameUtils.GetLegalMove(_gameCore, _gameData)),
             _gameToken,
-            gameData,
+            _gameData,
+            CT
+        );
+        await _handler.HandleMoveAsync(
+            _gameData.Players.BlackPlayer.UserId,
+            new MoveKey(GameUtils.GetLegalMove(_gameCore, _gameData)),
+            _gameToken,
+            _gameData,
             CT
         );
 
-        result.IsError.Should().BeFalse();
-        result.Value.Should().Be(_gameResultDescriber.Timeout(GameColor.White));
+        _overtime.HasStartedOvertime(GameColor.White, _gameData.OvertimeState).Should().BeTrue();
+        await _notifierMock
+            .Received(1)
+            .NotifyOvertimePositionsAsync(
+                GameColor.White,
+                Arg.Is<List<OvertimePosition>>(x => x.Count > 1),
+                _gameToken,
+                _gameData.NotifierState
+            );
+    }
+
+    [Fact]
+    public async Task HandleMoveAsync_removes_overtime_pieces_for_current_player()
+    {
+        await GameUtils.GoOutOfGracePeriodAsync(_handler, _gameCore, _gameToken, _gameData);
+        var now = _fakeNow.AddSeconds(_gameData.Pool.TimeControl.BaseSeconds);
+        _timeProviderMock.GetUtcNow().Returns(now);
+
+        await _handler.HandleMoveAsync(
+            _gameData.Players.WhitePlayer.UserId,
+            new MoveKey(GameUtils.GetLegalMove(_gameCore, _gameData)),
+            _gameToken,
+            _gameData,
+            CT
+        );
+        _overtime.HasStartedOvertime(GameColor.White, _gameData.OvertimeState).Should().BeFalse();
+
+        await _handler.HandleMoveAsync(
+            _gameData.Players.BlackPlayer.UserId,
+            new MoveKey(GameUtils.GetLegalMove(_gameCore, _gameData)),
+            _gameToken,
+            _gameData,
+            CT
+        );
+        _overtime.HasStartedOvertime(GameColor.White, _gameData.OvertimeState).Should().BeTrue();
+
+        var whitePending = _gameData.OvertimeState.PendingRemoval[GameColor.White];
+        foreach (var pending in whitePending)
+        {
+            _gameData.Core.Board.IsEmpty(pending.Position).Should().BeFalse();
+        }
+
+        now += TimeSpan.FromSeconds(whitePending.Count);
+        _timeProviderMock.GetUtcNow().Returns(now);
+        await _handler.HandleMoveAsync(
+            _gameData.Players.WhitePlayer.UserId,
+            new MoveKey(GameUtils.GetLegalMove(_gameCore, _gameData)),
+            _gameToken,
+            _gameData,
+            CT
+        );
+
+        foreach (var pending in whitePending)
+        {
+            _gameData.Core.Board.IsEmpty(pending.Position).Should().BeTrue();
+        }
     }
 }
