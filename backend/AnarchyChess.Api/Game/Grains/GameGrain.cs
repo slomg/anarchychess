@@ -233,6 +233,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         {
             await EndGameAsync(endStatus, game, token);
         }
+        ScheduleTimeoutTimer(game);
         await _state.WriteStateAsync(token);
         return Result.Success;
     }
