@@ -428,6 +428,7 @@ builder.Services.AddSingleton<IOvertime, Overtime>();
 
 builder.Services.AddSingleton<IMoveHandler, MoveHandler>();
 builder.Services.AddSingleton<IDrawHandler, DrawHandler>();
+builder.Services.AddSingleton<IClockHandler, ClockHandler>();
 
 builder.Services.AddSingleton<IPositionAnalysis, PositionAnalysis>();
 
