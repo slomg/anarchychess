@@ -31,7 +31,6 @@ export interface PiecesSlice {
 
     selectPiece(pieceId: PieceID): boolean;
     unselectPiece(): void;
-    reselectPiece(): boolean;
 
     handleMousePieceDrop(args: {
         mousePoint: ScreenPoint;
@@ -125,7 +124,7 @@ export function createPiecesSlice(
             pieceMovementEvent: new EventBus(),
 
             selectPiece(pieceId) {
-                const { highlightLegalMoves, pieces, selectedPieceId } = get();
+                const {  pieces, selectedPieceId } = get();
                 const piece = pieces.getById(pieceId);
                 if (!piece) {
                     console.warn(
@@ -135,40 +134,16 @@ export function createPiecesSlice(
                 }
                 if (pieceId === selectedPieceId) return false;
 
-                highlightLegalMoves(piece);
                 set((state) => {
                     state.selectedPieceId = pieceId;
                 });
                 return true;
             },
             unselectPiece() {
-                const { unhighlightLegalMoves } = get();
 
-                unhighlightLegalMoves();
                 set((state) => {
                     state.selectedPieceId = null;
                 });
-            },
-            reselectPiece() {
-                const {
-                    unhighlightLegalMoves,
-                    highlightLegalMoves,
-                    selectedPieceId,
-                    pieces,
-                } = get();
-                if (!selectedPieceId) {
-                    unhighlightLegalMoves();
-                    return false;
-                }
-
-                const piece = pieces.getById(selectedPieceId);
-                if (!piece) {
-                    unhighlightLegalMoves();
-                    return false;
-                }
-
-                highlightLegalMoves(piece);
-                return true;
             },
 
             async applyMoveImmediate(move: Move): Promise<void> {

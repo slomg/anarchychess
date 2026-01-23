@@ -33,7 +33,6 @@ export default function useLiveChessEvents(
             addPosition,
             applyMoveAnimated,
             goToLatestPosition,
-            reselectPiece,
         } = chessboardStore.getState();
         const { isPendingMoveAck, receiveLiveMove } = liveChessStore.getState();
 
@@ -64,7 +63,6 @@ export default function useLiveChessEvents(
             },
             legalMoves,
         );
-        reselectPiece();
         receiveLiveMove(clocks, move.nextSideToMove);
         return position;
     }
@@ -85,7 +83,7 @@ export default function useLiveChessEvents(
 
             // undefined = we don't know the legal moves
             // defined, but empty = we know the legal moves, there aren't any, no need to fetch them
-            const legalMoves = didMoveEndGame ? new LegalMoves() : undefined;
+            const legalMoves = didMoveEndGame ? LegalMoves.Empty : undefined;
             await handleMoveUpdate({ move, plyNumber, clocks, legalMoves });
         },
     );

@@ -242,17 +242,6 @@ describe("AnimationSlice", () => {
 
             expect(store.getState().lastMove).toEqual(moveBounds3);
         });
-
-        it("should hide legal moves", async () => {
-            const hideLegalMovesMock = vi.fn();
-            store.setState({ unhighlightLegalMoves: hideLegalMovesMock });
-
-            await store
-                .getState()
-                .playAnimationBatch({ steps: [], removedPieceIds: [] });
-
-            expect(hideLegalMovesMock).toHaveBeenCalledOnce();
-        });
     });
 
     describe("playAnimation", () => {

@@ -44,29 +44,4 @@ describe("useSyncBoardInteraction", () => {
 
         expect(chessboardStore.getState().hideLegalMoves).toBe(true);
     });
-
-    it("should reselect piece", () => {
-        const reselectPieceMock = vi.fn();
-        chessboardStore.setState({
-            hideLegalMoves: true,
-            reselectPiece: reselectPieceMock,
-        });
-        liveChessStore.setState({
-            viewer: {
-                userId: "user id",
-                playerColor: GameColor.WHITE,
-            },
-            sideToMove: GameColor.BLACK,
-        });
-
-        renderHook(() =>
-            useSyncBoardInteraction(liveChessStore, chessboardStore),
-        );
-
-        act(() => {
-            liveChessStore.setState({ sideToMove: GameColor.WHITE });
-        });
-
-        expect(reselectPieceMock).toHaveBeenCalledOnce();
-    });
 });

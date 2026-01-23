@@ -23,6 +23,7 @@ import { ScreenPoint } from "@/features/point/types";
 import BoardPieces from "../../lib/boardPieces";
 import LegalMoves from "../../lib/legalMoves";
 import { Piece } from "../../lib/types";
+import constants from "@/lib/constants";
 
 vi.mock("@/features/audio/audioPlayer");
 
@@ -79,11 +80,9 @@ describe("PiecesSlice", () => {
             const piece = createFakePiece({
                 position: logicalPoint({ x: 0, y: 0 }),
             });
-            const highlightLegalMovesMock = vi.fn(() => true);
 
             store.setState({
                 pieces: BoardPieces.fromPieces(piece),
-                highlightLegalMoves: highlightLegalMovesMock,
                 selectedPieceId: null,
             });
 
@@ -91,81 +90,18 @@ describe("PiecesSlice", () => {
 
             expect(result).toBe(true);
             expect(store.getState().selectedPieceId).toBe(piece.id);
-            expect(highlightLegalMovesMock).toHaveBeenCalledWith(piece);
         });
     });
 
     describe("unselectPiece", () => {
-        it("should hide legal moves and clear selectedPieceId", () => {
-            const hideLegalMovesMock = vi.fn();
+        it("should clear selectedPieceId", () => {
             store.setState({
                 selectedPieceId: "0",
-                unhighlightLegalMoves: hideLegalMovesMock,
             });
 
             store.getState().unselectPiece();
 
-            expect(hideLegalMovesMock).toHaveBeenCalled();
             expect(store.getState().selectedPieceId).toBeNull();
-        });
-    });
-
-    describe("reselectPiece", () => {
-        it("should do nothing if no piece is selected", () => {
-            const highlightLegalMovesMock = vi.fn();
-            const unhighlightLegalMovesMock = vi.fn();
-
-            store.setState({
-                selectedPieceId: null,
-                highlightLegalMoves: highlightLegalMovesMock,
-                unhighlightLegalMoves: unhighlightLegalMovesMock,
-            });
-
-            const result = store.getState().reselectPiece();
-
-            expect(result).toBe(false);
-            expect(unhighlightLegalMovesMock).toHaveBeenCalledOnce();
-            expect(highlightLegalMovesMock).not.toHaveBeenCalled();
-        });
-
-        it("should do nothing if the selected piece does not exist", () => {
-            const highlightLegalMovesMock = vi.fn();
-            const unhighlightLegalMovesMock = vi.fn();
-
-            store.setState({
-                selectedPieceId: "nonexistent",
-                highlightLegalMoves: highlightLegalMovesMock,
-                unhighlightLegalMoves: unhighlightLegalMovesMock,
-            });
-
-            const result = store.getState().reselectPiece();
-
-            expect(result).toBe(false);
-            expect(unhighlightLegalMovesMock).toHaveBeenCalledOnce();
-            expect(highlightLegalMovesMock).not.toHaveBeenCalled();
-        });
-
-        it("should call highlightLegalMoves with the selected piece if it exists", () => {
-            const piece = createFakePiece({
-                position: logicalPoint({ x: 0, y: 0 }),
-            });
-            const highlightLegalMovesMock = vi.fn();
-            const unhighlightLegalMovesMock = vi.fn();
-
-            store.setState({
-                pieces: BoardPieces.fromPieces(piece),
-                selectedPieceId: piece.id,
-                highlightLegalMoves: highlightLegalMovesMock,
-                unhighlightLegalMoves: unhighlightLegalMovesMock,
-            });
-
-            const result = store.getState().reselectPiece();
-
-            expect(result).toBe(true);
-            expect(highlightLegalMovesMock).toHaveBeenCalledExactlyOnceWith(
-                piece,
-            );
-            expect(unhighlightLegalMovesMock).not.toHaveBeenCalled();
         });
     });
 
@@ -204,7 +140,9 @@ describe("PiecesSlice", () => {
                     expectedAnimationPieces,
                 );
 
-                vi.advanceTimersByTime(100);
+                vi.advanceTimersByTime(constants.PIECE_ANIMATION_LENGTH_MS);
+                await flushMicrotasks();
+                vi.advanceTimersByTime(constants.ANIMATION_STEP_DELAY_MS);
                 await flushMicrotasks();
             }
         });

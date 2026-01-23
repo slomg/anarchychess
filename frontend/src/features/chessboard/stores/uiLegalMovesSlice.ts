@@ -1,14 +1,11 @@
 import { StateCreator } from "zustand";
 
-import { pointToStr } from "@/features/point/pointUtils";
 import { LogicalPoint } from "@/features/point/types";
 import { ChessboardStore } from "./chessboardStore";
-import { StrPoint } from "@/features/point/types";
 import BoardPieces from "../lib/boardPieces";
 import { PositionId } from "../lib/position";
 import { PieceType } from "@/lib/apiClient";
 import { PieceID } from "../lib/types";
-import { Piece } from "../lib/types";
 import { Move } from "../lib/types";
 
 export interface UiLegalMovesSliceProps {
@@ -16,7 +13,6 @@ export interface UiLegalMovesSliceProps {
 }
 
 export interface UiLegalMovesSlice {
-    highlightedLegalMoves: LogicalPoint[];
     hideLegalMoves: boolean;
 
     hasLegalMovesForPosition(positionId?: PositionId): boolean;
@@ -27,9 +23,6 @@ export interface UiLegalMovesSlice {
         pieceId: PieceID,
         pieces: BoardPieces,
     ): Promise<Move | null>;
-
-    highlightLegalMoves(piece: Piece): boolean;
-    unhighlightLegalMoves(): void;
     flashLegalMoves(): void;
 }
 
@@ -98,45 +91,6 @@ export function createUiLegalMovesSlice(
                 piece,
             });
             return availablePromotions.get(promoteTo) ?? null;
-        },
-
-        highlightLegalMoves(piece) {
-            const { getViewedPositionLegalMoves } = get();
-
-            const legalMoves = getViewedPositionLegalMoves();
-            const moveNodes = legalMoves.getFromOrigin(piece.position);
-
-            const toHighlightPoints = new Map<StrPoint, LogicalPoint>();
-            for (const moveNode of moveNodes) {
-                for (const move of moveNode.terminalMoves) {
-                    for (const trigger of move.triggers) {
-                        toHighlightPoints.set(pointToStr(trigger), trigger);
-                    }
-
-                    if (move.intermediates.length != 0) {
-                        toHighlightPoints.set(
-                            pointToStr(move.intermediates[0].position),
-                            move.intermediates[0].position,
-                        );
-                        continue;
-                    }
-                }
-
-                toHighlightPoints.set(pointToStr(moveNode.at), moveNode.at);
-            }
-
-            set((state) => {
-                state.highlightedLegalMoves = Array.from(
-                    toHighlightPoints.values(),
-                );
-            });
-            return toHighlightPoints.size > 0;
-        },
-
-        unhighlightLegalMoves() {
-            set((state) => {
-                state.highlightedLegalMoves = [];
-            });
         },
 
         flashLegalMoves() {

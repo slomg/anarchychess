@@ -1,14 +1,41 @@
 import { useChessboardStore } from "../hooks/useChessboard";
 import { pointToStr } from "@/features/point/pointUtils";
-import { LogicalPoint } from "@/features/point/types";
+import { LogicalPoint, StrPoint } from "@/features/point/types";
 import ChessSquare from "./ChessSquare";
 
 const HighlightedLegalMovesRenderer = () => {
-    const highlightedLegalMoves = useChessboardStore(
-        (x) => x.highlightedLegalMoves,
+    const legalMoves = useChessboardStore((x) =>
+        x.getViewedPositionLegalMoves(),
     );
+    const pieces = useChessboardStore((x) => x.pieces);
+    const selectedPieceId = useChessboardStore((x) => x.selectedPieceId);
+    if (!selectedPieceId) return null;
 
-    return highlightedLegalMoves.map((point) => (
+    const selectedPiece = pieces.getById(selectedPieceId);
+    if (!selectedPiece) return null;
+
+    const moveNodes = legalMoves.getFromOrigin(selectedPiece.position);
+
+    const toHighlightPoints = new Map<StrPoint, LogicalPoint>();
+    for (const moveNode of moveNodes) {
+        for (const move of moveNode.terminalMoves) {
+            for (const trigger of move.triggers) {
+                toHighlightPoints.set(pointToStr(trigger), trigger);
+            }
+
+            if (move.intermediates.length != 0) {
+                toHighlightPoints.set(
+                    pointToStr(move.intermediates[0].position),
+                    move.intermediates[0].position,
+                );
+                continue;
+            }
+        }
+
+        toHighlightPoints.set(pointToStr(moveNode.at), moveNode.at);
+    }
+
+    return [...toHighlightPoints.values()].map((point) => (
         <HighlightedLegalMove position={point} key={pointToStr(point)} />
     ));
 };
