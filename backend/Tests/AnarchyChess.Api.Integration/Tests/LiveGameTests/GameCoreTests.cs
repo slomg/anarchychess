@@ -175,11 +175,11 @@ public class GameCoreTests : BaseIntegrationTest
     }
 
     [Fact]
-    public void GetChessBoard_returns_the_chessboard()
+    public void GetReadOnlyBoard_returns_the_chessboard()
     {
         var state = StartGame();
 
-        var result = _gameCore.GetChessBoard(state);
+        var result = _gameCore.GetReadOnlyBoard(state);
 
         result.Should().Be(state.Board);
     }
