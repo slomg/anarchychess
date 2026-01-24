@@ -14,6 +14,8 @@ import { GameColor, GameResult } from "@/lib/apiClient";
 import constants from "@/lib/constants";
 import PositionHistory from "@/features/chessboard/lib/positionHistory";
 import { createFakeMove } from "@/lib/testUtils/fakers/chessboardFakers";
+import { createFakeMovePath } from "@/lib/testUtils/fakers/movePathFaker";
+import { PlayerOvertime } from "../types";
 
 describe("createStoreProps", () => {
     it("should return the complete and correct store props object", () => {
@@ -76,6 +78,32 @@ describe("createStoreProps", () => {
                 activeRequester: GameColor.WHITE,
                 whiteCooldown: 6,
                 blackCooldown: 9,
+            },
+            overtime: {
+                whiteOvertime: {
+                    secondRemainder: 0.123,
+                    pendingRemoval: [
+                        {
+                            legalMoves: [
+                                createFakeMovePath(),
+                                createFakeMovePath(),
+                            ],
+                            removedPiece: { x: 1, y: 2 },
+                        },
+                    ],
+                },
+                blackOvertime: {
+                    secondRemainder: 0.456,
+                    pendingRemoval: [
+                        {
+                            legalMoves: [
+                                createFakeMovePath(),
+                                createFakeMovePath(),
+                            ],
+                            removedPiece: { x: 2, y: 3 },
+                        },
+                    ],
+                },
             },
         });
 
@@ -167,6 +195,37 @@ describe("createStoreProps", () => {
             boardWidth: constants.BOARD_WIDTH,
         });
 
+        const whiteOvertimePath = gameState.overtime.whiteOvertime!;
+        const whiteOvertime: PlayerOvertime = {
+            secondRemainder: whiteOvertimePath.secondRemainder,
+            pendingRemoval: [
+                {
+                    legalMoves: decodeMovePathIntoLegalMoves({
+                        paths: whiteOvertimePath.pendingRemoval[0].legalMoves,
+                        boardWidth: constants.BOARD_WIDTH,
+                    }),
+                    removedPieceAt: logicalPoint(
+                        whiteOvertimePath.pendingRemoval[0].removedPiece,
+                    ),
+                },
+            ],
+        };
+        const blackOvertimePath = gameState.overtime.blackOvertime!;
+        const blackOvertime: PlayerOvertime = {
+            secondRemainder: blackOvertimePath.secondRemainder,
+            pendingRemoval: [
+                {
+                    legalMoves: decodeMovePathIntoLegalMoves({
+                        paths: blackOvertimePath.pendingRemoval[0].legalMoves,
+                        boardWidth: constants.BOARD_WIDTH,
+                    }),
+                    removedPieceAt: logicalPoint(
+                        blackOvertimePath.pendingRemoval[0].removedPiece,
+                    ),
+                },
+            ],
+        };
+
         expect(result).toEqual<{
             live: LiveChessStoreProps;
             board: ChessboardProps;
@@ -187,6 +246,8 @@ describe("createStoreProps", () => {
 
                 drawState: gameState.drawState,
                 clocks: gameState.clocks,
+                whiteOvertime,
+                blackOvertime,
                 resultData: null,
             },
             board: {

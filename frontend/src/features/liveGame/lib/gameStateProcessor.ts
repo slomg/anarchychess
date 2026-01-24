@@ -8,6 +8,7 @@ import {
     GameColor,
     GamePlayer,
     getGame,
+    PlayerOvertimePath,
     type GameState,
 } from "@/lib/apiClient";
 
@@ -17,8 +18,9 @@ import PositionHistory from "@/features/chessboard/lib/positionHistory";
 import { simulateMove } from "@/features/chessboard/lib/simulateMove";
 import { decodeFen } from "../../chessboard/lib/fenDecoder";
 import { LiveChessViewer } from "../stores/gamePlaySlice";
-import { ClockSnapshot } from "./types";
+import { ClockSnapshot, PendingOvertimeRemoval, PlayerOvertime } from "./types";
 import constants from "@/lib/constants";
+import { logicalPoint } from "@/features/point/pointUtils";
 
 export interface ProcessedGameState {
     live: LiveChessStoreProps;
@@ -63,6 +65,14 @@ export function createStoreProps(
 
         drawState: gameState.drawState,
         clocks: gameState.clocks,
+        whiteOvertime: decodeOvertime(
+            boardWidth,
+            gameState.overtime.whiteOvertime,
+        ),
+        blackOvertime: decodeOvertime(
+            boardWidth,
+            gameState.overtime.blackOvertime,
+        ),
         resultData: gameState.resultData ?? null,
     };
     const board: ChessboardProps = {
@@ -129,6 +139,29 @@ function getPositionHistory(gameState: GameState): PositionHistory {
         pieces = newPieces;
     }
     return positionHistory;
+}
+
+function decodeOvertime(
+    boardWidth: number,
+    playerOvertime?: PlayerOvertimePath | null,
+): PlayerOvertime | null {
+    if (!playerOvertime) {
+        return null;
+    }
+
+    const pendingRemoval: PendingOvertimeRemoval[] =
+        playerOvertime.pendingRemoval.map((x) => ({
+            legalMoves: decodeMovePathIntoLegalMoves({
+                boardWidth,
+                paths: x.legalMoves,
+            }),
+            removedPieceAt: logicalPoint(x.removedPiece),
+        }));
+
+    return {
+        secondRemainder: playerOvertime.secondRemainder,
+        pendingRemoval,
+    };
 }
 
 export async function refetchGame(
