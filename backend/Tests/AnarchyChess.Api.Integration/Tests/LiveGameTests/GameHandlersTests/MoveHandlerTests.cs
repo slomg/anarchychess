@@ -288,7 +288,7 @@ public class MoveHandlerTests : BaseIntegrationTest
         );
         _overtime.HasStartedOvertime(GameColor.White, _gameData.OvertimeState).Should().BeTrue();
 
-        var whitePending = _gameData.OvertimeState.PendingRemoval[GameColor.White];
+        var whitePending = _gameData.OvertimeState.PlayerOvertime[GameColor.White].PendingRemoval;
         foreach (var pending in whitePending)
         {
             _gameData.Core.Board.IsEmpty(pending.Position).Should().BeFalse();

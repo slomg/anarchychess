@@ -82,11 +82,11 @@ public class OvertimeTests
             new(new("a3"), secondLegalMoves),
         ];
         _state
-            .PendingRemoval.Should()
+            .PlayerOvertime.Should()
             .BeEquivalentTo(
-                new Dictionary<GameColor, List<PendingRemovalEntry>>()
+                new Dictionary<GameColor, PlayerOvertime>()
                 {
-                    [GameColor.White] = expectedPendingRemoval,
+                    [GameColor.White] = new() { PendingRemoval = expectedPendingRemoval },
                 }
             );
     }
@@ -142,7 +142,9 @@ public class OvertimeTests
     {
         var result = _overtime.ToSnapshot(_state);
 
-        result.Should().BeEquivalentTo(new OvertimeSnapshot(WhiteOvertime: [], BlackOvertime: []));
+        result
+            .Should()
+            .BeEquivalentTo(new OvertimeSnapshot(WhiteOvertime: null, BlackOvertime: null));
     }
 
     [Fact]
@@ -150,11 +152,19 @@ public class OvertimeTests
     {
         PendingRemovalEntry white1 = new(new("a1"), new LegalMoveSetFaker().Generate());
         PendingRemovalEntry white2 = new(new("c5"), new LegalMoveSetFaker().Generate());
-        _state.PendingRemoval[GameColor.White] = [white1, white2];
+        _state.PlayerOvertime[GameColor.White] = new()
+        {
+            PendingRemoval = [white1, white2],
+            SecondRemainder = 0.123,
+        };
 
         PendingRemovalEntry black1 = new(new("f6"), new LegalMoveSetFaker().Generate());
         PendingRemovalEntry black2 = new(new("g7"), new LegalMoveSetFaker().Generate());
-        _state.PendingRemoval[GameColor.Black] = [black1, black2];
+        _state.PlayerOvertime[GameColor.Black] = new()
+        {
+            PendingRemoval = [black1, black2],
+            SecondRemainder = 0.456,
+        };
 
         var result = _overtime.ToSnapshot(_state);
 
@@ -162,28 +172,34 @@ public class OvertimeTests
             .Should()
             .BeEquivalentTo(
                 new OvertimeSnapshot(
-                    WhiteOvertime:
-                    [
-                        new EncodedOvertimePositionSnapshot(
-                            white1.LegalMoves.MovePaths,
-                            white1.Position
-                        ),
-                        new EncodedOvertimePositionSnapshot(
-                            white2.LegalMoves.MovePaths,
-                            white2.Position
-                        ),
-                    ],
-                    BlackOvertime:
-                    [
-                        new EncodedOvertimePositionSnapshot(
-                            black1.LegalMoves.MovePaths,
-                            black1.Position
-                        ),
-                        new EncodedOvertimePositionSnapshot(
-                            black2.LegalMoves.MovePaths,
-                            black2.Position
-                        ),
-                    ]
+                    WhiteOvertime: new(
+                        SecondRemainder: 0.123,
+                        PendingRemoval:
+                        [
+                            new EncodedOvertimePositionSnapshot(
+                                white1.LegalMoves.MovePaths,
+                                white1.Position
+                            ),
+                            new EncodedOvertimePositionSnapshot(
+                                white2.LegalMoves.MovePaths,
+                                white2.Position
+                            ),
+                        ]
+                    ),
+                    BlackOvertime: new(
+                        SecondRemainder: 0.456,
+                        PendingRemoval:
+                        [
+                            new EncodedOvertimePositionSnapshot(
+                                black1.LegalMoves.MovePaths,
+                                black1.Position
+                            ),
+                            new EncodedOvertimePositionSnapshot(
+                                black2.LegalMoves.MovePaths,
+                                black2.Position
+                            ),
+                        ]
+                    )
                 )
             );
     }
@@ -206,7 +222,7 @@ public class OvertimeTests
     {
         PendingRemovalEntry pos1 = new(new("a1"), new LegalMoveSetFaker().Generate());
         PendingRemovalEntry pos2 = new(new("b2"), new LegalMoveSetFaker().Generate());
-        _state.PendingRemoval[GameColor.White] = [pos1, pos2];
+        _state.PlayerOvertime[GameColor.White] = new() { PendingRemoval = [pos1, pos2] };
         _state.LastMoveAtMs = _fakeNow.ToUnixTimeMilliseconds();
 
         _timeProviderMock.GetUtcNow().Returns(_fakeNow.AddMilliseconds(1500));
@@ -219,7 +235,7 @@ public class OvertimeTests
         positions.Should().BeEquivalentTo([pos1.Position]);
         newLegalMoves.Should().BeEquivalentTo(pos2.LegalMoves);
         isGameOver.Should().BeFalse();
-        _state.SecondRemainder[GameColor.White].Should().Be(0.5);
+        _state.PlayerOvertime[GameColor.White].SecondRemainder.Should().Be(0.5);
     }
 
     [Fact]
@@ -227,7 +243,7 @@ public class OvertimeTests
     {
         PendingRemovalEntry pos1 = new(new("c3"), new LegalMoveSetFaker().Generate());
         PendingRemovalEntry pos2 = new(new("d4"), new LegalMoveSetFaker().Generate());
-        _state.PendingRemoval[GameColor.Black] = [pos1, pos2];
+        _state.PlayerOvertime[GameColor.Black] = new() { PendingRemoval = [pos1, pos2] };
 
         _timeProviderMock.GetUtcNow().Returns(_fakeNow.AddSeconds(5));
 
@@ -246,7 +262,7 @@ public class OvertimeTests
     {
         PendingRemovalEntry pos1 = new(new("e5"), new LegalMoveSetFaker().Generate());
         PendingRemovalEntry pos2 = new(new("f6"), new LegalMoveSetFaker().Generate());
-        _state.PendingRemoval[GameColor.White] = [pos1, pos2];
+        _state.PlayerOvertime[GameColor.White] = new() { PendingRemoval = [pos1, pos2] };
 
         _timeProviderMock.GetUtcNow().Returns(_fakeNow.AddSeconds(2));
 
@@ -271,10 +287,10 @@ public class OvertimeTests
     [Fact]
     public void HasStartedOvertime_returns_true_if_pending_removals_exist()
     {
-        _state.PendingRemoval[GameColor.Black] =
-        [
-            new(new("g7"), new LegalMoveSetFaker().Generate()),
-        ];
+        _state.PlayerOvertime[GameColor.Black] = new()
+        {
+            PendingRemoval = [new(new("g7"), new LegalMoveSetFaker().Generate())],
+        };
 
         bool result = _overtime.HasStartedOvertime(GameColor.Black, _state);
 
@@ -292,8 +308,11 @@ public class OvertimeTests
     [Fact]
     public void GetTimeUntilDefeat_returns_zero_if_pending_removals_empty()
     {
-        _state.PendingRemoval[GameColor.White] = [];
-        _state.SecondRemainder[GameColor.White] = 0.5f; // remainder shouldn't matter
+        _state.PlayerOvertime[GameColor.White] = new()
+        {
+            SecondRemainder = 0.5f, // remainder shouldn't matter
+            PendingRemoval = [],
+        };
 
         TimeSpan result = _overtime.GetTimeUntilDefeat(GameColor.White, _state);
 
@@ -303,11 +322,14 @@ public class OvertimeTests
     [Fact]
     public void GetTimeUntilDefeat_returns_seconds_correctly_for_pending_removals()
     {
-        _state.PendingRemoval[GameColor.White] =
-        [
-            new(new("a1"), new LegalMoveSetFaker().Generate()),
-            new(new("b2"), new LegalMoveSetFaker().Generate()),
-        ];
+        _state.PlayerOvertime[GameColor.White] = new()
+        {
+            PendingRemoval =
+            [
+                new(new("a1"), new LegalMoveSetFaker().Generate()),
+                new(new("b2"), new LegalMoveSetFaker().Generate()),
+            ],
+        };
 
         TimeSpan result = _overtime.GetTimeUntilDefeat(GameColor.White, _state);
 
@@ -317,13 +339,16 @@ public class OvertimeTests
     [Fact]
     public void GetTimeUntilDefeat_subtracts_fractional_second_remainder()
     {
-        _state.PendingRemoval[GameColor.White] =
-        [
-            new(new("a1"), new LegalMoveSetFaker().Generate()),
-            new(new("b2"), new LegalMoveSetFaker().Generate()),
-            new(new("c3"), new LegalMoveSetFaker().Generate()),
-        ];
-        _state.SecondRemainder[GameColor.White] = 0.3f;
+        _state.PlayerOvertime[GameColor.White] = new()
+        {
+            SecondRemainder = 0.3,
+            PendingRemoval =
+            [
+                new(new("a1"), new LegalMoveSetFaker().Generate()),
+                new(new("b2"), new LegalMoveSetFaker().Generate()),
+                new(new("c3"), new LegalMoveSetFaker().Generate()),
+            ],
+        };
 
         TimeSpan result = _overtime.GetTimeUntilDefeat(GameColor.White, _state);
 

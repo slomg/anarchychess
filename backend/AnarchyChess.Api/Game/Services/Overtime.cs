@@ -34,14 +34,10 @@ public record OvertimePosition(IReadOnlyList<byte> EncodedLegalMoves, AlgebraicP
 public class OvertimeState
 {
     [Id(0)]
-    public Dictionary<GameColor, IReadOnlyList<PendingRemovalEntry>> PendingRemoval { get; } = [];
+    public Dictionary<GameColor, PlayerOvertime> PlayerOvertime { get; } = [];
 
     [Id(1)]
     public long LastMoveAtMs { get; set; }
-
-    [Id(2)]
-    public Dictionary<GameColor, double> SecondRemainder { get; } =
-        new() { [GameColor.White] = 0, [GameColor.Black] = 0 };
 }
 
 public class Overtime(
@@ -58,23 +54,31 @@ public class Overtime(
 
     public OvertimeSnapshot ToSnapshot(OvertimeState state)
     {
-        var whiteOvertime = state
-            .PendingRemoval.GetValueOrDefault(GameColor.White, [])
-            .Select(x => new EncodedOvertimePositionSnapshot(
-                LegalMoves: x.LegalMoves.MovePaths,
-                RemovedPiece: x.Position
-            ))
-            .ToList();
-
-        var blackOvertime = state
-            .PendingRemoval.GetValueOrDefault(GameColor.Black, [])
-            .Select(x => new EncodedOvertimePositionSnapshot(
-                LegalMoves: x.LegalMoves.MovePaths,
-                RemovedPiece: x.Position
-            ))
-            .ToList();
+        var whiteOvertime = BuildPlayerOvertimeSnapshot(GameColor.White, state);
+        var blackOvertime = BuildPlayerOvertimeSnapshot(GameColor.Black, state);
 
         return new(WhiteOvertime: whiteOvertime, BlackOvertime: blackOvertime);
+    }
+
+    private static PlayerOvertimeSnapshot? BuildPlayerOvertimeSnapshot(
+        GameColor playerColor,
+        OvertimeState state
+    )
+    {
+        var playerOvertime = state.PlayerOvertime.GetValueOrDefault(playerColor);
+        if (playerOvertime is null)
+        {
+            return null;
+        }
+
+        List<EncodedOvertimePositionSnapshot> pendingRemoval =
+        [
+            .. playerOvertime.PendingRemoval.Select(x => new EncodedOvertimePositionSnapshot(
+                LegalMoves: x.LegalMoves.MovePaths,
+                RemovedPiece: x.Position
+            )),
+        ];
+        return new(SecondRemainder: playerOvertime.SecondRemainder, PendingRemoval: pendingRemoval);
     }
 
     public List<OvertimePosition> StartOvertimeTurn(
@@ -98,7 +102,15 @@ public class Overtime(
             result.Add(new OvertimePosition(EncodedLegalMoves: encoded, RemovedPiece: position));
             pendingRemoval.Add(new(position, legalMoves));
         }
-        state.PendingRemoval[overtimedPlayerColor] = pendingRemoval;
+
+        if (state.PlayerOvertime.TryGetValue(overtimedPlayerColor, out var playerOvertime))
+        {
+            playerOvertime.PendingRemoval = pendingRemoval;
+        }
+        else
+        {
+            state.PlayerOvertime[overtimedPlayerColor] = new() { PendingRemoval = pendingRemoval };
+        }
 
         return result;
     }
@@ -109,28 +121,28 @@ public class Overtime(
         bool IsGameOver
     ) GetRemovedPiecesSinceLastMove(GameColor playerColor, OvertimeState state)
     {
-        var pendingRemoval = state.PendingRemoval.GetValueOrDefault(playerColor);
-        if (pendingRemoval is null)
+        var playerOvertime = state.PlayerOvertime.GetValueOrDefault(playerColor);
+        if (playerOvertime is null)
         {
             return (Positions: [], NewLegalMoves: new LegalMoveSet(), IsGameOver: false);
         }
 
         double timeSinceLastMove =
             _timeProvider.GetUtcNow().ToUnixTimeMilliseconds() - state.LastMoveAtMs;
-        timeSinceLastMove += state.SecondRemainder[playerColor];
+        timeSinceLastMove += playerOvertime.SecondRemainder;
 
         double secondsSinceLastMove = timeSinceLastMove / 1000;
-        state.SecondRemainder[playerColor] = secondsSinceLastMove % 1;
+        playerOvertime.SecondRemainder = secondsSinceLastMove % 1;
 
         int removedCount = (int)secondsSinceLastMove;
 
         List<AlgebraicPoint> positions = [];
-        for (int i = 0; i < Math.Min(removedCount, pendingRemoval.Count); i++)
+        for (int i = 0; i < Math.Min(removedCount, playerOvertime.PendingRemoval.Count); i++)
         {
-            positions.Add(pendingRemoval[i].Position);
+            positions.Add(playerOvertime.PendingRemoval[i].Position);
         }
 
-        if (removedCount >= pendingRemoval.Count)
+        if (removedCount >= playerOvertime.PendingRemoval.Count)
         {
             return (Positions: positions, NewLegalMoves: new LegalMoveSet(), IsGameOver: true);
         }
@@ -138,24 +150,26 @@ public class Overtime(
         {
             return (
                 Positions: positions,
-                NewLegalMoves: pendingRemoval[removedCount].LegalMoves,
+                NewLegalMoves: playerOvertime.PendingRemoval[removedCount].LegalMoves,
                 IsGameOver: false
             );
         }
     }
 
     public bool HasStartedOvertime(GameColor playerColor, OvertimeState state) =>
-        state.PendingRemoval.ContainsKey(playerColor);
+        state.PlayerOvertime.ContainsKey(playerColor);
 
     public TimeSpan GetTimeUntilDefeat(GameColor playerColor, OvertimeState state)
     {
-        var pendingRemovals = state.PendingRemoval.GetValueOrDefault(playerColor);
-        if (pendingRemovals is null || pendingRemovals.Count == 0)
+        var playerOvertime = state.PlayerOvertime.GetValueOrDefault(playerColor);
+        if (playerOvertime is null || playerOvertime.PendingRemoval.Count == 0)
         {
             return TimeSpan.Zero;
         }
 
-        return TimeSpan.FromSeconds(pendingRemovals.Count - state.SecondRemainder[playerColor]);
+        return TimeSpan.FromSeconds(
+            playerOvertime.PendingRemoval.Count - playerOvertime.SecondRemainder
+        );
     }
 
     private IEnumerable<AlgebraicPoint> ComputeOvertimeRemovals(

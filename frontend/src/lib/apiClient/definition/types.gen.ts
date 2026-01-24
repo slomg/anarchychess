@@ -452,8 +452,13 @@ export type DrawState = {
 };
 
 export type Overtime = {
-    whiteOvertime: Array<EncodedOvertimePosition>;
-    blackOvertime: Array<EncodedOvertimePosition>;
+    whiteOvertime?: PlayerOvertime | null;
+    blackOvertime?: PlayerOvertime | null;
+};
+
+export type PlayerOvertime = {
+    secondRemainder: number;
+    pendingRemoval: Array<EncodedOvertimePosition>;
 };
 
 export type EncodedOvertimePosition = {
