@@ -4,11 +4,12 @@ import { ChessboardStore } from "@/features/chessboard/stores/chessboardStore";
 import { decodeMovePath, decodeLegalMoves } from "../lib/moveDecoder";
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
 import { Position } from "@/features/chessboard/lib/position";
-import { Clocks, MoveSnapshot } from "@/lib/apiClient";
+import LegalMoves from "@/features/chessboard/lib/legalMoves";
 import { LiveChessStore } from "../stores/liveChessStore";
 import { refetchGame } from "../lib/gameStateProcessor";
+import { Clocks, MoveSnapshot } from "@/lib/apiClient";
+import { PendingOvertimeRemoval, PlayerOvertime } from "../lib/types";
 import { useGameEvent } from "./useGameHub";
-import LegalMoves from "@/features/chessboard/lib/legalMoves";
 
 export default function useLiveChessEvents(
     liveChessStore: StoreApi<LiveChessStore>,
@@ -107,6 +108,41 @@ export default function useLiveChessEvents(
                 clocks,
                 legalMoves: decodedLegalMoves,
             });
+        },
+    );
+
+    useGameEvent(
+        gameToken,
+        "ReceiveOvertimeAsync",
+        (
+            overtimedPlayer,
+            overtimeTurnStartedAt,
+            secondRemainderMs,
+            encodedPendingRemoval,
+        ) => {
+            const pendingRemoval: PendingOvertimeRemoval[] =
+                encodedPendingRemoval.map((pending) => {
+                    const legalMoves = decodeLegalMoves({
+                        encoded: pending.encodedLegalMoves,
+                        boardWidth: boardDimensions.width,
+                    });
+                    return {
+                        legalMoves,
+                        removedPieceAt: pending.removePieceAt,
+                    };
+                });
+            const playerOvertime: PlayerOvertime = {
+                secondRemainderMs,
+                pendingRemoval,
+            };
+
+            liveChessStore
+                .getState()
+                .setOvertime(
+                    overtimedPlayer,
+                    playerOvertime,
+                    overtimeTurnStartedAt,
+                );
         },
     );
 

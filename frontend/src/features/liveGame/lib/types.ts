@@ -6,6 +6,11 @@ export interface ClockSnapshot {
     blackClock: number;
 }
 
+export interface OvertimePendingRemovalNotification {
+    encodedLegalMoves: string;
+    removePieceAt: LogicalPoint;
+}
+
 export interface PlayerOvertime {
     secondRemainderMs: number;
     pendingRemoval: PendingOvertimeRemoval[];
