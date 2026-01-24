@@ -87,7 +87,7 @@ public class GameNotifier(IHubContext<GameHub, IGameHubClient> hub) : IGameNotif
         GameColor overtimedPlayer,
         long overtimeTurnStartedAt,
         double secondRemainder,
-        IEnumerable<OvertimePendingRemovalNotification> overtimePositions,
+        IEnumerable<OvertimePendingRemovalNotification> pendingRemoval,
         GameToken gameToken,
         GameNotifierState state
     )
@@ -99,7 +99,7 @@ public class GameNotifier(IHubContext<GameHub, IGameHubClient> hub) : IGameNotif
                 overtimedPlayer,
                 overtimeTurnStartedAt,
                 secondRemainder,
-                overtimePositions
+                pendingRemoval
             );
     }
 
