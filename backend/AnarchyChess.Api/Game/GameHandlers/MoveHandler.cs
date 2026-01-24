@@ -129,11 +129,11 @@ public class MoveHandler(
             return;
         }
 
-        var (piecePositions, newLegalMoves, _) = _overtime.GetRemovedPiecesSinceLastMove(
+        var (pendingRemovals, newLegalMoves, _) = _overtime.ProcessOvertimeRemovals(
             currentPlayer,
             game.OvertimeState
         );
-        _core.RemovePieces(piecePositions, newLegalMoves, game.Core);
+        _core.RemovePieces(pendingRemovals, newLegalMoves, game.Core);
     }
 
     private async Task StartNextOvertimeTurnAsync(
@@ -153,7 +153,7 @@ public class MoveHandler(
             game.OvertimeState
         );
         var overtimeTurnStartedAt = _overtime.GetOvertimeTurnStartedAt(game.OvertimeState);
-        var secondRemainder = _overtime.GetPlayerSecondRemainder(sideToMove, game.OvertimeState);
+        var secondRemainder = _overtime.GetPlayerSecondRemainderMs(sideToMove, game.OvertimeState);
         await _notifier.NotifyOvertimeAsync(
             sideToMove,
             overtimeTurnStartedAt: overtimeTurnStartedAt,

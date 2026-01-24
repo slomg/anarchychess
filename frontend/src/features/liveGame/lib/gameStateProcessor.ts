@@ -160,7 +160,7 @@ function decodeOvertime(
         }));
 
     return {
-        secondRemainder: playerOvertime.secondRemainder,
+        secondRemainderMs: playerOvertime.secondRemainderMs,
         pendingRemoval,
     };
 }

@@ -91,11 +91,11 @@ public class ClockHandler(
             return null;
         }
 
-        var (positions, newLegalMoves, isGameOver) = _overtime.GetRemovedPiecesSinceLastMove(
+        var (pendingRemoval, newLegalMoves, isGameOver) = _overtime.ProcessOvertimeRemovals(
             playerColor,
             game.OvertimeState
         );
-        _core.RemovePieces(positions, newLegalMoves, game.Core);
+        _core.RemovePieces(pendingRemoval, newLegalMoves, game.Core);
 
         return isGameOver ? _resultDescriber.Overtime(playerColor) : null;
     }
@@ -112,7 +112,7 @@ public class ClockHandler(
             game.OvertimeState
         );
         var overtimeTurnStartedAt = _overtime.GetOvertimeTurnStartedAt(game.OvertimeState);
-        var secondRemainder = _overtime.GetPlayerSecondRemainder(
+        var secondRemainder = _overtime.GetPlayerSecondRemainderMs(
             overtimedPlayer,
             game.OvertimeState
         );

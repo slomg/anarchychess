@@ -258,7 +258,7 @@ public class MoveHandlerTests : BaseIntegrationTest
             .NotifyOvertimeAsync(
                 GameColor.White,
                 overtimeTurnStartedAt: _overtime.GetOvertimeTurnStartedAt(_gameData.OvertimeState),
-                secondRemainder: _overtime.GetPlayerSecondRemainder(
+                secondRemainder: _overtime.GetPlayerSecondRemainderMs(
                     GameColor.White,
                     _gameData.OvertimeState
                 ),
@@ -305,6 +305,11 @@ public class MoveHandlerTests : BaseIntegrationTest
             _gameData.Core.Board.IsEmpty(point).Should().BeFalse();
             pendingRemovalPoints.Add(point);
         }
+        var beforePendingLength = _gameData
+            .OvertimeState
+            .PlayerOvertime[GameColor.White]
+            .PendingRemoval
+            .Count;
 
         await _handler.HandleMoveAsync(
             _gameData.Players.WhitePlayer.UserId,
@@ -325,5 +330,9 @@ public class MoveHandlerTests : BaseIntegrationTest
         }
         // next legal moves != next legal moves if it was still white's turn
         _gameCore.GetLegalMoves(_gameData.Core).Should().NotBeEquivalentTo(newLegalMoves);
+        _gameData
+            .OvertimeState.PlayerOvertime[GameColor.White]
+            .PendingRemoval.Count.Should()
+            .Be(beforePendingLength - 2);
     }
 }

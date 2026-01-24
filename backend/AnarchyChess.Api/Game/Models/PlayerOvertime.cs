@@ -7,7 +7,7 @@ namespace AnarchyChess.Api.Game.Models;
 public class PlayerOvertime
 {
     [Id(0)]
-    public double SecondRemainder { get; set; }
+    public double SecondRemainderMs { get; set; }
 
     [Id(1)]
     public required IReadOnlyList<PendingRemovalEntry> PendingRemoval { get; set; }

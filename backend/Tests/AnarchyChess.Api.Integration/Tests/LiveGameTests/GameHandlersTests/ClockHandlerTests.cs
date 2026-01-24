@@ -136,7 +136,7 @@ public class ClockHandlerTests : BaseIntegrationTest
                 secondRemainder: _gameData
                     .OvertimeState
                     .PlayerOvertime[GameColor.White]
-                    .SecondRemainder,
+                    .SecondRemainderMs,
                 Arg.Is<List<OvertimePendingRemovalNotification>>(x => x.Count > 1),
                 _gameToken,
                 _gameData.NotifierState
@@ -156,6 +156,11 @@ public class ClockHandlerTests : BaseIntegrationTest
         now += rescheduleTo!.Value;
         _timeProviderMock.GetUtcNow().Returns(now);
 
+        var (pendingRemoval, newLegalMoves, _) = _overtime.GetRemovedPiecesSinceLastMove(
+            GameColor.White,
+            _gameData.OvertimeState
+        );
+
         var (overtimeRescheduleTo, endStatus) = await _handler.OnClockTickAsync(
             _gameToken,
             _gameData
@@ -164,15 +169,12 @@ public class ClockHandlerTests : BaseIntegrationTest
         overtimeRescheduleTo.Should().BeNull();
         endStatus.Should().Be(_resultDescriber.Overtime(by: GameColor.White));
 
-        var (positions, newLegalMoves, _) = _overtime.GetRemovedPiecesSinceLastMove(
-            GameColor.White,
-            _gameData.OvertimeState
-        );
-        foreach (var point in positions)
+        foreach (var point in pendingRemoval)
         {
             _gameData.Core.Board.IsEmpty(point).Should().BeTrue();
         }
         _core.GetLegalMoves(_gameData.Core).Should().BeEquivalentTo(newLegalMoves);
+        _gameData.OvertimeState.PlayerOvertime[GameColor.White].PendingRemoval.Should().BeEmpty();
     }
 
     [Fact]

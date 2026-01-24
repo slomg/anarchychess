@@ -6,6 +6,6 @@ namespace AnarchyChess.Api.GameSnapshot.Models;
 [GenerateSerializer]
 [Alias("AnarchyChess.Api.GameSnapshot.Models.PlayerOvertimePathSnapshot")]
 public record PlayerOvertimePathSnapshot(
-    double SecondRemainder,
+    double SecondRemainderMs,
     IReadOnlyList<PendingOvertimeRemovalPathSnapshot> PendingRemoval
 );

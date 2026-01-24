@@ -101,12 +101,12 @@ public class GameNotifierTests
             new([7, 8, 9], new("a3")),
         ];
         long turnStartedAt = 1234;
-        double secondRemainder = 0.1234;
+        double secondRemainderMs = 5678;
 
         await _notifier.NotifyOvertimeAsync(
             GameColor.Black,
             turnStartedAt,
-            secondRemainder,
+            secondRemainderMs,
             pendingRemoval,
             _gameToken,
             state
@@ -114,7 +114,12 @@ public class GameNotifierTests
 
         await _clientGameGroupProxyMock
             .Received(1)
-            .ReceiveOvertimeAsync(GameColor.Black, turnStartedAt, secondRemainder, pendingRemoval);
+            .ReceiveOvertimeAsync(
+                GameColor.Black,
+                turnStartedAt,
+                secondRemainderMs,
+                pendingRemoval
+            );
         state.Revision.Should().Be(1);
     }
 

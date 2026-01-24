@@ -458,7 +458,7 @@ export type Overtime = {
 };
 
 export type PlayerOvertimePath = {
-    secondRemainder: number;
+    secondRemainderMs: number;
     pendingRemoval: Array<PendingOvertimeRemovalPath>;
 };
 

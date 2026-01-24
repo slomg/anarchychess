@@ -218,7 +218,7 @@ describe("createStoreProps", () => {
         const gameState = createFakeGameState({
             overtime: {
                 whiteOvertime: {
-                    secondRemainder: 0.123,
+                    secondRemainderMs: 1234,
                     pendingRemoval: [
                         {
                             legalMoves: [createFakeMovePath()],
@@ -227,7 +227,7 @@ describe("createStoreProps", () => {
                     ],
                 },
                 blackOvertime: null,
-                overtimeTurnStartedAt: 1234,
+                overtimeTurnStartedAt: 5678,
             },
         });
 
@@ -238,8 +238,8 @@ describe("createStoreProps", () => {
         );
 
         expect(live.whiteOvertime).not.toBeNull();
-        expect(live.overtimeTurnStartedAt).toBe(1234);
-        expect(live.whiteOvertime!.secondRemainder).toBe(0.123);
+        expect(live.whiteOvertime!.secondRemainderMs).toBe(1234);
+        expect(live.overtimeTurnStartedAt).toBe(5678);
         expect(live.whiteOvertime!.pendingRemoval[0].removedPieceAt).toEqual(
             logicalPoint({ x: 1, y: 2 }),
         );
@@ -272,7 +272,7 @@ describe("createStoreProps", () => {
         expect(live.whiteOvertime).toBeNull();
         expect(live.overtimeTurnStartedAt).toBe(5678);
         expect(live.blackOvertime).not.toBeNull();
-        expect(live.blackOvertime!.secondRemainder).toBe(0.456);
+        expect(live.blackOvertime!.secondRemainderMs).toBe(0.456);
         expect(live.blackOvertime!.pendingRemoval[0].removedPieceAt).toEqual(
             logicalPoint({ x: 2, y: 3 }),
         );

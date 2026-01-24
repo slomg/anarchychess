@@ -86,7 +86,7 @@ public class GameNotifier(IHubContext<GameHub, IGameHubClient> hub) : IGameNotif
     public async Task NotifyOvertimeAsync(
         GameColor overtimedPlayer,
         long overtimeTurnStartedAt,
-        double secondRemainder,
+        double secondRemainderMs,
         IEnumerable<OvertimePendingRemovalNotification> pendingRemoval,
         GameToken gameToken,
         GameNotifierState state
@@ -98,7 +98,7 @@ public class GameNotifier(IHubContext<GameHub, IGameHubClient> hub) : IGameNotif
             .ReceiveOvertimeAsync(
                 overtimedPlayer,
                 overtimeTurnStartedAt,
-                secondRemainder,
+                secondRemainderMs,
                 pendingRemoval
             );
     }
