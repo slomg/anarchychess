@@ -132,7 +132,7 @@ public class ClockHandlerTests : BaseIntegrationTest
             .Received(1)
             .NotifyOvertimePositionsAsync(
                 GameColor.White,
-                Arg.Is<List<OvertimePosition>>(x => x.Count > 1),
+                Arg.Is<List<OvertimePositionNotification>>(x => x.Count > 1),
                 _gameToken,
                 _gameData.NotifierState
             );

@@ -94,7 +94,7 @@ public class GameNotifierTests
     public async Task NotifyOvertimePositionsAsync_sends_positions_and_increments_revision()
     {
         GameNotifierState state = new() { Revision = 0 };
-        List<OvertimePosition> positions =
+        List<OvertimePositionNotification> positions =
         [
             new([1, 2, 3], new("a1")),
             new([4, 5, 6], new("a2")),

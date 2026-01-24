@@ -9,7 +9,7 @@ namespace AnarchyChess.Api.Game.Services;
 public interface IOvertime
 {
     OvertimeSnapshot ToSnapshot(OvertimeState state);
-    List<OvertimePosition> StartOvertimeTurn(
+    List<OvertimePositionNotification> StartOvertimeTurn(
         GameColor overtimedPlayerColor,
         IReadOnlyChessBoard board,
         OvertimeState state
@@ -26,8 +26,6 @@ public interface IOvertime
 [GenerateSerializer]
 [Alias("AnarchyChess.Api.Game.Services.PendingRemovalEntry")]
 public readonly record struct PendingRemovalEntry(AlgebraicPoint Position, LegalMoveSet LegalMoves);
-
-public record OvertimePosition(IReadOnlyList<byte> EncodedLegalMoves, AlgebraicPoint RemovedPiece);
 
 [GenerateSerializer]
 [Alias("AnarchyChess.Api.Game.Services.OvertimeState")]
@@ -60,7 +58,7 @@ public class Overtime(
         return new(WhiteOvertime: whiteOvertime, BlackOvertime: blackOvertime);
     }
 
-    private static EncodedPlayerOvertimeSnapshot? BuildPlayerOvertimeSnapshot(
+    private static PlayerOvertimePathSnapshot? BuildPlayerOvertimeSnapshot(
         GameColor playerColor,
         OvertimeState state
     )
@@ -71,9 +69,9 @@ public class Overtime(
             return null;
         }
 
-        List<EncodedPendingOvertimeRemovalSnapshot> pendingRemoval =
+        List<PendingOvertimeRemovalPathSnapshot> pendingRemoval =
         [
-            .. playerOvertime.PendingRemoval.Select(x => new EncodedPendingOvertimeRemovalSnapshot(
+            .. playerOvertime.PendingRemoval.Select(x => new PendingOvertimeRemovalPathSnapshot(
                 LegalMoves: x.LegalMoves.MovePaths,
                 RemovedPiece: x.Position
             )),
@@ -81,7 +79,7 @@ public class Overtime(
         return new(SecondRemainder: playerOvertime.SecondRemainder, PendingRemoval: pendingRemoval);
     }
 
-    public List<OvertimePosition> StartOvertimeTurn(
+    public List<OvertimePositionNotification> StartOvertimeTurn(
         GameColor overtimedPlayerColor,
         IReadOnlyChessBoard board,
         OvertimeState state
@@ -90,7 +88,7 @@ public class Overtime(
         state.LastMoveAtMs = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
 
         ChessBoard editingBoard = new(board);
-        List<OvertimePosition> result = [];
+        List<OvertimePositionNotification> result = [];
         List<PendingRemovalEntry> pendingRemoval = [];
         foreach (var position in ComputeOvertimeRemovals(overtimedPlayerColor, board))
         {
@@ -99,7 +97,9 @@ public class Overtime(
             var legalMoves = _playableMoveProvider.CalculateAllPlayableMoves(editingBoard);
             var encoded = _moveEncoder.EncodeMoves(legalMoves.MovePaths);
 
-            result.Add(new OvertimePosition(EncodedLegalMoves: encoded, RemovedPiece: position));
+            result.Add(
+                new OvertimePositionNotification(EncodedLegalMoves: encoded, RemovedPiece: position)
+            );
             pendingRemoval.Add(new(position, legalMoves));
         }
 

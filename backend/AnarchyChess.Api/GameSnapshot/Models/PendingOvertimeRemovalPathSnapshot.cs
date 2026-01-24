@@ -3,10 +3,10 @@ using AnarchyChess.Api.GameLogic.Models;
 
 namespace AnarchyChess.Api.GameSnapshot.Models;
 
-[DisplayName("EncodedPendingOvertimeRemoval")]
+[DisplayName("PendingOvertimeRemovalPath")]
 [GenerateSerializer]
-[Alias("AnarchyChess.Api.GameSnapshot.Models.EncodedPendingOvertimeRemovalSnapshot")]
-public record EncodedPendingOvertimeRemovalSnapshot(
+[Alias("AnarchyChess.Api.GameSnapshot.Models.PendingOvertimeRemovalPathSnapshot")]
+public record PendingOvertimeRemovalPathSnapshot(
     IReadOnlyCollection<MovePath> LegalMoves,
     AlgebraicPoint RemovedPiece
 );

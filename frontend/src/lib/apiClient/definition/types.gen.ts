@@ -452,16 +452,16 @@ export type DrawState = {
 };
 
 export type Overtime = {
-    whiteOvertime?: EncodedPlayerOvertime | null;
-    blackOvertime?: EncodedPlayerOvertime | null;
+    whiteOvertime?: PlayerOvertimePath | null;
+    blackOvertime?: PlayerOvertimePath | null;
 };
 
-export type EncodedPlayerOvertime = {
+export type PlayerOvertimePath = {
     secondRemainder: number;
-    pendingRemoval: Array<EncodedPendingOvertimeRemoval>;
+    pendingRemoval: Array<PendingOvertimeRemovalPath>;
 };
 
-export type EncodedPendingOvertimeRemoval = {
+export type PendingOvertimeRemovalPath = {
     legalMoves: Array<MovePath>;
     removedPiece: AlgebraicPoint;
 };

@@ -24,7 +24,7 @@ public interface IGameHubClient : IAnarchyChessHubClient
 
     Task ReceiveOvertimePositionsAsync(
         GameColor overtimedPlayer,
-        IEnumerable<OvertimePosition> overtimePositions
+        IEnumerable<OvertimePositionNotification> overtimePositions
     );
 
     Task DrawStateChangeAsync(DrawState drawState);

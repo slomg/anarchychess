@@ -26,7 +26,7 @@ public interface IGameNotifier
     Task NotifyMoveMadeAsync(MoveNotification notification, GameNotifierState state);
     Task NotifyOvertimePositionsAsync(
         GameColor overtimedPlayer,
-        IEnumerable<OvertimePosition> overtimePositions,
+        IEnumerable<OvertimePositionNotification> overtimePositions,
         GameToken gameToken,
         GameNotifierState state
     );
@@ -83,7 +83,7 @@ public class GameNotifier(IHubContext<GameHub, IGameHubClient> hub) : IGameNotif
 
     public async Task NotifyOvertimePositionsAsync(
         GameColor overtimedPlayer,
-        IEnumerable<OvertimePosition> overtimePositions,
+        IEnumerable<OvertimePositionNotification> overtimePositions,
         GameToken gameToken,
         GameNotifierState state
     )

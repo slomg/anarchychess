@@ -69,7 +69,7 @@ public class OvertimeTests
 
         var result = _overtime.StartOvertimeTurn(GameColor.White, board, _state);
 
-        List<OvertimePosition> expectedResult =
+        List<OvertimePositionNotification> expectedResult =
         [
             new(firstEncoded, new("a2")),
             new(secondEncoded, new("a3")),
@@ -176,11 +176,11 @@ public class OvertimeTests
                         SecondRemainder: 0.123,
                         PendingRemoval:
                         [
-                            new EncodedPendingOvertimeRemovalSnapshot(
+                            new PendingOvertimeRemovalPathSnapshot(
                                 white1.LegalMoves.MovePaths,
                                 white1.Position
                             ),
-                            new EncodedPendingOvertimeRemovalSnapshot(
+                            new PendingOvertimeRemovalPathSnapshot(
                                 white2.LegalMoves.MovePaths,
                                 white2.Position
                             ),
@@ -190,11 +190,11 @@ public class OvertimeTests
                         SecondRemainder: 0.456,
                         PendingRemoval:
                         [
-                            new EncodedPendingOvertimeRemovalSnapshot(
+                            new PendingOvertimeRemovalPathSnapshot(
                                 black1.LegalMoves.MovePaths,
                                 black1.Position
                             ),
-                            new EncodedPendingOvertimeRemovalSnapshot(
+                            new PendingOvertimeRemovalPathSnapshot(
                                 black2.LegalMoves.MovePaths,
                                 black2.Position
                             ),
