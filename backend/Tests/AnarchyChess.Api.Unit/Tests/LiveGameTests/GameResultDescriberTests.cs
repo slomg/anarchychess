@@ -75,8 +75,8 @@ public class GameResultDescriberTests
     }
 
     [Theory]
-    [InlineData(GameColor.White, GameResult.BlackWin, "The White King Got Bored and Left")]
-    [InlineData(GameColor.Black, GameResult.WhiteWin, "The Black King Got Bored and Left")]
+    [InlineData(GameColor.White, GameResult.BlackWin, "White's King Got Bored and Left")]
+    [InlineData(GameColor.Black, GameResult.WhiteWin, "Black's King Got Bored and Left")]
     public void Overtime_returns_the_correct_status(
         GameColor loser,
         GameResult expectedResult,

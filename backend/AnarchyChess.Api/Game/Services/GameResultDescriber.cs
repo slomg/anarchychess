@@ -37,7 +37,7 @@ public class GameResultDescriber : IGameResultDescriber
         new(GetResultByLoser(by), $"{by} Abandoned the Game");
 
     public GameEndStatus Overtime(GameColor by) =>
-        new(GetResultByLoser(by), $"The {by} King Got Bored and Left");
+        new(GetResultByLoser(by), $"{by}'s King Got Bored and Left");
 
     public GameEndStatus ThreeFold() => new(GameResult.Draw, "Draw by 3-Fold Repetition");
 
