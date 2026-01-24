@@ -229,17 +229,14 @@ public class MoveHandlerTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task HandleMoveAsync_removes_overtime_pieces_for_current_player()
+    public async Task HandleMoveAsync_starts_overtime_turn_for_next_player()
     {
         await GameUtils.GoOutOfGracePeriodAsync(_handler, _gameCore, _gameToken, _gameData);
-        var now = _fakeNow.AddSeconds(_gameData.Pool.TimeControl.BaseSeconds);
-        _timeProviderMock.GetUtcNow().Returns(now);
 
-        var pendingRemoval = _overtime.StartOvertimeTurn(
-            GameColor.Black,
-            _gameCore.GetReadOnlyBoard(_gameData.Core),
-            _gameData.OvertimeState
-        );
+        _timeProviderMock
+            .GetUtcNow()
+            .Returns(_fakeNow.AddSeconds(_gameData.Pool.TimeControl.BaseSeconds));
+
         await _handler.HandleMoveAsync(
             _gameData.Players.WhitePlayer.UserId,
             new MoveKey(GameUtils.GetLegalMove(_gameCore, _gameData)),
@@ -247,14 +244,6 @@ public class MoveHandlerTests : BaseIntegrationTest
             _gameData,
             CT
         );
-
-        foreach (var pending in pendingRemoval)
-        {
-            _gameData.Core.Board.IsEmpty(pending.RemovePieceAt).Should().BeFalse();
-        }
-
-        now += TimeSpan.FromSeconds(pendingRemoval.Count);
-        _timeProviderMock.GetUtcNow().Returns(now);
         await _handler.HandleMoveAsync(
             _gameData.Players.BlackPlayer.UserId,
             new MoveKey(GameUtils.GetLegalMove(_gameCore, _gameData)),
@@ -263,9 +252,78 @@ public class MoveHandlerTests : BaseIntegrationTest
             CT
         );
 
-        foreach (var pending in pendingRemoval)
+        _overtime.HasStartedOvertime(GameColor.White, _gameData.OvertimeState).Should().BeTrue();
+        await _notifierMock
+            .Received(1)
+            .NotifyOvertimeAsync(
+                GameColor.White,
+                overtimeTurnStartedAt: _overtime.GetOvertimeTurnStartedAt(_gameData.OvertimeState),
+                secondRemainder: _overtime.GetPlayerSecondRemainder(
+                    GameColor.White,
+                    _gameData.OvertimeState
+                ),
+                Arg.Is<List<OvertimePendingRemovalNotification>>(x => x.Count > 1),
+                _gameToken,
+                _gameData.NotifierState
+            );
+    }
+
+    [Fact]
+    public async Task HandleMoveAsync_removes_overtime_pieces_for_current_player()
+    {
+        await GameUtils.GoOutOfGracePeriodAsync(_handler, _gameCore, _gameToken, _gameData);
+        var now = _fakeNow.AddSeconds(_gameData.Pool.TimeControl.BaseSeconds);
+        _timeProviderMock.GetUtcNow().Returns(now);
+
+        await _handler.HandleMoveAsync(
+            _gameData.Players.WhitePlayer.UserId,
+            new MoveKey(GameUtils.GetLegalMove(_gameCore, _gameData)),
+            _gameToken,
+            _gameData,
+            CT
+        );
+
+        // black makes a move, it's now white's turn, timeout should start now
+        await _handler.HandleMoveAsync(
+            _gameData.Players.BlackPlayer.UserId,
+            new MoveKey(GameUtils.GetLegalMove(_gameCore, _gameData)),
+            _gameToken,
+            _gameData,
+            CT
+        );
+
+        now += TimeSpan.FromSeconds(2);
+        _timeProviderMock.GetUtcNow().Returns(now);
+        var (pendingRemoval, newLegalMoves, _) = _overtime.GetRemovedPiecesSinceLastMove(
+            GameColor.White,
+            _gameData.OvertimeState
+        );
+        HashSet<AlgebraicPoint> pendingRemovalPoints = [];
+        // white just played the move before timeout, so no piece should've been removed
+        foreach (var point in pendingRemoval)
         {
-            _gameData.Core.Board.IsEmpty(pending.RemovePieceAt).Should().BeTrue();
+            _gameData.Core.Board.IsEmpty(point).Should().BeFalse();
+            pendingRemovalPoints.Add(point);
         }
+
+        await _handler.HandleMoveAsync(
+            _gameData.Players.WhitePlayer.UserId,
+            new MoveKey(
+                // make sure the move is not interfering with the result
+                newLegalMoves.MoveMap.Values.First(move =>
+                    !pendingRemoval.Contains(move.From) && !pendingRemoval.Contains(move.To)
+                )
+            ),
+            _gameToken,
+            _gameData,
+            CT
+        );
+
+        foreach (var point in pendingRemoval)
+        {
+            _gameData.Core.Board.IsEmpty(point).Should().BeTrue();
+        }
+        // next legal moves != next legal moves if it was still white's turn
+        _gameCore.GetLegalMoves(_gameData.Core).Should().NotBeEquivalentTo(newLegalMoves);
     }
 }
