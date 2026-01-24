@@ -4,8 +4,8 @@ namespace AnarchyChess.Api.GameSnapshot.Models;
 
 [DisplayName("EncodedPlayerOvertime")]
 [GenerateSerializer]
-[Alias("AnarchyChess.Api.GameSnapshot.Models.PlayerOvertimeSnapshot")]
+[Alias("AnarchyChess.Api.GameSnapshot.Models.EncodedPlayerOvertimeSnapshot")]
 public record EncodedPlayerOvertimeSnapshot(
     double SecondRemainder,
-    IReadOnlyList<EncodedOvertimePositionSnapshot> PendingRemoval
+    IReadOnlyList<EncodedPendingOvertimeRemovalSnapshot> PendingRemoval
 );

@@ -176,11 +176,11 @@ public class OvertimeTests
                         SecondRemainder: 0.123,
                         PendingRemoval:
                         [
-                            new EncodedOvertimePositionSnapshot(
+                            new EncodedPendingOvertimeRemovalSnapshot(
                                 white1.LegalMoves.MovePaths,
                                 white1.Position
                             ),
-                            new EncodedOvertimePositionSnapshot(
+                            new EncodedPendingOvertimeRemovalSnapshot(
                                 white2.LegalMoves.MovePaths,
                                 white2.Position
                             ),
@@ -190,11 +190,11 @@ public class OvertimeTests
                         SecondRemainder: 0.456,
                         PendingRemoval:
                         [
-                            new EncodedOvertimePositionSnapshot(
+                            new EncodedPendingOvertimeRemovalSnapshot(
                                 black1.LegalMoves.MovePaths,
                                 black1.Position
                             ),
-                            new EncodedOvertimePositionSnapshot(
+                            new EncodedPendingOvertimeRemovalSnapshot(
                                 black2.LegalMoves.MovePaths,
                                 black2.Position
                             ),

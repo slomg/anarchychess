@@ -71,9 +71,9 @@ public class Overtime(
             return null;
         }
 
-        List<EncodedOvertimePositionSnapshot> pendingRemoval =
+        List<EncodedPendingOvertimeRemovalSnapshot> pendingRemoval =
         [
-            .. playerOvertime.PendingRemoval.Select(x => new EncodedOvertimePositionSnapshot(
+            .. playerOvertime.PendingRemoval.Select(x => new EncodedPendingOvertimeRemovalSnapshot(
                 LegalMoves: x.LegalMoves.MovePaths,
                 RemovedPiece: x.Position
             )),

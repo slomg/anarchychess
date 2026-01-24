@@ -458,10 +458,10 @@ export type Overtime = {
 
 export type EncodedPlayerOvertime = {
     secondRemainder: number;
-    pendingRemoval: Array<EncodedOvertimePosition>;
+    pendingRemoval: Array<EncodedPendingOvertimeRemoval>;
 };
 
-export type EncodedOvertimePosition = {
+export type EncodedPendingOvertimeRemoval = {
     legalMoves: Array<MovePath>;
     removedPiece: AlgebraicPoint;
 };
