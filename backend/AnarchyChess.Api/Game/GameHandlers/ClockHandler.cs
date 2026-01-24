@@ -116,7 +116,7 @@ public class ClockHandler(
             overtimedPlayer,
             game.OvertimeState
         );
-        await _notifier.NotifyOvertimePositionsAsync(
+        await _notifier.NotifyOvertimeAsync(
             overtimedPlayer,
             overtimeTurnStartedAt: overtimeTurnStartedAt,
             secondRemainder: secondRemainder,

@@ -130,7 +130,7 @@ public class ClockHandlerTests : BaseIntegrationTest
         _overtime.HasStartedOvertime(GameColor.Black, _gameData.OvertimeState).Should().BeFalse();
         await _notifierMock
             .Received(1)
-            .NotifyOvertimePositionsAsync(
+            .NotifyOvertimeAsync(
                 GameColor.White,
                 overtimeTurnStartedAt: _gameData.OvertimeState.OvertimeTurnStartedAt,
                 secondRemainder: _gameData

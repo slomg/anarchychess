@@ -22,11 +22,11 @@ public interface IGameHubClient : IAnarchyChessHubClient
         ClockSnapshot clock
     );
 
-    Task ReceiveOvertimePositionsAsync(
+    Task ReceiveOvertimeAsync(
         GameColor overtimedPlayer,
         long overtimeTurnStartedAt,
         double secondRemainder,
-        IEnumerable<OvertimePendingRemovalNotification> overtimePositions
+        IEnumerable<OvertimePendingRemovalNotification> pendingRemoval
     );
 
     Task DrawStateChangeAsync(DrawState drawState);
