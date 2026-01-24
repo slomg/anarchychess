@@ -128,12 +128,12 @@ describe("GameClock", () => {
             vi.advanceTimersByTime(1000);
         });
 
-        const clock = screen.getByText("00:00.00");
+        const clock = screen.getByText("OVERTIME");
         expect(clock.classList.contains("text-red-600")).toBe(true);
         expect(clock.classList.contains("animate-freakout")).toBe(false);
     });
 
-    it("should show zero and doesn't go negative", () => {
+    it("should show OVERTIME once time is over", () => {
         store.setState({
             clocks: createFakeClocks({
                 whiteClock: createFakeClockPlayer({ timeLeftMs: 5000 }),
@@ -149,7 +149,7 @@ describe("GameClock", () => {
             vi.advanceTimersByTime(7000);
         });
 
-        expect(screen.getByText("00:00.00")).toBeInTheDocument();
+        expect(screen.getByText("OVERTIME")).toBeInTheDocument();
     });
 
     it("should stop ticking when isFrozen is true", () => {

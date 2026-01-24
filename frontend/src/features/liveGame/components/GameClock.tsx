@@ -102,6 +102,7 @@ const GameClock = ({ color }: { color: GameColor }) => {
     const strSeconds = isInTimeTrouble
         ? seconds.toFixed(2).padStart(5, "0") // xx.yy
         : Math.floor(seconds).toString().padStart(2, "0"); // xx
+    const isOvertime = seconds <= 0 && minutes <= 0;
 
     return (
         <div
@@ -112,10 +113,10 @@ const GameClock = ({ color }: { color: GameColor }) => {
                 className={clsx(
                     "text-2xl leading-4",
                     isInTimeTrouble && isTicking && "animate-freakout",
-                    seconds <= 0 && minutes <= 0 && isFrozen && "text-red-600",
+                    isOvertime && "text-red-600",
                 )}
             >
-                {strMinutes}:{strSeconds}
+                {isOvertime ? "OVERTIME" : `${strMinutes}:${strSeconds}`}
             </p>
 
             {timeUntilAbandonedMs && (
