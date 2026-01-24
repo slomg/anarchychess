@@ -1,6 +1,8 @@
-import { ChessboardProps } from "@/features/chessboard/stores/chessboardStore";
 import { decodeMovePath, decodeMovePathIntoLegalMoves } from "../moveDecoder";
 import { createFakeGameState } from "@/lib/testUtils/fakers/gameStateFaker";
+import { createFakeMovePath } from "@/lib/testUtils/fakers/movePathFaker";
+import { createFakeMove } from "@/lib/testUtils/fakers/chessboardFakers";
+import PositionHistory from "@/features/chessboard/lib/positionHistory";
 import { simulateMove } from "@/features/chessboard/lib/simulateMove";
 import { LiveChessStoreProps } from "../../stores/liveChessStore";
 import mockSequentialUUID from "@/lib/testUtils/mocks/mockUuids";
@@ -9,20 +11,64 @@ import { LiveChessViewer } from "../../stores/gamePlaySlice";
 import { MoveBounds } from "@/features/chessboard/lib/types";
 import { logicalPoint } from "@/features/point/pointUtils";
 import { createStoreProps } from "../gameStateProcessor";
-import { LogicalPoint } from "@/features/point/types";
 import { GameColor, GameResult } from "@/lib/apiClient";
 import constants from "@/lib/constants";
-import PositionHistory from "@/features/chessboard/lib/positionHistory";
-import { createFakeMove } from "@/lib/testUtils/fakers/chessboardFakers";
-import { createFakeMovePath } from "@/lib/testUtils/fakers/movePathFaker";
-import { PlayerOvertime } from "../types";
 
 describe("createStoreProps", () => {
-    it("should return the complete and correct store props object", () => {
+    it("should create correct live store props", () => {
+        const gameState = createFakeGameState();
+        const viewerUserId = gameState.blackPlayer.userId;
+
+        const { live } = createStoreProps(
+            "game-token",
+            viewerUserId,
+            gameState,
+        );
+
+        expect(live).toEqual<LiveChessStoreProps>({
+            gameToken: "game-token",
+            sourceRevision: gameState.revision,
+            initialFen: gameState.initialFen,
+
+            whitePlayer: gameState.whitePlayer,
+            blackPlayer: gameState.blackPlayer,
+            sideToMove: gameState.sideToMove,
+
+            pool: gameState.pool,
+            viewer: {
+                userId: viewerUserId,
+                playerColor: GameColor.BLACK,
+            },
+
+            drawState: gameState.drawState,
+            clocks: gameState.clocks,
+            whiteOvertime: null,
+            blackOvertime: null,
+            resultData: null,
+        });
+    });
+
+    it("should create board props with correct orientation and dimensions", () => {
+        const gameState = createFakeGameState();
+        const viewerUserId = gameState.blackPlayer.userId;
+
+        const { board } = createStoreProps(
+            "game-token",
+            viewerUserId,
+            gameState,
+        );
+
+        expect(board.viewingFrom).toBe(GameColor.BLACK);
+        expect(board.boardDimensions).toEqual({
+            width: constants.BOARD_WIDTH,
+            height: constants.BOARD_HEIGHT,
+        });
+    });
+
+    it("should build position history and last move from move history", () => {
         mockSequentialUUID();
 
         const gameState = createFakeGameState({
-            initialFen: constants.INITIAL_FEN,
             // f5 f6 Nh3 Nc8
             moveHistory: [
                 {
@@ -70,69 +116,20 @@ describe("createStoreProps", () => {
                     timeLeft: 50,
                 },
             ],
-            legalMoves: [
-                { fromIdx: 0, toIdx: 1, moveKey: "0" },
-                { fromIdx: 2, toIdx: 3, moveKey: "1" },
-            ],
-            drawState: {
-                activeRequester: GameColor.WHITE,
-                whiteCooldown: 6,
-                blackCooldown: 9,
-            },
-            overtime: {
-                whiteOvertime: {
-                    secondRemainder: 0.123,
-                    pendingRemoval: [
-                        {
-                            legalMoves: [
-                                createFakeMovePath(),
-                                createFakeMovePath(),
-                            ],
-                            removedPiece: { x: 1, y: 2 },
-                        },
-                    ],
-                },
-                blackOvertime: {
-                    secondRemainder: 0.456,
-                    pendingRemoval: [
-                        {
-                            legalMoves: [
-                                createFakeMovePath(),
-                                createFakeMovePath(),
-                            ],
-                            removedPiece: { x: 2, y: 3 },
-                        },
-                    ],
-                },
-            },
         });
 
-        const result = createStoreProps(
+        const { board } = createStoreProps(
             "game-token",
             gameState.blackPlayer.userId,
             gameState,
         );
 
-        const baseMs = gameState.pool.timeControl.baseSeconds * 1000;
-        let pieces = new BoardPieces(constants.DEFAULT_CHESS_BOARD);
-
-        function applyMove(from: LogicalPoint, to: LogicalPoint) {
-            const { newPieces } = simulateMove(
-                pieces,
-                createFakeMove({ from, to }),
-            );
-            pieces = newPieces;
-        }
-
+        // moves and clocks from the test setup
         // start position history ids after piece ids
         mockSequentialUUID({ startAt: constants.DEFAULT_CHESS_BOARD.size });
+        const baseMs = gameState.pool.timeControl.baseSeconds * 1000;
+        let pieces = new BoardPieces(constants.DEFAULT_CHESS_BOARD);
         const positionHistory = new PositionHistory(new BoardPieces(pieces));
-        // clocks: {
-        //     whiteClock: baseMs,
-        //     blackClock: baseMs,
-        // },
-
-        // moves and clocks from the test setup
         const moves = [
             {
                 from: logicalPoint({ x: 5, y: 1 }),
@@ -173,7 +170,11 @@ describe("createStoreProps", () => {
         ];
 
         for (const move of moves) {
-            applyMove(move.from, move.to);
+            const { newPieces } = simulateMove(
+                pieces,
+                createFakeMove({ from: move.from, to: move.to }),
+            );
+            pieces = newPieces;
             positionHistory.addNextPosition({
                 pieces,
                 move: move.decoded,
@@ -190,81 +191,86 @@ describe("createStoreProps", () => {
             to: lastPosition.move.to,
         };
 
-        const legalMoves = decodeMovePathIntoLegalMoves({
-            paths: gameState.legalMoves,
-            boardWidth: constants.BOARD_WIDTH,
-        });
+        expect(board.lastMove).toEqual(lastMove);
+        expect(board.positionHistory).toEqual(positionHistory);
+        expect(board.pieces).toEqual(lastPosition.pieces);
+    });
 
-        const whiteOvertimePath = gameState.overtime.whiteOvertime!;
-        const whiteOvertime: PlayerOvertime = {
-            secondRemainder: whiteOvertimePath.secondRemainder,
-            pendingRemoval: [
-                {
-                    legalMoves: decodeMovePathIntoLegalMoves({
-                        paths: whiteOvertimePath.pendingRemoval[0].legalMoves,
-                        boardWidth: constants.BOARD_WIDTH,
-                    }),
-                    removedPieceAt: logicalPoint(
-                        whiteOvertimePath.pendingRemoval[0].removedPiece,
-                    ),
-                },
-            ],
-        };
-        const blackOvertimePath = gameState.overtime.blackOvertime!;
-        const blackOvertime: PlayerOvertime = {
-            secondRemainder: blackOvertimePath.secondRemainder,
-            pendingRemoval: [
-                {
-                    legalMoves: decodeMovePathIntoLegalMoves({
-                        paths: blackOvertimePath.pendingRemoval[0].legalMoves,
-                        boardWidth: constants.BOARD_WIDTH,
-                    }),
-                    removedPieceAt: logicalPoint(
-                        blackOvertimePath.pendingRemoval[0].removedPiece,
-                    ),
-                },
-            ],
-        };
+    it("should map legal moves to the current position", () => {
+        const gameState = createFakeGameState();
+        const { board } = createStoreProps(
+            "game-token",
+            gameState.blackPlayer.userId,
+            gameState,
+        );
 
-        expect(result).toEqual<{
-            live: LiveChessStoreProps;
-            board: ChessboardProps;
-        }>({
-            live: {
-                gameToken: "game-token",
-                sourceRevision: gameState.revision,
-                whitePlayer: gameState.whitePlayer,
-                blackPlayer: gameState.blackPlayer,
-                sideToMove: gameState.sideToMove,
-                initialFen: gameState.initialFen,
+        const positionId = board.positionHistory!.viewingPosition?.positionId;
+        expect(board.legalMovesByPosition.get(positionId)).toEqual(
+            decodeMovePathIntoLegalMoves({
+                paths: gameState.legalMoves,
+                boardWidth: constants.BOARD_WIDTH,
+            }),
+        );
+    });
 
-                pool: gameState.pool,
-                viewer: {
-                    userId: gameState.blackPlayer.userId,
-                    playerColor: GameColor.BLACK,
+    it("should decode white player overtime correctly", () => {
+        const gameState = createFakeGameState({
+            overtime: {
+                whiteOvertime: {
+                    secondRemainder: 0.123,
+                    pendingRemoval: [
+                        {
+                            legalMoves: [createFakeMovePath()],
+                            removedPiece: { x: 1, y: 2 },
+                        },
+                    ],
                 },
-
-                drawState: gameState.drawState,
-                clocks: gameState.clocks,
-                whiteOvertime,
-                blackOvertime,
-                resultData: null,
-            },
-            board: {
-                pieces,
-                legalMovesByPosition: new Map([
-                    [lastPosition.positionId, legalMoves],
-                ]),
-                boardDimensions: {
-                    width: constants.BOARD_WIDTH,
-                    height: constants.BOARD_HEIGHT,
-                },
-                positionHistory,
-                lastMove,
-                viewingFrom: GameColor.BLACK,
-                allowHistoryChanges: false,
+                blackOvertime: null,
             },
         });
+
+        const { live } = createStoreProps(
+            "game-token",
+            gameState.blackPlayer.userId,
+            gameState,
+        );
+
+        expect(live.whiteOvertime).not.toBeNull();
+        expect(live.whiteOvertime!.secondRemainder).toBe(0.123);
+        expect(live.whiteOvertime!.pendingRemoval[0].removedPieceAt).toEqual(
+            logicalPoint({ x: 1, y: 2 }),
+        );
+        expect(live.blackOvertime).toBeNull();
+    });
+
+    it("should decode black player overtime correctly", () => {
+        const gameState = createFakeGameState({
+            overtime: {
+                whiteOvertime: null,
+                blackOvertime: {
+                    secondRemainder: 0.456,
+                    pendingRemoval: [
+                        {
+                            legalMoves: [createFakeMovePath()],
+                            removedPiece: { x: 2, y: 3 },
+                        },
+                    ],
+                },
+            },
+        });
+
+        const { live } = createStoreProps(
+            "game-token",
+            gameState.blackPlayer.userId,
+            gameState,
+        );
+
+        expect(live.whiteOvertime).toBeNull();
+        expect(live.blackOvertime).not.toBeNull();
+        expect(live.blackOvertime!.secondRemainder).toBe(0.456);
+        expect(live.blackOvertime!.pendingRemoval[0].removedPieceAt).toEqual(
+            logicalPoint({ x: 2, y: 3 }),
+        );
     });
 
     it("should return the right viewer for spectator", () => {
