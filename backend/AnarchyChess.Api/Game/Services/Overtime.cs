@@ -60,7 +60,7 @@ public class Overtime(
         return new(WhiteOvertime: whiteOvertime, BlackOvertime: blackOvertime);
     }
 
-    private static PlayerOvertimeSnapshot? BuildPlayerOvertimeSnapshot(
+    private static EncodedPlayerOvertimeSnapshot? BuildPlayerOvertimeSnapshot(
         GameColor playerColor,
         OvertimeState state
     )
