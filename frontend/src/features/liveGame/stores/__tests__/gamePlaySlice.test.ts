@@ -1,9 +1,6 @@
 import { StoreApi } from "zustand";
 
-import createLiveChessStore, {
-    LiveChessStore,
-    LiveChessStoreProps,
-} from "../liveChessStore";
+import createLiveChessStore, { LiveChessStore } from "../liveChessStore";
 
 import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
 import { createFakeClocks } from "@/lib/testUtils/fakers/clocksFaker";
@@ -12,11 +9,9 @@ import { createFakeGameResultData } from "@/lib/testUtils/fakers/gameResultDataF
 
 describe("gamePlaySlice", () => {
     let store: StoreApi<LiveChessStore>;
-    let initialProps: LiveChessStoreProps;
 
     beforeEach(() => {
-        initialProps = createFakeLiveChessStoreProps();
-        store = createLiveChessStore(initialProps);
+        store = createLiveChessStore(createFakeLiveChessStoreProps());
     });
 
     describe("initState", () => {
