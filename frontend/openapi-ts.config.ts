@@ -6,6 +6,7 @@ export default defineConfig({
         path: "./src/lib/apiClient/definition",
         format: "prettier",
     },
+    interactive: false,
     logs: { file: false },
     plugins: [
         ...defaultPlugins,

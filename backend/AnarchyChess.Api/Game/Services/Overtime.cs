@@ -60,7 +60,7 @@ public class Overtime(
     {
         var whiteOvertime = state
             .PendingRemoval.GetValueOrDefault(GameColor.White, [])
-            .Select(x => new OvertimePositionSnapshot(
+            .Select(x => new EncodedOvertimePositionSnapshot(
                 LegalMoves: x.LegalMoves.MovePaths,
                 RemovedPiece: x.Position
             ))
@@ -68,7 +68,7 @@ public class Overtime(
 
         var blackOvertime = state
             .PendingRemoval.GetValueOrDefault(GameColor.Black, [])
-            .Select(x => new OvertimePositionSnapshot(
+            .Select(x => new EncodedOvertimePositionSnapshot(
                 LegalMoves: x.LegalMoves.MovePaths,
                 RemovedPiece: x.Position
             ))

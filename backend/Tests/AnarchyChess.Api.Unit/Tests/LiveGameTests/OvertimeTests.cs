@@ -164,13 +164,25 @@ public class OvertimeTests
                 new OvertimeSnapshot(
                     WhiteOvertime:
                     [
-                        new OvertimePositionSnapshot(white1.LegalMoves.MovePaths, white1.Position),
-                        new OvertimePositionSnapshot(white2.LegalMoves.MovePaths, white2.Position),
+                        new EncodedOvertimePositionSnapshot(
+                            white1.LegalMoves.MovePaths,
+                            white1.Position
+                        ),
+                        new EncodedOvertimePositionSnapshot(
+                            white2.LegalMoves.MovePaths,
+                            white2.Position
+                        ),
                     ],
                     BlackOvertime:
                     [
-                        new OvertimePositionSnapshot(black1.LegalMoves.MovePaths, black1.Position),
-                        new OvertimePositionSnapshot(black2.LegalMoves.MovePaths, black2.Position),
+                        new EncodedOvertimePositionSnapshot(
+                            black1.LegalMoves.MovePaths,
+                            black1.Position
+                        ),
+                        new EncodedOvertimePositionSnapshot(
+                            black2.LegalMoves.MovePaths,
+                            black2.Position
+                        ),
                     ]
                 )
             );

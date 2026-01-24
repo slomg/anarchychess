@@ -452,11 +452,11 @@ export type DrawState = {
 };
 
 export type Overtime = {
-    whiteOvertime: Array<OvertimePositionSnapshot>;
-    blackOvertime: Array<OvertimePositionSnapshot>;
+    whiteOvertime: Array<EncodedOvertimePosition>;
+    blackOvertime: Array<EncodedOvertimePosition>;
 };
 
-export type OvertimePositionSnapshot = {
+export type EncodedOvertimePosition = {
     legalMoves: Array<MovePath>;
     removedPiece: AlgebraicPoint;
 };
