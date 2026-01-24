@@ -337,7 +337,7 @@ describe("HistorySlice", () => {
             });
 
             const result = store.getState().getViewedPositionLegalMoves();
-            expect(result).toEqual(new LegalMoves());
+            expect(result).toBe(LegalMoves.StableEmpty);
         });
 
         it("should return empty LegalMoves when viewing a non latest position and history changes are not allowed", () => {
@@ -354,7 +354,7 @@ describe("HistorySlice", () => {
             });
 
             const result = store.getState().getViewedPositionLegalMoves();
-            expect(result).toEqual(new LegalMoves());
+            expect(result).toBe(LegalMoves.StableEmpty);
         });
 
         it("should return legal moves when viewing a non latest position and history changes are allowed", () => {
@@ -398,7 +398,7 @@ describe("HistorySlice", () => {
             });
 
             const result = store.getState().getViewedPositionLegalMoves();
-            expect(result).toEqual(new LegalMoves());
+            expect(result).toBe(LegalMoves.StableEmpty);
         });
 
         it("should handle undefined viewing position id", () => {

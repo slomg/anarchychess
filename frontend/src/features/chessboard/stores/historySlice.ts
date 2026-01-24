@@ -45,7 +45,6 @@ export interface HistorySlice {
     setAllowHistoryChanges(value: boolean): void;
 }
 
-
 export function createHistorySlice(
     initState: HistorySliceProps,
 ): StateCreator<
@@ -191,13 +190,13 @@ export function createHistorySlice(
                 !allowHistoryChanges &&
                 !positionHistory.isViewingLatestPosition;
             if (hideLegalMoves || cannotModifyHistory) {
-                return LegalMoves.Empty;
+                return LegalMoves.StableEmpty;
             }
 
             return (
                 legalMovesByPosition.get(
                     positionHistory.viewingPosition?.positionId,
-                ) ?? LegalMoves.Empty
+                ) ?? LegalMoves.StableEmpty
             );
         },
 
