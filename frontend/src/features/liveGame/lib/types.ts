@@ -7,7 +7,7 @@ export interface ClockSnapshot {
 }
 
 export interface PlayerOvertime {
-    secondRemainder: number;
+    secondRemainderMs: number;
     pendingRemoval: PendingOvertimeRemoval[];
 }
 

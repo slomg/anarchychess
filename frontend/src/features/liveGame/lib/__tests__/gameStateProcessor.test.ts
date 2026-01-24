@@ -251,7 +251,7 @@ describe("createStoreProps", () => {
             overtime: {
                 whiteOvertime: null,
                 blackOvertime: {
-                    secondRemainder: 0.456,
+                    secondRemainderMs: 8765,
                     pendingRemoval: [
                         {
                             legalMoves: [createFakeMovePath()],
@@ -259,7 +259,7 @@ describe("createStoreProps", () => {
                         },
                     ],
                 },
-                overtimeTurnStartedAt: 5678,
+                overtimeTurnStartedAt: 4321,
             },
         });
 
@@ -270,9 +270,9 @@ describe("createStoreProps", () => {
         );
 
         expect(live.whiteOvertime).toBeNull();
-        expect(live.overtimeTurnStartedAt).toBe(5678);
+        expect(live.overtimeTurnStartedAt).toBe(4321);
         expect(live.blackOvertime).not.toBeNull();
-        expect(live.blackOvertime!.secondRemainderMs).toBe(0.456);
+        expect(live.blackOvertime!.secondRemainderMs).toBe(8765);
         expect(live.blackOvertime!.pendingRemoval[0].removedPieceAt).toEqual(
             logicalPoint({ x: 2, y: 3 }),
         );
