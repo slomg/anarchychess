@@ -65,6 +65,7 @@ export function createStoreProps(
 
         drawState: gameState.drawState,
         clocks: gameState.clocks,
+        overtimeTurnStartedAt: gameState.overtime.overtimeTurnStartedAt,
         whiteOvertime: decodeOvertime(
             boardWidth,
             gameState.overtime.whiteOvertime,

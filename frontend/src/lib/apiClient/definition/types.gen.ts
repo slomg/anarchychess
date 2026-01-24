@@ -454,6 +454,7 @@ export type DrawState = {
 export type Overtime = {
     whiteOvertime?: PlayerOvertimePath | null;
     blackOvertime?: PlayerOvertimePath | null;
+    overtimeTurnStartedAt: number;
 };
 
 export type PlayerOvertimePath = {

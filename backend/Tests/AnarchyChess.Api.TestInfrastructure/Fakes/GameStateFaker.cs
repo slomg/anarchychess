@@ -30,7 +30,10 @@ public class GameStateFaker : RecordFaker<GameState>
         RuleFor(x => x.LegalMoves, f => new MovePathFaker().Generate(f.Random.Number(1, 10)));
         RuleFor(x => x.MoveHistory, f => new MoveSnapshotFaker().Generate(f.Random.Number(1, 6)));
         RuleFor(x => x.DrawState, new DrawState());
-        RuleFor(x => x.Overtime, new OvertimeSnapshot(WhiteOvertime: null, BlackOvertime: null));
+        RuleFor(
+            x => x.Overtime,
+            new OvertimeSnapshot(WhiteOvertime: null, BlackOvertime: null, OvertimeTurnStartedAt: 0)
+        );
         RuleFor(x => x.ResultData, (GameResultData?)null);
     }
 }

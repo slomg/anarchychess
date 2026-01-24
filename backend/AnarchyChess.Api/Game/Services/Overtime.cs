@@ -35,7 +35,7 @@ public class OvertimeState
     public Dictionary<GameColor, PlayerOvertime> PlayerOvertime { get; } = [];
 
     [Id(1)]
-    public long LastMoveAtMs { get; set; }
+    public long OvertimeTurnStartedAt { get; set; }
 }
 
 public class Overtime(
@@ -55,7 +55,11 @@ public class Overtime(
         var whiteOvertime = BuildPlayerOvertimeSnapshot(GameColor.White, state);
         var blackOvertime = BuildPlayerOvertimeSnapshot(GameColor.Black, state);
 
-        return new(WhiteOvertime: whiteOvertime, BlackOvertime: blackOvertime);
+        return new(
+            WhiteOvertime: whiteOvertime,
+            BlackOvertime: blackOvertime,
+            OvertimeTurnStartedAt: state.OvertimeTurnStartedAt
+        );
     }
 
     private static PlayerOvertimePathSnapshot? BuildPlayerOvertimeSnapshot(
@@ -85,7 +89,7 @@ public class Overtime(
         OvertimeState state
     )
     {
-        state.LastMoveAtMs = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
+        state.OvertimeTurnStartedAt = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
 
         ChessBoard editingBoard = new(board);
         List<OvertimePositionNotification> result = [];
@@ -128,7 +132,7 @@ public class Overtime(
         }
 
         double timeSinceLastMove =
-            _timeProvider.GetUtcNow().ToUnixTimeMilliseconds() - state.LastMoveAtMs;
+            _timeProvider.GetUtcNow().ToUnixTimeMilliseconds() - state.OvertimeTurnStartedAt;
         timeSinceLastMove += playerOvertime.SecondRemainder;
 
         double secondsSinceLastMove = timeSinceLastMove / 1000;

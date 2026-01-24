@@ -75,7 +75,7 @@ public class OvertimeTests
             new(secondEncoded, new("a3")),
         ];
         result.Should().BeEquivalentTo(expectedResult);
-        _state.LastMoveAtMs.Should().Be(_fakeNow.ToUnixTimeMilliseconds());
+        _state.OvertimeTurnStartedAt.Should().Be(_fakeNow.ToUnixTimeMilliseconds());
         List<PendingRemovalEntry> expectedPendingRemoval =
         [
             new(new("a2"), firstLegalMoves),
@@ -144,7 +144,13 @@ public class OvertimeTests
 
         result
             .Should()
-            .BeEquivalentTo(new OvertimeSnapshot(WhiteOvertime: null, BlackOvertime: null));
+            .BeEquivalentTo(
+                new OvertimeSnapshot(
+                    WhiteOvertime: null,
+                    BlackOvertime: null,
+                    OvertimeTurnStartedAt: 0
+                )
+            );
     }
 
     [Fact]
@@ -165,6 +171,7 @@ public class OvertimeTests
             PendingRemoval = [black1, black2],
             SecondRemainder = 0.456,
         };
+        _state.OvertimeTurnStartedAt = 123456;
 
         var result = _overtime.ToSnapshot(_state);
 
@@ -199,7 +206,8 @@ public class OvertimeTests
                                 black2.Position
                             ),
                         ]
-                    )
+                    ),
+                    OvertimeTurnStartedAt: 123456
                 )
             );
     }
@@ -223,7 +231,7 @@ public class OvertimeTests
         PendingRemovalEntry pos1 = new(new("a1"), new LegalMoveSetFaker().Generate());
         PendingRemovalEntry pos2 = new(new("b2"), new LegalMoveSetFaker().Generate());
         _state.PlayerOvertime[GameColor.White] = new() { PendingRemoval = [pos1, pos2] };
-        _state.LastMoveAtMs = _fakeNow.ToUnixTimeMilliseconds();
+        _state.OvertimeTurnStartedAt = _fakeNow.ToUnixTimeMilliseconds();
 
         _timeProviderMock.GetUtcNow().Returns(_fakeNow.AddMilliseconds(1500));
 

@@ -4,11 +4,13 @@ import type { LiveChessStore } from "./liveChessStore";
 import { PlayerOvertime } from "../lib/types";
 
 export interface OvertimeSliceProps {
+    overtimeTurnStartedAt: number;
     whiteOvertime: PlayerOvertime | null;
     blackOvertime: PlayerOvertime | null;
 }
 
 export interface OvertimeSlice {
+    overtimeTurnStartedAt: number;
     whiteOvertime: PlayerOvertime | null;
     blackOvertime: PlayerOvertime | null;
 }
