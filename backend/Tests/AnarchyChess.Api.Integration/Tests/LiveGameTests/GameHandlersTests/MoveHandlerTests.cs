@@ -229,47 +229,17 @@ public class MoveHandlerTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task HandleMoveAsync_starts_overtime_turn_for_next_player()
-    {
-        await GameUtils.GoOutOfGracePeriodAsync(_handler, _gameCore, _gameToken, _gameData);
-
-        _timeProviderMock
-            .GetUtcNow()
-            .Returns(_fakeNow.AddSeconds(_gameData.Pool.TimeControl.BaseSeconds));
-
-        await _handler.HandleMoveAsync(
-            _gameData.Players.WhitePlayer.UserId,
-            new MoveKey(GameUtils.GetLegalMove(_gameCore, _gameData)),
-            _gameToken,
-            _gameData,
-            CT
-        );
-        await _handler.HandleMoveAsync(
-            _gameData.Players.BlackPlayer.UserId,
-            new MoveKey(GameUtils.GetLegalMove(_gameCore, _gameData)),
-            _gameToken,
-            _gameData,
-            CT
-        );
-
-        _overtime.HasStartedOvertime(GameColor.White, _gameData.OvertimeState).Should().BeTrue();
-        await _notifierMock
-            .Received(1)
-            .NotifyOvertimePositionsAsync(
-                GameColor.White,
-                Arg.Is<List<OvertimePositionNotification>>(x => x.Count > 1),
-                _gameToken,
-                _gameData.NotifierState
-            );
-    }
-
-    [Fact]
     public async Task HandleMoveAsync_removes_overtime_pieces_for_current_player()
     {
         await GameUtils.GoOutOfGracePeriodAsync(_handler, _gameCore, _gameToken, _gameData);
         var now = _fakeNow.AddSeconds(_gameData.Pool.TimeControl.BaseSeconds);
         _timeProviderMock.GetUtcNow().Returns(now);
 
+        var pendingRemoval = _overtime.StartOvertimeTurn(
+            GameColor.Black,
+            _gameCore.GetReadOnlyBoard(_gameData.Core),
+            _gameData.OvertimeState
+        );
         await _handler.HandleMoveAsync(
             _gameData.Players.WhitePlayer.UserId,
             new MoveKey(GameUtils.GetLegalMove(_gameCore, _gameData)),
@@ -277,8 +247,14 @@ public class MoveHandlerTests : BaseIntegrationTest
             _gameData,
             CT
         );
-        _overtime.HasStartedOvertime(GameColor.White, _gameData.OvertimeState).Should().BeFalse();
 
+        foreach (var pending in pendingRemoval)
+        {
+            _gameData.Core.Board.IsEmpty(pending.RemovePieceAt).Should().BeFalse();
+        }
+
+        now += TimeSpan.FromSeconds(pendingRemoval.Count);
+        _timeProviderMock.GetUtcNow().Returns(now);
         await _handler.HandleMoveAsync(
             _gameData.Players.BlackPlayer.UserId,
             new MoveKey(GameUtils.GetLegalMove(_gameCore, _gameData)),
@@ -286,27 +262,10 @@ public class MoveHandlerTests : BaseIntegrationTest
             _gameData,
             CT
         );
-        _overtime.HasStartedOvertime(GameColor.White, _gameData.OvertimeState).Should().BeTrue();
 
-        var whitePending = _gameData.OvertimeState.PlayerOvertime[GameColor.White].PendingRemoval;
-        foreach (var pending in whitePending)
+        foreach (var pending in pendingRemoval)
         {
-            _gameData.Core.Board.IsEmpty(pending.Position).Should().BeFalse();
-        }
-
-        now += TimeSpan.FromSeconds(whitePending.Count);
-        _timeProviderMock.GetUtcNow().Returns(now);
-        await _handler.HandleMoveAsync(
-            _gameData.Players.WhitePlayer.UserId,
-            new MoveKey(GameUtils.GetLegalMove(_gameCore, _gameData)),
-            _gameToken,
-            _gameData,
-            CT
-        );
-
-        foreach (var pending in whitePending)
-        {
-            _gameData.Core.Board.IsEmpty(pending.Position).Should().BeTrue();
+            _gameData.Core.Board.IsEmpty(pending.RemovePieceAt).Should().BeTrue();
         }
     }
 }

@@ -69,7 +69,7 @@ public class OvertimeTests
 
         var result = _overtime.StartOvertimeTurn(GameColor.White, board, _state);
 
-        List<OvertimePositionNotification> expectedResult =
+        List<OvertimePendingRemovalNotification> expectedResult =
         [
             new(firstEncoded, new("a2")),
             new(secondEncoded, new("a3")),
@@ -112,7 +112,7 @@ public class OvertimeTests
         var result = _overtime.StartOvertimeTurn(GameColor.White, board, _state);
 
         result.Should().NotBeEmpty();
-        result[0].RemovedPiece.Should().NotBe(new AlgebraicPoint("a1"));
+        result[0].RemovePieceAt.Should().NotBe(new AlgebraicPoint("a1"));
     }
 
     [Fact]
@@ -134,7 +134,7 @@ public class OvertimeTests
         var result = _overtime.StartOvertimeTurn(GameColor.White, board, _state);
 
         result.Should().HaveCount(1);
-        result[0].RemovedPiece.Should().Be(new AlgebraicPoint("e1"));
+        result[0].RemovePieceAt.Should().Be(new AlgebraicPoint("e1"));
     }
 
     [Fact]
@@ -282,6 +282,38 @@ public class OvertimeTests
         positions.Should().Equal([pos1.Position, pos2.Position]);
         newLegalMoves.MovePaths.Should().BeEmpty();
         isGameOver.Should().BeTrue();
+    }
+
+    [Fact]
+    public void GetOvertimeTurnStartedAt_returns_correct_time()
+    {
+        _state.OvertimeTurnStartedAt = 123456;
+
+        var result = _overtime.GetOvertimeTurnStartedAt(_state);
+
+        result.Should().Be(123456);
+    }
+
+    [Fact]
+    public void GetPlayerSecondRemainder_returns_correct_time()
+    {
+        _state.PlayerOvertime[GameColor.White] = new()
+        {
+            PendingRemoval = [],
+            SecondRemainder = 0.123,
+        };
+
+        var result = _overtime.GetPlayerSecondRemainder(GameColor.White, _state);
+
+        result.Should().Be(0.123);
+    }
+
+    [Fact]
+    public void GetPlayerSecondRemainder_returns_zero_when_no_overtime()
+    {
+        var result = _overtime.GetPlayerSecondRemainder(GameColor.White, _state);
+
+        result.Should().Be(0);
     }
 
     [Fact]

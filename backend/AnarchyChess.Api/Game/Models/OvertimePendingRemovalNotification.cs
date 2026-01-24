@@ -2,7 +2,7 @@
 
 namespace AnarchyChess.Api.Game.Models;
 
-public record OvertimePositionNotification(
+public record OvertimePendingRemovalNotification(
     IReadOnlyList<byte> EncodedLegalMoves,
-    AlgebraicPoint RemovedPiece
+    AlgebraicPoint RemovePieceAt
 );

@@ -55,7 +55,7 @@ public class ChessBoardTests
         clone.Moves.Should().BeEquivalentTo(original.Moves);
 
         clone.RemovePiece(move.To);
-        var newPiece = PieceFactory.White(PieceType.Bishop);
+        var newPiece = PieceFactory.White(PieceType.Bishop, hasMoved: true);
         Move newMove = new(from: new("b2"), to: new("d4"), newPiece);
         clone.PlacePiece(newMove.From, newPiece);
         clone.PlayMove(newMove);

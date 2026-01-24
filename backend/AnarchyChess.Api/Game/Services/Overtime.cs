@@ -9,7 +9,7 @@ namespace AnarchyChess.Api.Game.Services;
 public interface IOvertime
 {
     OvertimeSnapshot ToSnapshot(OvertimeState state);
-    List<OvertimePositionNotification> StartOvertimeTurn(
+    List<OvertimePendingRemovalNotification> StartOvertimeTurn(
         GameColor overtimedPlayerColor,
         IReadOnlyChessBoard board,
         OvertimeState state
@@ -21,6 +21,8 @@ public interface IOvertime
     ) GetRemovedPiecesSinceLastMove(GameColor playerColor, OvertimeState state);
     bool HasStartedOvertime(GameColor playerColor, OvertimeState state);
     TimeSpan GetTimeUntilDefeat(GameColor playerColor, OvertimeState state);
+    long GetOvertimeTurnStartedAt(OvertimeState state);
+    double GetPlayerSecondRemainder(GameColor playerColor, OvertimeState state);
 }
 
 [GenerateSerializer]
@@ -83,7 +85,7 @@ public class Overtime(
         return new(SecondRemainder: playerOvertime.SecondRemainder, PendingRemoval: pendingRemoval);
     }
 
-    public List<OvertimePositionNotification> StartOvertimeTurn(
+    public List<OvertimePendingRemovalNotification> StartOvertimeTurn(
         GameColor overtimedPlayerColor,
         IReadOnlyChessBoard board,
         OvertimeState state
@@ -92,7 +94,7 @@ public class Overtime(
         state.OvertimeTurnStartedAt = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
 
         ChessBoard editingBoard = new(board);
-        List<OvertimePositionNotification> result = [];
+        List<OvertimePendingRemovalNotification> result = [];
         List<PendingRemovalEntry> pendingRemoval = [];
         foreach (var position in ComputeOvertimeRemovals(overtimedPlayerColor, board))
         {
@@ -102,7 +104,10 @@ public class Overtime(
             var encoded = _moveEncoder.EncodeMoves(legalMoves.MovePaths);
 
             result.Add(
-                new OvertimePositionNotification(EncodedLegalMoves: encoded, RemovedPiece: position)
+                new OvertimePendingRemovalNotification(
+                    EncodedLegalMoves: encoded,
+                    RemovePieceAt: position
+                )
             );
             pendingRemoval.Add(new(position, legalMoves));
         }
@@ -159,6 +164,11 @@ public class Overtime(
             );
         }
     }
+
+    public long GetOvertimeTurnStartedAt(OvertimeState state) => state.OvertimeTurnStartedAt;
+
+    public double GetPlayerSecondRemainder(GameColor playerColor, OvertimeState state) =>
+        state.PlayerOvertime.GetValueOrDefault(playerColor)?.SecondRemainder ?? 0;
 
     public bool HasStartedOvertime(GameColor playerColor, OvertimeState state) =>
         state.PlayerOvertime.ContainsKey(playerColor);

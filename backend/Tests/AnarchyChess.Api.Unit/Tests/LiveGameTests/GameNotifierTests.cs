@@ -94,18 +94,32 @@ public class GameNotifierTests
     public async Task NotifyOvertimePositionsAsync_sends_positions_and_increments_revision()
     {
         GameNotifierState state = new() { Revision = 0 };
-        List<OvertimePositionNotification> positions =
+        List<OvertimePendingRemovalNotification> pendingRemoval =
         [
             new([1, 2, 3], new("a1")),
             new([4, 5, 6], new("a2")),
             new([7, 8, 9], new("a3")),
         ];
+        long turnStartedAt = 1234;
+        double secondRemainder = 0.1234;
 
-        await _notifier.NotifyOvertimePositionsAsync(GameColor.Black, positions, _gameToken, state);
+        await _notifier.NotifyOvertimePositionsAsync(
+            GameColor.Black,
+            turnStartedAt,
+            secondRemainder,
+            pendingRemoval,
+            _gameToken,
+            state
+        );
 
         await _clientGameGroupProxyMock
             .Received(1)
-            .ReceiveOvertimePositionsAsync(GameColor.Black, positions);
+            .ReceiveOvertimePositionsAsync(
+                GameColor.Black,
+                turnStartedAt,
+                secondRemainder,
+                pendingRemoval
+            );
         state.Revision.Should().Be(1);
     }
 

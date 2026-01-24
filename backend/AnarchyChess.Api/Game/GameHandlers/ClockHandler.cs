@@ -106,14 +106,21 @@ public class ClockHandler(
         GameData game
     )
     {
-        var overtimePositions = _overtime.StartOvertimeTurn(
+        var pendingRemoval = _overtime.StartOvertimeTurn(
             overtimedPlayer,
             _core.GetReadOnlyBoard(game.Core),
             game.OvertimeState
         );
+        var overtimeTurnStartedAt = _overtime.GetOvertimeTurnStartedAt(game.OvertimeState);
+        var secondRemainder = _overtime.GetPlayerSecondRemainder(
+            overtimedPlayer,
+            game.OvertimeState
+        );
         await _notifier.NotifyOvertimePositionsAsync(
             overtimedPlayer,
-            overtimePositions,
+            overtimeTurnStartedAt: overtimeTurnStartedAt,
+            secondRemainder: secondRemainder,
+            pendingRemoval,
             gameToken,
             game.NotifierState
         );
