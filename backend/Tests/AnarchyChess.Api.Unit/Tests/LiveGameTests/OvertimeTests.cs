@@ -275,7 +275,7 @@ public class OvertimeTests
         );
 
         positions.Should().BeEmpty();
-        newLegalMoves.MovePaths.Should().BeEmpty();
+        newLegalMoves.Should().BeNull();
     }
 
     [Fact]
@@ -332,6 +332,34 @@ public class OvertimeTests
 
         positions.Should().BeEquivalentTo([pending1.RemoveFrom, pending2.RemoveFrom]);
         newLegalMoves.Should().BeEquivalentTo(pending2.LegalMoves);
+    }
+
+    [Fact]
+    public void GetRemovedPiecesSinceLastMove_returns_nothing_if_ran_before_any_pending()
+    {
+        long nowMs = _fakeNow.ToUnixTimeMilliseconds();
+
+        PendingRemovalEntry pending1 = new(
+            new("c3"),
+            new LegalMoveSetFaker().Generate(),
+            nowMs + 100
+        );
+        PendingRemovalEntry pending2 = new(
+            new("d4"),
+            new LegalMoveSetFaker().Generate(),
+            nowMs + 200
+        );
+        _state.PlayerOvertime[GameColor.Black] = new() { PendingRemoval = [pending1, pending2] };
+
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow.AddMilliseconds(50));
+
+        var (positions, newLegalMoves) = _overtime.GetRemovedPiecesSinceLastMove(
+            GameColor.Black,
+            _state
+        );
+
+        positions.Should().BeEmpty();
+        newLegalMoves.Should().BeNull();
     }
 
     [Fact]

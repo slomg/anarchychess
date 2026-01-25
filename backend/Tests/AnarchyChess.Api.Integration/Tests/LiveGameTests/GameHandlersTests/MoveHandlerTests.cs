@@ -311,7 +311,7 @@ public class MoveHandlerTests : BaseIntegrationTest
             _gameData.Players.WhitePlayer.UserId,
             new MoveKey(
                 // make sure the move is not interfering with the result
-                newLegalMoves.MoveMap.Values.First(move =>
+                newLegalMoves!.MoveMap.Values.First(move =>
                     !pendingRemoval.Contains(move.From) && !pendingRemoval.Contains(move.To)
                 )
             ),

@@ -18,7 +18,7 @@ public interface IGameCore
     MoveResult MakeMove(Move move, GameCoreState state);
     void RemovePieces(
         IEnumerable<AlgebraicPoint> positions,
-        LegalMoveSet newLegalMoves,
+        LegalMoveSet? newLegalMoves,
         GameCoreState state
     );
     GameColor SideToMove(GameCoreState state);
@@ -141,7 +141,7 @@ public class GameCore(
 
     public void RemovePieces(
         IEnumerable<AlgebraicPoint> positions,
-        LegalMoveSet newLegalMoves,
+        LegalMoveSet? newLegalMoves,
         GameCoreState state
     )
     {
@@ -150,7 +150,10 @@ public class GameCore(
             state.Board.RemovePiece(point);
         }
 
-        state.LegalMoves = newLegalMoves;
+        if (newLegalMoves is not null)
+        {
+            state.LegalMoves = newLegalMoves;
+        }
     }
 
     public LegalMoveSet GetLegalMoves(GameCoreState state) => state.LegalMoves;

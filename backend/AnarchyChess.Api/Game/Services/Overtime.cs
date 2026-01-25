@@ -17,11 +17,11 @@ public interface IOvertime
         IReadOnlyChessBoard board,
         OvertimeState state
     );
-    (List<AlgebraicPoint> PendingRemoval, LegalMoveSet NewLegalMoves) GetRemovedPiecesSinceLastMove(
-        GameColor playerColor,
-        OvertimeState state
-    );
-    (List<AlgebraicPoint> PendingRemoval, LegalMoveSet NewLegalMoves) ConsumeOvertimeRemovals(
+    (
+        List<AlgebraicPoint> PendingRemoval,
+        LegalMoveSet? NewLegalMoves
+    ) GetRemovedPiecesSinceLastMove(GameColor playerColor, OvertimeState state);
+    (List<AlgebraicPoint> PendingRemoval, LegalMoveSet? NewLegalMoves) ConsumeOvertimeRemovals(
         GameColor playerColor,
         OvertimeState state
     );
@@ -133,13 +133,13 @@ public class Overtime(
 
     public (
         List<AlgebraicPoint> PendingRemoval,
-        LegalMoveSet NewLegalMoves
+        LegalMoveSet? NewLegalMoves
     ) GetRemovedPiecesSinceLastMove(GameColor playerColor, OvertimeState state)
     {
         var playerOvertime = state.PlayerOvertime.GetValueOrDefault(playerColor);
         if (playerOvertime is null)
         {
-            return (PendingRemoval: [], NewLegalMoves: new LegalMoveSet());
+            return (PendingRemoval: [], NewLegalMoves: null);
         }
 
         var nowMs = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
@@ -148,7 +148,7 @@ public class Overtime(
             .. playerOvertime.PendingRemoval.TakeWhile(x => x.RemoveAtTimestamp <= nowMs),
         ];
 
-        var newLegalMoves = removed.Count > 0 ? removed[^1].LegalMoves : new LegalMoveSet();
+        var newLegalMoves = removed.Count > 0 ? removed[^1].LegalMoves : null;
         return (
             PendingRemoval: [.. removed.Select(x => x.RemoveFrom)],
             NewLegalMoves: newLegalMoves
@@ -157,7 +157,7 @@ public class Overtime(
 
     public (
         List<AlgebraicPoint> PendingRemoval,
-        LegalMoveSet NewLegalMoves
+        LegalMoveSet? NewLegalMoves
     ) ConsumeOvertimeRemovals(GameColor playerColor, OvertimeState state)
     {
         var result = GetRemovedPiecesSinceLastMove(playerColor, state);

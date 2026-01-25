@@ -209,6 +209,23 @@ public class GameCoreTests : BaseIntegrationTest
         state.LegalMoves.Should().BeEquivalentTo(newLegalMoves);
     }
 
+    [Fact]
+    public void RemovePieces_doesnt_update_legal_moves_if_null()
+    {
+        ChessBoard board = new();
+        board.PlacePiece(new("a1"), PieceFactory.White());
+        board.PlacePiece(new("a2"), PieceFactory.Black());
+        board.PlacePiece(new("a3"), PieceFactory.White());
+        board.PlacePiece(new("a4"), PieceFactory.Black());
+        var state = StartGame(new() { Board = board });
+        List<AlgebraicPoint> positionsToRemove = [new("a1"), new("a2")];
+        var prevLegalMoves = _gameCore.GetLegalMoves(state);
+
+        _gameCore.RemovePieces(positionsToRemove, newLegalMoves: null, state);
+
+        _gameCore.GetLegalMoves(state).Should().Be(prevLegalMoves);
+    }
+
     private MoveResult MakeMoves(GameCoreState state, params IEnumerable<MoveKey> moves)
     {
         MoveResult lastResult = default;
