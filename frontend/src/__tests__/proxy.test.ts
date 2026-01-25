@@ -80,7 +80,6 @@ describe("proxy", () => {
     it("should redirect to '/' if access token exists and path is disallowed", async () => {
         const request = createRequest({
             setCookies: {
-                [constants.COOKIES.ACCESS_TOKEN]: "access",
                 [constants.COOKIES.IS_LOGGED_IN]: "true",
             },
             pathname: "/signin",
