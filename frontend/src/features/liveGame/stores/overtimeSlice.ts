@@ -17,6 +17,7 @@ export interface OvertimeSlice {
         overtimedPlayer: GameColor,
         playerOvertime: PendingOvertimeRemoval[],
     ): void;
+    clearOvertime(): void;
 }
 
 export function createOvertimeSlice(
@@ -37,6 +38,13 @@ export function createOvertimeSlice(
                 } else {
                     state.blackOvertime = playerOvertime;
                 }
+            });
+        },
+
+        clearOvertime() {
+            set((state) => {
+                state.whiteOvertime = null;
+                state.blackOvertime = null;
             });
         },
     });

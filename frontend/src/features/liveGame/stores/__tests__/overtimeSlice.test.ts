@@ -41,4 +41,23 @@ describe("OvertimeSlice", () => {
             expect(whiteOvertime).toBeNull();
         });
     });
+
+    describe("clearOvertime", () => {
+        store.setState({
+            whiteOvertime: [
+                createFakePendingOvertimeRemoval(),
+                createFakePendingOvertimeRemoval(),
+            ],
+            blackOvertime: [
+                createFakePendingOvertimeRemoval(),
+                createFakePendingOvertimeRemoval(),
+            ],
+        });
+
+        store.getState().clearOvertime();
+
+        const { whiteOvertime, blackOvertime } = store.getState();
+        expect(whiteOvertime).toBeNull();
+        expect(blackOvertime).toBeNull();
+    });
 });

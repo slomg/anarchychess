@@ -63,9 +63,10 @@ export function createGameStateSlice(
         },
 
         endGame(resultData, finalClocks) {
-            const { setClocks } = get();
+            const { setClocks, clearOvertime } = get();
 
             setClocks(finalClocks);
+            clearOvertime();
             set((state) => {
                 if (state.whitePlayer.rating && resultData.whiteRatingChange)
                     state.whitePlayer.rating += resultData.whiteRatingChange;
