@@ -140,7 +140,7 @@ public class MoveHandler(
             return [];
         }
 
-        var (pendingRemovals, newLegalMoves, _) = _overtime.ConsumeOvertimeRemovals(
+        var (pendingRemovals, newLegalMoves) = _overtime.ConsumeOvertimeRemovals(
             currentPlayer,
             game.OvertimeState
         );

@@ -290,7 +290,7 @@ public class MoveHandlerTests : BaseIntegrationTest
 
         now += _settings.OvertimeRemovalInterval;
         _timeProviderMock.GetUtcNow().Returns(now);
-        var (pendingRemoval, newLegalMoves, _) = _overtime.GetRemovedPiecesSinceLastMove(
+        var (pendingRemoval, newLegalMoves) = _overtime.GetRemovedPiecesSinceLastMove(
             GameColor.White,
             _gameData.OvertimeState
         );

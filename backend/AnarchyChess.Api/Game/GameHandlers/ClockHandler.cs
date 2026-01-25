@@ -91,15 +91,8 @@ public class ClockHandler(
             return null;
         }
 
-        var (pendingRemoval, newLegalMoves, isGameOver) = _overtime.ConsumeOvertimeRemovals(
-            playerColor,
-            game.OvertimeState
-        );
-        _core.RemovePieces(pendingRemoval, newLegalMoves, game.Core);
-        var board = _core.GetReadOnlyBoard(game.Core);
-        game.MoveHistory.CommitOvertimeRemovals(pendingRemoval, board.Width);
-
-        return isGameOver ? _resultDescriber.Overtime(playerColor) : null;
+        var timeUntilDefeat = _overtime.GetTimeUntilDefeat(playerColor, game.OvertimeState);
+        return timeUntilDefeat <= TimeSpan.Zero ? _resultDescriber.Overtime(playerColor) : null;
     }
 
     private async Task StartOvertimeAsync(

@@ -71,6 +71,13 @@ public class GameGrainTests : BaseOrleansIntegrationTest
             ApiTestBase.Scope.ServiceProvider.GetRequiredService<IPlayableMoveProvider>(),
             ApiTestBase.Scope.ServiceProvider.GetRequiredService<IMoveEncoder>()
         );
+        GameEndHandler endHandler = new(
+            _gameCore,
+            _gameClock,
+            _overtime,
+            _gameNotifierMock,
+            gameFinalizer
+        );
         MoveHandler moveHandler = new(
             Substitute.For<ILogger<MoveHandler>>(),
             settings,
@@ -101,6 +108,7 @@ public class GameGrainTests : BaseOrleansIntegrationTest
         Silo.ServiceProvider.AddService<IMoveHandler>(moveHandler);
         Silo.ServiceProvider.AddService<IDrawHandler>(drawHandler);
         Silo.ServiceProvider.AddService<IClockHandler>(clockHandler);
+        Silo.ServiceProvider.AddService<IGameEndHandler>(endHandler);
 
         _state = Silo.StorageManager.GetStorage<GameGrainState>(GameGrain.StateName).State;
         _stateStats = Silo.StorageManager.GetStorageStats(GameGrain.StateName)!;

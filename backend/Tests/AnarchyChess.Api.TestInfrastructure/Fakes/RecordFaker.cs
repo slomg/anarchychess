@@ -1,5 +1,5 @@
-﻿using Bogus;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
+using Bogus;
 
 namespace AnarchyChess.Api.TestInfrastructure.Fakes;
 

@@ -26,11 +26,11 @@ public class GameGrain : Grain, IGameGrain, IRemindable
     private readonly IMoveHandler _moveHandler;
     private readonly IDrawHandler _drawHandler;
     private readonly IClockHandler _clockHandler;
+    private readonly IGameEndHandler _gameEndHandler;
     private readonly IOvertime _overtime;
     private readonly IGameCore _core;
     private readonly IGameResultDescriber _resultDescriber;
     private readonly IGameNotifier _gameNotifier;
-    private readonly IGameFinalizer _gameFinalizer;
     private readonly IGameClock _clock;
 
     private IGrainTimer? _clockTimer;
@@ -41,12 +41,12 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         IMoveHandler moveHandler,
         IDrawHandler drawHandler,
         IClockHandler clockHandler,
+        IGameEndHandler gameEndHandler,
         IOvertime overtime,
         IGameCore core,
         IGameClock clock,
         IGameResultDescriber resultDescriber,
-        IGameNotifier gameNotifier,
-        IGameFinalizer gameFinalizer
+        IGameNotifier gameNotifier
     )
     {
         _gameToken = this.GetPrimaryKeyString();
@@ -56,12 +56,12 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         _moveHandler = moveHandler;
         _drawHandler = drawHandler;
         _clockHandler = clockHandler;
+        _gameEndHandler = gameEndHandler;
         _overtime = overtime;
         _core = core;
         _clock = clock;
         _resultDescriber = resultDescriber;
         _gameNotifier = gameNotifier;
-        _gameFinalizer = gameFinalizer;
     }
 
     public async Task StartGameAsync(
@@ -295,15 +295,13 @@ public class GameGrain : Grain, IGameGrain, IRemindable
 
         _logger.LogInformation("Game {GameToken} eneded by {EndStatus}", _gameToken, endStatus);
 
-        _clock.CommitLastTurn(_core.SideToMove(game.Core), game.ClockState);
         var state = GetGameState(game);
-
-        game.Result = await _gameFinalizer.FinalizeGameAsync(_gameToken, state, endStatus, token);
-        await _gameNotifier.NotifyGameEndedAsync(
+        game.Result = await _gameEndHandler.HandleGameEndAsync(
+            state,
+            endStatus,
             _gameToken,
-            game.Result,
-            _clock.ToSnapshot(game.ClockState),
-            game.NotifierState
+            game,
+            token
         );
 
         var streamProvider = this.GetStreamProvider(StreamingConstants.StreamProvider);

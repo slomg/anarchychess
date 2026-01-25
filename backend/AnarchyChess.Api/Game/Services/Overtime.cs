@@ -1,4 +1,5 @@
-﻿using AnarchyChess.Api.Game.Models;
+﻿using System.Data;
+using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
@@ -16,18 +17,17 @@ public interface IOvertime
         IReadOnlyChessBoard board,
         OvertimeState state
     );
-    (
-        List<AlgebraicPoint> PendingRemoval,
-        LegalMoveSet NewLegalMoves,
-        bool IsGameOver
-    ) GetRemovedPiecesSinceLastMove(GameColor playerColor, OvertimeState state);
-    (
-        List<AlgebraicPoint> PendingRemoval,
-        LegalMoveSet NewLegalMoves,
-        bool IsGameOver
-    ) ConsumeOvertimeRemovals(GameColor playerColor, OvertimeState state);
+    (List<AlgebraicPoint> PendingRemoval, LegalMoveSet NewLegalMoves) GetRemovedPiecesSinceLastMove(
+        GameColor playerColor,
+        OvertimeState state
+    );
+    (List<AlgebraicPoint> PendingRemoval, LegalMoveSet NewLegalMoves) ConsumeOvertimeRemovals(
+        GameColor playerColor,
+        OvertimeState state
+    );
     bool HasStartedOvertime(GameColor playerColor, OvertimeState state);
     TimeSpan GetTimeUntilDefeat(GameColor playerColor, OvertimeState state);
+    void EndOvertime(OvertimeState state);
 }
 
 [GenerateSerializer]
@@ -133,14 +133,13 @@ public class Overtime(
 
     public (
         List<AlgebraicPoint> PendingRemoval,
-        LegalMoveSet NewLegalMoves,
-        bool IsGameOver
+        LegalMoveSet NewLegalMoves
     ) GetRemovedPiecesSinceLastMove(GameColor playerColor, OvertimeState state)
     {
         var playerOvertime = state.PlayerOvertime.GetValueOrDefault(playerColor);
         if (playerOvertime is null)
         {
-            return (PendingRemoval: [], NewLegalMoves: new LegalMoveSet(), IsGameOver: false);
+            return (PendingRemoval: [], NewLegalMoves: new LegalMoveSet());
         }
 
         var nowMs = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
@@ -150,18 +149,15 @@ public class Overtime(
         ];
 
         var newLegalMoves = removed.Count > 0 ? removed[^1].LegalMoves : new LegalMoveSet();
-        bool isGameOver = removed.Count >= playerOvertime.PendingRemoval.Count;
         return (
             PendingRemoval: [.. removed.Select(x => x.RemoveFrom)],
-            NewLegalMoves: newLegalMoves,
-            IsGameOver: isGameOver
+            NewLegalMoves: newLegalMoves
         );
     }
 
     public (
         List<AlgebraicPoint> PendingRemoval,
-        LegalMoveSet NewLegalMoves,
-        bool IsGameOver
+        LegalMoveSet NewLegalMoves
     ) ConsumeOvertimeRemovals(GameColor playerColor, OvertimeState state)
     {
         var result = GetRemovedPiecesSinceLastMove(playerColor, state);
@@ -189,6 +185,8 @@ public class Overtime(
 
         return result;
     }
+
+    public void EndOvertime(OvertimeState state) => state.PlayerOvertime.Clear();
 
     public bool HasStartedOvertime(GameColor playerColor, OvertimeState state) =>
         state.PlayerOvertime.ContainsKey(playerColor);
