@@ -26,8 +26,6 @@ public interface IGameNotifier
     Task NotifyMoveMadeAsync(MoveNotification notification, GameNotifierState state);
     Task NotifyOvertimeAsync(
         GameColor overtimedPlayer,
-        long overtimeTurnStartedAt,
-        double secondRemainder,
         IEnumerable<OvertimePendingRemovalNotification> overtimePositions,
         GameToken gameToken,
         GameNotifierState state
@@ -85,22 +83,13 @@ public class GameNotifier(IHubContext<GameHub, IGameHubClient> hub) : IGameNotif
 
     public async Task NotifyOvertimeAsync(
         GameColor overtimedPlayer,
-        long overtimeTurnStartedAt,
-        double secondRemainderMs,
         IEnumerable<OvertimePendingRemovalNotification> pendingRemoval,
         GameToken gameToken,
         GameNotifierState state
     )
     {
         state.Revision++;
-        await _hub
-            .Clients.Group(gameToken)
-            .ReceiveOvertimeAsync(
-                overtimedPlayer,
-                overtimeTurnStartedAt,
-                secondRemainderMs,
-                pendingRemoval
-            );
+        await _hub.Clients.Group(gameToken).ReceiveOvertimeAsync(overtimedPlayer, pendingRemoval);
     }
 
     public Task NotifyDrawStateChangeAsync(

@@ -129,7 +129,7 @@ public class MoveHandler(
             return;
         }
 
-        var (pendingRemovals, newLegalMoves, _) = _overtime.ProcessOvertimeRemovals(
+        var (pendingRemovals, newLegalMoves, _) = _overtime.ConsumeOvertimeRemovals(
             currentPlayer,
             game.OvertimeState
         );
@@ -152,12 +152,8 @@ public class MoveHandler(
             _core.GetReadOnlyBoard(game.Core),
             game.OvertimeState
         );
-        var overtimeTurnStartedAt = _overtime.GetOvertimeTurnStartedAt(game.OvertimeState);
-        var secondRemainder = _overtime.GetPlayerSecondRemainderMs(sideToMove, game.OvertimeState);
         await _notifier.NotifyOvertimeAsync(
             sideToMove,
-            overtimeTurnStartedAt: overtimeTurnStartedAt,
-            secondRemainder: secondRemainder,
             pendingRemoval,
             gameToken,
             game.NotifierState

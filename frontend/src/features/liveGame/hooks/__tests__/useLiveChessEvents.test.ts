@@ -27,7 +27,7 @@ import {
 } from "@/lib/apiClient";
 import {
     OvertimePendingRemovalNotification,
-    PlayerOvertime,
+    PendingOvertimeRemoval,
 } from "../../lib/types";
 
 import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
@@ -309,9 +309,6 @@ describe("useLiveChessEvents", () => {
         it.each([GameColor.WHITE, GameColor.BLACK])(
             "should update the correct players overtime state",
             (overtimedColor) => {
-                const newOvertimeTurnStartedAt = 1234;
-                const newSecondRemainderMs = 567;
-
                 const legalMoves1 = [
                     createFakeMovePath(),
                     createFakeMovePath(),
@@ -319,7 +316,8 @@ describe("useLiveChessEvents", () => {
                 const encodedPendingRemoval1: OvertimePendingRemovalNotification =
                     {
                         encodedLegalMoves: encodeMoves(legalMoves1),
-                        removePieceAt: logicalPoint({ x: 1, y: 2 }),
+                        removeFrom: logicalPoint({ x: 1, y: 2 }),
+                        removeAtTimestamp: 1234,
                     };
                 const legalMoves2 = [
                     createFakeMovePath(),
@@ -328,43 +326,41 @@ describe("useLiveChessEvents", () => {
                 const encodedPendingRemoval2: OvertimePendingRemovalNotification =
                     {
                         encodedLegalMoves: encodeMoves(legalMoves2),
-                        removePieceAt: logicalPoint({ x: 3, y: 4 }),
+                        removeFrom: logicalPoint({ x: 3, y: 4 }),
+                        removeAtTimestamp: 4567,
                     };
 
                 renderLiveChessEvents();
                 act(() => {
-                    gameEventHandlers.ReceiveOvertimeAsync?.(
-                        overtimedColor,
-                        newOvertimeTurnStartedAt,
-                        newSecondRemainderMs,
-                        [encodedPendingRemoval1, encodedPendingRemoval2],
-                    );
+                    gameEventHandlers.ReceiveOvertimeAsync?.(overtimedColor, [
+                        encodedPendingRemoval1,
+                        encodedPendingRemoval2,
+                    ]);
                 });
 
-                const expectedPlayerOvertime: PlayerOvertime = {
-                    secondRemainderMs: newSecondRemainderMs,
-                    pendingRemoval: [
-                        {
-                            legalMoves: decodeMovePathIntoLegalMoves({
-                                paths: legalMoves1,
-                                boardWidth: constants.BOARD_WIDTH,
-                            }),
-                            removedPieceAt:
-                                encodedPendingRemoval1.removePieceAt,
-                        },
-                        {
-                            legalMoves: decodeMovePathIntoLegalMoves({
-                                paths: legalMoves2,
-                                boardWidth: constants.BOARD_WIDTH,
-                            }),
-                            removedPieceAt:
-                                encodedPendingRemoval2.removePieceAt,
-                        },
-                    ],
-                };
-                const { whiteOvertime, blackOvertime, overtimeTurnStartedAt } =
+                const expectedPlayerOvertime: PendingOvertimeRemoval[] = [
+                    {
+                        legalMoves: decodeMovePathIntoLegalMoves({
+                            paths: legalMoves1,
+                            boardWidth: constants.BOARD_WIDTH,
+                        }),
+                        removeFrom: encodedPendingRemoval1.removeFrom,
+                        removeAtTimestamp:
+                            encodedPendingRemoval1.removeAtTimestamp,
+                    },
+                    {
+                        legalMoves: decodeMovePathIntoLegalMoves({
+                            paths: legalMoves2,
+                            boardWidth: constants.BOARD_WIDTH,
+                        }),
+                        removeFrom: encodedPendingRemoval2.removeFrom,
+                        removeAtTimestamp:
+                            encodedPendingRemoval2.removeAtTimestamp,
+                    },
+                ];
+
+                const { whiteOvertime, blackOvertime } =
                     liveChessStore.getState();
-                expect(overtimeTurnStartedAt).toBe(newOvertimeTurnStartedAt);
                 const playerOvertime =
                     overtimedColor === GameColor.WHITE
                         ? whiteOvertime

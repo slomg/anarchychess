@@ -29,8 +29,6 @@ export type GameClientEvents = {
     ];
     ReceiveOvertimeAsync: [
         overtimedPlayer: GameColor,
-        overtimeTurnStartedAt: number,
-        secondRemainder: number,
         encodedPendingRemoval: OvertimePendingRemovalNotification[],
     ];
 

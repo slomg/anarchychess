@@ -8,7 +8,7 @@ import LegalMoves from "@/features/chessboard/lib/legalMoves";
 import { LiveChessStore } from "../stores/liveChessStore";
 import { refetchGame } from "../lib/gameStateProcessor";
 import { Clocks, MoveSnapshot } from "@/lib/apiClient";
-import { PendingOvertimeRemoval, PlayerOvertime } from "../lib/types";
+import { PendingOvertimeRemoval } from "../lib/types";
 import { useGameEvent } from "./useGameHub";
 
 export default function useLiveChessEvents(
@@ -114,13 +114,8 @@ export default function useLiveChessEvents(
     useGameEvent(
         gameToken,
         "ReceiveOvertimeAsync",
-        (
-            overtimedPlayer,
-            overtimeTurnStartedAt,
-            secondRemainderMs,
-            encodedPendingRemoval,
-        ) => {
-            const pendingRemoval: PendingOvertimeRemoval[] =
+        (overtimedPlayer, encodedPendingRemoval) => {
+            const playerOvertime: PendingOvertimeRemoval[] =
                 encodedPendingRemoval.map((pending) => {
                     const legalMoves = decodeLegalMoves({
                         encoded: pending.encodedLegalMoves,
@@ -128,21 +123,14 @@ export default function useLiveChessEvents(
                     });
                     return {
                         legalMoves,
-                        removedPieceAt: pending.removePieceAt,
+                        removeFrom: pending.removeFrom,
+                        removeAtTimestamp: pending.removeAtTimestamp,
                     };
                 });
-            const playerOvertime: PlayerOvertime = {
-                secondRemainderMs,
-                pendingRemoval,
-            };
 
             liveChessStore
                 .getState()
-                .setOvertime(
-                    overtimedPlayer,
-                    playerOvertime,
-                    overtimeTurnStartedAt,
-                );
+                .setOvertime(overtimedPlayer, playerOvertime);
         },
     );
 

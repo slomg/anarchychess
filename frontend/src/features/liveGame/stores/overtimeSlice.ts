@@ -1,24 +1,21 @@
 import { StateCreator } from "zustand";
 
 import type { LiveChessStore } from "./liveChessStore";
-import { PlayerOvertime } from "../lib/types";
+import { PendingOvertimeRemoval } from "../lib/types";
 import { GameColor } from "@/lib/apiClient";
 
 export interface OvertimeSliceProps {
-    overtimeTurnStartedAt: number;
-    whiteOvertime: PlayerOvertime | null;
-    blackOvertime: PlayerOvertime | null;
+    whiteOvertime: PendingOvertimeRemoval[] | null;
+    blackOvertime: PendingOvertimeRemoval[] | null;
 }
 
 export interface OvertimeSlice {
-    overtimeTurnStartedAt: number;
-    whiteOvertime: PlayerOvertime | null;
-    blackOvertime: PlayerOvertime | null;
+    whiteOvertime: PendingOvertimeRemoval[] | null;
+    blackOvertime: PendingOvertimeRemoval[] | null;
 
     setOvertime(
         overtimedPlayer: GameColor,
-        playerOvertime: PlayerOvertime,
-        overtimeTurnStartedAt: number,
+        playerOvertime: PendingOvertimeRemoval[],
     ): void;
 }
 
@@ -33,10 +30,8 @@ export function createOvertimeSlice(
     return (set) => ({
         ...initState,
 
-        setOvertime(overtimedPlayer, playerOvertime, overtimeTurnStartedAt) {
+        setOvertime(overtimedPlayer, playerOvertime) {
             set((state) => {
-                state.overtimeTurnStartedAt = overtimeTurnStartedAt;
-
                 if (overtimedPlayer === GameColor.WHITE) {
                     state.whiteOvertime = playerOvertime;
                 } else {

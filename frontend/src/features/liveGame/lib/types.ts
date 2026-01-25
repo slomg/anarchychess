@@ -8,15 +8,12 @@ export interface ClockSnapshot {
 
 export interface OvertimePendingRemovalNotification {
     encodedLegalMoves: string;
-    removePieceAt: LogicalPoint;
-}
-
-export interface PlayerOvertime {
-    secondRemainderMs: number;
-    pendingRemoval: PendingOvertimeRemoval[];
+    removeFrom: LogicalPoint;
+    removeAtTimestamp: number;
 }
 
 export interface PendingOvertimeRemoval {
     legalMoves: LegalMoves;
-    removedPieceAt: LogicalPoint;
+    removeFrom: LogicalPoint;
+    removeAtTimestamp: number;
 }

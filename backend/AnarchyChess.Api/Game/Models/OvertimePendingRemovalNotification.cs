@@ -4,5 +4,6 @@ namespace AnarchyChess.Api.Game.Models;
 
 public record OvertimePendingRemovalNotification(
     IReadOnlyList<byte> EncodedLegalMoves,
-    AlgebraicPoint RemovePieceAt
+    AlgebraicPoint RemoveFrom,
+    long RemoveAtTimestamp
 );

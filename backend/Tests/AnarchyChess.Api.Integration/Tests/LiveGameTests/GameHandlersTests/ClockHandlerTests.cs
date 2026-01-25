@@ -42,6 +42,7 @@ public class ClockHandlerTests : BaseIntegrationTest
         _core = Scope.ServiceProvider.GetRequiredService<IGameCore>();
         _resultDescriber = Scope.ServiceProvider.GetRequiredService<IGameResultDescriber>();
         _overtime = new(
+            settings,
             Scope.ServiceProvider.GetRequiredService<IRandomProvider>(),
             _timeProviderMock,
             Scope.ServiceProvider.GetRequiredService<IPlayableMoveProvider>(),
@@ -132,11 +133,6 @@ public class ClockHandlerTests : BaseIntegrationTest
             .Received(1)
             .NotifyOvertimeAsync(
                 GameColor.White,
-                overtimeTurnStartedAt: _gameData.OvertimeState.OvertimeTurnStartedAt,
-                secondRemainder: _gameData
-                    .OvertimeState
-                    .PlayerOvertime[GameColor.White]
-                    .SecondRemainderMs,
                 Arg.Is<List<OvertimePendingRemovalNotification>>(x => x.Count > 1),
                 _gameToken,
                 _gameData.NotifierState

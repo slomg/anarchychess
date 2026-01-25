@@ -6,7 +6,6 @@ namespace AnarchyChess.Api.GameSnapshot.Models;
 [GenerateSerializer]
 [Alias("AnarchyChess.Api.GameSnapshot.Models.OvertimeSnapshot")]
 public record OvertimeSnapshot(
-    PlayerOvertimePathSnapshot? WhiteOvertime,
-    PlayerOvertimePathSnapshot? BlackOvertime,
-    long OvertimeTurnStartedAt
+    IReadOnlyList<PendingOvertimeRemovalPathSnapshot>? WhiteOvertime,
+    IReadOnlyList<PendingOvertimeRemovalPathSnapshot>? BlackOvertime
 );

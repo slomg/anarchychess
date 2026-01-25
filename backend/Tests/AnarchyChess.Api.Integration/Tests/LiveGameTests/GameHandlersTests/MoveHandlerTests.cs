@@ -53,6 +53,7 @@ public class MoveHandlerTests : BaseIntegrationTest
 
         _clock = new(settings, _timeProviderMock);
         _overtime = new(
+            settings,
             Scope.ServiceProvider.GetRequiredService<IRandomProvider>(),
             _timeProviderMock,
             Scope.ServiceProvider.GetRequiredService<IPlayableMoveProvider>(),
@@ -257,11 +258,6 @@ public class MoveHandlerTests : BaseIntegrationTest
             .Received(1)
             .NotifyOvertimeAsync(
                 GameColor.White,
-                overtimeTurnStartedAt: _overtime.GetOvertimeTurnStartedAt(_gameData.OvertimeState),
-                secondRemainder: _overtime.GetPlayerSecondRemainderMs(
-                    GameColor.White,
-                    _gameData.OvertimeState
-                ),
                 Arg.Is<List<OvertimePendingRemovalNotification>>(x => x.Count > 1),
                 _gameToken,
                 _gameData.NotifierState
@@ -292,7 +288,7 @@ public class MoveHandlerTests : BaseIntegrationTest
             CT
         );
 
-        now += TimeSpan.FromSeconds(2);
+        now += _settings.OvertimeRemovalInterval * 2;
         _timeProviderMock.GetUtcNow().Returns(now);
         var (pendingRemoval, newLegalMoves, _) = _overtime.GetRemovedPiecesSinceLastMove(
             GameColor.White,

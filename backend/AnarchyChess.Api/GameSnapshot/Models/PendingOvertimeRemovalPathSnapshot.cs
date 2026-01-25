@@ -8,5 +8,6 @@ namespace AnarchyChess.Api.GameSnapshot.Models;
 [Alias("AnarchyChess.Api.GameSnapshot.Models.PendingOvertimeRemovalPathSnapshot")]
 public record PendingOvertimeRemovalPathSnapshot(
     IReadOnlyCollection<MovePath> LegalMoves,
-    AlgebraicPoint RemovedPiece
+    AlgebraicPoint RemoveFrom,
+    long RemoveAtTimestamp
 );

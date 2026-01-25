@@ -91,7 +91,7 @@ public class ClockHandler(
             return null;
         }
 
-        var (pendingRemoval, newLegalMoves, isGameOver) = _overtime.ProcessOvertimeRemovals(
+        var (pendingRemoval, newLegalMoves, isGameOver) = _overtime.ConsumeOvertimeRemovals(
             playerColor,
             game.OvertimeState
         );
@@ -111,15 +111,8 @@ public class ClockHandler(
             _core.GetReadOnlyBoard(game.Core),
             game.OvertimeState
         );
-        var overtimeTurnStartedAt = _overtime.GetOvertimeTurnStartedAt(game.OvertimeState);
-        var secondRemainder = _overtime.GetPlayerSecondRemainderMs(
-            overtimedPlayer,
-            game.OvertimeState
-        );
         await _notifier.NotifyOvertimeAsync(
             overtimedPlayer,
-            overtimeTurnStartedAt: overtimeTurnStartedAt,
-            secondRemainder: secondRemainder,
             pendingRemoval,
             gameToken,
             game.NotifierState

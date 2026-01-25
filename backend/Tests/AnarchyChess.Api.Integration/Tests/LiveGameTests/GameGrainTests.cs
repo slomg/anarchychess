@@ -65,6 +65,7 @@ public class GameGrainTests : BaseOrleansIntegrationTest
         _gameClock = new(settings, _timeProviderMock);
 
         _overtime = new(
+            settings,
             ApiTestBase.Scope.ServiceProvider.GetRequiredService<IRandomProvider>(),
             _timeProviderMock,
             ApiTestBase.Scope.ServiceProvider.GetRequiredService<IPlayableMoveProvider>(),

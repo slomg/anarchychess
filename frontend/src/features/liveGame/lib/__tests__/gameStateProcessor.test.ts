@@ -12,6 +12,7 @@ import { MoveBounds } from "@/features/chessboard/lib/types";
 import { logicalPoint } from "@/features/point/pointUtils";
 import { createStoreProps } from "../gameStateProcessor";
 import { GameColor, GameResult } from "@/lib/apiClient";
+import { PendingOvertimeRemoval } from "../types";
 import constants from "@/lib/constants";
 
 describe("createStoreProps", () => {
@@ -42,7 +43,6 @@ describe("createStoreProps", () => {
 
             drawState: gameState.drawState,
             clocks: gameState.clocks,
-            overtimeTurnStartedAt: gameState.overtime.overtimeTurnStartedAt,
             whiteOvertime: null,
             blackOvertime: null,
             resultData: null,
@@ -215,19 +215,17 @@ describe("createStoreProps", () => {
     });
 
     it("should decode white player overtime correctly", () => {
+        const legalMoves = [createFakeMovePath()];
         const gameState = createFakeGameState({
             overtime: {
-                whiteOvertime: {
-                    secondRemainderMs: 1234,
-                    pendingRemoval: [
-                        {
-                            legalMoves: [createFakeMovePath()],
-                            removedPiece: { x: 1, y: 2 },
-                        },
-                    ],
-                },
+                whiteOvertime: [
+                    {
+                        legalMoves,
+                        removeFrom: { x: 1, y: 2 },
+                        removeAtTimestamp: 1234,
+                    },
+                ],
                 blackOvertime: null,
-                overtimeTurnStartedAt: 5678,
             },
         });
 
@@ -238,28 +236,30 @@ describe("createStoreProps", () => {
         );
 
         expect(live.whiteOvertime).not.toBeNull();
-        expect(live.whiteOvertime!.secondRemainderMs).toBe(1234);
-        expect(live.overtimeTurnStartedAt).toBe(5678);
-        expect(live.whiteOvertime!.pendingRemoval[0].removedPieceAt).toEqual(
-            logicalPoint({ x: 1, y: 2 }),
-        );
+        expect(live.whiteOvertime).toHaveLength(1);
+        expect(live.whiteOvertime![0]).toEqual<PendingOvertimeRemoval>({
+            legalMoves: decodeMovePathIntoLegalMoves({
+                paths: legalMoves,
+                boardWidth: constants.BOARD_WIDTH,
+            }),
+            removeFrom: logicalPoint({ x: 1, y: 2 }),
+            removeAtTimestamp: 1234,
+        });
         expect(live.blackOvertime).toBeNull();
     });
 
     it("should decode black player overtime correctly", () => {
+        const legalMoves = [createFakeMovePath()];
         const gameState = createFakeGameState({
             overtime: {
                 whiteOvertime: null,
-                blackOvertime: {
-                    secondRemainderMs: 8765,
-                    pendingRemoval: [
-                        {
-                            legalMoves: [createFakeMovePath()],
-                            removedPiece: { x: 2, y: 3 },
-                        },
-                    ],
-                },
-                overtimeTurnStartedAt: 4321,
+                blackOvertime: [
+                    {
+                        legalMoves,
+                        removeFrom: { x: 2, y: 3 },
+                        removeAtTimestamp: 5678,
+                    },
+                ],
             },
         });
 
@@ -269,13 +269,17 @@ describe("createStoreProps", () => {
             gameState,
         );
 
-        expect(live.whiteOvertime).toBeNull();
-        expect(live.overtimeTurnStartedAt).toBe(4321);
         expect(live.blackOvertime).not.toBeNull();
-        expect(live.blackOvertime!.secondRemainderMs).toBe(8765);
-        expect(live.blackOvertime!.pendingRemoval[0].removedPieceAt).toEqual(
-            logicalPoint({ x: 2, y: 3 }),
-        );
+        expect(live.blackOvertime).toHaveLength(1);
+        expect(live.blackOvertime![0]).toEqual<PendingOvertimeRemoval>({
+            legalMoves: decodeMovePathIntoLegalMoves({
+                paths: legalMoves,
+                boardWidth: constants.BOARD_WIDTH,
+            }),
+            removeFrom: logicalPoint({ x: 2, y: 3 }),
+            removeAtTimestamp: 5678,
+        });
+        expect(live.whiteOvertime).toBeNull();
     });
 
     it("should return the right viewer for spectator", () => {

@@ -1,9 +1,9 @@
 import { StoreApi } from "zustand";
 
 import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
-import { createFakePlayerOvertime } from "@/lib/testUtils/fakers/playerOvertimeFaker";
 import createLiveChessStore, { LiveChessStore } from "../liveChessStore";
 import { GameColor } from "@/lib/apiClient";
+import { createFakePendingOvertimeRemoval } from "@/lib/testUtils/fakers/pendingOvertimeRemovalFaker";
 
 describe("OvertimeSlice", () => {
     let store: StoreApi<LiveChessStore>;
@@ -14,41 +14,31 @@ describe("OvertimeSlice", () => {
 
     describe("setOvertime", () => {
         it("should set the white overtime state", () => {
-            const playerOvertime = createFakePlayerOvertime();
-            const setOvertimeTurnStartedAt = 1234;
+            const playerOvertime = [
+                createFakePendingOvertimeRemoval(),
+                createFakePendingOvertimeRemoval(),
+                createFakePendingOvertimeRemoval(),
+            ];
 
-            store
-                .getState()
-                .setOvertime(
-                    GameColor.WHITE,
-                    playerOvertime,
-                    setOvertimeTurnStartedAt,
-                );
+            store.getState().setOvertime(GameColor.WHITE, playerOvertime);
 
-            const { whiteOvertime, blackOvertime, overtimeTurnStartedAt } =
-                store.getState();
+            const { whiteOvertime, blackOvertime } = store.getState();
             expect(whiteOvertime).toEqual(playerOvertime);
             expect(blackOvertime).toBeNull();
-            expect(overtimeTurnStartedAt).toBe(setOvertimeTurnStartedAt);
         });
 
         it("should set the black overtime state", () => {
-            const playerOvertime = createFakePlayerOvertime();
-            const setOvertimeTurnStartedAt = 1234;
+            const playerOvertime = [
+                createFakePendingOvertimeRemoval(),
+                createFakePendingOvertimeRemoval(),
+                createFakePendingOvertimeRemoval(),
+            ];
 
-            store
-                .getState()
-                .setOvertime(
-                    GameColor.BLACK,
-                    playerOvertime,
-                    setOvertimeTurnStartedAt,
-                );
+            store.getState().setOvertime(GameColor.BLACK, playerOvertime);
 
-            const { whiteOvertime, blackOvertime, overtimeTurnStartedAt } =
-                store.getState();
+            const { whiteOvertime, blackOvertime } = store.getState();
             expect(blackOvertime).toEqual(playerOvertime);
             expect(whiteOvertime).toBeNull();
-            expect(overtimeTurnStartedAt).toBe(setOvertimeTurnStartedAt);
         });
     });
 });

@@ -3,10 +3,13 @@ using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
+using AnarchyChess.Api.Shared.Models;
 using AnarchyChess.Api.Shared.Services;
 using AnarchyChess.Api.TestInfrastructure.Factories;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
+using AnarchyChess.Api.TestInfrastructure.Utils;
 using AwesomeAssertions;
+using Microsoft.Extensions.Options;
 using NSubstitute;
 
 namespace AnarchyChess.Api.Unit.Tests.LiveGameTests;
@@ -21,14 +24,19 @@ public class OvertimeTests
         Substitute.For<IPlayableMoveProvider>();
     private readonly IMoveEncoder _moveEncoderMock = Substitute.For<IMoveEncoder>();
 
+    private readonly GameSettings _settings;
     private readonly DateTimeOffset _fakeNow = DateTimeOffset.UtcNow;
     private readonly OvertimeState _state = new();
 
     public OvertimeTests()
     {
+        var settings = AppSettingsLoader.LoadAppSettings();
+        _settings = settings.Game;
+
         _timeProviderMock.GetUtcNow().Returns(_fakeNow);
 
         _overtime = new(
+            Options.Create(settings),
             _randomMock,
             _timeProviderMock,
             _playableMoveProviderMock,
@@ -69,17 +77,22 @@ public class OvertimeTests
 
         var result = _overtime.StartOvertimeTurn(GameColor.White, board, _state);
 
+        var expectedFirstTimestamp =
+            _fakeNow.ToUnixTimeMilliseconds()
+            + (long)_settings.OvertimeRemovalInterval.TotalMilliseconds;
+        var expectedSecondTimestamp =
+            expectedFirstTimestamp + (long)_settings.OvertimeRemovalInterval.TotalMilliseconds;
         List<OvertimePendingRemovalNotification> expectedResult =
         [
-            new(firstEncoded, new("a2")),
-            new(secondEncoded, new("a3")),
+            new(firstEncoded, new("a2"), expectedFirstTimestamp),
+            new(secondEncoded, new("a3"), expectedSecondTimestamp),
         ];
         result.Should().BeEquivalentTo(expectedResult);
-        _state.OvertimeTurnStartedAt.Should().Be(_fakeNow.ToUnixTimeMilliseconds());
+
         List<PendingRemovalEntry> expectedPendingRemoval =
         [
-            new(new("a2"), firstLegalMoves),
-            new(new("a3"), secondLegalMoves),
+            new(new("a2"), firstLegalMoves, expectedFirstTimestamp),
+            new(new("a3"), secondLegalMoves, expectedSecondTimestamp),
         ];
         _state
             .PlayerOvertime.Should()
@@ -89,6 +102,41 @@ public class OvertimeTests
                     [GameColor.White] = new() { PendingRemoval = expectedPendingRemoval },
                 }
             );
+    }
+
+    [Fact]
+    public void StartOvertimeTurn_uses_remainderms_for_first_removal()
+    {
+        ChessBoard board = new();
+        board.PlacePiece(new("a1"), PieceFactory.White(PieceType.Rook));
+        board.PlacePiece(new("a2"), PieceFactory.White(PieceType.Queen));
+        board.PlacePiece(new("a3"), PieceFactory.White(PieceType.King));
+        board.PlacePiece(new("b5"), PieceFactory.Black(PieceType.King));
+
+        long remainderMs = 400;
+        _state.PlayerOvertime[GameColor.White] = new()
+        {
+            PendingRemoval = [],
+            RemainderMs = remainderMs,
+        };
+
+        var firstLegalMoves = new LegalMoveSetFaker().Generate();
+        var secondLegalMoves = new LegalMoveSetFaker().Generate();
+        _playableMoveProviderMock
+            .CalculateAllPlayableMoves(Arg.Any<ChessBoard>())
+            .Returns(firstLegalMoves, secondLegalMoves);
+        _moveEncoderMock.EncodeMoves(Arg.Any<IReadOnlyList<MovePath>>()).Returns([1, 2]);
+
+        var result = _overtime.StartOvertimeTurn(GameColor.White, board, _state);
+
+        long nowMs = _fakeNow.ToUnixTimeMilliseconds();
+        long expectedFirstTimestamp =
+            nowMs - remainderMs + (long)_settings.OvertimeRemovalInterval.TotalMilliseconds;
+        long expectedSecondTimestamp =
+            expectedFirstTimestamp + (long)_settings.OvertimeRemovalInterval.TotalMilliseconds;
+
+        result[0].RemoveAtTimestamp.Should().Be(expectedFirstTimestamp);
+        result[1].RemoveAtTimestamp.Should().Be(expectedSecondTimestamp);
     }
 
     [Fact]
@@ -112,7 +160,7 @@ public class OvertimeTests
         var result = _overtime.StartOvertimeTurn(GameColor.White, board, _state);
 
         result.Should().NotBeEmpty();
-        result[0].RemovePieceAt.Should().NotBe(new AlgebraicPoint("a1"));
+        result[0].RemoveFrom.Should().NotBe(new AlgebraicPoint("a1"));
     }
 
     [Fact]
@@ -134,7 +182,7 @@ public class OvertimeTests
         var result = _overtime.StartOvertimeTurn(GameColor.White, board, _state);
 
         result.Should().HaveCount(1);
-        result[0].RemovePieceAt.Should().Be(new AlgebraicPoint("e1"));
+        result[0].RemoveFrom.Should().Be(new AlgebraicPoint("e1"));
     }
 
     [Fact]
@@ -144,34 +192,43 @@ public class OvertimeTests
 
         result
             .Should()
-            .BeEquivalentTo(
-                new OvertimeSnapshot(
-                    WhiteOvertime: null,
-                    BlackOvertime: null,
-                    OvertimeTurnStartedAt: 0
-                )
-            );
+            .BeEquivalentTo(new OvertimeSnapshot(WhiteOvertime: null, BlackOvertime: null));
     }
 
     [Fact]
     public void ToSnapshot_creates_the_right_snapshot_with_pending_positions()
     {
-        PendingRemovalEntry white1 = new(new("a1"), new LegalMoveSetFaker().Generate());
-        PendingRemovalEntry white2 = new(new("c5"), new LegalMoveSetFaker().Generate());
+        PendingRemovalEntry white1 = new(
+            new("a1"),
+            new LegalMoveSetFaker().Generate(),
+            RemoveAtTimestamp: 1234
+        );
+        PendingRemovalEntry white2 = new(
+            new("c5"),
+            new LegalMoveSetFaker().Generate(),
+            RemoveAtTimestamp: 4567
+        );
         _state.PlayerOvertime[GameColor.White] = new()
         {
             PendingRemoval = [white1, white2],
-            SecondRemainderMs = 1234,
+            RemainderMs = 8910,
         };
 
-        PendingRemovalEntry black1 = new(new("f6"), new LegalMoveSetFaker().Generate());
-        PendingRemovalEntry black2 = new(new("g7"), new LegalMoveSetFaker().Generate());
+        PendingRemovalEntry black1 = new(
+            new("f6"),
+            new LegalMoveSetFaker().Generate(),
+            RemoveAtTimestamp: 1112
+        );
+        PendingRemovalEntry black2 = new(
+            new("g7"),
+            new LegalMoveSetFaker().Generate(),
+            RemoveAtTimestamp: 1314
+        );
         _state.PlayerOvertime[GameColor.Black] = new()
         {
             PendingRemoval = [black1, black2],
-            SecondRemainderMs = 5678,
+            RemainderMs = 5678,
         };
-        _state.OvertimeTurnStartedAt = 123456;
 
         var result = _overtime.ToSnapshot(_state);
 
@@ -179,35 +236,32 @@ public class OvertimeTests
             .Should()
             .BeEquivalentTo(
                 new OvertimeSnapshot(
-                    WhiteOvertime: new(
-                        SecondRemainderMs: 1234,
-                        PendingRemoval:
-                        [
-                            new PendingOvertimeRemovalPathSnapshot(
-                                white1.LegalMoves.MovePaths,
-                                white1.Position
-                            ),
-                            new PendingOvertimeRemovalPathSnapshot(
-                                white2.LegalMoves.MovePaths,
-                                white2.Position
-                            ),
-                        ]
-                    ),
-                    BlackOvertime: new(
-                        SecondRemainderMs: 5678,
-                        PendingRemoval:
-                        [
-                            new PendingOvertimeRemovalPathSnapshot(
-                                black1.LegalMoves.MovePaths,
-                                black1.Position
-                            ),
-                            new PendingOvertimeRemovalPathSnapshot(
-                                black2.LegalMoves.MovePaths,
-                                black2.Position
-                            ),
-                        ]
-                    ),
-                    OvertimeTurnStartedAt: 123456
+                    WhiteOvertime:
+                    [
+                        new PendingOvertimeRemovalPathSnapshot(
+                            white1.LegalMoves.MovePaths,
+                            white1.RemoveFrom,
+                            white1.RemoveAtTimestamp
+                        ),
+                        new PendingOvertimeRemovalPathSnapshot(
+                            white2.LegalMoves.MovePaths,
+                            white2.RemoveFrom,
+                            white2.RemoveAtTimestamp
+                        ),
+                    ],
+                    BlackOvertime:
+                    [
+                        new PendingOvertimeRemovalPathSnapshot(
+                            black1.LegalMoves.MovePaths,
+                            black1.RemoveFrom,
+                            black1.RemoveAtTimestamp
+                        ),
+                        new PendingOvertimeRemovalPathSnapshot(
+                            black2.LegalMoves.MovePaths,
+                            black2.RemoveFrom,
+                            black2.RemoveAtTimestamp
+                        ),
+                    ]
                 )
             );
     }
@@ -228,77 +282,20 @@ public class OvertimeTests
     [Fact]
     public void GetRemovedPiecesSinceLastMove_removes_correct_number_of_positions()
     {
-        PendingRemovalEntry pos1 = new(new("a1"), new LegalMoveSetFaker().Generate());
-        PendingRemovalEntry pos2 = new(new("b2"), new LegalMoveSetFaker().Generate());
-        _state.PlayerOvertime[GameColor.White] = new() { PendingRemoval = [pos1, pos2] };
-        _state.OvertimeTurnStartedAt = _fakeNow.ToUnixTimeMilliseconds();
+        long nowMs = _fakeNow.ToUnixTimeMilliseconds();
 
-        _timeProviderMock.GetUtcNow().Returns(_fakeNow.AddMilliseconds(1500));
-
-        var (positions, newLegalMoves, isGameOver) = _overtime.GetRemovedPiecesSinceLastMove(
-            GameColor.White,
-            _state
+        PendingRemovalEntry pending1 = new(
+            new("a1"),
+            new LegalMoveSetFaker().Generate(),
+            nowMs + 500
         );
-
-        positions.Should().BeEquivalentTo([pos1.Position]);
-        newLegalMoves.Should().BeEquivalentTo(pos1.LegalMoves);
-        isGameOver.Should().BeFalse();
-        _state.PlayerOvertime[GameColor.White].SecondRemainderMs.Should().Be(500);
-    }
-
-    [Fact]
-    public void GetRemovedPiecesSinceLastMove_returns_all_positions_and_game_over_if_time_exceeds()
-    {
-        PendingRemovalEntry pos1 = new(new("c3"), new LegalMoveSetFaker().Generate());
-        PendingRemovalEntry pos2 = new(new("d4"), new LegalMoveSetFaker().Generate());
-        _state.PlayerOvertime[GameColor.Black] = new() { PendingRemoval = [pos1, pos2] };
-
-        _timeProviderMock.GetUtcNow().Returns(_fakeNow.AddSeconds(5));
-
-        var (positions, newLegalMoves, isGameOver) = _overtime.GetRemovedPiecesSinceLastMove(
-            GameColor.Black,
-            _state
+        PendingRemovalEntry pending2 = new(
+            new("b2"),
+            new LegalMoveSetFaker().Generate(),
+            nowMs + 1000
         );
+        _state.PlayerOvertime[GameColor.White] = new() { PendingRemoval = [pending1, pending2] };
 
-        positions.Should().BeEquivalentTo([pos1.Position, pos2.Position]);
-        newLegalMoves.Should().BeEquivalentTo(new LegalMoveSet());
-        isGameOver.Should().BeTrue();
-    }
-
-    [Fact]
-    public void GetRemovedPiecesSinceLastMove_handles_exactly_pending_count()
-    {
-        PendingRemovalEntry pos1 = new(new("e5"), new LegalMoveSetFaker().Generate());
-        PendingRemovalEntry pos2 = new(new("f6"), new LegalMoveSetFaker().Generate());
-        _state.PlayerOvertime[GameColor.White] = new() { PendingRemoval = [pos1, pos2] };
-
-        _timeProviderMock.GetUtcNow().Returns(_fakeNow.AddSeconds(2));
-
-        var (positions, newLegalMoves, isGameOver) = _overtime.GetRemovedPiecesSinceLastMove(
-            GameColor.White,
-            _state
-        );
-
-        positions.Should().Equal([pos1.Position, pos2.Position]);
-        newLegalMoves.MovePaths.Should().BeEmpty();
-        isGameOver.Should().BeTrue();
-    }
-
-    [Fact]
-    public void GetRemovedPiecesSinceLastMove_includes_remainder_in_elapsed_time()
-    {
-        PendingRemovalEntry pos1 = new(new("a1"), new LegalMoveSetFaker().Generate());
-        PendingRemovalEntry pos2 = new(new("b2"), new LegalMoveSetFaker().Generate());
-
-        _state.PlayerOvertime[GameColor.White] = new()
-        {
-            PendingRemoval = [pos1, pos2],
-            SecondRemainderMs = 400,
-        };
-
-        _state.OvertimeTurnStartedAt = _fakeNow.ToUnixTimeMilliseconds();
-
-        // 600 ms since last move + 400 ms remainder = 1000 ms
         _timeProviderMock.GetUtcNow().Returns(_fakeNow.AddMilliseconds(600));
 
         var (positions, newLegalMoves, isGameOver) = _overtime.GetRemovedPiecesSinceLastMove(
@@ -306,92 +303,137 @@ public class OvertimeTests
             _state
         );
 
-        positions.Should().Equal([pos1.Position]);
-        newLegalMoves.Should().BeEquivalentTo(pos1.LegalMoves);
+        positions.Should().BeEquivalentTo([pending1.RemoveFrom]);
+        newLegalMoves.Should().BeEquivalentTo(pending1.LegalMoves);
         isGameOver.Should().BeFalse();
-
-        _state.PlayerOvertime[GameColor.White].SecondRemainderMs.Should().Be(0);
     }
 
     [Fact]
-    public void ProcessOvertimeRemovals_returns_same_as_GetRemovedPiecesSinceLastMove()
+    public void GetRemovedPiecesSinceLastMove_returns_all_positions_and_game_over_if_time_exceeds()
     {
-        var pending1 = new PendingRemovalEntry(new("a1"), new LegalMoveSetFaker().Generate());
-        var pending2 = new PendingRemovalEntry(new("b2"), new LegalMoveSetFaker().Generate());
-        _state.PlayerOvertime[GameColor.White] = new() { PendingRemoval = [pending1, pending2] };
-        _state.OvertimeTurnStartedAt = _fakeNow.ToUnixTimeMilliseconds();
-        _timeProviderMock.GetUtcNow().Returns(_fakeNow.AddSeconds(1));
+        long nowMs = _fakeNow.ToUnixTimeMilliseconds();
 
-        var resultQuery = _overtime.GetRemovedPiecesSinceLastMove(GameColor.White, _state);
-        var resultProcess = _overtime.ProcessOvertimeRemovals(GameColor.White, _state);
-
-        resultProcess.Should().BeEquivalentTo(resultQuery);
-
-        _state.PlayerOvertime[GameColor.White].PendingRemoval.Should().Equal([pending2]);
-    }
-
-    [Fact]
-    public void ProcessOvertimeRemovals_removes_all_when_time_exceeds()
-    {
-        var pending1 = new PendingRemovalEntry(new("c3"), new LegalMoveSetFaker().Generate());
-        var pending2 = new PendingRemovalEntry(new("d4"), new LegalMoveSetFaker().Generate());
+        PendingRemovalEntry pending1 = new(
+            new("c3"),
+            new LegalMoveSetFaker().Generate(),
+            nowMs + 100
+        );
+        PendingRemovalEntry pending2 = new(
+            new("d4"),
+            new LegalMoveSetFaker().Generate(),
+            nowMs + 200
+        );
         _state.PlayerOvertime[GameColor.Black] = new() { PendingRemoval = [pending1, pending2] };
-        _state.OvertimeTurnStartedAt = _fakeNow.ToUnixTimeMilliseconds();
 
-        _timeProviderMock.GetUtcNow().Returns(_fakeNow.AddSeconds(5));
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow.AddMilliseconds(300));
 
-        var (pendingRemoval, _, isGameOver) = _overtime.ProcessOvertimeRemovals(
+        var (positions, newLegalMoves, isGameOver) = _overtime.GetRemovedPiecesSinceLastMove(
             GameColor.Black,
             _state
         );
 
+        positions.Should().BeEquivalentTo([pending1.RemoveFrom, pending2.RemoveFrom]);
+        newLegalMoves.Should().BeEquivalentTo(pending2.LegalMoves);
         isGameOver.Should().BeTrue();
-        pendingRemoval.Should().BeEquivalentTo([pending1.Position, pending2.Position]);
-
-        _state.PlayerOvertime[GameColor.Black].PendingRemoval.Should().BeEmpty();
     }
 
     [Fact]
-    public void ProcessOvertimeRemovals_handles_no_pending_removals_gracefully()
+    public void ConsumeOvertimeRemovals_returns_same_as_GetRemovedPiecesSinceLastMove()
+    {
+        long nowMs = _fakeNow.ToUnixTimeMilliseconds();
+        PendingRemovalEntry pending1 = new(
+            new("a1"),
+            new LegalMoveSetFaker().Generate(),
+            nowMs + 100
+        );
+        PendingRemovalEntry pending2 = new(
+            new("b2"),
+            new LegalMoveSetFaker().Generate(),
+            nowMs + 200
+        );
+        _state.PlayerOvertime[GameColor.White] = new() { PendingRemoval = [pending1, pending2] };
+
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow.AddMilliseconds(150));
+
+        var resultQuery = _overtime.GetRemovedPiecesSinceLastMove(GameColor.White, _state);
+        var resultProcess = _overtime.ConsumeOvertimeRemovals(GameColor.White, _state);
+
+        resultProcess.Should().BeEquivalentTo(resultQuery);
+        _state.PlayerOvertime[GameColor.White].PendingRemoval.Should().Equal([pending2]);
+    }
+
+    [Fact]
+    public void ConsumeOvertimeRemovals_removes_all_when_time_exceeds()
+    {
+        long nowMs = _fakeNow.ToUnixTimeMilliseconds();
+        PendingRemovalEntry pending1 = new(
+            new("c3"),
+            new LegalMoveSetFaker().Generate(),
+            nowMs + 100
+        );
+        PendingRemovalEntry pending2 = new(
+            new("d4"),
+            new LegalMoveSetFaker().Generate(),
+            nowMs + 200
+        );
+        _state.PlayerOvertime[GameColor.Black] = new()
+        {
+            PendingRemoval = [pending1, pending2],
+            RemainderMs = 1234,
+        };
+
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow.AddMilliseconds(300));
+
+        var (pendingRemoval, _, isGameOver) = _overtime.ConsumeOvertimeRemovals(
+            GameColor.Black,
+            _state
+        );
+
+        pendingRemoval.Should().BeEquivalentTo([pending1.RemoveFrom, pending2.RemoveFrom]);
+        isGameOver.Should().BeTrue();
+        _state.PlayerOvertime[GameColor.Black].PendingRemoval.Should().BeEmpty();
+        _state.PlayerOvertime[GameColor.Black].RemainderMs.Should().Be(0);
+    }
+
+    [Fact]
+    public void ConsumeOvertimeRemovals_handles_no_pending_removals_gracefully()
     {
         _state.PlayerOvertime[GameColor.White] = new() { PendingRemoval = [] };
-        _state.OvertimeTurnStartedAt = _fakeNow.ToUnixTimeMilliseconds();
 
-        _overtime.ProcessOvertimeRemovals(GameColor.White, _state);
+        _overtime.ConsumeOvertimeRemovals(GameColor.White, _state);
 
         _state.PlayerOvertime[GameColor.White].PendingRemoval.Should().BeEmpty();
     }
 
     [Fact]
-    public void GetOvertimeTurnStartedAt_returns_correct_time()
+    public void ConsumeOvertimeRemovals_sets_remainder_for_next_pending_removal()
     {
-        _state.OvertimeTurnStartedAt = 123456;
+        long nowMs = _fakeNow.ToUnixTimeMilliseconds();
 
-        var result = _overtime.GetOvertimeTurnStartedAt(_state);
+        PendingRemovalEntry pending1 = new(
+            new("a1"),
+            new LegalMoveSetFaker().Generate(),
+            nowMs + 500
+        );
+        var pending2 = new PendingRemovalEntry(
+            new("b2"),
+            new LegalMoveSetFaker().Generate(),
+            nowMs + 1000
+        );
+        _state.PlayerOvertime[GameColor.White] = new() { PendingRemoval = [pending1, pending2] };
 
-        result.Should().Be(123456);
-    }
+        // advance time past the first removal only
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow.AddMilliseconds(600));
 
-    [Fact]
-    public void GetPlayerSecondRemainderMs_returns_correct_time()
-    {
-        _state.PlayerOvertime[GameColor.White] = new()
-        {
-            PendingRemoval = [],
-            SecondRemainderMs = 0.123,
-        };
+        var (pendingRemoval, _, _) = _overtime.ConsumeOvertimeRemovals(GameColor.White, _state);
 
-        var result = _overtime.GetPlayerSecondRemainderMs(GameColor.White, _state);
+        pendingRemoval.Should().BeEquivalentTo([pending1.RemoveFrom]);
+        _state.PlayerOvertime[GameColor.White].PendingRemoval.Should().Equal([pending2]);
 
-        result.Should().Be(0.123);
-    }
-
-    [Fact]
-    public void GetPlayerSecondRemainderMs_returns_zero_when_no_overtime()
-    {
-        var result = _overtime.GetPlayerSecondRemainderMs(GameColor.White, _state);
-
-        result.Should().Be(0);
+        // RemainderMs should be time until next removal
+        long expectedRemainder =
+            pending2.RemoveAtTimestamp - _fakeNow.AddMilliseconds(600).ToUnixTimeMilliseconds();
+        _state.PlayerOvertime[GameColor.White].RemainderMs.Should().Be(expectedRemainder);
     }
 
     [Fact]
@@ -407,7 +449,10 @@ public class OvertimeTests
     {
         _state.PlayerOvertime[GameColor.Black] = new()
         {
-            PendingRemoval = [new(new("g7"), new LegalMoveSetFaker().Generate())],
+            PendingRemoval =
+            [
+                new(new("g7"), new LegalMoveSetFaker().Generate(), RemoveAtTimestamp: 1234),
+            ],
         };
 
         bool result = _overtime.HasStartedOvertime(GameColor.Black, _state);
@@ -428,7 +473,7 @@ public class OvertimeTests
     {
         _state.PlayerOvertime[GameColor.White] = new()
         {
-            SecondRemainderMs = 500, // remainder shouldn't matter
+            RemainderMs = 500, // remainder shouldn't matter
             PendingRemoval = [],
         };
 
@@ -438,38 +483,24 @@ public class OvertimeTests
     }
 
     [Fact]
-    public void GetTimeUntilDefeat_returns_seconds_correctly_for_pending_removals()
+    public void GetTimeUntilDefeat_returns_correct_time()
     {
+        long nowMs = _fakeNow.ToUnixTimeMilliseconds();
+
         _state.PlayerOvertime[GameColor.White] = new()
         {
             PendingRemoval =
             [
-                new(new("a1"), new LegalMoveSetFaker().Generate()),
-                new(new("b2"), new LegalMoveSetFaker().Generate()),
+                new(new("a1"), new LegalMoveSetFaker().Generate(), nowMs + 1000),
+                new(new("b2"), new LegalMoveSetFaker().Generate(), nowMs + 2000),
             ],
         };
 
-        TimeSpan result = _overtime.GetTimeUntilDefeat(GameColor.White, _state);
-
-        result.Should().Be(TimeSpan.FromSeconds(2));
-    }
-
-    [Fact]
-    public void GetTimeUntilDefeat_subtracts_fractional_second_remainder()
-    {
-        _state.PlayerOvertime[GameColor.White] = new()
-        {
-            SecondRemainderMs = 300,
-            PendingRemoval =
-            [
-                new(new("a1"), new LegalMoveSetFaker().Generate()),
-                new(new("b2"), new LegalMoveSetFaker().Generate()),
-                new(new("c3"), new LegalMoveSetFaker().Generate()),
-            ],
-        };
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow.AddMilliseconds(500));
 
         TimeSpan result = _overtime.GetTimeUntilDefeat(GameColor.White, _state);
 
-        result.Should().Be(TimeSpan.FromSeconds(2.7));
+        // 2000 - 500 = 1500 ms remaining
+        result.Should().Be(TimeSpan.FromMilliseconds(1500));
     }
 }

@@ -96,30 +96,15 @@ public class GameNotifierTests
         GameNotifierState state = new() { Revision = 0 };
         List<OvertimePendingRemovalNotification> pendingRemoval =
         [
-            new([1, 2, 3], new("a1")),
-            new([4, 5, 6], new("a2")),
-            new([7, 8, 9], new("a3")),
+            new([1, 2, 3], new("a1"), RemoveAtTimestamp: 1234),
+            new([4, 5, 6], new("a2"), RemoveAtTimestamp: 4567),
         ];
-        long turnStartedAt = 1234;
-        double secondRemainderMs = 5678;
 
-        await _notifier.NotifyOvertimeAsync(
-            GameColor.Black,
-            turnStartedAt,
-            secondRemainderMs,
-            pendingRemoval,
-            _gameToken,
-            state
-        );
+        await _notifier.NotifyOvertimeAsync(GameColor.Black, pendingRemoval, _gameToken, state);
 
         await _clientGameGroupProxyMock
             .Received(1)
-            .ReceiveOvertimeAsync(
-                GameColor.Black,
-                turnStartedAt,
-                secondRemainderMs,
-                pendingRemoval
-            );
+            .ReceiveOvertimeAsync(GameColor.Black, pendingRemoval);
         state.Revision.Should().Be(1);
     }
 

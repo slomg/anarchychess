@@ -8,7 +8,7 @@ import {
     GameColor,
     GamePlayer,
     getGame,
-    PlayerOvertimePath,
+    PendingOvertimeRemovalPath,
     type GameState,
 } from "@/lib/apiClient";
 
@@ -16,11 +16,11 @@ import { LiveChessStore, LiveChessStoreProps } from "../stores/liveChessStore";
 import { decodeMovePath, decodeMovePathIntoLegalMoves } from "./moveDecoder";
 import PositionHistory from "@/features/chessboard/lib/positionHistory";
 import { simulateMove } from "@/features/chessboard/lib/simulateMove";
+import { ClockSnapshot, PendingOvertimeRemoval } from "./types";
 import { decodeFen } from "../../chessboard/lib/fenDecoder";
-import { LiveChessViewer } from "../stores/gamePlaySlice";
-import { ClockSnapshot, PendingOvertimeRemoval, PlayerOvertime } from "./types";
-import constants from "@/lib/constants";
 import { logicalPoint } from "@/features/point/pointUtils";
+import { LiveChessViewer } from "../stores/gamePlaySlice";
+import constants from "@/lib/constants";
 
 export interface ProcessedGameState {
     live: LiveChessStoreProps;
@@ -65,7 +65,6 @@ export function createStoreProps(
 
         drawState: gameState.drawState,
         clocks: gameState.clocks,
-        overtimeTurnStartedAt: gameState.overtime.overtimeTurnStartedAt,
         whiteOvertime: decodeOvertime(
             boardWidth,
             gameState.overtime.whiteOvertime,
@@ -144,25 +143,24 @@ function getPositionHistory(gameState: GameState): PositionHistory {
 
 function decodeOvertime(
     boardWidth: number,
-    playerOvertime?: PlayerOvertimePath | null,
-): PlayerOvertime | null {
+    playerOvertime?: PendingOvertimeRemovalPath[] | null,
+): PendingOvertimeRemoval[] | null {
     if (!playerOvertime) {
         return null;
     }
 
-    const pendingRemoval: PendingOvertimeRemoval[] =
-        playerOvertime.pendingRemoval.map((x) => ({
+    const pendingRemoval: PendingOvertimeRemoval[] = playerOvertime.map(
+        (x) => ({
             legalMoves: decodeMovePathIntoLegalMoves({
                 boardWidth,
                 paths: x.legalMoves,
             }),
-            removedPieceAt: logicalPoint(x.removedPiece),
-        }));
+            removeFrom: logicalPoint(x.removeFrom),
+            removeAtTimestamp: x.removeAtTimestamp,
+        }),
+    );
 
-    return {
-        secondRemainderMs: playerOvertime.secondRemainderMs,
-        pendingRemoval,
-    };
+    return pendingRemoval;
 }
 
 export async function refetchGame(
