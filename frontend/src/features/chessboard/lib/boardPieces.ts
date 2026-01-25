@@ -64,7 +64,7 @@ export default class BoardPieces {
 
         // step 1: remove all captures first
         // so we don't capture any piece that just moved
-        for (const capture of move.captures) {
+        for (const capture of [...move.captures, ...move.overtimeRemovals]) {
             const capturedPiece = this.getByPosition(capture);
             if (capturedPiece) {
                 this.delete(capturedPiece.id);
@@ -90,8 +90,9 @@ export default class BoardPieces {
             movedPieceIds.add(spawn.id);
         }
 
-        if (move.promotesTo !== null)
+        if (move.promotesTo !== null) {
             this.getByPosition(move.to)!.type = move.promotesTo;
+        }
 
         return {
             removedPieceIds,

@@ -66,6 +66,7 @@ export interface AnimationStep {
     specialType?: SpecialMoveType | null;
     isCapture?: boolean;
     isPromotion?: boolean;
+    hasOvertimeRemovals?: boolean;
 }
 
 export interface MoveAnimation {

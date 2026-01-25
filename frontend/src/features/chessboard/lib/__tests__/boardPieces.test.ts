@@ -203,6 +203,40 @@ describe("BoardPieces", () => {
             expect(pieces.getById(piece.id)).toBeUndefined();
             expect(pieces.getByPosition(move.to)).toBeUndefined();
         });
+
+        it("should remove pieces listed in overtimeRemovals", () => {
+            const movingPiece = createFakePiece({
+                position: logicalPoint({ x: 0, y: 0 }),
+            });
+            const overtimeRemovedPiece = createFakePiece({
+                position: logicalPoint({ x: 4, y: 4 }),
+            });
+
+            const pieces = BoardPieces.fromPieces(
+                movingPiece,
+                overtimeRemovedPiece,
+            );
+
+            const move = createFakeMove({
+                from: movingPiece.position,
+                to: logicalPoint({ x: 1, y: 1 }),
+                overtimeRemovals: [overtimeRemovedPiece.position],
+            });
+
+            const result = pieces.playMove(move);
+
+            expect(pieces.getById(movingPiece.id)?.position).toEqual(
+                logicalPoint({ x: 1, y: 1 }),
+            );
+
+            expect(pieces.getById(overtimeRemovedPiece.id)).toBeUndefined();
+            expect(
+                pieces.getByPosition(overtimeRemovedPiece.position),
+            ).toBeUndefined();
+
+            expect(result.movedPieceIds).toEqual([movingPiece.id]);
+            expect(result.removedPieceIds).toEqual([overtimeRemovedPiece.id]);
+        });
     });
 
     describe("movePiece", () => {
