@@ -12,6 +12,7 @@ using AnarchyChess.Api.UserRating.Models;
 using AnarchyChess.Api.UserRating.Services;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 
 namespace AnarchyChess.Api.Unit.Tests.LiveGameTests;
@@ -37,6 +38,7 @@ public class GameFinalizerTests : BaseUnitTest
     public GameFinalizerTests()
     {
         _gameFinalizer = new(
+            Substitute.For<ILogger<GameFinalizer>>(),
             _userManagerMock,
             _ratingServiceMock,
             _gameArchiveServiceMock,

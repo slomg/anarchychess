@@ -28,5 +28,6 @@ public class MovePathFaker : RecordFaker<MovePath>
         RuleFor(x => x.SpecialType, f => f.PickRandom<SpecialMoveType>());
         RuleFor(x => x.ForcedPriority, f => f.PickRandom<ForcedMovePriority>());
         RuleFor(x => x.EmphasizeSquare, f => f.Random.Bool());
+        RuleFor(x => x.OvertimeRemovalIdxs, GameTestData.RandomIdxs);
     }
 }

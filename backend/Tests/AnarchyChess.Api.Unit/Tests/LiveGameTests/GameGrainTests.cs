@@ -74,7 +74,7 @@ public class GameGrainTests : BaseGrainTest
             GameSource = GameSource.Rematch,
             Pool = _pool,
             InitialFen = _initialFenNotation.FullFen,
-            MoveSnapshots = [],
+            MoveHistory = new(),
             Core = new(),
             DrawRequest = new(),
             ClockState = _expectedClockState,

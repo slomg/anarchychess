@@ -288,7 +288,7 @@ public class MoveHandlerTests : BaseIntegrationTest
             CT
         );
 
-        now += _settings.OvertimeRemovalInterval * 2;
+        now += _settings.OvertimeRemovalInterval;
         _timeProviderMock.GetUtcNow().Returns(now);
         var (pendingRemoval, newLegalMoves, _) = _overtime.GetRemovedPiecesSinceLastMove(
             GameColor.White,
@@ -329,6 +329,7 @@ public class MoveHandlerTests : BaseIntegrationTest
         _gameData
             .OvertimeState.PlayerOvertime[GameColor.White]
             .PendingRemoval.Count.Should()
-            .Be(beforePendingLength - 2);
+            .Be(beforePendingLength - 1);
+        _gameData.MoveHistory.Moves[^1].Path.OvertimeRemovalIdxs.Should().HaveCount(1);
     }
 }

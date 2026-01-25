@@ -45,7 +45,8 @@ public class MoveEncoderTests
                 PromotesTo: null,
                 SpecialType: null,
                 ForcedPriority: null,
-                EmphasizeSquare: false
+                EmphasizeSquare: false,
+                OvertimeRemovalIdxs: null
             ),
         ];
 

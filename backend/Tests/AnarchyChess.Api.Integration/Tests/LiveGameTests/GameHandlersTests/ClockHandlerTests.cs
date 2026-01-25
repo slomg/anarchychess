@@ -5,6 +5,7 @@ using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.Shared.Models;
 using AnarchyChess.Api.Shared.Services;
 using AnarchyChess.Api.TestInfrastructure;
+using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AnarchyChess.Api.TestInfrastructure.Utils;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
@@ -143,6 +144,18 @@ public class ClockHandlerTests : BaseIntegrationTest
     public async Task OnClockTickAsync_ends_game_for_overtime_when_needed()
     {
         GetOutOfGracePeriod(_gameData);
+        // add move to make sure overtime removals are added
+        _gameData.MoveHistory.AddMove(
+            GameColor.Black,
+            new MoveResult(
+                new MoveFaker().Generate(),
+                new MovePathFaker().RuleFor(x => x.OvertimeRemovalIdxs, []).Generate(),
+                new FenNotation("a", "b"),
+                "e4",
+                EndStatus: null
+            ),
+            timeLeft: 123
+        );
         var now = _fakeNow.AddSeconds(_gameData.Pool.TimeControl.BaseSeconds);
         _timeProviderMock.GetUtcNow().Returns(now);
 
@@ -171,6 +184,10 @@ public class ClockHandlerTests : BaseIntegrationTest
         }
         _core.GetLegalMoves(_gameData.Core).Should().BeEquivalentTo(newLegalMoves);
         _gameData.OvertimeState.PlayerOvertime[GameColor.White].PendingRemoval.Should().BeEmpty();
+        _gameData
+            .MoveHistory.Moves[^1]
+            .Path.OvertimeRemovalIdxs.Should()
+            .HaveCount(pendingRemoval.Count);
     }
 
     [Fact]

@@ -96,6 +96,8 @@ public class ClockHandler(
             game.OvertimeState
         );
         _core.RemovePieces(pendingRemoval, newLegalMoves, game.Core);
+        var board = _core.GetReadOnlyBoard(game.Core);
+        game.MoveHistory.CommitOvertimeRemovals(pendingRemoval, board.Width);
 
         return isGameOver ? _resultDescriber.Overtime(playerColor) : null;
     }

@@ -6,18 +6,19 @@ namespace AnarchyChess.Api.GameSnapshot.Models;
 [GenerateSerializer]
 [Alias("AnarchyChess.Api.GameSnapshot.Models.MovePath")]
 public record MovePath(
-    byte FromIdx,
-    byte ToIdx,
-    MoveKey MoveKey,
-    IReadOnlyCollection<byte>? CapturedIdxs,
-    IReadOnlyCollection<byte>? TriggerIdxs,
-    IReadOnlyCollection<IntermediateSquarePath>? IntermediateSquares,
-    IReadOnlyList<MoveSideEffectPath>? SideEffects,
-    IReadOnlyList<PieceSpawnPath>? PieceSpawns,
-    PieceType? PromotesTo,
-    SpecialMoveType? SpecialType,
-    ForcedMovePriority? ForcedPriority,
-    bool? EmphasizeSquare
+    [property: Id(0)] byte FromIdx,
+    [property: Id(1)] byte ToIdx,
+    [property: Id(2)] MoveKey MoveKey,
+    [property: Id(3)] IReadOnlyCollection<byte>? CapturedIdxs,
+    [property: Id(4)] IReadOnlyCollection<byte>? TriggerIdxs,
+    [property: Id(5)] IReadOnlyCollection<IntermediateSquarePath>? IntermediateSquares,
+    [property: Id(6)] IReadOnlyList<MoveSideEffectPath>? SideEffects,
+    [property: Id(7)] IReadOnlyList<PieceSpawnPath>? PieceSpawns,
+    [property: Id(8)] PieceType? PromotesTo,
+    [property: Id(9)] SpecialMoveType? SpecialType,
+    [property: Id(10)] ForcedMovePriority? ForcedPriority,
+    [property: Id(11)] bool? EmphasizeSquare,
+    [property: Id(12)] IReadOnlyCollection<byte>? OvertimeRemovalIdxs
 )
 {
     public static MovePath FromMove(Move move, int boardWidth, MoveKey? moveKey = null)
@@ -65,7 +66,8 @@ public record MovePath(
             ForcedPriority: move.ForcedPriority is ForcedMovePriority.None
                 ? null
                 : move.ForcedPriority,
-            EmphasizeSquare: move.EmphasizeSquare ? true : null
+            EmphasizeSquare: move.EmphasizeSquare ? true : null,
+            OvertimeRemovalIdxs: null
         );
     }
 }

@@ -164,7 +164,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             return GameErrors.PlayerInvalid;
 
         GameEndStatus endStatus =
-            game.MoveSnapshots.Count < 2
+            game.MoveHistory.Moves.Count < 2
                 ? _resultDescriber.Aborted(player.Color)
                 : _resultDescriber.Resignation(player.Color);
 
@@ -336,7 +336,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             SideToMove: _core.SideToMove(game.Core),
             InitialFen: game.InitialFen,
             LegalMoves: _core.GetLegalMoves(game.Core).MovePaths,
-            MoveHistory: game.MoveSnapshots,
+            MoveHistory: game.MoveHistory.Moves,
             DrawState: game.DrawRequest.GetState(),
             Overtime: _overtime.ToSnapshot(game.OvertimeState),
             ResultData: game.Result

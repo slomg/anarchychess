@@ -56,7 +56,7 @@ public class MoveHandler(
             return GameErrors.PlayerInvalid;
         }
 
-        RemovePiecesForOvertime(currentPlayer: currentPlayer.Color, game);
+        var overtimeRemovals = RemovePiecesForOvertime(currentPlayer: currentPlayer.Color, game);
         var makeMoveResult = _core.MakeMove(key, game.Core);
         if (makeMoveResult.IsError)
             return makeMoveResult.Errors;
@@ -67,6 +67,7 @@ public class MoveHandler(
             movedBy: currentPlayer.Color,
             nextPlayer: nextPlayer.Color,
             moveResult,
+            overtimeRemovals,
             game
         );
 
@@ -74,7 +75,7 @@ public class MoveHandler(
             notification: new(
                 GameToken: gameToken,
                 Move: moveSnapshot,
-                PlyNumber: game.MoveSnapshots.Count,
+                PlyNumber: game.MoveHistory.Moves.Count,
                 Clocks: _clock.ToSnapshot(game.ClockState),
                 SideToMoveUserId: nextPlayer.UserId,
                 EncodedLegalMoves: _core.EncodeLegalMoves(game.Core),
@@ -92,20 +93,30 @@ public class MoveHandler(
         GameColor movedBy,
         GameColor nextPlayer,
         MoveResult moveResult,
+        List<AlgebraicPoint> overtimeRemovals,
         GameData game
     )
     {
         var timeLeft = _clock.CommitTurn(movedBy, game.ClockState);
 
-        MoveSnapshot moveSnapshot = new(
-            Path: moveResult.MovePath,
-            Fen: moveResult.Fen.FullFen,
-            NextSideToMove: nextPlayer,
-            San: moveResult.San,
-            timeLeft
-        );
-        game.MoveSnapshots.Add(moveSnapshot);
-        return moveSnapshot;
+        MoveSnapshot snapshot;
+        if (overtimeRemovals.Count > 0)
+        {
+            var board = _core.GetReadOnlyBoard(game.Core);
+            snapshot = game.MoveHistory.AddMoveWithOvertimeRemovals(
+                nextPlayer,
+                moveResult,
+                timeLeft,
+                overtimeRemovals,
+                board.Width
+            );
+        }
+        else
+        {
+            snapshot = game.MoveHistory.AddMove(nextPlayer, moveResult, timeLeft);
+        }
+
+        return snapshot;
     }
 
     private async Task HandleDrawForMoveAsync(GameColor moveBy, GameToken gameToken, GameData game)
@@ -122,11 +133,11 @@ public class MoveHandler(
         }
     }
 
-    private void RemovePiecesForOvertime(GameColor currentPlayer, GameData game)
+    private List<AlgebraicPoint> RemovePiecesForOvertime(GameColor currentPlayer, GameData game)
     {
         if (!_overtime.HasStartedOvertime(currentPlayer, game.OvertimeState))
         {
-            return;
+            return [];
         }
 
         var (pendingRemovals, newLegalMoves, _) = _overtime.ConsumeOvertimeRemovals(
@@ -134,6 +145,7 @@ public class MoveHandler(
             game.OvertimeState
         );
         _core.RemovePieces(pendingRemovals, newLegalMoves, game.Core);
+        return pendingRemovals;
     }
 
     private async Task StartNextOvertimeTurnAsync(
