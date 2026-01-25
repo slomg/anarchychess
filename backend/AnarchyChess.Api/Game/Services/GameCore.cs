@@ -11,7 +11,7 @@ namespace AnarchyChess.Api.Game.Services;
 
 public interface IGameCore
 {
-    byte[] EncodeLegalMoves(GameCoreState state);
+    CompressedMoves EncodeLegalMoves(GameCoreState state);
     IReadOnlyChessBoard GetReadOnlyBoard(GameCoreState state);
     LegalMoveSet GetLegalMoves(GameCoreState state);
     ErrorOr<MoveResult> MakeMove(MoveKey key, GameCoreState state);
@@ -160,7 +160,7 @@ public class GameCore(
 
     public IReadOnlyChessBoard GetReadOnlyBoard(GameCoreState state) => state.Board;
 
-    public byte[] EncodeLegalMoves(GameCoreState state)
+    public CompressedMoves EncodeLegalMoves(GameCoreState state)
     {
         var legalMoves = GetLegalMoves(state);
         return _moveEncoder.EncodeMoves(legalMoves.MovePaths);

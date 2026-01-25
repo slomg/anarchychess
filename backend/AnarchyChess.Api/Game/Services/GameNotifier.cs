@@ -38,7 +38,7 @@ public record MoveNotification(
     int PlyNumber,
     ClockSnapshot Clocks,
     UserId SideToMoveUserId,
-    IReadOnlyCollection<byte> EncodedLegalMoves,
+    CompressedMoves EncodedLegalMoves,
     bool DidMoveEndGame
 );
 

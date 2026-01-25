@@ -65,7 +65,7 @@ public class GameNotifierTests
             PlyNumber: 5,
             Clocks: new ClockSnapshotFaker(),
             SideToMoveUserId: _userId,
-            EncodedLegalMoves: [1, 2, 3],
+            EncodedLegalMoves: "encoded",
             DidMoveEndGame: true
         );
 
@@ -96,8 +96,8 @@ public class GameNotifierTests
         GameNotifierState state = new() { Revision = 0 };
         List<OvertimePendingRemovalNotification> pendingRemoval =
         [
-            new([1, 2, 3], new("a1"), RemoveAtTimestamp: 1234),
-            new([4, 5, 6], new("a2"), RemoveAtTimestamp: 4567),
+            new("encoded1", new("a1"), RemoveAtTimestamp: 1234),
+            new("encoded2", new("a2"), RemoveAtTimestamp: 4567),
         ];
 
         await _notifier.NotifyOvertimeAsync(GameColor.Black, pendingRemoval, _gameToken, state);

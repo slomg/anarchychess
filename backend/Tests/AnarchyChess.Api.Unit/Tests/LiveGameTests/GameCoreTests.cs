@@ -35,7 +35,7 @@ public class GameCoreTests
     {
         var movePaths = new MovePathFaker().Generate(3);
         var expectedMoveKeys = movePaths.Select(x => x.MoveKey);
-        byte[] expectedEncodedMoves = [1, 2, 3, 4];
+        CompressedMoves compressedMoves = "compressedmoves";
         GameCoreState state = new()
         {
             LegalMoves = new(new Dictionary<MoveKey, Move>(), movePaths),
@@ -47,10 +47,10 @@ public class GameCoreTests
                     x?.Select(x => x.MoveKey).Should().BeEquivalentTo(expectedMoveKeys)
                 )
             )
-            .Returns(expectedEncodedMoves);
+            .Returns(compressedMoves);
 
         var result = _core.EncodeLegalMoves(state);
 
-        result.Should().BeEquivalentTo(expectedEncodedMoves);
+        result.Should().BeEquivalentTo(compressedMoves);
     }
 }

@@ -60,7 +60,7 @@ public class OvertimeTests
         ChessBoard firstExpectedBoard = new(board);
         firstExpectedBoard.RemovePiece(new("a2"));
         var firstLegalMoves = new LegalMoveSetFaker().Generate();
-        byte[] firstEncoded = [1, 2, 3];
+        CompressedMoves firstEncoded = "firstencoded";
         _moveEncoderMock.EncodeMoves(firstLegalMoves.MovePaths).Returns(firstEncoded);
         _playableMoveProviderMock
             .CalculateAllPlayableMoves(firstExpectedBoard)
@@ -69,7 +69,7 @@ public class OvertimeTests
         ChessBoard secondExpectedBoard = new(firstExpectedBoard);
         secondExpectedBoard.RemovePiece(new("a3"));
         var secondLegalMoves = new LegalMoveSetFaker().Generate();
-        byte[] secondEncoded = [4, 5, 6];
+        CompressedMoves secondEncoded = "secondencoded";
         _moveEncoderMock.EncodeMoves(secondLegalMoves.MovePaths).Returns(secondEncoded);
         _playableMoveProviderMock
             .CalculateAllPlayableMoves(secondExpectedBoard)
@@ -125,7 +125,6 @@ public class OvertimeTests
         _playableMoveProviderMock
             .CalculateAllPlayableMoves(Arg.Any<ChessBoard>())
             .Returns(firstLegalMoves, secondLegalMoves);
-        _moveEncoderMock.EncodeMoves(Arg.Any<IReadOnlyList<MovePath>>()).Returns([1, 2]);
 
         var result = _overtime.StartOvertimeTurn(GameColor.White, board, _state);
 
@@ -155,7 +154,6 @@ public class OvertimeTests
         _playableMoveProviderMock
             .CalculateAllPlayableMoves(Arg.Any<ChessBoard>())
             .Returns(legalMoves);
-        _moveEncoderMock.EncodeMoves(Arg.Any<IReadOnlyList<MovePath>>()).Returns([1]);
 
         var result = _overtime.StartOvertimeTurn(GameColor.White, board, _state);
 
@@ -176,8 +174,6 @@ public class OvertimeTests
         _playableMoveProviderMock
             .CalculateAllPlayableMoves(Arg.Any<IReadOnlyChessBoard>())
             .Returns(legalMoves);
-
-        _moveEncoderMock.EncodeMoves(Arg.Any<IReadOnlyList<MovePath>>()).Returns([42]);
 
         var result = _overtime.StartOvertimeTurn(GameColor.White, board, _state);
 

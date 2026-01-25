@@ -18,7 +18,7 @@ public interface IGameHubClient : IAnarchyChessHubClient
     Task OpponentMoveMadeAsync(
         MoveSnapshot move,
         int plyNumber,
-        IEnumerable<byte> encodedLegalMoves,
+        CompressedMoves encodedLegalMoves,
         ClockSnapshot clock
     );
 
