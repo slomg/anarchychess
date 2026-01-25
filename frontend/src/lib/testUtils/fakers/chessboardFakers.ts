@@ -45,6 +45,7 @@ export function createFakeMove(override?: Partial<Move>): Move {
         specialType: SpecialMoveType.NONE,
         forcedPriority: ForcedMovePriority.NONE,
         emphasizeSquare: false,
+        overtimeRemovals: [],
         ...override,
     };
 }

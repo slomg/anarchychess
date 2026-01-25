@@ -28,6 +28,8 @@ export interface Move {
     forcedPriority: ForcedMovePriority;
     specialType: SpecialMoveType;
     emphasizeSquare: boolean;
+
+    overtimeRemovals: LogicalPoint[];
 }
 
 export type MoveKey = string & { __brand: "MoveKey" };

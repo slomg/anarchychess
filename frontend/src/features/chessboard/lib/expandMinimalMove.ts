@@ -13,6 +13,7 @@ export default function expandMinimalMove(minimalMove: MinimalMove): Move {
         specialType: SpecialMoveType.NONE,
         forcedPriority: ForcedMovePriority.NONE,
         emphasizeSquare: false,
+        overtimeRemovals: [],
         ...minimalMove,
     };
 }

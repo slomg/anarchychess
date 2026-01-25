@@ -54,6 +54,11 @@ export function decodeMovePath(path: MovePath, boardWidth: number): Move {
     const pieceSpawns =
         path.pieceSpawns?.map((x) => parsePieceSpawns(x, boardWidth)) ?? [];
 
+    const overtimeRemovals =
+        path.overtimeRemovalIdxs?.map((idx) =>
+            idxToLogicalPoint(idx, boardWidth),
+        ) ?? [];
+
     return {
         from,
         to,
@@ -67,6 +72,7 @@ export function decodeMovePath(path: MovePath, boardWidth: number): Move {
         forcedPriority: path.forcedPriority ?? ForcedMovePriority.NONE,
         promotesTo: path.promotesTo ?? null,
         emphasizeSquare: path.emphasizeSquare ?? false,
+        overtimeRemovals,
     };
 }
 

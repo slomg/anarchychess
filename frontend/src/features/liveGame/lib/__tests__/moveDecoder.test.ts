@@ -26,6 +26,7 @@ const emptyMove = {
     specialType: SpecialMoveType.NONE,
     forcedPriority: ForcedMovePriority.NONE,
     emphasizeSquare: false,
+    overtimeRemovals: [],
 };
 
 describe("decodeMovePathIntoLegalMoves", () => {
@@ -52,6 +53,7 @@ describe("decodeMovePathIntoLegalMoves", () => {
                 specialType: SpecialMoveType.EN_PASSANT,
                 forcedPriority: ForcedMovePriority.UNDERAGE_PAWN,
                 emphasizeSquare: true,
+                overtimeRemovalIdxs: [9],
             },
         ];
 
@@ -88,6 +90,7 @@ describe("decodeMovePathIntoLegalMoves", () => {
             specialType: SpecialMoveType.EN_PASSANT,
             forcedPriority: ForcedMovePriority.UNDERAGE_PAWN,
             emphasizeSquare: true,
+            overtimeRemovals: [logicalPoint({ x: 9, y: 0 })],
         });
     });
 
@@ -147,6 +150,7 @@ describe("decodeLegalMoves", () => {
                     },
                 ],
                 moveKey: "1",
+                overtimeRemovalIdxs: [8],
             },
             {
                 fromIdx: 10,
@@ -196,6 +200,7 @@ describe("decodeLegalMoves", () => {
             specialType: SpecialMoveType.NONE,
             forcedPriority: ForcedMovePriority.NONE,
             emphasizeSquare: false,
+            overtimeRemovals: [logicalPoint({ x: 8, y: 0 })],
         });
         expect(addMoveSpy).toHaveBeenCalledWith<[Move]>({
             from: logicalPoint({ x: 0, y: 1 }),
