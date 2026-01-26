@@ -189,11 +189,7 @@ describe("ChildPositionNode", () => {
 
     describe("constructor", () => {
         it("should create a child node with correct properties", () => {
-            expect(child.pieces).toEqual(rootProps.pieces);
-            expect(child.fen).toBe(rootProps.fen);
-            expect(child.sideToMove).toBe(rootProps.sideToMove);
-            expect(child.move).toBe(rootProps.move);
-            expect(child.san).toBe(rootProps.san);
+            expect(child).toEqual(expect.objectContaining(rootProps));
             expect(child.ply).toBe(0);
             expect(child.prev).toBeNull();
             expect(child.next).toBeNull();
