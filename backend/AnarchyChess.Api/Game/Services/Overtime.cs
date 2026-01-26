@@ -13,12 +13,19 @@ public interface IOvertime
     void StartOvertimeTurn(GameColor playerColor, OvertimeState state);
     void TryEndOvertimeTurn(GameColor playerColor, OvertimeState state);
     TimeSpan GetTimeUntilNextRemoval(GameColor playerColor, OvertimeState state);
-    (OvertimeRemovalNotification? Notification, bool IsGameOver) GetNextRemoval(
+    (OvertimeRemovalResult? RemovalResult, bool IsGameOver) GetNextRemoval(
         GameColor playerColor,
-        IReadOnlyChessBoard board
+        IReadOnlyChessBoard board,
+        OvertimeState state
     );
     bool HasEnteredOvertime(GameColor playerColor, OvertimeState state);
 }
+
+public record OvertimeRemovalResult(
+    AlgebraicPoint RemoveFrom,
+    LegalMoveSet NewLegalMoves,
+    CompressedMoves EncodedLegalMoves
+);
 
 [GenerateSerializer]
 [Alias("AnarchyChess.Api.Game.Services.OvertimeState")]
@@ -48,11 +55,18 @@ public class Overtime(
     private readonly IPlayableMoveProvider _playableMoveProvider = playableMoveProvider;
     private readonly IMoveEncoder _moveEncoder = moveEncoder;
 
-    public (OvertimeRemovalNotification? Notification, bool IsGameOver) GetNextRemoval(
+    public (OvertimeRemovalResult? RemovalResult, bool IsGameOver) GetNextRemoval(
         GameColor playerColor,
-        IReadOnlyChessBoard board
+        IReadOnlyChessBoard board,
+        OvertimeState state
     )
     {
+        if (!state.PlayersEnteredOvertime.Contains(playerColor))
+        {
+            return (RemovalResult: null, IsGameOver: false);
+        }
+        state.PlayerRemainder[playerColor] = TimeSpan.Zero;
+
         List<AlgebraicPoint> squares =
         [
             .. board
@@ -62,24 +76,24 @@ public class Overtime(
         ];
         if (squares.Count == 0)
         {
-            return (Notification: null, IsGameOver: true);
+            return (RemovalResult: null, IsGameOver: true);
         }
 
         var squareIdx = _randomProvider.Next(squares.Count);
-        var position = squares[squareIdx];
+        var removeFrom = squares[squareIdx];
         ChessBoard editingBoard = new(board);
-        editingBoard.RemovePiece(position);
+        editingBoard.RemovePiece(removeFrom);
 
         int kingCount = editingBoard.GetAllPiecesWith(PieceType.King, playerColor).Count;
         var legalMoves = _playableMoveProvider.CalculateAllPlayableMoves(editingBoard);
         var encoded = _moveEncoder.EncodeMoves(legalMoves.MovePaths);
-        return (
-            Notification: new OvertimeRemovalNotification(
-                EncodedLegalMoves: encoded,
-                RemoveFrom: position
-            ),
-            IsGameOver: kingCount == 0
+
+        OvertimeRemovalResult result = new(
+            RemoveFrom: removeFrom,
+            NewLegalMoves: legalMoves,
+            EncodedLegalMoves: encoded
         );
+        return (RemovalResult: result, IsGameOver: kingCount == 0);
     }
 
     public void StartOvertimeTurn(GameColor playerColor, OvertimeState state)

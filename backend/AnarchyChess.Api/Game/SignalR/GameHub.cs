@@ -14,6 +14,7 @@ namespace AnarchyChess.Api.Game.SignalR;
 public interface IGameHubClient : IAnarchyChessHubClient
 {
     Task SyncRevisionAsync(int currentRevision);
+
     Task MoveMadeAsync(MoveSnapshot move, int plyNumber, ClockSnapshot clock, bool didMoveEndGame);
     Task OpponentMoveMadeAsync(
         MoveSnapshot move,
@@ -22,11 +23,7 @@ public interface IGameHubClient : IAnarchyChessHubClient
         ClockSnapshot clock
     );
 
-    Task ReceiveOvertimeAsync(
-        GameColor overtimedPlayer,
-        OvertimeRemovalNotification pendingRemoval
-    );
-
+    Task ReceiveOvertimeAsync(AlgebraicPoint removeFrom, CompressedMoves encodedLegalMoves);
     Task DrawStateChangeAsync(DrawState drawState);
     Task GameEndedAsync(GameResultData result, ClockSnapshot finalClocks);
 

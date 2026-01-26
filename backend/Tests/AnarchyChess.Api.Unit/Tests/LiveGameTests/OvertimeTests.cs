@@ -48,10 +48,11 @@ public class OvertimeTests
     {
         ChessBoard board = new();
         board.PlacePiece(new("e8"), PieceFactory.Black(PieceType.King));
+        _overtime.StartOvertimeTurn(GameColor.White, _state);
 
-        var (notification, isGameOver) = _overtime.GetNextRemoval(GameColor.White, board);
+        var (removalResult, isGameOver) = _overtime.GetNextRemoval(GameColor.White, board, _state);
 
-        notification.Should().BeNull();
+        removalResult.Should().BeNull();
         isGameOver.Should().BeTrue();
     }
 
@@ -74,14 +75,24 @@ public class OvertimeTests
 
         _playableMoveProviderMock.CalculateAllPlayableMoves(expectedBoard).Returns(legalMoves);
         _moveEncoderMock.EncodeMoves(legalMoves.MovePaths).Returns(encoded);
+        _overtime.StartOvertimeTurn(GameColor.White, _state);
+        _state.PlayerRemainder[GameColor.White] = TimeSpan.FromSeconds(5);
+        _state.PlayerRemainder[GameColor.Black] = TimeSpan.FromSeconds(6);
 
-        var (notification, isGameOver) = _overtime.GetNextRemoval(GameColor.White, board);
+        var (removalResult, isGameOver) = _overtime.GetNextRemoval(GameColor.White, board, _state);
 
-        notification.Should().NotBeNull();
-        notification
+        removalResult
             .Should()
-            .BeEquivalentTo(new OvertimeRemovalNotification(encoded, RemoveFrom: new("a2")));
+            .BeEquivalentTo(
+                new OvertimeRemovalResult(
+                    RemoveFrom: new("a2"),
+                    NewLegalMoves: legalMoves,
+                    EncodedLegalMoves: encoded
+                )
+            );
         isGameOver.Should().BeFalse();
+        _state.PlayerRemainder[GameColor.White].Should().Be(TimeSpan.Zero);
+        _state.PlayerRemainder[GameColor.Black].Should().Be(TimeSpan.FromSeconds(6));
     }
 
     [Fact]
@@ -98,8 +109,9 @@ public class OvertimeTests
         _playableMoveProviderMock
             .CalculateAllPlayableMoves(Arg.Any<IReadOnlyChessBoard>())
             .Returns(legalMoves);
+        _overtime.StartOvertimeTurn(GameColor.White, _state);
 
-        var (_, isGameOver) = _overtime.GetNextRemoval(GameColor.White, board);
+        var (_, isGameOver) = _overtime.GetNextRemoval(GameColor.White, board, _state);
 
         isGameOver.Should().BeFalse();
     }
@@ -117,8 +129,9 @@ public class OvertimeTests
         _playableMoveProviderMock
             .CalculateAllPlayableMoves(Arg.Any<IReadOnlyChessBoard>())
             .Returns(legalMoves);
+        _overtime.StartOvertimeTurn(GameColor.White, _state);
 
-        var (_, isGameOver) = _overtime.GetNextRemoval(GameColor.White, board);
+        var (_, isGameOver) = _overtime.GetNextRemoval(GameColor.White, board, _state);
 
         isGameOver.Should().BeTrue();
     }

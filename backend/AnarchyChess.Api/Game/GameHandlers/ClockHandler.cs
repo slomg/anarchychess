@@ -91,18 +91,44 @@ public class ClockHandler(
             return null;
         }
 
+        var result = await TryRemoveNextAsync(
+            playerColor: playerColor,
+            sideToMove: sideToMove,
+            gameToken,
+            game
+        );
+        return result;
+    }
+
+    private async Task<GameEndStatus?> TryRemoveNextAsync(
+        GameColor playerColor,
+        GameColor sideToMove,
+        GameToken gameToken,
+        GameData game
+    )
+    {
+        if (playerColor != sideToMove)
+        {
+            return null;
+        }
+
         var board = _core.GetReadOnlyBoard(game.Core);
-        var (notification, isGameOver) = _overtime.GetNextRemoval(playerColor, board);
-        if (notification is not null)
+        var (removalResult, isGameOver) = _overtime.GetNextRemoval(
+            playerColor,
+            board,
+            game.OvertimeState
+        );
+        if (removalResult is not null)
         {
             await _notifier.NotifyOvertimeAsync(
-                sideToMove,
-                notification,
+                removalResult.RemoveFrom,
+                removalResult.EncodedLegalMoves,
                 gameToken,
                 game.NotifierState
             );
+            _core.RemovePiece(removalResult.RemoveFrom, removalResult.NewLegalMoves, game.Core);
             game.MoveHistory.CommitOvertimeRemoval(
-                notification.RemoveFrom,
+                removalResult.RemoveFrom,
                 boardWidth: board.Width
             );
         }

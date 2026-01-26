@@ -94,13 +94,14 @@ public class GameNotifierTests
     public async Task NotifyOvertimeAsync_sends_positions_and_increments_revision()
     {
         GameNotifierState state = new() { Revision = 0 };
-        OvertimeRemovalNotification pendingRemoval = new("encoded1", new("a1"));
+        AlgebraicPoint removedFrom = new("a1");
+        CompressedMoves encodedLegalMoves = "encoded1";
 
-        await _notifier.NotifyOvertimeAsync(GameColor.Black, pendingRemoval, _gameToken, state);
+        await _notifier.NotifyOvertimeAsync(removedFrom, encodedLegalMoves, _gameToken, state);
 
         await _clientGameGroupProxyMock
             .Received(1)
-            .ReceiveOvertimeAsync(GameColor.Black, pendingRemoval);
+            .ReceiveOvertimeAsync(removedFrom, encodedLegalMoves);
         state.Revision.Should().Be(1);
     }
 

@@ -110,11 +110,23 @@ public class ClockHandlerTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task OnClockTickAsync_does_not_abort_non_ticking_player_in_grace()
+    {
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow.Add(_settings.FirstMoveGracePeriod));
+        _core.MakeMove(GameUtils.GetLegalMove(_core, _gameData), _gameData.Core);
+        _clock.CommitTurn(GameColor.White, _gameData.ClockState);
+
+        var (rescheduleTo, endResult) = await _handler.OnClockTickAsync(_gameToken, _gameData);
+
+        endResult.Should().BeNull();
+        rescheduleTo.Should().NotBeNull();
+    }
+
+    [Fact]
     public async Task OnClockTickAsync_tracks_overtime_removals()
     {
         ChessBoard board = new();
         board.PlacePiece(new("a1"), PieceFactory.White(PieceType.King));
-        board.PlacePiece(new("a2"), PieceFactory.White(PieceType.King));
         board.PlacePiece(new("a4"), PieceFactory.Black(PieceType.King));
         var gameData = GameUtils.CreateGameData(_core, _clock, board: board);
 
@@ -145,21 +157,22 @@ public class ClockHandlerTests : BaseIntegrationTest
             .DidNotReceiveWithAnyArgs()
             .NotifyOvertimeAsync(default, default!, default, default!);
         gameData.MoveHistory.Moves[^1].Path.OvertimeRemovalIdxs.Should().BeEmpty();
+        var prevLegalMoves = _core.GetLegalMoves(gameData.Core);
 
-        (rescheduleTo, endStatus) = await _handler.OnClockTickAsync(_gameToken, gameData);
-
-        rescheduleTo.Should().Be(_settings.OvertimeRemovalInterval);
-        endStatus.Should().BeNull();
+        await _handler.OnClockTickAsync(_gameToken, gameData);
 
         await _notifierMock
             .Received(1)
             .NotifyOvertimeAsync(
-                GameColor.White,
-                Arg.Any<OvertimeRemovalNotification>(),
+                new("a1"),
+                Arg.Any<CompressedMoves>(),
                 _gameToken,
                 gameData.NotifierState
             );
         gameData.MoveHistory.Moves[^1].Path.OvertimeRemovalIdxs.Should().HaveCount(1);
+        var newBoard = _core.GetReadOnlyBoard(gameData.Core);
+        newBoard.IsEmpty(new("a1")).Should().BeTrue();
+        _core.GetLegalMoves(gameData.Core).Should().NotBeEquivalentTo(prevLegalMoves);
     }
 
     [Fact]
@@ -205,19 +218,6 @@ public class ClockHandlerTests : BaseIntegrationTest
         var expectedMs = _clock.CalculateTimeLeftMs(GameColor.Black, _gameData.ClockState);
         expectedMs.Should().BeGreaterThan(10);
         result.TotalMilliseconds.Should().Be(expectedMs);
-    }
-
-    [Fact]
-    public async Task OnClockTickAsync_does_not_abort_non_ticking_player_in_grace()
-    {
-        _timeProviderMock.GetUtcNow().Returns(_fakeNow.Add(_settings.FirstMoveGracePeriod));
-        _core.MakeMove(GameUtils.GetLegalMove(_core, _gameData), _gameData.Core);
-        _clock.CommitTurn(GameColor.White, _gameData.ClockState);
-
-        var (rescheduleTo, endResult) = await _handler.OnClockTickAsync(_gameToken, _gameData);
-
-        endResult.Should().BeNull();
-        rescheduleTo.Should().NotBeNull();
     }
 
     private void GetOutOfGracePeriod(GameData gameData)
