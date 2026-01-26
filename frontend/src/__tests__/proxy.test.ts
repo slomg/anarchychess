@@ -77,10 +77,9 @@ describe("proxy", () => {
         expect(url.pathname).toBe(constants.PATHS.REFRESH);
     });
 
-    it("should redirect to '/' if access token exists and path is disallowed", async () => {
+    it("should redirect to '/' if logged in cookie exists and path is disallowed", async () => {
         const request = createRequest({
             setCookies: {
-                [constants.COOKIES.ACCESS_TOKEN]: "access",
                 [constants.COOKIES.IS_LOGGED_IN]: "true",
             },
             pathname: "/signin",
@@ -93,5 +92,17 @@ describe("proxy", () => {
 
         const url = new URL(response.url);
         expect(url.pathname).toBe("/");
+    });
+
+    it("should not redirect to '/' if logged in cookie doesn't exist and path is disallowed", async () => {
+        const request = createRequest({
+            setCookies: {},
+            pathname: "/signin",
+        });
+
+        const response = await proxy(request);
+
+        expect(NextResponse.redirect).not.toHaveBeenCalled();
+        expect(response.type).toBe("next");
     });
 });

@@ -7,7 +7,7 @@ export async function proxy(request: NextRequest) {
     const shouldBeAuthed = request.cookies.has(constants.COOKIES.IS_LOGGED_IN);
 
     if (
-        hasAuthCookie &&
+        shouldBeAuthed &&
         constants.DISALLOW_AUTH_PATHS.has(request.nextUrl.pathname)
     ) {
         const url = request.nextUrl.clone();
