@@ -2,11 +2,14 @@ import { render, screen } from "@testing-library/react";
 import { StoreApi } from "zustand";
 
 import {
+    createFakeBoardPieces,
+    createFakePiece,
+} from "@/lib/testUtils/fakers/chessboardFakers";
+import {
     ChessboardStore,
     createChessboardStore,
 } from "../../stores/chessboardStore";
 
-import { createFakeBoardPieces } from "@/lib/testUtils/fakers/chessboardFakers";
 import ChessboardStoreContext from "../../contexts/chessboardStoreContext";
 import { pointToStr } from "@/features/point/pointUtils";
 import PieceRenderer from "../PieceRenderer";
@@ -36,7 +39,8 @@ describe("PieceRenderer", () => {
             const element = renderedPieces.find(
                 (el) =>
                     el.getAttribute("data-position") ===
-                    pointToStr(piece.position),
+                        pointToStr(piece.position) &&
+                    el.getAttribute("data-piece-id") == piece.id,
             );
             expect(element).toBeInTheDocument();
         });
@@ -61,6 +65,35 @@ describe("PieceRenderer", () => {
                 (el) =>
                     el.getAttribute("data-position") ===
                     pointToStr(piece.position),
+            );
+            expect(element).toBeInTheDocument();
+        });
+    });
+
+    it("should render removing pieces", () => {
+        const piece1 = createFakePiece();
+        const piece2 = createFakePiece();
+        const removingPieces = new Map([
+            [piece1.id, piece1],
+            [piece2.id, piece2],
+        ]);
+        store.setState({ removingPieces });
+
+        render(
+            <ChessboardStoreContext.Provider value={store}>
+                <PieceRenderer />
+            </ChessboardStoreContext.Provider>,
+        );
+
+        const renderedRemovingPieces = screen.getAllByTestId("removingPiece");
+        expect(renderedRemovingPieces).toHaveLength(removingPieces.size);
+
+        Array.from(removingPieces.values()).forEach((piece) => {
+            const element = renderedRemovingPieces.find(
+                (el) =>
+                    el.getAttribute("data-position") ===
+                        pointToStr(piece.position) &&
+                    el.getAttribute("data-piece-id") == piece.id,
             );
             expect(element).toBeInTheDocument();
         });

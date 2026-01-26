@@ -1,9 +1,16 @@
-import { AnimationStep, MoveAnimation, MoveBounds, PieceID } from "./types";
+import {
+    AnimationStep,
+    MoveAnimation,
+    MoveBounds,
+    Piece,
+    PieceID,
+} from "./types";
+
 import BoardPieces from "./boardPieces";
 import { Move } from "./types";
 
 export function simulateMove(pieces: BoardPieces, move: Move): AnimationStep {
-    return simulateMoveDetails(pieces, move).step;
+    return simulateMoveDestination(pieces, move).step;
 }
 
 export function simulateMoveWithIntermediates(
@@ -11,10 +18,11 @@ export function simulateMoveWithIntermediates(
     move: Move,
 ): MoveAnimation {
     const fromPiece = pieces.getByPosition(move.from);
-    if (!fromPiece) return { steps: [], removedPieceIds: [] };
+    if (!fromPiece) return { steps: [] };
 
     const steps: AnimationStep[] = [];
     const currentPieces = new BoardPieces(pieces);
+    currentPieces.removeCapturedPiecesFromMove(move);
     for (const intermediate of move.intermediates) {
         currentPieces.movePiece(fromPiece.id, intermediate.position);
 
@@ -26,26 +34,26 @@ export function simulateMoveWithIntermediates(
         });
     }
 
-    const mainMoveAnimation = simulateMoveDetails(pieces, move);
+    const mainMoveAnimation = simulateMoveDestination(pieces, move);
     steps.push(mainMoveAnimation.step);
     return {
         steps,
-        removedPieceIds: mainMoveAnimation.removedPieceIds,
+        removedPieces: mainMoveAnimation.removedPieces,
     };
 }
 
-function simulateMoveDetails(
+function simulateMoveDestination(
     basePieces: BoardPieces,
     move: Move,
-): { step: AnimationStep; removedPieceIds: PieceID[] } {
+): { step: AnimationStep; removedPieces: Map<PieceID, Piece> } {
     const newPieces = new BoardPieces(basePieces);
-    const { movedPieceIds, removedPieceIds } = newPieces.playMove(move);
+    const { movedPieceIds, removedPieces } = newPieces.playMove(move);
 
     const initialSpawnPositions = createInitialSpawns(basePieces, move);
     const isCapture =
-        removedPieceIds.length > 0 &&
+        removedPieces.size > 0 &&
         move.intermediates.filter((x) => x.isCapture).length <
-            removedPieceIds.length;
+            removedPieces.size;
     const moveBounds: MoveBounds = {
         from: move.from,
         to: move.to,
@@ -63,7 +71,7 @@ function simulateMoveDetails(
             isPromotion: move.promotesTo !== null,
             specialType: move.specialType,
         },
-        removedPieceIds,
+        removedPieces,
     };
 }
 

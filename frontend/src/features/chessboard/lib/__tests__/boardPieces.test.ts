@@ -2,9 +2,10 @@ import {
     createFakeMove,
     createFakePiece,
 } from "@/lib/testUtils/fakers/chessboardFakers";
-import BoardPieces from "../boardPieces";
+
 import { logicalPoint } from "@/features/point/pointUtils";
 import { PieceType } from "@/lib/apiClient";
+import BoardPieces from "../boardPieces";
 
 describe("BoardPieces", () => {
     describe("playMove", () => {
@@ -28,7 +29,7 @@ describe("BoardPieces", () => {
                 logicalPoint({ x: 1, y: 1 }),
             );
             expect(result.movedPieceIds).toEqual([movingPiece.id]);
-            expect(result.removedPieceIds).toHaveLength(0);
+            expect(result.removedPieces).toHaveLength(0);
             expect(pieces.getById(unrelatedPiece.id)).toEqual(unrelatedPiece);
         });
 
@@ -54,7 +55,9 @@ describe("BoardPieces", () => {
             );
             expect(pieces.getById(capturedPiece.id)).toBeUndefined();
             expect(result.movedPieceIds).toEqual([movingPiece.id]);
-            expect(result.removedPieceIds).toEqual([capturedPiece.id]);
+            expect(result.removedPieces).toEqual(
+                new Map([[capturedPiece.id, capturedPiece]]),
+            );
         });
 
         it("should apply side effects correctly", () => {
@@ -89,7 +92,7 @@ describe("BoardPieces", () => {
                 movingPiece.id,
                 sideEffectPiece.id,
             ]);
-            expect(result.removedPieceIds).toHaveLength(0);
+            expect(result.removedPieces).toHaveLength(0);
         });
 
         it("should promote a piece if promotesTo is set", () => {
@@ -111,7 +114,7 @@ describe("BoardPieces", () => {
                 PieceType.KING,
             );
             expect(result.movedPieceIds).toEqual([movingPiece.id]);
-            expect(result.removedPieceIds).toHaveLength(0);
+            expect(result.removedPieces).toHaveLength(0);
         });
 
         it("should spawn new pieces correctly", () => {
@@ -178,8 +181,7 @@ describe("BoardPieces", () => {
                 mainPiece.id,
             );
 
-            expect(result.removedPieceIds).toHaveLength(0);
-
+            expect(result.removedPieces).toHaveLength(0);
             expect(result.movedPieceIds).toEqual([
                 mainPiece.id,
                 sideEffectPiece.id,
@@ -198,22 +200,28 @@ describe("BoardPieces", () => {
 
             const result = pieces.playMove(move);
 
-            expect(result.removedPieceIds).toEqual([piece.id]);
+            expect(result.removedPieces).toEqual(new Map([[piece.id, piece]]));
 
             expect(pieces.getById(piece.id)).toBeUndefined();
             expect(pieces.getByPosition(move.to)).toBeUndefined();
         });
+    });
 
-        it("should remove pieces listed in overtimeRemovals", () => {
+    describe("removeCapturedPiecesFromMove", () => {
+        it("should remove pieces listed in captures and overtimeRemovals", () => {
             const movingPiece = createFakePiece({
                 position: logicalPoint({ x: 0, y: 0 }),
             });
-            const overtimeRemovedPiece = createFakePiece({
+            const capturedPiece = createFakePiece({
                 position: logicalPoint({ x: 4, y: 4 }),
+            });
+            const overtimeRemovedPiece = createFakePiece({
+                position: logicalPoint({ x: 6, y: 6 }),
             });
 
             const pieces = BoardPieces.fromPieces(
                 movingPiece,
+                capturedPiece,
                 overtimeRemovedPiece,
             );
 
@@ -221,21 +229,27 @@ describe("BoardPieces", () => {
                 from: movingPiece.position,
                 to: logicalPoint({ x: 1, y: 1 }),
                 overtimeRemovals: [overtimeRemovedPiece.position],
+                captures: [capturedPiece.position],
             });
 
-            const result = pieces.playMove(move);
+            const result = pieces.removeCapturedPiecesFromMove(move);
 
-            expect(pieces.getById(movingPiece.id)?.position).toEqual(
-                logicalPoint({ x: 1, y: 1 }),
-            );
-
+            expect(pieces.getById(movingPiece.id)?.position).toEqual(move.from);
+            expect(pieces.getById(capturedPiece.id)).toBeUndefined();
+            expect(
+                pieces.getByPosition(capturedPiece.position),
+            ).toBeUndefined();
             expect(pieces.getById(overtimeRemovedPiece.id)).toBeUndefined();
             expect(
                 pieces.getByPosition(overtimeRemovedPiece.position),
             ).toBeUndefined();
 
-            expect(result.movedPieceIds).toEqual([movingPiece.id]);
-            expect(result.removedPieceIds).toEqual([overtimeRemovedPiece.id]);
+            expect(result).toEqual(
+                new Map([
+                    [capturedPiece.id, capturedPiece],
+                    [overtimeRemovedPiece.id, overtimeRemovedPiece],
+                ]),
+            );
         });
     });
 

@@ -71,7 +71,7 @@ export interface AnimationStep {
 
 export interface MoveAnimation {
     steps: AnimationStep[];
-    removedPieceIds: PieceID[];
+    removedPieces?: Map<PieceID, Piece>;
 }
 
 export interface GameReplay {

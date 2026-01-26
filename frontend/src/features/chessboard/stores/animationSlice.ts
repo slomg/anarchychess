@@ -5,6 +5,7 @@ import {
     MoveAnimation,
     MoveBounds,
     PieceID,
+    Piece,
 } from "../lib/types";
 import { LogicalPoint } from "@/features/point/types";
 import BoardPieces from "../lib/boardPieces";
@@ -17,7 +18,7 @@ export interface AnimationSliceProps {
 export interface AnimationSlice {
     animatingPieces: BoardPieces | null;
     animatingPieceIds: Set<PieceID>;
-    removingPieceIds: Set<PieceID>;
+    removingPieces: Map<PieceID, Piece>;
     lastMove: MoveBounds | null;
 
     playAnimationBatch(animation: MoveAnimation): Promise<void>;
@@ -56,7 +57,7 @@ export function createAnimationSlice(
             currentAnimationCancelToken = cancelToken;
 
             set((state) => {
-                state.removingPieceIds = new Set(animation.removedPieceIds);
+                state.removingPieces = animation.removedPieces ?? new Map();
             });
 
             for (let i = 0; i < animation.steps.length; i++) {
@@ -87,7 +88,7 @@ export function createAnimationSlice(
             if (!cancelToken.canceled && !persistent) {
                 set((state) => {
                     state.animatingPieces = null;
-                    state.removingPieceIds = new Set();
+                    state.removingPieces = new Map();
                 });
             }
 
@@ -126,7 +127,7 @@ export function createAnimationSlice(
             lastMove: initState.lastMove ?? null,
             animatingPieces: null,
             animatingPieceIds: new Set(),
-            removingPieceIds: new Set(),
+            removingPieces: new Map(),
 
             async playAnimationBatch(animation) {
                 await processMoveAnimation(animation);
@@ -135,7 +136,6 @@ export function createAnimationSlice(
             async playAnimation(animation) {
                 await processMoveAnimation({
                     steps: [animation],
-                    removedPieceIds: [],
                 });
             },
 
@@ -153,7 +153,6 @@ export function createAnimationSlice(
                                 movedPieceIds: [pieceId],
                             },
                         ],
-                        removedPieceIds: [],
                     },
                     true,
                 );

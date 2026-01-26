@@ -315,21 +315,6 @@ describe("ChessPiece", () => {
         expect(piece).toHaveStyle({ transform: expectedTransform });
     });
 
-    it.each([true, false])(
-        "should set opacity to 50% when the piece is being removed",
-        (isRemoving) => {
-            store.setState({
-                removingPieceIds: isRemoving
-                    ? new Set(CREATED_PIECE_ID)
-                    : new Set(),
-            });
-
-            const { piece } = renderPiece();
-
-            expect(piece.classList.contains("opacity-50")).toBe(isRemoving);
-        },
-    );
-
     it("should not allow dragging if disableDrag is true", async () => {
         const { logicalPointToScreenPoint } = store.getState();
         store.setState({ disableDrag: true });

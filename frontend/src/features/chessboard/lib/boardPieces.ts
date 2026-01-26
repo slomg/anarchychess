@@ -57,20 +57,13 @@ export default class BoardPieces {
 
     playMove(move: Move): {
         movedPieceIds: PieceID[];
-        removedPieceIds: PieceID[];
+        removedPieces: Map<PieceID, Piece>;
     } {
         const { pieceMoves, movedPieceIds } = this._gatherMoves(move);
-        const removedPieceIds: PieceID[] = [];
 
         // step 1: remove all captures first
         // so we don't capture any piece that just moved
-        for (const capture of [...move.captures, ...move.overtimeRemovals]) {
-            const capturedPiece = this.getByPosition(capture);
-            if (capturedPiece) {
-                this.delete(capturedPiece.id);
-                removedPieceIds.push(capturedPiece.id);
-            }
-        }
+        const removedPieces = this.removeCapturedPiecesFromMove(move);
 
         // step 2: clear all origin squares of moving pieces
         // this is done before placing pieces to handle swaps correctly
@@ -95,9 +88,23 @@ export default class BoardPieces {
         }
 
         return {
-            removedPieceIds,
+            removedPieces,
             movedPieceIds: [...movedPieceIds],
         };
+    }
+
+    removeCapturedPiecesFromMove(move: Move): Map<PieceID, Piece> {
+        const removedPieces: Map<PieceID, Piece> = new Map();
+
+        for (const capture of [...move.captures, ...move.overtimeRemovals]) {
+            const capturedPiece = this.getByPosition(capture);
+            if (capturedPiece) {
+                this.delete(capturedPiece.id);
+                removedPieces.set(capturedPiece.id, capturedPiece);
+            }
+        }
+
+        return removedPieces;
     }
 
     movePiece(pieceId: PieceID, to: LogicalPoint) {
