@@ -5,12 +5,11 @@ import {
     DrawState,
     MoveSnapshot,
     GameResultData,
-    GameColor,
 } from "@/lib/apiClient";
 
 import useSignalREmitter from "@/features/signalR/hooks/useSignalREmitter";
 import useSignalREvent from "@/features/signalR/hooks/useSignalREvent";
-import { OvertimePendingRemovalNotification } from "../lib/types";
+import { LogicalPoint } from "@/features/point/types";
 import constants from "@/lib/constants";
 
 export type GameClientEvents = {
@@ -28,8 +27,8 @@ export type GameClientEvents = {
         clocks: Clocks,
     ];
     ReceiveOvertimeAsync: [
-        overtimedPlayer: GameColor,
-        encodedPendingRemoval: OvertimePendingRemovalNotification,
+        removedFrom: LogicalPoint,
+        encodedLegalMoves: string,
     ];
 
     DrawStateChangeAsync: [drawState: DrawState];
