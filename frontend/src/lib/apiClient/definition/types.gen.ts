@@ -223,7 +223,6 @@ export type GameState = {
     moveHistory: Array<MoveSnapshot>;
     legalMoves: Array<MovePath>;
     drawState: DrawState;
-    overtime: Overtime;
     resultData?: GameResultData | null;
 };
 
@@ -452,22 +451,6 @@ export type DrawState = {
     blackCooldown: number;
 };
 
-export type Overtime = {
-    whiteOvertime?: Array<PendingOvertimeRemovalPath> | null;
-    blackOvertime?: Array<PendingOvertimeRemovalPath> | null;
-};
-
-export type PendingOvertimeRemovalPath = {
-    legalMoves: Array<MovePath>;
-    removeFrom: AlgebraicPoint;
-    removeAtTimestamp: number;
-};
-
-export type AlgebraicPoint = {
-    x: number;
-    y: number;
-};
-
 export type GameResultData = {
     result: GameResult;
     resultDescription: string;
@@ -556,6 +539,11 @@ export type AnalysisMove = {
     fen: string;
     piecePosition: AlgebraicPoint;
     moveKey: string;
+};
+
+export type AlgebraicPoint = {
+    x: number;
+    y: number;
 };
 
 export enum ErrorCode {

@@ -26,30 +26,18 @@ public class MoveHistory
         return moveSnapshot;
     }
 
-    public MoveSnapshot AddMoveWithOvertimeRemovals(
-        GameColor nextPlayer,
-        MoveResult moveResult,
-        double timeLeft,
-        IEnumerable<AlgebraicPoint> overtimeRemovals,
-        int boardWidth
-    )
-    {
-        List<byte> removalsIdxs = [.. overtimeRemovals.Select(x => x.AsIndex(boardWidth))];
-        var movePath = moveResult.MovePath with { OvertimeRemovalIdxs = removalsIdxs };
-        return AddMove(nextPlayer, moveResult with { MovePath = movePath }, timeLeft);
-    }
-
-    public void CommitOvertimeRemovals(IEnumerable<AlgebraicPoint> removals, int boardWidth)
+    public void CommitOvertimeRemoval(AlgebraicPoint removal, int boardWidth)
     {
         if (_moveHistory.Count == 0)
         {
             return;
         }
 
-        List<byte> removalsIdxs = [.. removals.Select(x => x.AsIndex(boardWidth))];
+        var removalIdx = removal.AsIndex(boardWidth);
 
         var lastMove = _moveHistory[^1];
-        var updatedPath = lastMove.Path with { OvertimeRemovalIdxs = removalsIdxs };
+        byte[] newRemovals = [.. lastMove.Path.OvertimeRemovalIdxs ?? [], removalIdx];
+        var updatedPath = lastMove.Path with { OvertimeRemovalIdxs = newRemovals };
         _moveHistory[^1] = lastMove with { Path = updatedPath };
     }
 }

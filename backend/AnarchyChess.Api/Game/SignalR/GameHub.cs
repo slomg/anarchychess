@@ -24,7 +24,7 @@ public interface IGameHubClient : IAnarchyChessHubClient
 
     Task ReceiveOvertimeAsync(
         GameColor overtimedPlayer,
-        IEnumerable<OvertimePendingRemovalNotification> pendingRemoval
+        OvertimeRemovalNotification pendingRemoval
     );
 
     Task DrawStateChangeAsync(DrawState drawState);

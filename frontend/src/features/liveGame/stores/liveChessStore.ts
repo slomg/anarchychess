@@ -13,22 +13,11 @@ import {
     GameStateSlice,
     GameStateSliceProps,
 } from "./gameStateSlice";
-import {
-    createOvertimeSlice,
-    OvertimeSlice,
-    OvertimeSliceProps,
-} from "./overtimeSlice";
 
 import { createRematchSlice, RematchSlice } from "./rematchSlice";
 
-export type LiveChessStoreProps = GamePlaySliceProps &
-    GameStateSliceProps &
-    OvertimeSliceProps;
-export type LiveChessStore = GamePlaySlice &
-    GameStateSlice &
-    RematchSlice &
-    OvertimeSlice;
-
+export type LiveChessStoreProps = GamePlaySliceProps & GameStateSliceProps;
+export type LiveChessStore = GamePlaySlice & GameStateSlice & RematchSlice;
 enableMapSet();
 export default function createLiveChessStore(initState: LiveChessStoreProps) {
     return createWithEqualityFn<LiveChessStore>()(
@@ -36,7 +25,6 @@ export default function createLiveChessStore(initState: LiveChessStoreProps) {
             ...createGamePlaySlice(initState)(...a),
             ...createGameStateSlice(initState)(...a),
             ...createRematchSlice(...a),
-            ...createOvertimeSlice(initState)(...a),
         })),
         shallow,
     );

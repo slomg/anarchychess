@@ -49,14 +49,13 @@ public class MoveHandler(
         if (currentPlayer.UserId != moveMadeBy)
         {
             _logger.LogWarning(
-                "User {UserId} attmpted to move a piece, but their id doesn't match the current player {PlayingUserId}",
+                "User {UserId} attempted to move a piece, but their id doesn't match the current player {PlayingUserId}",
                 moveMadeBy,
                 currentPlayer?.UserId
             );
             return GameErrors.PlayerInvalid;
         }
 
-        var overtimeRemovals = EndOvertimeTurn(currentPlayer: currentPlayer.Color, game);
         var makeMoveResult = _core.MakeMove(key, game.Core);
         if (makeMoveResult.IsError)
             return makeMoveResult.Errors;
@@ -67,7 +66,6 @@ public class MoveHandler(
             movedBy: currentPlayer.Color,
             nextPlayer: nextPlayer.Color,
             moveResult,
-            overtimeRemovals,
             game
         );
 
@@ -85,7 +83,8 @@ public class MoveHandler(
         );
 
         await HandleDrawForMoveAsync(moveBy: currentPlayer.Color, gameToken, game);
-        await StartNextOvertimeTurnAsync(sideToMove: nextPlayer.Color, gameToken, game);
+        _overtime.TryEndOvertimeTurn(currentPlayer.Color, game.OvertimeState);
+        StartNextOvertimeTurn(sideToMove: nextPlayer.Color, game);
         return moveResult.EndStatus;
     }
 
@@ -93,29 +92,11 @@ public class MoveHandler(
         GameColor movedBy,
         GameColor nextPlayer,
         MoveResult moveResult,
-        List<AlgebraicPoint> overtimeRemovals,
         GameData game
     )
     {
         var timeLeft = _clock.CommitTurn(movedBy, game.ClockState);
-
-        MoveSnapshot snapshot;
-        if (overtimeRemovals.Count > 0)
-        {
-            var board = _core.GetReadOnlyBoard(game.Core);
-            snapshot = game.MoveHistory.AddMoveWithOvertimeRemovals(
-                nextPlayer,
-                moveResult,
-                timeLeft,
-                overtimeRemovals,
-                board.Width
-            );
-        }
-        else
-        {
-            snapshot = game.MoveHistory.AddMove(nextPlayer, moveResult, timeLeft);
-        }
-
+        MoveSnapshot snapshot = game.MoveHistory.AddMove(nextPlayer, moveResult, timeLeft);
         return snapshot;
     }
 
@@ -133,44 +114,12 @@ public class MoveHandler(
         }
     }
 
-    private List<AlgebraicPoint> EndOvertimeTurn(GameColor currentPlayer, GameData game)
-    {
-        if (!_overtime.HasStartedOvertime(currentPlayer, game.OvertimeState))
-        {
-            return [];
-        }
-
-        var (pendingRemovals, newLegalMoves) = _overtime.ConsumeOvertimeRemovals(
-            currentPlayer,
-            game.OvertimeState
-        );
-        _core.RemovePieces(pendingRemovals, newLegalMoves, game.Core);
-        _overtime.EndOvertimeTurn(currentPlayer, game.OvertimeState);
-
-        return pendingRemovals;
-    }
-
-    private async Task StartNextOvertimeTurnAsync(
-        GameColor sideToMove,
-        GameToken gameToken,
-        GameData game
-    )
+    private void StartNextOvertimeTurn(GameColor sideToMove, GameData game)
     {
         if (!_clock.IsTimeout(sideToMove, isTicking: true, game.ClockState))
         {
             return;
         }
-
-        var pendingRemoval = _overtime.StartOvertimeTurn(
-            sideToMove,
-            _core.GetReadOnlyBoard(game.Core),
-            game.OvertimeState
-        );
-        await _notifier.NotifyOvertimeAsync(
-            sideToMove,
-            pendingRemoval,
-            gameToken,
-            game.NotifierState
-        );
+        _overtime.StartOvertimeTurn(sideToMove, game.OvertimeState);
     }
 }

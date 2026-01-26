@@ -1,10 +1,12 @@
 ﻿using AnarchyChess.Api.Game.GameHandlers;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
+using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.Shared.Models;
 using AnarchyChess.Api.Shared.Services;
 using AnarchyChess.Api.TestInfrastructure;
+using AnarchyChess.Api.TestInfrastructure.Factories;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AnarchyChess.Api.TestInfrastructure.Utils;
 using AwesomeAssertions;
@@ -108,44 +110,21 @@ public class ClockHandlerTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task OnClockTickAsync_starts_and_reschedules_to_overtime_after_timeout()
+    public async Task OnClockTickAsync_tracks_overtime_removals()
     {
-        GetOutOfGracePeriod(_gameData);
+        ChessBoard board = new();
+        board.PlacePiece(new("a1"), PieceFactory.White(PieceType.King));
+        board.PlacePiece(new("a2"), PieceFactory.White(PieceType.King));
+        board.PlacePiece(new("a4"), PieceFactory.Black(PieceType.King));
+        var gameData = GameUtils.CreateGameData(_core, _clock, board: board);
+
+        GetOutOfGracePeriod(gameData);
         _timeProviderMock
             .GetUtcNow()
-            .Returns(_fakeNow.AddSeconds(_gameData.Pool.TimeControl.BaseSeconds));
+            .Returns(_fakeNow.AddSeconds(gameData.Pool.TimeControl.BaseSeconds));
 
-        var (rescheduleTo, endResult) = await _handler.OnClockTickAsync(_gameToken, _gameData);
-
-        var expectedReschedule = _overtime.GetTimeUntilDefeat(
-            GameColor.White,
-            _gameData.OvertimeState
-        );
-        // sanity check
-        expectedReschedule.Should().BeGreaterThan(TimeSpan.FromSeconds(1));
-
-        endResult.Should().BeNull();
-        rescheduleTo.Should().Be(expectedReschedule);
-        _clock.IsTimeout(GameColor.White, isTicking: true, _gameData.ClockState).Should().BeTrue();
-
-        _overtime.HasStartedOvertime(GameColor.White, _gameData.OvertimeState).Should().BeTrue();
-        _overtime.HasStartedOvertime(GameColor.Black, _gameData.OvertimeState).Should().BeFalse();
-        await _notifierMock
-            .Received(1)
-            .NotifyOvertimeAsync(
-                GameColor.White,
-                Arg.Is<List<OvertimePendingRemovalNotification>>(x => x.Count > 1),
-                _gameToken,
-                _gameData.NotifierState
-            );
-    }
-
-    [Fact]
-    public async Task OnClockTickAsync_ends_game_for_overtime_when_needed()
-    {
-        GetOutOfGracePeriod(_gameData);
         // add move to make sure overtime removals are added
-        _gameData.MoveHistory.AddMove(
+        gameData.MoveHistory.AddMove(
             GameColor.Black,
             new MoveResult(
                 new MoveFaker().Generate(),
@@ -156,22 +135,55 @@ public class ClockHandlerTests : BaseIntegrationTest
             ),
             timeLeft: 123
         );
-        var now = _fakeNow.AddSeconds(_gameData.Pool.TimeControl.BaseSeconds);
-        _timeProviderMock.GetUtcNow().Returns(now);
 
-        var (rescheduleTo, _) = await _handler.OnClockTickAsync(_gameToken, _gameData);
+        var (rescheduleTo, endStatus) = await _handler.OnClockTickAsync(_gameToken, gameData);
 
-        rescheduleTo.Should().NotBeNull();
-        now += rescheduleTo!.Value;
-        _timeProviderMock.GetUtcNow().Returns(now);
+        rescheduleTo.Should().Be(_settings.OvertimeRemovalInterval);
+        endStatus.Should().BeNull();
 
-        var (overtimeRescheduleTo, endStatus) = await _handler.OnClockTickAsync(
+        await _notifierMock
+            .DidNotReceiveWithAnyArgs()
+            .NotifyOvertimeAsync(default, default!, default, default!);
+        gameData.MoveHistory.Moves[^1].Path.OvertimeRemovalIdxs.Should().BeEmpty();
+
+        (rescheduleTo, endStatus) = await _handler.OnClockTickAsync(_gameToken, gameData);
+
+        rescheduleTo.Should().Be(_settings.OvertimeRemovalInterval);
+        endStatus.Should().BeNull();
+
+        await _notifierMock
+            .Received(1)
+            .NotifyOvertimeAsync(
+                GameColor.White,
+                Arg.Any<OvertimeRemovalNotification>(),
+                _gameToken,
+                gameData.NotifierState
+            );
+        gameData.MoveHistory.Moves[^1].Path.OvertimeRemovalIdxs.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task OnClockTickAsync_ends_game_for_overtime_when_needed()
+    {
+        ChessBoard board = new();
+        board.PlacePiece(new("a1"), PieceFactory.White(PieceType.King));
+        board.PlacePiece(new("a3"), PieceFactory.Black(PieceType.King));
+        var gameData = GameUtils.CreateGameData(_core, _clock, board: board);
+
+        GetOutOfGracePeriod(gameData);
+        _timeProviderMock
+            .GetUtcNow()
+            .Returns(_fakeNow.AddSeconds(gameData.Pool.TimeControl.BaseSeconds));
+
+        await _handler.OnClockTickAsync(_gameToken, gameData);
+
+        var (overtimeRescheduleTo, overtimeEndStatus) = await _handler.OnClockTickAsync(
             _gameToken,
-            _gameData
+            gameData
         );
 
         overtimeRescheduleTo.Should().BeNull();
-        endStatus.Should().Be(_resultDescriber.Overtime(by: GameColor.White));
+        overtimeEndStatus.Should().Be(_resultDescriber.Overtime(by: GameColor.White));
     }
 
     [Fact]

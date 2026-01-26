@@ -29,7 +29,7 @@ export type GameClientEvents = {
     ];
     ReceiveOvertimeAsync: [
         overtimedPlayer: GameColor,
-        encodedPendingRemoval: OvertimePendingRemovalNotification[],
+        encodedPendingRemoval: OvertimePendingRemovalNotification,
     ];
 
     DrawStateChangeAsync: [drawState: DrawState];

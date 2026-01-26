@@ -41,42 +41,15 @@ public class MoveHistoryTests
     }
 
     [Fact]
-    public void AddMoveWithOvertimeRemovals_sets_overtime_removal_indices()
+    public void CommitOvertimeRemoval_does_nothing_when_no_moves_exist()
     {
-        MoveResult moveResult = new(
-            Move: new MoveFaker().Generate(),
-            MovePath: new MovePathFaker().RuleFor(x => x.OvertimeRemovalIdxs, []).Generate(),
-            Fen: new FenNotation(Position: "fen", FullFen: "full fen"),
-            San: "e4",
-            EndStatus: null
-        );
-        List<AlgebraicPoint> removals = [new("a1"), new("c3")];
-
-        var snapshot = _history.AddMoveWithOvertimeRemovals(
-            GameColor.White,
-            moveResult,
-            timeLeft: 10,
-            overtimeRemovals: removals,
-            boardWidth: 10
-        );
-
-        snapshot
-            .Path.OvertimeRemovalIdxs.Should()
-            .BeEquivalentTo(removals.Select(r => r.AsIndex(10)));
-    }
-
-    [Fact]
-    public void CommitOvertimeRemovals_does_nothing_when_no_moves_exist()
-    {
-        List<AlgebraicPoint> removals = [new("b2")];
-
-        _history.CommitOvertimeRemovals(removals, boardWidth: 10);
+        _history.CommitOvertimeRemoval(new("b2"), boardWidth: 10);
 
         _history.Moves.Should().BeEmpty();
     }
 
     [Fact]
-    public void CommitOvertimeRemovals_updates_only_last_move()
+    public void CommitOvertimeRemoval_updates_only_last_move()
     {
         _history.AddMove(
             GameColor.White,
@@ -94,7 +67,7 @@ public class MoveHistoryTests
             GameColor.Black,
             new MoveResult(
                 new MoveFaker().Generate(),
-                new MovePathFaker().RuleFor(x => x.OvertimeRemovalIdxs, []).Generate(),
+                new MovePathFaker().RuleFor(x => x.OvertimeRemovalIdxs, [1, 2]).Generate(),
                 new FenNotation("f2", "ff2"),
                 "e5",
                 EndStatus: null
@@ -102,14 +75,14 @@ public class MoveHistoryTests
             timeLeft: 25
         );
 
-        List<AlgebraicPoint> removals = [new("h8"), new("a1")];
+        AlgebraicPoint removal = new("h8");
 
-        _history.CommitOvertimeRemovals(removals, 10);
+        _history.CommitOvertimeRemoval(removal, 10);
 
         _history.Moves[0].Path.OvertimeRemovalIdxs.Should().BeEmpty();
         _history
             .Moves[1]
             .Path.OvertimeRemovalIdxs.Should()
-            .BeEquivalentTo(removals.Select(r => r.AsIndex(10)));
+            .BeEquivalentTo([1, 2, removal.AsIndex(10)]);
     }
 }

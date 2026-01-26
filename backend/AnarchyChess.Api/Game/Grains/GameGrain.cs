@@ -336,7 +336,6 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             LegalMoves: _core.GetLegalMoves(game.Core).MovePaths,
             MoveHistory: game.MoveHistory.Moves,
             DrawState: game.DrawRequest.GetState(),
-            Overtime: _overtime.ToSnapshot(game.OvertimeState),
             ResultData: game.Result
         );
         return gameState;

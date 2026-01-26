@@ -71,13 +71,7 @@ public class GameGrainTests : BaseOrleansIntegrationTest
             ApiTestBase.Scope.ServiceProvider.GetRequiredService<IPlayableMoveProvider>(),
             ApiTestBase.Scope.ServiceProvider.GetRequiredService<IMoveEncoder>()
         );
-        GameEndHandler endHandler = new(
-            _gameCore,
-            _gameClock,
-            _overtime,
-            _gameNotifierMock,
-            gameFinalizer
-        );
+        GameEndHandler endHandler = new(_gameCore, _gameClock, _gameNotifierMock, gameFinalizer);
         MoveHandler moveHandler = new(
             Substitute.For<ILogger<MoveHandler>>(),
             settings,
@@ -177,8 +171,7 @@ public class GameGrainTests : BaseOrleansIntegrationTest
             InitialFen: _state.CurrentGame.InitialFen,
             MoveHistory: [],
             DrawState: new DrawState(),
-            LegalMoves: legalMoves.MovePaths,
-            Overtime: _overtime.ToSnapshot(_state.CurrentGame.OvertimeState)
+            LegalMoves: legalMoves.MovePaths
         );
         result.Value.Should().BeEquivalentTo(expectedGameState);
     }

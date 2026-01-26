@@ -54,8 +54,7 @@ public class ClockHandler(
         var sideToMove = _core.SideToMove(game.Core);
         if (_clock.IsTimeout(sideToMove, isTicking: true, game.ClockState))
         {
-            return _overtime.GetTimeUntilDefeat(sideToMove, game.OvertimeState)
-                ?? TimeSpan.MinValue;
+            return _overtime.GetTimeUntilNextRemoval(sideToMove, game.OvertimeState);
         }
         else
         {
@@ -86,33 +85,28 @@ public class ClockHandler(
             return _resultDescriber.Aborted(by: playerColor);
         }
 
-        if (!_overtime.HasStartedOvertime(playerColor, game.OvertimeState))
+        if (!_overtime.HasEnteredOvertime(playerColor, game.OvertimeState))
         {
-            await StartOvertimeAsync(playerColor, gameToken, game);
+            _overtime.StartOvertimeTurn(playerColor, game.OvertimeState);
             return null;
         }
 
-        return _overtime.IsGameOver(playerColor, game.OvertimeState)
-            ? _resultDescriber.Overtime(playerColor)
-            : null;
-    }
+        var board = _core.GetReadOnlyBoard(game.Core);
+        var (notification, isGameOver) = _overtime.GetNextRemoval(playerColor, board);
+        if (notification is not null)
+        {
+            await _notifier.NotifyOvertimeAsync(
+                sideToMove,
+                notification,
+                gameToken,
+                game.NotifierState
+            );
+            game.MoveHistory.CommitOvertimeRemoval(
+                notification.RemoveFrom,
+                boardWidth: board.Width
+            );
+        }
 
-    private async Task StartOvertimeAsync(
-        GameColor overtimedPlayer,
-        GameToken gameToken,
-        GameData game
-    )
-    {
-        var pendingRemoval = _overtime.StartOvertimeTurn(
-            overtimedPlayer,
-            _core.GetReadOnlyBoard(game.Core),
-            game.OvertimeState
-        );
-        await _notifier.NotifyOvertimeAsync(
-            overtimedPlayer,
-            pendingRemoval,
-            gameToken,
-            game.NotifierState
-        );
+        return isGameOver ? _resultDescriber.Overtime(playerColor) : null;
     }
 }

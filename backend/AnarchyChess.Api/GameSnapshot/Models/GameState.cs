@@ -18,6 +18,5 @@ public record GameState(
     IReadOnlyList<MoveSnapshot> MoveHistory,
     IReadOnlyCollection<MovePath> LegalMoves,
     DrawState DrawState,
-    OvertimeSnapshot Overtime,
     GameResultData? ResultData = null
 );

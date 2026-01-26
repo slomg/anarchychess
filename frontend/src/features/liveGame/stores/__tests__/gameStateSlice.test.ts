@@ -77,11 +77,7 @@ describe("GameStateSlice", () => {
                 blackRatingChange: 10,
             };
             const setClocksMock = vi.fn();
-            const clearOvertimeMock = vi.fn();
-            store.setState({
-                setClocks: setClocksMock,
-                clearOvertime: clearOvertimeMock,
-            });
+            store.setState({ setClocks: setClocksMock });
             const finalClocks = createFakeClocks({ isFrozen: true });
 
             store.getState().endGame(resultData, finalClocks);
@@ -97,7 +93,6 @@ describe("GameStateSlice", () => {
             );
             expect(state.resultData).toBe(resultData);
             expect(setClocksMock).toHaveBeenCalledExactlyOnceWith(finalClocks);
-            expect(clearOvertimeMock).toHaveBeenCalledOnce();
         });
     });
 
