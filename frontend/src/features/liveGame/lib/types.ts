@@ -1,4 +1,3 @@
-import LegalMoves from "@/features/chessboard/lib/legalMoves";
 import { LogicalPoint } from "@/features/point/types";
 
 export interface ClockSnapshot {
@@ -9,11 +8,4 @@ export interface ClockSnapshot {
 export interface OvertimePendingRemovalNotification {
     encodedLegalMoves: string;
     removeFrom: LogicalPoint;
-    removeAtTimestamp: number;
-}
-
-export interface PendingOvertimeRemoval {
-    legalMoves: LegalMoves;
-    removeFrom: LogicalPoint;
-    removeAtTimestamp: number;
 }

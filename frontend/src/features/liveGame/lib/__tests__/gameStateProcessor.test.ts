@@ -1,6 +1,5 @@
 import { decodeMovePath, decodeMovePathIntoLegalMoves } from "../moveDecoder";
 import { createFakeGameState } from "@/lib/testUtils/fakers/gameStateFaker";
-import { createFakeMovePath } from "@/lib/testUtils/fakers/movePathFaker";
 import { createFakeMove } from "@/lib/testUtils/fakers/chessboardFakers";
 import PositionHistory from "@/features/chessboard/lib/positionHistory";
 import { simulateMove } from "@/features/chessboard/lib/simulateMove";
@@ -12,7 +11,6 @@ import { MoveBounds } from "@/features/chessboard/lib/types";
 import { logicalPoint } from "@/features/point/pointUtils";
 import { createStoreProps } from "../gameStateProcessor";
 import { GameColor, GameResult } from "@/lib/apiClient";
-import { PendingOvertimeRemoval } from "../types";
 import constants from "@/lib/constants";
 
 describe("createStoreProps", () => {
@@ -43,8 +41,6 @@ describe("createStoreProps", () => {
 
             drawState: gameState.drawState,
             clocks: gameState.clocks,
-            whiteOvertime: null,
-            blackOvertime: null,
             resultData: null,
         });
     });
@@ -212,74 +208,6 @@ describe("createStoreProps", () => {
                 boardWidth: constants.BOARD_WIDTH,
             }),
         );
-    });
-
-    it("should decode white player overtime correctly", () => {
-        const legalMoves = [createFakeMovePath()];
-        const gameState = createFakeGameState({
-            overtime: {
-                whiteOvertime: [
-                    {
-                        legalMoves,
-                        removeFrom: { x: 1, y: 2 },
-                        removeAtTimestamp: 1234,
-                    },
-                ],
-                blackOvertime: null,
-            },
-        });
-
-        const { live } = createStoreProps(
-            "game-token",
-            gameState.blackPlayer.userId,
-            gameState,
-        );
-
-        expect(live.whiteOvertime).not.toBeNull();
-        expect(live.whiteOvertime).toHaveLength(1);
-        expect(live.whiteOvertime![0]).toEqual<PendingOvertimeRemoval>({
-            legalMoves: decodeMovePathIntoLegalMoves({
-                paths: legalMoves,
-                boardWidth: constants.BOARD_WIDTH,
-            }),
-            removeFrom: logicalPoint({ x: 1, y: 2 }),
-            removeAtTimestamp: 1234,
-        });
-        expect(live.blackOvertime).toBeNull();
-    });
-
-    it("should decode black player overtime correctly", () => {
-        const legalMoves = [createFakeMovePath()];
-        const gameState = createFakeGameState({
-            overtime: {
-                whiteOvertime: null,
-                blackOvertime: [
-                    {
-                        legalMoves,
-                        removeFrom: { x: 2, y: 3 },
-                        removeAtTimestamp: 5678,
-                    },
-                ],
-            },
-        });
-
-        const { live } = createStoreProps(
-            "game-token",
-            gameState.blackPlayer.userId,
-            gameState,
-        );
-
-        expect(live.blackOvertime).not.toBeNull();
-        expect(live.blackOvertime).toHaveLength(1);
-        expect(live.blackOvertime![0]).toEqual<PendingOvertimeRemoval>({
-            legalMoves: decodeMovePathIntoLegalMoves({
-                paths: legalMoves,
-                boardWidth: constants.BOARD_WIDTH,
-            }),
-            removeFrom: logicalPoint({ x: 2, y: 3 }),
-            removeAtTimestamp: 5678,
-        });
-        expect(live.whiteOvertime).toBeNull();
     });
 
     it("should return the right viewer for spectator", () => {

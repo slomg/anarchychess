@@ -8,7 +8,6 @@ import {
     GameColor,
     GamePlayer,
     getGame,
-    PendingOvertimeRemovalPath,
     type GameState,
 } from "@/lib/apiClient";
 
@@ -16,10 +15,9 @@ import { LiveChessStore, LiveChessStoreProps } from "../stores/liveChessStore";
 import { decodeMovePath, decodeMovePathIntoLegalMoves } from "./moveDecoder";
 import PositionHistory from "@/features/chessboard/lib/positionHistory";
 import { simulateMove } from "@/features/chessboard/lib/simulateMove";
-import { ClockSnapshot, PendingOvertimeRemoval } from "./types";
 import { decodeFen } from "../../chessboard/lib/fenDecoder";
-import { logicalPoint } from "@/features/point/pointUtils";
 import { LiveChessViewer } from "../stores/gamePlaySlice";
+import { ClockSnapshot } from "./types";
 import constants from "@/lib/constants";
 
 export interface ProcessedGameState {
@@ -65,14 +63,6 @@ export function createStoreProps(
 
         drawState: gameState.drawState,
         clocks: gameState.clocks,
-        whiteOvertime: decodeOvertime(
-            boardWidth,
-            gameState.overtime.whiteOvertime,
-        ),
-        blackOvertime: decodeOvertime(
-            boardWidth,
-            gameState.overtime.blackOvertime,
-        ),
         resultData: gameState.resultData ?? null,
     };
     const board: ChessboardProps = {
@@ -139,28 +129,6 @@ function getPositionHistory(gameState: GameState): PositionHistory {
         pieces = newPieces;
     }
     return positionHistory;
-}
-
-function decodeOvertime(
-    boardWidth: number,
-    playerOvertime?: PendingOvertimeRemovalPath[] | null,
-): PendingOvertimeRemoval[] | null {
-    if (!playerOvertime) {
-        return null;
-    }
-
-    const pendingRemoval: PendingOvertimeRemoval[] = playerOvertime.map(
-        (x) => ({
-            legalMoves: decodeMovePathIntoLegalMoves({
-                boardWidth,
-                paths: x.legalMoves,
-            }),
-            removeFrom: logicalPoint(x.removeFrom),
-            removeAtTimestamp: x.removeAtTimestamp,
-        }),
-    );
-
-    return pendingRemoval;
 }
 
 export async function refetchGame(

@@ -46,9 +46,6 @@ export function createFakeLiveChessStoreProps(
             blackCooldown: 0,
         },
 
-        whiteOvertime: null,
-        blackOvertime: null,
-
         resultData: null,
 
         ...override,

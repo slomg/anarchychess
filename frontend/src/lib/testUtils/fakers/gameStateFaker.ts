@@ -33,7 +33,6 @@ export function createFakeGameState(
         legalMoves: Array.from({
             length: faker.number.int({ min: 1, max: 5 }),
         }).map(() => createFakeMovePath()),
-        overtime: {},
         ...overrides,
     };
 }
