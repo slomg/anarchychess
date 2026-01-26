@@ -56,7 +56,7 @@ public class MoveHandler(
             return GameErrors.PlayerInvalid;
         }
 
-        var overtimeRemovals = RemovePiecesForOvertime(currentPlayer: currentPlayer.Color, game);
+        var overtimeRemovals = EndOvertimeTurn(currentPlayer: currentPlayer.Color, game);
         var makeMoveResult = _core.MakeMove(key, game.Core);
         if (makeMoveResult.IsError)
             return makeMoveResult.Errors;
@@ -133,7 +133,7 @@ public class MoveHandler(
         }
     }
 
-    private List<AlgebraicPoint> RemovePiecesForOvertime(GameColor currentPlayer, GameData game)
+    private List<AlgebraicPoint> EndOvertimeTurn(GameColor currentPlayer, GameData game)
     {
         if (!_overtime.HasStartedOvertime(currentPlayer, game.OvertimeState))
         {
@@ -145,6 +145,8 @@ public class MoveHandler(
             game.OvertimeState
         );
         _core.RemovePieces(pendingRemovals, newLegalMoves, game.Core);
+        _overtime.EndOvertimeTurn(currentPlayer, game.OvertimeState);
+
         return pendingRemovals;
     }
 

@@ -304,7 +304,7 @@ public class MoveHandlerTests : BaseIntegrationTest
         var beforePendingLength = _gameData
             .OvertimeState
             .PlayerOvertime[GameColor.White]
-            .PendingRemoval
+            .PendingRemoval!
             .Count;
 
         await _handler.HandleMoveAsync(
@@ -326,10 +326,7 @@ public class MoveHandlerTests : BaseIntegrationTest
         }
         // next legal moves != next legal moves if it was still white's turn
         _gameCore.GetLegalMoves(_gameData.Core).Should().NotBeEquivalentTo(newLegalMoves);
-        _gameData
-            .OvertimeState.PlayerOvertime[GameColor.White]
-            .PendingRemoval.Count.Should()
-            .Be(beforePendingLength - 1);
+        _gameData.OvertimeState.PlayerOvertime[GameColor.White].PendingRemoval.Should().BeNull();
         _gameData.MoveHistory.Moves[^1].Path.OvertimeRemovalIdxs.Should().HaveCount(1);
     }
 }

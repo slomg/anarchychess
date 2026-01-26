@@ -182,6 +182,32 @@ public class OvertimeTests
     }
 
     [Fact]
+    public void EndOvertimeTurn_sets_pending_removal_to_null()
+    {
+        _state.PlayerOvertime[GameColor.White] = new()
+        {
+            PendingRemoval =
+            [
+                new(new("a1"), new LegalMoveSetFaker().Generate(), 1000),
+                new(new("b2"), new LegalMoveSetFaker().Generate(), 2000),
+            ],
+        };
+        _state.PlayerOvertime[GameColor.Black] = new()
+        {
+            PendingRemoval =
+            [
+                new(new("a1"), new LegalMoveSetFaker().Generate(), 1000),
+                new(new("b2"), new LegalMoveSetFaker().Generate(), 2000),
+            ],
+        };
+
+        _overtime.EndOvertimeTurn(GameColor.White, _state);
+
+        _state.PlayerOvertime[GameColor.White].PendingRemoval.Should().BeNull();
+        _state.PlayerOvertime[GameColor.Black].PendingRemoval.Should().NotBeNull();
+    }
+
+    [Fact]
     public void ToSnapshot_creates_the_right_snapshot_when_there_are_no_pending_positions()
     {
         var result = _overtime.ToSnapshot(_state);
@@ -478,11 +504,21 @@ public class OvertimeTests
     }
 
     [Fact]
-    public void GetTimeUntilDefeat_returns_zero_if_color_key_not_present()
+    public void GetTimeUntilDefeat_returns_null_if_color_key_not_present()
     {
         var result = _overtime.GetTimeUntilDefeat(GameColor.White, _state);
 
-        result.Should().Be(TimeSpan.Zero);
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public void GetTimeUntilDefeat_returns_null_if_pending_removal_is_null()
+    {
+        _state.PlayerOvertime[GameColor.White] = new() { PendingRemoval = null };
+
+        var result = _overtime.GetTimeUntilDefeat(GameColor.White, _state);
+
+        result.Should().BeNull();
     }
 
     [Fact]
@@ -494,7 +530,7 @@ public class OvertimeTests
             PendingRemoval = [],
         };
 
-        TimeSpan result = _overtime.GetTimeUntilDefeat(GameColor.White, _state);
+        var result = _overtime.GetTimeUntilDefeat(GameColor.White, _state);
 
         result.Should().Be(TimeSpan.Zero);
     }
@@ -512,13 +548,64 @@ public class OvertimeTests
                 new(new("b2"), new LegalMoveSetFaker().Generate(), nowMs + 2000),
             ],
         };
-
         _timeProviderMock.GetUtcNow().Returns(_fakeNow.AddMilliseconds(500));
 
-        TimeSpan result = _overtime.GetTimeUntilDefeat(GameColor.White, _state);
+        var result = _overtime.GetTimeUntilDefeat(GameColor.White, _state);
 
         // 2000 - 500 = 1500 ms remaining
         result.Should().Be(TimeSpan.FromMilliseconds(1500));
+    }
+
+    [Fact]
+    public void IsGameOver_returns_false_if_color_key_not_present()
+    {
+        var result = _overtime.IsGameOver(GameColor.White, _state);
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsGameOver_returns_false_if_pending_removal_is_null()
+    {
+        _state.PlayerOvertime[GameColor.White] = new() { PendingRemoval = null };
+
+        var result = _overtime.IsGameOver(GameColor.White, _state);
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsGameOver_returns_false_if_there_are_pending_left()
+    {
+        long nowMs = _fakeNow.ToUnixTimeMilliseconds();
+        _state.PlayerOvertime[GameColor.White] = new()
+        {
+            PendingRemoval =
+            [
+                new(new("a1"), new LegalMoveSetFaker().Generate(), nowMs + 1000),
+                new(new("b2"), new LegalMoveSetFaker().Generate(), nowMs + 2000),
+            ],
+        };
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow.AddMilliseconds(1000));
+
+        var result = _overtime.IsGameOver(GameColor.White, _state);
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsGameOver_returns_true_if_there_are_no_pending_left()
+    {
+        long nowMs = _fakeNow.ToUnixTimeMilliseconds();
+        _state.PlayerOvertime[GameColor.White] = new()
+        {
+            PendingRemoval = [new(new("a1"), new LegalMoveSetFaker().Generate(), nowMs + 1000)],
+        };
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow.AddMilliseconds(1000));
+
+        var result = _overtime.IsGameOver(GameColor.White, _state);
+
+        result.Should().BeTrue();
     }
 
     [Fact]

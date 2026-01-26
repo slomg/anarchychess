@@ -122,7 +122,7 @@ public class GameEndHandlerTests : BaseIntegrationTest
         _timeProviderMock.GetUtcNow().Returns(now);
 
         _overtime.StartOvertimeTurn(GameColor.White, _gameData.Core.Board, _gameData.OvertimeState);
-        now += _overtime.GetTimeUntilDefeat(GameColor.White, _gameData.OvertimeState);
+        now += _overtime.GetTimeUntilDefeat(GameColor.White, _gameData.OvertimeState)!.Value;
         _timeProviderMock.GetUtcNow().Returns(now);
 
         var (pendingRemoval, newLegalMoves) = _overtime.GetRemovedPiecesSinceLastMove(

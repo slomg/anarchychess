@@ -10,5 +10,5 @@ public class PlayerOvertime
     public long RemainderMs { get; set; }
 
     [Id(1)]
-    public required IReadOnlyList<PendingRemovalEntry> PendingRemoval { get; set; }
+    public IReadOnlyList<PendingRemovalEntry>? PendingRemoval { get; set; }
 }

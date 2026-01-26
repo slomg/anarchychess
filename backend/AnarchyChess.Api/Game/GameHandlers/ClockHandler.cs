@@ -54,7 +54,8 @@ public class ClockHandler(
         var sideToMove = _core.SideToMove(game.Core);
         if (_clock.IsTimeout(sideToMove, isTicking: true, game.ClockState))
         {
-            return _overtime.GetTimeUntilDefeat(sideToMove, game.OvertimeState);
+            return _overtime.GetTimeUntilDefeat(sideToMove, game.OvertimeState)
+                ?? TimeSpan.MinValue;
         }
         else
         {
@@ -91,8 +92,9 @@ public class ClockHandler(
             return null;
         }
 
-        var timeUntilDefeat = _overtime.GetTimeUntilDefeat(playerColor, game.OvertimeState);
-        return timeUntilDefeat <= TimeSpan.Zero ? _resultDescriber.Overtime(playerColor) : null;
+        return _overtime.IsGameOver(playerColor, game.OvertimeState)
+            ? _resultDescriber.Overtime(playerColor)
+            : null;
     }
 
     private async Task StartOvertimeAsync(
