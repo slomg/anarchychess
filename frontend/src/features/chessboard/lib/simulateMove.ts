@@ -51,7 +51,8 @@ function simulateMoveDestination(
 
     const initialSpawnPositions = createInitialSpawns(basePieces, move);
     const isCapture =
-        removedPieces.size > 0 &&
+        move.captures &&
+        move.captures.length > 0 &&
         move.intermediates.filter((x) => x.isCapture).length <
             removedPieces.size;
     const moveBounds: MoveBounds = {

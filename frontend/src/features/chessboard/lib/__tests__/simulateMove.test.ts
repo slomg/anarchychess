@@ -128,6 +128,25 @@ describe("simulateMove", () => {
         expect(result.isCapture).toEqual(false);
     });
 
+    it("should not set isCapture to true if captures come from overtime", () => {
+        const piece = createFakePiece({
+            position: logicalPoint({ x: 0, y: 0 }),
+        });
+        const overtimePiece = createFakePiece({
+            position: logicalPoint({ x: 1, y: 1 }),
+        });
+        const pieces = BoardPieces.fromPieces(piece, overtimePiece);
+        const move = createFakeMove({
+            from: piece.position,
+            to: overtimePiece.position,
+            overtimeRemovals: [overtimePiece.position],
+        });
+
+        const result = simulateMove(pieces, move);
+
+        expect(result.isCapture).toEqual(false);
+    });
+
     it("should forward specialMoveType", () => {
         const piece = createFakePiece({
             position: logicalPoint({ x: 7, y: 7 }),
