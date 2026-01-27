@@ -14,7 +14,12 @@ import {
 } from "@/lib/apiClient";
 
 import { ChessboardStore, createChessboardStore } from "../chessboardStore";
-import { AnimationStep, IntermediateSquare, Move } from "../../lib/types";
+import {
+    AnimationStep,
+    IntermediateSquare,
+    Move,
+    MoveAnimation,
+} from "../../lib/types";
 import { createFakePosition } from "@/lib/testUtils/fakers/positionFaker";
 import { logicalPoint, screenPoint } from "@/features/point/pointUtils";
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
@@ -169,6 +174,50 @@ describe("PiecesSlice", () => {
             expectPieces({ piece, position: move.to });
             expect(store.getState().animatingPieceIds).toEqual(
                 new Set([piece.id]),
+            );
+        });
+    });
+
+    describe("removePieceAt", () => {
+        it("should remove the piece and animate it", async () => {
+            const piece = createFakePiece({
+                position: logicalPoint({ x: 3, y: 3 }),
+            });
+            const otherPiece = createFakePiece({
+                position: logicalPoint({ x: 4, y: 4 }),
+            });
+            const pieces = BoardPieces.fromPieces(piece, otherPiece);
+
+            const discardPromptsForPieceMock = vi.fn();
+            const playAnimationBatchMock = vi.fn();
+
+            store.setState({
+                pieces,
+                discardPromptsForPiece: discardPromptsForPieceMock,
+                playAnimationBatch: playAnimationBatchMock,
+            });
+
+            const expectedNewPieces = new BoardPieces(pieces);
+            expectedNewPieces.delete(piece.id);
+
+            const expectedAnimation: MoveAnimation = {
+                steps: [
+                    {
+                        newPieces: expectedNewPieces,
+                        movedPieceIds: [],
+                    },
+                ],
+                removedPieces: new Map([[piece.id, piece]]),
+            };
+
+            await store.getState().removePieceAt(piece.position);
+
+            expect(store.getState().pieces).toEqual(expectedNewPieces);
+            expect(discardPromptsForPieceMock).toHaveBeenCalledExactlyOnceWith(
+                piece.id,
+            );
+            expect(playAnimationBatchMock).toHaveBeenCalledExactlyOnceWith(
+                expectedAnimation,
             );
         });
     });

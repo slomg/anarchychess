@@ -34,6 +34,7 @@ export interface PiecesSlice {
 
     applyMoveAnimated(move: Move): Promise<void>;
     applyMoveImmediate(move: Move): Promise<void>;
+    removePieceAt(point: LogicalPoint): Promise<void>;
 
     handleMousePieceDrop(args: {
         mousePoint: ScreenPoint;
@@ -175,8 +176,34 @@ export function createPiecesSlice(
                 await playAnimationBatch(positions);
             },
 
+            async removePieceAt(point) {
+                const { pieces, discardPromptsForPiece, playAnimationBatch } =
+                    get();
+
+                const removePiece = pieces.getByPosition(point);
+                if (!removePiece) {
+                    console.warn(
+                        `Could not find piece to remove at ${pointToStr(point)}`,
+                    );
+                    return;
+                }
+                const newPieces = new BoardPieces(pieces);
+                newPieces.delete(removePiece.id);
+
+                const animation: MoveAnimation = {
+                    steps: [
+                        {
+                            newPieces,
+                            movedPieceIds: [],
+                        },
+                    ],
+                    removedPieces: new Map([[removePiece.id, removePiece]]),
+                };
+                discardPromptsForPiece(removePiece.id);
                 set((state) => {
+                    state.pieces = newPieces;
                 });
+                await playAnimationBatch(animation);
             },
 
             async handleMousePieceDrop({ mousePoint, isDrag, isDoubleClick }) {
