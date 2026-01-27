@@ -27,6 +27,7 @@ export type GameClientEvents = {
         clocks: Clocks,
     ];
     ReceiveOvertimeAsync: [
+        plyNumber: number,
         removedFrom: LogicalPoint,
         encodedLegalMoves: string,
     ];

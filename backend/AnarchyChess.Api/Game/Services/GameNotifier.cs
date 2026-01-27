@@ -25,6 +25,7 @@ public interface IGameNotifier
     );
     Task NotifyMoveMadeAsync(MoveNotification notification, GameNotifierState state);
     Task NotifyOvertimeAsync(
+        int plyNumber,
         AlgebraicPoint removeFrom,
         CompressedMoves encodedLegalMoves,
         GameToken gameToken,
@@ -82,6 +83,7 @@ public class GameNotifier(IHubContext<GameHub, IGameHubClient> hub) : IGameNotif
     }
 
     public async Task NotifyOvertimeAsync(
+        int plyNumber,
         AlgebraicPoint removeFrom,
         CompressedMoves encodedLegalMoves,
         GameToken gameToken,
@@ -89,7 +91,9 @@ public class GameNotifier(IHubContext<GameHub, IGameHubClient> hub) : IGameNotif
     )
     {
         state.Revision++;
-        await _hub.Clients.Group(gameToken).ReceiveOvertimeAsync(removeFrom, encodedLegalMoves);
+        await _hub
+            .Clients.Group(gameToken)
+            .ReceiveOvertimeAsync(plyNumber, removeFrom, encodedLegalMoves);
     }
 
     public Task NotifyDrawStateChangeAsync(

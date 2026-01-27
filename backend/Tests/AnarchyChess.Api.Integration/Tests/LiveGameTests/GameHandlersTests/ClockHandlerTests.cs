@@ -155,7 +155,7 @@ public class ClockHandlerTests : BaseIntegrationTest
 
         await _notifierMock
             .DidNotReceiveWithAnyArgs()
-            .NotifyOvertimeAsync(default, default!, default, default!);
+            .NotifyOvertimeAsync(default, default, default!, default, default!);
         gameData.MoveHistory.Moves[^1].Path.OvertimeRemovalIdxs.Should().BeEmpty();
         var prevLegalMoves = _core.GetLegalMoves(gameData.Core);
 
@@ -164,7 +164,8 @@ public class ClockHandlerTests : BaseIntegrationTest
         await _notifierMock
             .Received(1)
             .NotifyOvertimeAsync(
-                new("a1"),
+                plyNumber: gameData.MoveHistory.Moves.Count,
+                removeFrom: new("a1"),
                 Arg.Any<CompressedMoves>(),
                 _gameToken,
                 gameData.NotifierState

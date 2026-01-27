@@ -121,6 +121,7 @@ public class ClockHandler(
         if (removalResult is not null)
         {
             await _notifier.NotifyOvertimeAsync(
+                plyNumber: game.MoveHistory.Moves.Count,
                 removalResult.RemoveFrom,
                 removalResult.EncodedLegalMoves,
                 gameToken,

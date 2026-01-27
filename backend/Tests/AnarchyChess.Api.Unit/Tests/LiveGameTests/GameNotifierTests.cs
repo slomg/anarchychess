@@ -96,12 +96,19 @@ public class GameNotifierTests
         GameNotifierState state = new() { Revision = 0 };
         AlgebraicPoint removedFrom = new("a1");
         CompressedMoves encodedLegalMoves = "encoded1";
+        int plyNumber = 123;
 
-        await _notifier.NotifyOvertimeAsync(removedFrom, encodedLegalMoves, _gameToken, state);
+        await _notifier.NotifyOvertimeAsync(
+            plyNumber,
+            removedFrom,
+            encodedLegalMoves,
+            _gameToken,
+            state
+        );
 
         await _clientGameGroupProxyMock
             .Received(1)
-            .ReceiveOvertimeAsync(removedFrom, encodedLegalMoves);
+            .ReceiveOvertimeAsync(plyNumber, removedFrom, encodedLegalMoves);
         state.Revision.Should().Be(1);
     }
 
