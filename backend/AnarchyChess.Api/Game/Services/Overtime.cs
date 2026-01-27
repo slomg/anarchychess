@@ -1,10 +1,10 @@
-﻿using System.Data;
-using AnarchyChess.Api.Game.Models;
+﻿using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.Shared.Models;
 using AnarchyChess.Api.Shared.Services;
 using Microsoft.Extensions.Options;
+using System.Data;
 
 namespace AnarchyChess.Api.Game.Services;
 
@@ -67,20 +67,28 @@ public class Overtime(
         }
         state.PlayerRemainder[playerColor] = TimeSpan.Zero;
 
-        List<AlgebraicPoint> squares =
+        List<(AlgebraicPoint Position, Piece Occupant)> pieces =
         [
-            .. board
-                .EnumeratePieces()
-                .Where(x => x.Occupant.Color == playerColor)
-                .Select(x => x.Position),
+            .. board.EnumeratePieces().Where(x => x.Occupant.Color == playerColor),
         ];
-        if (squares.Count == 0)
+        if (pieces.Count == 0)
         {
             return (RemovalResult: null, IsGameOver: true);
         }
+        var removeFrom = _randomProvider
+            .NextItemWeighted(
+                pieces,
+                piece =>
+                    piece.Occupant.Type switch
+                    {
+                        PieceType type when GameLogicConstants.PawnLikePieces.Contains(type) => 4,
+                        PieceType.Queen => 2,
+                        PieceType.King => 1,
+                        _ => 3,
+                    }
+            )
+            .Position;
 
-        var squareIdx = _randomProvider.Next(squares.Count);
-        var removeFrom = squares[squareIdx];
         ChessBoard editingBoard = new(board);
         editingBoard.RemovePiece(removeFrom);
 

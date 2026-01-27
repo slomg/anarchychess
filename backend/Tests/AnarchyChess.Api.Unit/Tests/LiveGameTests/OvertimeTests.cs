@@ -6,6 +6,7 @@ using AnarchyChess.Api.Shared.Models;
 using AnarchyChess.Api.Shared.Services;
 using AnarchyChess.Api.TestInfrastructure.Factories;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
+using AnarchyChess.Api.TestInfrastructure.NSubtituteExtenstion;
 using AnarchyChess.Api.TestInfrastructure.Utils;
 using AwesomeAssertions;
 using Microsoft.Extensions.Options;
@@ -41,6 +42,21 @@ public class OvertimeTests
             _playableMoveProviderMock,
             _moveEncoderMock
         );
+
+        _playableMoveProviderMock
+            .CalculateAllPlayableMoves(Arg.Any<IReadOnlyChessBoard>())
+            .Returns(new LegalMoveSetFaker().Generate());
+    }
+
+    private void MockRandom(AlgebraicPoint point, ChessBoard board)
+    {
+        var piece = board.PeekPieceAt(point)!;
+        _randomMock
+            .NextItemWeighted(
+                Arg.Any<IEnumerable<(AlgebraicPoint Position, Piece Occupant)>>(),
+                Arg.Any<Func<(AlgebraicPoint Position, Piece Occupant), int>>()
+            )
+            .Returns((point, piece));
     }
 
     [Fact]
@@ -65,7 +81,7 @@ public class OvertimeTests
         board.PlacePiece(new("e3"), PieceFactory.White(PieceType.King));
         board.PlacePiece(new("e8"), PieceFactory.Black(PieceType.King));
 
-        _randomMock.Next(3).Returns(1); // pick queen
+        MockRandom(new AlgebraicPoint("a2"), board);
 
         ChessBoard expectedBoard = new(board);
         expectedBoard.RemovePiece(new("a2"));
@@ -102,13 +118,7 @@ public class OvertimeTests
         board.PlacePiece(new("e1"), PieceFactory.White(PieceType.King));
         board.PlacePiece(new("a1"), PieceFactory.White(PieceType.King));
         board.PlacePiece(new("e8"), PieceFactory.Black(PieceType.King));
-
-        _randomMock.Next(2).Returns(0); // king on a1
-
-        var legalMoves = new LegalMoveSetFaker().Generate();
-        _playableMoveProviderMock
-            .CalculateAllPlayableMoves(Arg.Any<IReadOnlyChessBoard>())
-            .Returns(legalMoves);
+        MockRandom(new AlgebraicPoint("a1"), board);
         _overtime.StartOvertimeTurn(GameColor.White, _state);
 
         var (_, isGameOver) = _overtime.GetNextRemoval(GameColor.White, board, _state);
@@ -122,18 +132,77 @@ public class OvertimeTests
         ChessBoard board = new();
         board.PlacePiece(new("e1"), PieceFactory.White(PieceType.King));
         board.PlacePiece(new("e8"), PieceFactory.Black(PieceType.King));
-
-        _randomMock.Next(1).Returns(0);
-
-        var legalMoves = new LegalMoveSetFaker().Generate();
-        _playableMoveProviderMock
-            .CalculateAllPlayableMoves(Arg.Any<IReadOnlyChessBoard>())
-            .Returns(legalMoves);
+        MockRandom(new AlgebraicPoint("e1"), board);
         _overtime.StartOvertimeTurn(GameColor.White, _state);
 
         var (_, isGameOver) = _overtime.GetNextRemoval(GameColor.White, board, _state);
 
         isGameOver.Should().BeTrue();
+    }
+
+    [Fact]
+    public void GetNextRemoval_passes_only_player_pieces_to_random_provider()
+    {
+        ChessBoard board = new();
+        var rook = PieceFactory.White(PieceType.Rook);
+        var queen = PieceFactory.White(PieceType.Queen);
+        var king = PieceFactory.White(PieceType.King);
+        var blackKing = PieceFactory.Black(PieceType.King);
+        board.PlacePiece(new("a1"), rook);
+        board.PlacePiece(new("a2"), queen);
+        board.PlacePiece(new("e3"), king);
+        board.PlacePiece(new("e8"), blackKing);
+        MockRandom(new AlgebraicPoint("a2"), board);
+        _overtime.StartOvertimeTurn(GameColor.White, _state);
+
+        _overtime.GetNextRemoval(GameColor.White, board, _state);
+
+        _randomMock
+            .Received(1)
+            .NextItemWeighted(
+                ArgEx.FluentAssert<IEnumerable<(AlgebraicPoint Position, Piece Occupant)>>(x =>
+                    x.Should()
+                        .BeEquivalentTo(
+                            [
+                                (new AlgebraicPoint("a1"), rook),
+                                (new AlgebraicPoint("a2"), queen),
+                                (new AlgebraicPoint("e3"), king),
+                            ]
+                        )
+                ),
+                Arg.Any<Func<(AlgebraicPoint Position, Piece Occupant), int>>()
+            );
+    }
+
+    [Theory]
+    [InlineData(PieceType.Pawn, 4)]
+    [InlineData(PieceType.UnderagePawn, 4)]
+    [InlineData(PieceType.SterilePawn, 4)]
+    [InlineData(PieceType.Rook, 3)]
+    [InlineData(PieceType.Antiqueen, 3)]
+    [InlineData(PieceType.Queen, 2)]
+    [InlineData(PieceType.King, 1)]
+    public void GetNextRemoval_uses_correct_weights(PieceType pieceType, int expectedWeight)
+    {
+        ChessBoard board = new();
+        var piece = PieceFactory.White(pieceType);
+        board.PlacePiece(new("a1"), piece);
+
+        Func<(AlgebraicPoint Position, Piece Occupant), int>? capturedWeightFunc = null;
+        _randomMock
+            .NextItemWeighted(
+                Arg.Any<IEnumerable<(AlgebraicPoint Position, Piece Occupant)>>(),
+                Arg.Do<Func<(AlgebraicPoint Position, Piece Occupant), int>>(weightFunc =>
+                    capturedWeightFunc = weightFunc
+                )
+            )
+            .Returns((new AlgebraicPoint("a2"), piece));
+        _overtime.StartOvertimeTurn(GameColor.White, _state);
+
+        _overtime.GetNextRemoval(GameColor.White, board, _state);
+
+        capturedWeightFunc.Should().NotBeNull();
+        capturedWeightFunc((new AlgebraicPoint("a1"), piece)).Should().Be(expectedWeight);
     }
 
     [Fact]
