@@ -9,6 +9,7 @@ import {
 
 import useSignalREmitter from "@/features/signalR/hooks/useSignalREmitter";
 import useSignalREvent from "@/features/signalR/hooks/useSignalREvent";
+import { SignalRError } from "@/features/signalR/lib/types";
 import { LogicalPoint } from "@/features/point/types";
 import constants from "@/lib/constants";
 
@@ -42,6 +43,8 @@ export type GameClientEvents = {
     RematchRequestedAsync: [];
     RematchCancelledAsync: [];
     RematchAccepted: [createdGameToken: string];
+
+    ReceiveErrorAsync: [errors: SignalRError[]];
 };
 
 type GameHubEvents = {

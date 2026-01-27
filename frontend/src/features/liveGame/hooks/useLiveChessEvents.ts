@@ -135,7 +135,7 @@ export default function useLiveChessEvents(
     useGameEvent(
         gameToken,
         "ReceiveOvertimeAsync",
-        (plyNumber, removedFrom, encodedLegalMoves) => {
+        async (plyNumber, removedFrom, encodedLegalMoves) => {
             const { removePieceAt, addLegalMovesForPosition, positionHistory } =
                 chessboardStore.getState();
 
@@ -149,7 +149,7 @@ export default function useLiveChessEvents(
                 console.warn(
                     `Received overtime for ply ${plyNumber}, which is ahead of current main ply ${positionHistory.mainPlyCount} by more than 1`,
                 );
-                refetchGame(liveChessStore, chessboardStore);
+                await refetchGame(liveChessStore, chessboardStore);
                 return;
             } else if (plyDiff === 1) {
                 const queue = queuedOvertimeRef.current.get(plyNumber) ?? {
@@ -179,6 +179,10 @@ export default function useLiveChessEvents(
             }
         },
     );
+
+    useGameEvent(gameToken, "ReceiveErrorAsync", async () => {
+        await refetchGame(liveChessStore, chessboardStore);
+    });
 
     useGameEvent(gameToken, "GameEndedAsync", async (result, finalClocks) => {
         liveChessStore.getState().endGame(result, finalClocks);

@@ -131,7 +131,7 @@ describe("useLiveChessEvents", () => {
                 await gameEventHandlers.SyncRevisionAsync?.(newRevision);
             });
 
-            expect(refetchGame).toHaveBeenCalledWith(
+            expect(refetchGame).toHaveBeenCalledExactlyOnceWith(
                 liveChessStore,
                 chessboardStore,
             );
@@ -353,7 +353,7 @@ describe("useLiveChessEvents", () => {
                 );
             });
 
-            expect(refetchGame).toHaveBeenCalledWith(
+            expect(refetchGame).toHaveBeenCalledExactlyOnceWith(
                 liveChessStore,
                 chessboardStore,
             );
@@ -395,11 +395,11 @@ describe("useLiveChessEvents", () => {
                 );
             });
 
-            expect(addLegalMovesSpy).toHaveBeenCalledWith(
+            expect(addLegalMovesSpy).toHaveBeenCalledExactlyOnceWith(
                 decodedLegalMoves,
                 targetPosition.positionId,
             );
-            expect(removePieceSpy).toHaveBeenCalledWith(removedFrom);
+            expect(removePieceSpy).toHaveBeenCalledExactlyOnceWith(removedFrom);
         });
 
         it("should queue overtime for the next ply and apply it when the next move arrives", async () => {
@@ -512,6 +512,21 @@ describe("useLiveChessEvents", () => {
 
             const chessboardState = chessboardStore.getState();
             expect(chessboardState.allowHistoryChanges).toBe(true);
+        });
+    });
+
+    describe("ReceiveErrorAsync", () => {
+        it("should refetch the game", async () => {
+            renderLiveChessEvents();
+
+            await act(async () => {
+                gameEventHandlers.ReceiveErrorAsync?.([]);
+            });
+
+            expect(refetchGame).toHaveBeenCalledExactlyOnceWith(
+                liveChessStore,
+                chessboardStore,
+            );
         });
     });
 });
