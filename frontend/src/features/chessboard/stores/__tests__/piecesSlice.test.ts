@@ -13,7 +13,6 @@ import {
     SpecialMoveType,
 } from "@/lib/apiClient";
 
-import { ChessboardStore, createChessboardStore } from "../chessboardStore";
 import {
     AnimationStep,
     IntermediateSquare,
@@ -21,10 +20,12 @@ import {
     MoveAnimation,
 } from "../../lib/types";
 
-import { createFakePosition } from "@/lib/testUtils/fakers/positionFaker";
+import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
+import { ChessboardStore, createChessboardStore } from "../chessboardStore";
 import { logicalPoint, screenPoint } from "@/features/point/pointUtils";
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
 import flushMicrotasks from "@/lib/testUtils/flushMicrotasks";
+import { ChildPositionNode } from "../../lib/position";
 import { LogicalPoint } from "@/features/point/types";
 import { ScreenPoint } from "@/features/point/types";
 import BoardPieces from "../../lib/boardPieces";
@@ -543,9 +544,14 @@ describe("PiecesSlice", () => {
 
         it("should set pieces with playAnimation", async () => {
             const newPos = logicalPoint({ x: 1, y: 1 });
-            const position = createFakePosition({
-                pieces: BoardPieces.fromPieces({ ...piece, position: newPos }),
-            });
+            const position = new ChildPositionNode(
+                createFakePositionProps({
+                    pieces: BoardPieces.fromPieces({
+                        ...piece,
+                        position: newPos,
+                    }),
+                }),
+            );
 
             await store.getState().updatePiecesFromPosition(position);
 
@@ -563,15 +569,17 @@ describe("PiecesSlice", () => {
 
         it("should set isCapture to true if position move is a capture", async () => {
             const newPos = logicalPoint({ x: 1, y: 1 });
-            const position = createFakePosition({
-                pieces: BoardPieces.fromPieces({
-                    ...piece,
-                    position: newPos,
+            const position = new ChildPositionNode(
+                createFakePositionProps({
+                    pieces: BoardPieces.fromPieces({
+                        ...piece,
+                        position: newPos,
+                    }),
+                    move: createFakeMove({
+                        captures: [logicalPoint({ x: 1, y: 1 })],
+                    }),
                 }),
-                move: createFakeMove({
-                    captures: [logicalPoint({ x: 1, y: 1 })],
-                }),
-            });
+            );
 
             await store.getState().updatePiecesFromPosition(position);
 
@@ -589,15 +597,17 @@ describe("PiecesSlice", () => {
 
         it("should pass specialType to playAnimation when present", async () => {
             const newPos = logicalPoint({ x: 2, y: 2 });
-            const position = createFakePosition({
-                pieces: BoardPieces.fromPieces({
-                    ...piece,
-                    position: newPos,
+            const position = new ChildPositionNode(
+                createFakePositionProps({
+                    pieces: BoardPieces.fromPieces({
+                        ...piece,
+                        position: newPos,
+                    }),
+                    move: createFakeMove({
+                        specialType: SpecialMoveType.KNOOKLEAR_FUSION,
+                    }),
                 }),
-                move: createFakeMove({
-                    specialType: SpecialMoveType.KNOOKLEAR_FUSION,
-                }),
-            });
+            );
 
             await store.getState().updatePiecesFromPosition(position);
 
@@ -615,15 +625,17 @@ describe("PiecesSlice", () => {
 
         it("should set isPromotion=true when promotesTo is defined", async () => {
             const newPos = logicalPoint({ x: 0, y: 7 });
-            const position = createFakePosition({
-                pieces: BoardPieces.fromPieces({
-                    ...piece,
-                    position: newPos,
+            const position = new ChildPositionNode(
+                createFakePositionProps({
+                    pieces: BoardPieces.fromPieces({
+                        ...piece,
+                        position: newPos,
+                    }),
+                    move: createFakeMove({
+                        promotesTo: PieceType.QUEEN,
+                    }),
                 }),
-                move: createFakeMove({
-                    promotesTo: PieceType.QUEEN,
-                }),
-            });
+            );
 
             await store.getState().updatePiecesFromPosition(position);
 
