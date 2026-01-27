@@ -1,5 +1,3 @@
-import { immerable } from "immer";
-
 import { LogicalPoint, StrPoint } from "@/features/point/types";
 import { Move, Piece, PieceID } from "./types";
 import { pointToStr } from "@/features/point/pointUtils";
@@ -16,8 +14,6 @@ interface GatheredMoves {
 }
 
 export default class BoardPieces {
-    [immerable] = true;
-
     _byId: Map<PieceID, Piece>;
     _byPosition: Map<StrPoint, PieceID>;
 

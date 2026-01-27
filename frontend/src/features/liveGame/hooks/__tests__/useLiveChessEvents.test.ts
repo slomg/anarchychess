@@ -30,6 +30,7 @@ import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessS
 import { createNFakePositionHistory } from "@/lib/testUtils/fakers/positionHistoryFaker";
 import { createFakeGameResultData } from "@/lib/testUtils/fakers/gameResultDataFaker";
 import { createFakeMoveSnapshot } from "@/lib/testUtils/fakers/moveSnapshotFaker";
+import { createFakeMovePath } from "@/lib/testUtils/fakers/movePathFaker";
 import { EventHandlers } from "@/features/signalR/hooks/useSignalREvent";
 import { createFakeClocks } from "@/lib/testUtils/fakers/clocksFaker";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
@@ -38,7 +39,6 @@ import LegalMoves from "@/features/chessboard/lib/legalMoves";
 import { refetchGame } from "../../lib/gameStateProcessor";
 import { logicalPoint } from "@/features/point/pointUtils";
 import useLiveChessEvents from "../useLiveChessEvents";
-import { createFakeMovePath } from "@/lib/testUtils/fakers/movePathFaker";
 import constants from "@/lib/constants";
 
 vi.mock("@/features/liveGame/hooks/useGameHub");
