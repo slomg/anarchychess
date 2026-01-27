@@ -51,8 +51,8 @@ const Line = ({ positions }: { positions: Position[] }) => {
         position: Position,
         index: number,
     ): string {
-        const isWhiteMove = position.ply % 2 === 0;
-        const moveNumber = Math.floor(position.ply / 2) + 1;
+        const isWhiteMove = position.ply % 2 !== 0;
+        const moveNumber = Math.ceil(position.ply / 2);
         if (index !== 0 && !isWhiteMove) return "";
 
         const dots = isWhiteMove ? "." : "...";

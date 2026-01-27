@@ -14,7 +14,7 @@ export function createFakePosition(overrides?: Partial<Position>): Position {
         sideToMove: faker.helpers.enumValue(GameColor),
         move: createFakeMove(),
         san: createFakeSan(),
-        ply: faker.number.int({ min: 0, max: 100 }),
+        ply: faker.number.int({ min: 1, max: 100 }),
 
         positionId: crypto.randomUUID() as PositionId,
         variations: [],

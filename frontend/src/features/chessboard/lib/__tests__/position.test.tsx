@@ -65,7 +65,7 @@ describe("RootPositionNode", () => {
             expect(root.variations).toContain(child);
             expect(root.subVariationByKey.size).toBe(0);
             expect(child.prev).toBeNull();
-            expect(child.ply).toBe(0);
+            expect(child.ply).toBe(1);
             expect(child).toEqual(expect.objectContaining(childProps));
         });
 
@@ -122,7 +122,7 @@ describe("RootPositionNode", () => {
 
             expect(child).toEqual(expect.objectContaining(props));
             expect(child.prev).toBeNull();
-            expect(child.ply).toBe(0);
+            expect(child.ply).toBe(1);
             expect(root.subVariationByKey.get(props.move.moveKey)).toBe(child);
             expect(root.variations).toEqual([child]);
             expect(root.next).toBeNull();
@@ -190,7 +190,7 @@ describe("ChildPositionNode", () => {
     describe("constructor", () => {
         it("should create a child node with correct properties", () => {
             expect(child).toEqual(expect.objectContaining(rootProps));
-            expect(child.ply).toBe(0);
+            expect(child.ply).toBe(1);
             expect(child.prev).toBeNull();
             expect(child.next).toBeNull();
             expect(child.variations).toEqual([]);
