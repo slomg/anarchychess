@@ -268,7 +268,7 @@ describe("BoardPieces", () => {
             expect(pieces.getByPosition(from)).toBeUndefined();
         });
 
-        it("should delete a piece occupying the destination square", () => {
+        it("should remove a piece occupying the destination square", () => {
             const from = logicalPoint({ x: 0, y: 0 });
             const to = logicalPoint({ x: 2, y: 2 });
 
@@ -320,17 +320,52 @@ describe("BoardPieces", () => {
         expect(addedPiece).not.toBe(piece); // copy
     });
 
-    it("should delete a piece by id", () => {
-        const piece = createFakePiece({
-            position: logicalPoint({ x: 3, y: 3 }),
+    describe("remove", () => {
+        it("should remove a piece by id", () => {
+            const piece = createFakePiece({
+                position: logicalPoint({ x: 3, y: 3 }),
+            });
+            const board = new BoardPieces();
+            board.add(piece);
+
+            const result = board.remove(piece.id);
+
+            expect(result).toBe(true);
+            expect(board.getById(piece.id)).toBeUndefined();
+            expect(board.getByPosition(piece.position)).toBeUndefined();
         });
-        const board = new BoardPieces();
-        board.add(piece);
 
-        board.delete(piece.id);
+        it("should return false if piece doesn't exist", () => {
+            const board = new BoardPieces();
 
-        expect(board.getById(piece.id)).toBeUndefined();
-        expect(board.getByPosition(piece.position)).toBeUndefined();
+            const result = board.remove("random id");
+
+            expect(result).toBe(false);
+        });
+    });
+
+    describe("removeFrom", () => {
+        it("should remove a piece by position", () => {
+            const piece = createFakePiece({
+                position: logicalPoint({ x: 3, y: 3 }),
+            });
+            const board = new BoardPieces();
+            board.add(piece);
+
+            const result = board.removeFrom(piece.position);
+
+            expect(result).toBe(true);
+            expect(board.getById(piece.id)).toBeUndefined();
+            expect(board.getByPosition(piece.position)).toBeUndefined();
+        });
+
+        it("should return false if piece doesn't exist", () => {
+            const board = new BoardPieces();
+
+            const result = board.removeFrom(logicalPoint({ x: 1, y: 2 }));
+
+            expect(result).toBe(false);
+        });
     });
 
     it("should clone itself correctly when constructed from another BoardPieces", () => {

@@ -188,7 +188,7 @@ export function createPiecesSlice(
                     return;
                 }
                 const newPieces = new BoardPieces(pieces);
-                newPieces.delete(removePiece.id);
+                newPieces.remove(removePiece.id);
 
                 const animation: MoveAnimation = {
                     steps: [

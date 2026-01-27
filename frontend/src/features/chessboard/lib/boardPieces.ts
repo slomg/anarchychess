@@ -99,7 +99,7 @@ export default class BoardPieces {
         for (const capture of [...move.captures, ...move.overtimeRemovals]) {
             const capturedPiece = this.getByPosition(capture);
             if (capturedPiece) {
-                this.delete(capturedPiece.id);
+                this.remove(capturedPiece.id);
                 removedPieces.set(capturedPiece.id, capturedPiece);
             }
         }
@@ -131,11 +131,26 @@ export default class BoardPieces {
         this._byPosition.set(pointToStr(position), newPiece.id);
     }
 
-    delete(pieceId: PieceID): void {
-        const piece = this._byId.get(pieceId);
-        if (!piece) return;
+    remove(pieceId: PieceID): boolean {
+        const piece = this.getById(pieceId);
+        if (!piece) {
+            return false;
+        }
+
         this._byId.delete(pieceId);
         this._byPosition.delete(pointToStr(piece.position));
+        return true;
+    }
+
+    removeFrom(position: LogicalPoint): boolean {
+        const piece = this.getByPosition(position);
+        if (!piece) {
+            return false;
+        }
+
+        this._byId.delete(piece.id);
+        this._byPosition.delete(pointToStr(position));
+        return true;
     }
 
     values(): IterableIterator<Piece> {

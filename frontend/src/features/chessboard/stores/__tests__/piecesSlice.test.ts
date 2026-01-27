@@ -199,7 +199,7 @@ describe("PiecesSlice", () => {
             });
 
             const expectedNewPieces = new BoardPieces(pieces);
-            expectedNewPieces.delete(piece.id);
+            expectedNewPieces.remove(piece.id);
 
             const expectedAnimation: MoveAnimation = {
                 steps: [
