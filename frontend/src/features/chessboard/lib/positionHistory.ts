@@ -16,6 +16,7 @@ export default class PositionHistory {
 
     _mainBranchPlies = 0;
     _byPositionId: Map<PositionId, ChildPositionNode> = new Map();
+    _byPly: Map<number, ChildPositionNode> = new Map();
 
     _root: RootPositionNode;
     _tail: ChildPositionNode | null = null;
@@ -48,6 +49,10 @@ export default class PositionHistory {
 
     get isViewingLatestPosition(): boolean {
         return this._viewingPosition?.positionId === this._tail?.positionId;
+    }
+
+    getPositionWithPly(ply: number): ChildPositionNode | undefined {
+        return this._byPly.get(ply);
     }
 
     getNextPositionWithKey(key: MoveKey): Position | undefined {
@@ -131,6 +136,7 @@ export default class PositionHistory {
         if (isMainVariation) {
             this._tail = nextPosition;
             this._mainBranchPlies++;
+            this._byPly.set(nextPosition.ply, nextPosition);
         }
 
         return nextPosition;
