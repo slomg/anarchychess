@@ -11,7 +11,7 @@ const RemovingChessPiece = ({ id }: { id: PieceID }) => {
         <ChessSquare
             data-testid="removingPiece"
             position={piece.position}
-            className="z-10 bg-size-[length:100%] bg-no-repeat opacity-50
+            className="bg-size-[length:100%] bg-no-repeat opacity-50
                 select-none"
             style={{
                 backgroundImage: `url("${getPieceImage(piece.type, piece.color)}")`,
