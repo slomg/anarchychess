@@ -135,7 +135,7 @@ export class ChildPositionNode extends PositionNode implements Position {
         super(props.pieces);
         this._parent = parent;
 
-        this._pieces = props.pieces;
+        this._pieces = new BoardPieces(props.pieces);
         this._fen = props.fen;
         this._sideToMove = props.sideToMove;
         this._move = props.move;
@@ -168,6 +168,7 @@ export class ChildPositionNode extends PositionNode implements Position {
     }
 
     commitOvertimeRemoval(removeFrom: LogicalPoint): void {
+        this._pieces.removeFrom(removeFrom);
         this._move.overtimeRemovals.push(removeFrom);
     }
 
