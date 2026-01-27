@@ -9,7 +9,6 @@ const RemovingChessPiece = ({ id }: { id: PieceID }) => {
 
     return (
         <ChessSquare
-            data-piece-id={id}
             data-testid="removingPiece"
             position={piece.position}
             className="z-10 bg-size-[length:100%] bg-no-repeat opacity-50

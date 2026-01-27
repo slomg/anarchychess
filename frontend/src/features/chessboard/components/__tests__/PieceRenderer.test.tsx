@@ -39,8 +39,7 @@ describe("PieceRenderer", () => {
             const element = renderedPieces.find(
                 (el) =>
                     el.getAttribute("data-position") ===
-                        pointToStr(piece.position) &&
-                    el.getAttribute("data-piece-id") == piece.id,
+                    pointToStr(piece.position),
             );
             expect(element).toBeInTheDocument();
         });
@@ -92,8 +91,7 @@ describe("PieceRenderer", () => {
             const element = renderedRemovingPieces.find(
                 (el) =>
                     el.getAttribute("data-position") ===
-                        pointToStr(piece.position) &&
-                    el.getAttribute("data-piece-id") == piece.id,
+                    pointToStr(piece.position),
             );
             expect(element).toBeInTheDocument();
         });

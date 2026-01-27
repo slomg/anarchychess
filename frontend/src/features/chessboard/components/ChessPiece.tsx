@@ -126,7 +126,6 @@ const ChessPiece = ({ id }: { id: PieceID }) => {
     return (
         <>
             <ChessSquare
-                data-piece-id={id}
                 data-testid="piece"
                 position={piecePosition}
                 className={clsx(
