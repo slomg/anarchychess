@@ -31,6 +31,12 @@ public interface IGameNotifier
         GameToken gameToken,
         GameNotifierState state
     );
+    Task NotifyNextOvertimeAsync(
+        UserId userId,
+        int plyNumber,
+        AlgebraicPoint removeFrom,
+        GameToken gameToken
+    );
 }
 
 public record MoveNotification(
@@ -80,6 +86,18 @@ public class GameNotifier(IHubContext<GameHub, IGameHubClient> hub) : IGameNotif
                 encodedLegalMoves: notification.EncodedLegalMoves,
                 clock: notification.Clocks
             );
+    }
+
+    public async Task NotifyNextOvertimeAsync(
+        UserId userId,
+        int plyNumber,
+        AlgebraicPoint removeFrom,
+        GameToken gameToken
+    )
+    {
+        await _hub
+            .Clients.Group(UserGameGroup(gameToken, userId))
+            .ReceiveNextOvertimeAsync(plyNumber, removeFrom);
     }
 
     public async Task NotifyOvertimeAsync(

@@ -85,55 +85,77 @@ public class ClockHandler(
             return _resultDescriber.Aborted(by: playerColor);
         }
 
+        var player = game.Players.GetPlayerByColor(playerColor);
         if (!_overtime.HasEnteredOvertime(playerColor, game.OvertimeState))
         {
-            _overtime.StartOvertimeTurn(playerColor, game.OvertimeState);
+            await StartOvertimeAsync(player, gameToken, game);
             return null;
         }
 
-        var result = await TryRemoveNextAsync(
-            playerColor: playerColor,
-            sideToMove: sideToMove,
-            gameToken,
-            game
-        );
+        var result = await TryRemoveNextAsync(player, sideToMove: sideToMove, gameToken, game);
         return result;
     }
 
+    private async Task StartOvertimeAsync(GamePlayer player, GameToken gameToken, GameData game)
+    {
+        var board = _core.GetReadOnlyBoard(game.Core);
+        var nextRemoval = _overtime.StartOvertimeTurn(player.Color, board, game.OvertimeState);
+        if (nextRemoval is not null)
+        {
+            await _notifier.NotifyNextOvertimeAsync(
+                player.UserId,
+                plyNumber: game.MoveHistory.Moves.Count,
+                removeFrom: nextRemoval.Value,
+                gameToken: gameToken
+            );
+        }
+    }
+
     private async Task<GameEndStatus?> TryRemoveNextAsync(
-        GameColor playerColor,
+        GamePlayer player,
         GameColor sideToMove,
         GameToken gameToken,
         GameData game
     )
     {
-        if (playerColor != sideToMove)
+        if (player.Color != sideToMove)
         {
             return null;
         }
 
         var board = _core.GetReadOnlyBoard(game.Core);
         var (removalResult, isGameOver) = _overtime.GetNextRemoval(
-            playerColor,
+            player.Color,
             board,
             game.OvertimeState
         );
-        if (removalResult is not null)
+        var endStatus = isGameOver ? _resultDescriber.Overtime(player.Color) : null;
+        if (removalResult is null)
         {
-            await _notifier.NotifyOvertimeAsync(
-                plyNumber: game.MoveHistory.Moves.Count,
-                removalResult.RemoveFrom,
-                removalResult.EncodedLegalMoves,
-                gameToken,
-                game.NotifierState
-            );
-            _core.RemovePiece(removalResult.RemoveFrom, removalResult.NewLegalMoves, game.Core);
-            game.MoveHistory.CommitOvertimeRemoval(
-                removalResult.RemoveFrom,
-                boardWidth: board.Width
-            );
+            return endStatus;
         }
 
-        return isGameOver ? _resultDescriber.Overtime(playerColor) : null;
+        int plyNumber = game.MoveHistory.Moves.Count;
+
+        await _notifier.NotifyOvertimeAsync(
+            plyNumber,
+            removalResult.RemoveFrom,
+            removalResult.EncodedLegalMoves,
+            gameToken,
+            game.NotifierState
+        );
+        game.MoveHistory.CommitOvertimeRemoval(removalResult.RemoveFrom, boardWidth: board.Width);
+        _core.RemovePiece(removalResult.RemoveFrom, removalResult.NewLegalMoves, game.Core);
+
+        if (removalResult.NextRemoval is not null)
+        {
+            await _notifier.NotifyNextOvertimeAsync(
+                player.UserId,
+                plyNumber,
+                removeFrom: removalResult.NextRemoval.Value,
+                gameToken: gameToken
+            );
+        }
+        return endStatus;
     }
 }

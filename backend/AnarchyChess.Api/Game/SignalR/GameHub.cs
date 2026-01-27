@@ -23,6 +23,7 @@ public interface IGameHubClient : IAnarchyChessHubClient
         ClockSnapshot clock
     );
 
+    Task ReceiveNextOvertimeAsync(int plyNumber, AlgebraicPoint removeFrom);
     Task ReceiveOvertimeAsync(
         int plyNumber,
         AlgebraicPoint removeFrom,

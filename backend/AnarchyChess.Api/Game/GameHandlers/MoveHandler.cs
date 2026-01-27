@@ -84,7 +84,7 @@ public class MoveHandler(
 
         await HandleDrawForMoveAsync(moveBy: currentPlayer.Color, gameToken, game);
         _overtime.TryEndOvertimeTurn(currentPlayer.Color, game.OvertimeState);
-        StartNextOvertimeTurn(sideToMove: nextPlayer.Color, game);
+        await StartNextOvertimeTurnAsync(sideToMove: nextPlayer, gameToken, game);
         return moveResult.EndStatus;
     }
 
@@ -114,12 +114,27 @@ public class MoveHandler(
         }
     }
 
-    private void StartNextOvertimeTurn(GameColor sideToMove, GameData game)
+    private async Task StartNextOvertimeTurnAsync(
+        GamePlayer sideToMove,
+        GameToken gameToken,
+        GameData game
+    )
     {
-        if (!_clock.IsTimeout(sideToMove, isTicking: true, game.ClockState))
+        if (!_clock.IsTimeout(sideToMove.Color, isTicking: true, game.ClockState))
         {
             return;
         }
-        _overtime.StartOvertimeTurn(sideToMove, game.OvertimeState);
+
+        var board = _core.GetReadOnlyBoard(game.Core);
+        var nextRemoval = _overtime.StartOvertimeTurn(sideToMove.Color, board, game.OvertimeState);
+        if (nextRemoval is not null)
+        {
+            await _notifier.NotifyNextOvertimeAsync(
+                sideToMove.UserId,
+                plyNumber: game.MoveHistory.Moves.Count,
+                removeFrom: nextRemoval.Value,
+                gameToken: gameToken
+            );
+        }
     }
 }

@@ -48,15 +48,19 @@ public class OvertimeTests
             .Returns(new LegalMoveSetFaker().Generate());
     }
 
-    private void MockRandom(AlgebraicPoint point, ChessBoard board)
+    private void MockRandom(ChessBoard board, params AlgebraicPoint[] points)
     {
-        var piece = board.PeekPieceAt(point)!;
+        (AlgebraicPoint, Piece)[] results =
+        [
+            .. points.Select(point => (point, board.PeekPieceAt(point)!)),
+        ];
+
         _randomMock
             .NextItemWeighted(
                 Arg.Any<IEnumerable<(AlgebraicPoint Position, Piece Occupant)>>(),
                 Arg.Any<Func<(AlgebraicPoint Position, Piece Occupant), int>>()
             )
-            .Returns((point, piece));
+            .Returns(results[0], results[1..]);
     }
 
     [Fact]
@@ -64,7 +68,7 @@ public class OvertimeTests
     {
         ChessBoard board = new();
         board.PlacePiece(new("e8"), PieceFactory.Black(PieceType.King));
-        _overtime.StartOvertimeTurn(GameColor.White, _state);
+        _overtime.StartOvertimeTurn(GameColor.White, board, _state);
 
         var (removalResult, isGameOver) = _overtime.GetNextRemoval(GameColor.White, board, _state);
 
@@ -81,8 +85,6 @@ public class OvertimeTests
         board.PlacePiece(new("e3"), PieceFactory.White(PieceType.King));
         board.PlacePiece(new("e8"), PieceFactory.Black(PieceType.King));
 
-        MockRandom(new AlgebraicPoint("a2"), board);
-
         ChessBoard expectedBoard = new(board);
         expectedBoard.RemovePiece(new("a2"));
 
@@ -91,9 +93,14 @@ public class OvertimeTests
 
         _playableMoveProviderMock.CalculateAllPlayableMoves(expectedBoard).Returns(legalMoves);
         _moveEncoderMock.EncodeMoves(legalMoves.MovePaths).Returns(encoded);
-        _overtime.StartOvertimeTurn(GameColor.White, _state);
-        _state.PlayerRemainder[GameColor.White] = TimeSpan.FromSeconds(5);
-        _state.PlayerRemainder[GameColor.Black] = TimeSpan.FromSeconds(6);
+        _overtime.StartOvertimeTurn(GameColor.White, board, _state);
+        _state.PlayerOvertime[GameColor.White].Remainder = TimeSpan.FromSeconds(5);
+        _state.PlayerOvertime[GameColor.White].PickedNextRemoval = null;
+        _state.PlayerOvertime[GameColor.Black] = new PlayerOvertime
+        {
+            Remainder = TimeSpan.FromSeconds(6),
+        };
+        MockRandom(board, new("a2"), new("a1"));
 
         var (removalResult, isGameOver) = _overtime.GetNextRemoval(GameColor.White, board, _state);
 
@@ -102,13 +109,38 @@ public class OvertimeTests
             .BeEquivalentTo(
                 new OvertimeRemovalResult(
                     RemoveFrom: new("a2"),
+                    NextRemoval: new("a1"),
                     NewLegalMoves: legalMoves,
                     EncodedLegalMoves: encoded
                 )
             );
         isGameOver.Should().BeFalse();
-        _state.PlayerRemainder[GameColor.White].Should().Be(TimeSpan.Zero);
-        _state.PlayerRemainder[GameColor.Black].Should().Be(TimeSpan.FromSeconds(6));
+        _state.PlayerOvertime[GameColor.White].Remainder.Should().Be(TimeSpan.Zero);
+        _state.PlayerOvertime[GameColor.Black].Remainder.Should().Be(TimeSpan.FromSeconds(6));
+    }
+
+    [Fact]
+    public void GetNextRemoval_uses_existing_picked_piece_if_still_on_board()
+    {
+        ChessBoard board = new();
+        AlgebraicPoint pickedPoint = new("a1");
+        AlgebraicPoint nextPoint = new("e3");
+        board.PlacePiece(new("a1"), PieceFactory.White(PieceType.Rook));
+        board.PlacePiece(new("a2"), PieceFactory.White(PieceType.Queen));
+        board.PlacePiece(new("e3"), PieceFactory.White(PieceType.King));
+        board.PlacePiece(new("e8"), PieceFactory.Black(PieceType.King));
+        _state.PlayerOvertime[GameColor.White] = new PlayerOvertime
+        {
+            PickedNextRemoval = pickedPoint,
+        };
+        MockRandom(board, nextPoint);
+        _overtime.StartOvertimeTurn(GameColor.White, board, _state);
+
+        var (removalResult, _) = _overtime.GetNextRemoval(GameColor.White, board, _state);
+
+        removalResult.Should().NotBeNull();
+        removalResult.RemoveFrom.Should().Be(pickedPoint);
+        removalResult.NextRemoval.Should().Be(nextPoint);
     }
 
     [Fact]
@@ -118,8 +150,9 @@ public class OvertimeTests
         board.PlacePiece(new("e1"), PieceFactory.White(PieceType.King));
         board.PlacePiece(new("a1"), PieceFactory.White(PieceType.King));
         board.PlacePiece(new("e8"), PieceFactory.Black(PieceType.King));
-        MockRandom(new AlgebraicPoint("a1"), board);
-        _overtime.StartOvertimeTurn(GameColor.White, _state);
+
+        MockRandom(board, new AlgebraicPoint("a1"));
+        _overtime.StartOvertimeTurn(GameColor.White, board, _state);
 
         var (_, isGameOver) = _overtime.GetNextRemoval(GameColor.White, board, _state);
 
@@ -132,8 +165,9 @@ public class OvertimeTests
         ChessBoard board = new();
         board.PlacePiece(new("e1"), PieceFactory.White(PieceType.King));
         board.PlacePiece(new("e8"), PieceFactory.Black(PieceType.King));
-        MockRandom(new AlgebraicPoint("e1"), board);
-        _overtime.StartOvertimeTurn(GameColor.White, _state);
+
+        MockRandom(board, new AlgebraicPoint("e1"));
+        _overtime.StartOvertimeTurn(GameColor.White, board, _state);
 
         var (_, isGameOver) = _overtime.GetNextRemoval(GameColor.White, board, _state);
 
@@ -152,8 +186,9 @@ public class OvertimeTests
         board.PlacePiece(new("a2"), queen);
         board.PlacePiece(new("e3"), king);
         board.PlacePiece(new("e8"), blackKing);
-        MockRandom(new AlgebraicPoint("a2"), board);
-        _overtime.StartOvertimeTurn(GameColor.White, _state);
+
+        MockRandom(board, new AlgebraicPoint("a2"));
+        _overtime.StartOvertimeTurn(GameColor.White, board, _state);
 
         _overtime.GetNextRemoval(GameColor.White, board, _state);
 
@@ -197,7 +232,7 @@ public class OvertimeTests
                 )
             )
             .Returns((new AlgebraicPoint("a2"), piece));
-        _overtime.StartOvertimeTurn(GameColor.White, _state);
+        _overtime.StartOvertimeTurn(GameColor.White, board, _state);
 
         _overtime.GetNextRemoval(GameColor.White, board, _state);
 
@@ -208,10 +243,63 @@ public class OvertimeTests
     [Fact]
     public void StartOvertimeTurn_sets_last_move_timestamp_and_marks_player()
     {
-        _overtime.StartOvertimeTurn(GameColor.White, _state);
+        _overtime.StartOvertimeTurn(GameColor.White, new ChessBoard(), _state);
 
-        _state.PlayersEnteredOvertime.Should().Contain(GameColor.White);
+        _state.PlayerOvertime.Should().ContainKey(GameColor.White);
         _state.LastMoveAtTimestamp.Should().Be(_fakeNow.ToUnixTimeMilliseconds());
+    }
+
+    [Fact]
+    public void StartOvertimeTurn_picks_next_removal_if_none_picked()
+    {
+        ChessBoard board = new();
+        AlgebraicPoint point = new("a1");
+        board.PlacePiece(point, PieceFactory.White(PieceType.Rook));
+        MockRandom(board, point);
+
+        var result = _overtime.StartOvertimeTurn(GameColor.White, board, _state);
+
+        result.Should().Be(point);
+        _state.PlayerOvertime[GameColor.White].PickedNextRemoval.Should().Be(point);
+        board.IsEmpty(point).Should().BeFalse();
+    }
+
+    [Fact]
+    public void StartOvertimeTurn_keeps_existing_picked_piece_if_still_on_board()
+    {
+        ChessBoard board = new();
+        AlgebraicPoint pickedPoint = new("a1");
+        AlgebraicPoint newPoint = new("a2");
+        board.PlacePiece(pickedPoint, PieceFactory.White(PieceType.Rook));
+        board.PlacePiece(newPoint, PieceFactory.White(PieceType.Queen));
+        _state.PlayerOvertime[GameColor.White] = new PlayerOvertime
+        {
+            PickedNextRemoval = pickedPoint,
+        };
+        MockRandom(board, newPoint);
+
+        var result = _overtime.StartOvertimeTurn(GameColor.White, board, _state);
+
+        result.Should().Be(pickedPoint);
+        _state.PlayerOvertime[GameColor.White].PickedNextRemoval.Should().Be(pickedPoint);
+    }
+
+    [Fact]
+    public void StartOvertimeTurn_picks_new_piece_if_existing_not_on_board()
+    {
+        ChessBoard board = new();
+        AlgebraicPoint point = new("a2");
+        board.PlacePiece(point, PieceFactory.White(PieceType.Rook));
+        _state.PlayerOvertime[GameColor.White] = new PlayerOvertime
+        {
+            PickedNextRemoval = new AlgebraicPoint("a1"),
+        };
+        MockRandom(board, point);
+
+        var result = _overtime.StartOvertimeTurn(GameColor.White, board, _state);
+
+        result.Should().Be(point);
+        _state.PlayerOvertime[GameColor.White].PickedNextRemoval.Should().Be(point);
     }
 
     [Fact]
@@ -219,13 +307,13 @@ public class OvertimeTests
     {
         _overtime.TryEndOvertimeTurn(GameColor.White, _state);
 
-        _state.PlayerRemainder.Should().BeEmpty();
+        _state.PlayerOvertime.Should().BeEmpty();
     }
 
     [Fact]
     public void TryEndOvertimeTurn_sets_remainder_for_player()
     {
-        _overtime.StartOvertimeTurn(GameColor.White, _state);
+        _overtime.StartOvertimeTurn(GameColor.White, new ChessBoard(), _state);
 
         double addMs = _settings.OvertimeRemovalInterval.TotalMilliseconds * 5 + 750;
         _timeProviderMock.GetUtcNow().Returns(_fakeNow.AddMilliseconds(addMs));
@@ -236,14 +324,48 @@ public class OvertimeTests
             addMs % _settings.OvertimeRemovalInterval.TotalMilliseconds
         );
 
-        _state.PlayerRemainder[GameColor.White].Should().Be(expected);
-        _state.PlayerRemainder.Should().NotContainKey(GameColor.Black);
+        _state.PlayerOvertime[GameColor.White].Remainder.Should().Be(expected);
+        _state.PlayerOvertime.Should().NotContainKey(GameColor.Black);
+    }
+
+    [Fact]
+    public void TryEndOvertimeTurn_increments_remainder()
+    {
+        _overtime.StartOvertimeTurn(GameColor.White, new ChessBoard(), _state);
+        _state.PlayerOvertime[GameColor.White].Remainder = TimeSpan.FromMilliseconds(500);
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow.AddMilliseconds(750));
+
+        _overtime.TryEndOvertimeTurn(GameColor.White, _state);
+
+        var expected = TimeSpan.FromMilliseconds(
+            500 + 750 % _settings.OvertimeRemovalInterval.TotalMilliseconds
+        );
+        _state.PlayerOvertime[GameColor.White].Remainder.Should().Be(expected);
+    }
+
+    [Fact]
+    public void TryEndOvertimeTurn_does_not_overflow_remainder()
+    {
+        _overtime.StartOvertimeTurn(GameColor.White, new ChessBoard(), _state);
+        _state.PlayerOvertime[GameColor.White].Remainder =
+            _settings.OvertimeRemovalInterval - TimeSpan.FromMilliseconds(200);
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow.AddMilliseconds(500));
+
+        _overtime.TryEndOvertimeTurn(GameColor.White, _state);
+
+        _state
+            .PlayerOvertime[GameColor.White]
+            .Remainder.Should()
+            .Be(_settings.OvertimeRemovalInterval);
     }
 
     [Fact]
     public void GetTimeUntilNextRemoval_returns_full_interval_if_no_remainder()
     {
-        _state.PlayerRemainder[GameColor.Black] = TimeSpan.FromMilliseconds(4);
+        _state.PlayerOvertime[GameColor.Black] = new PlayerOvertime
+        {
+            Remainder = TimeSpan.FromMilliseconds(4),
+        };
 
         var result = _overtime.GetTimeUntilNextRemoval(GameColor.White, _state);
 
@@ -253,8 +375,14 @@ public class OvertimeTests
     [Fact]
     public void GetTimeUntilNextRemoval_accounts_for_remainder()
     {
-        _state.PlayerRemainder[GameColor.White] = TimeSpan.FromMilliseconds(400);
-        _state.PlayerRemainder[GameColor.Black] = TimeSpan.FromMilliseconds(100);
+        _state.PlayerOvertime[GameColor.White] = new PlayerOvertime
+        {
+            Remainder = TimeSpan.FromMilliseconds(400),
+        };
+        _state.PlayerOvertime[GameColor.Black] = new PlayerOvertime
+        {
+            Remainder = TimeSpan.FromMilliseconds(100),
+        };
 
         var result = _overtime.GetTimeUntilNextRemoval(GameColor.White, _state);
 
@@ -264,7 +392,7 @@ public class OvertimeTests
     [Fact]
     public void HasEnteredOvertime_returns_false_if_player_not_present()
     {
-        _state.PlayersEnteredOvertime.Add(GameColor.Black);
+        _state.PlayerOvertime[GameColor.Black] = new PlayerOvertime();
 
         bool result = _overtime.HasEnteredOvertime(GameColor.White, _state);
 
@@ -274,7 +402,7 @@ public class OvertimeTests
     [Fact]
     public void HasEnteredOvertime_returns_true_if_player_started_overtime()
     {
-        _state.PlayersEnteredOvertime.Add(GameColor.Black);
+        _state.PlayerOvertime[GameColor.Black] = new PlayerOvertime();
 
         bool result = _overtime.HasEnteredOvertime(GameColor.Black, _state);
 

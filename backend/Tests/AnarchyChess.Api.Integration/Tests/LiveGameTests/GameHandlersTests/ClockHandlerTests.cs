@@ -123,6 +123,38 @@ public class ClockHandlerTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task OnClockTickAsync_starts_overtime_when_necessary()
+    {
+        ChessBoard board = new();
+        board.PlacePiece(new("a1"), PieceFactory.White(PieceType.King));
+        board.PlacePiece(new("b1"), PieceFactory.White(PieceType.King));
+        board.PlacePiece(new("h8"), PieceFactory.Black(PieceType.King));
+        var gameData = GameUtils.CreateGameData(_core, _clock, board: board);
+
+        GetOutOfGracePeriod(gameData);
+        _timeProviderMock
+            .GetUtcNow()
+            .Returns(_fakeNow.AddSeconds(gameData.Pool.TimeControl.BaseSeconds));
+        _overtime.HasEnteredOvertime(GameColor.White, gameData.OvertimeState).Should().BeFalse();
+
+        var (rescheduleTo, endResult) = await _handler.OnClockTickAsync(_gameToken, gameData);
+
+        rescheduleTo.Should().Be(_settings.OvertimeRemovalInterval);
+        endResult.Should().BeNull();
+        _overtime.HasEnteredOvertime(GameColor.White, gameData.OvertimeState).Should().BeTrue();
+        await _notifierMock
+            .Received(1)
+            .NotifyNextOvertimeAsync(
+                gameData.Players.WhitePlayer.UserId,
+                plyNumber: gameData.MoveHistory.Moves.Count,
+                removeFrom: Arg.Is<AlgebraicPoint>(p =>
+                    p == new AlgebraicPoint("a1") || p == new AlgebraicPoint("b1")
+                ),
+                gameToken: _gameToken
+            );
+    }
+
+    [Fact]
     public async Task OnClockTickAsync_tracks_overtime_removals()
     {
         ChessBoard board = new();

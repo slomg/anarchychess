@@ -91,10 +91,23 @@ public class GameNotifierTests
     }
 
     [Fact]
+    public async Task NotifyNextOvertimeAsync_sends_ply_and_point_to_player()
+    {
+        int plyNumber = 516;
+        AlgebraicPoint removeFrom = new("g6");
+
+        await _notifier.NotifyNextOvertimeAsync(_userId, plyNumber, removeFrom, _gameToken);
+
+        await _clientUserGameGroupProxyMock
+            .Received(1)
+            .ReceiveNextOvertimeAsync(plyNumber, removeFrom);
+    }
+
+    [Fact]
     public async Task NotifyOvertimeAsync_sends_positions_and_increments_revision()
     {
         GameNotifierState state = new() { Revision = 0 };
-        AlgebraicPoint removedFrom = new("a1");
+        AlgebraicPoint removedFrom = new("e6");
         CompressedMoves encodedLegalMoves = "encoded1";
         int plyNumber = 123;
 
