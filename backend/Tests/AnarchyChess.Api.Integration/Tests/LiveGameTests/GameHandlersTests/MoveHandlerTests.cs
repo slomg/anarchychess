@@ -242,9 +242,10 @@ public class MoveHandlerTests : BaseIntegrationTest
         var timeoutTime = _fakeNow + TimeSpan.FromSeconds(gameData.Pool.TimeControl.BaseSeconds);
         _timeProviderMock.GetUtcNow().Returns(timeoutTime);
 
+        var whiteMove = GameUtils.GetLegalMove(_core, gameData);
         await _handler.HandleMoveAsync(
             gameData.Players.WhitePlayer.UserId,
-            new MoveKey(GameUtils.GetLegalMove(_core, gameData)),
+            new MoveKey(whiteMove),
             _gameToken,
             gameData,
             CT
@@ -270,7 +271,9 @@ public class MoveHandlerTests : BaseIntegrationTest
                 gameData.Players.WhitePlayer.UserId,
                 plyNumber: gameData.MoveHistory.Moves.Count,
                 removeFrom: Arg.Is<AlgebraicPoint>(p =>
-                    p == new AlgebraicPoint("a1") || p == new AlgebraicPoint("b1")
+                    p == new AlgebraicPoint("a1")
+                    || p == new AlgebraicPoint("b1")
+                    || p == whiteMove.To
                 ),
                 gameToken: _gameToken
             );
@@ -319,7 +322,7 @@ public class MoveHandlerTests : BaseIntegrationTest
 
         _gameData
             .OvertimeState.PlayerOvertime[GameColor.White]
-            .Should()
+            .Remainder.Should()
             .Be(_settings.OvertimeRemovalInterval / 2);
     }
 }
