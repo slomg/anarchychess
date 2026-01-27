@@ -1,4 +1,5 @@
 import { StoreApi, useStore } from "zustand";
+import { useRef } from "react";
 
 import { ChessboardStore } from "@/features/chessboard/stores/chessboardStore";
 import { decodeMovePath, decodeLegalMoves } from "../lib/moveDecoder";
@@ -8,6 +9,7 @@ import LegalMoves from "@/features/chessboard/lib/legalMoves";
 import { LiveChessStore } from "../stores/liveChessStore";
 import { refetchGame } from "../lib/gameStateProcessor";
 import { Clocks, MoveSnapshot } from "@/lib/apiClient";
+import { LogicalPoint } from "@/features/point/types";
 import { useGameEvent } from "./useGameHub";
 
 export default function useLiveChessEvents(
@@ -16,6 +18,13 @@ export default function useLiveChessEvents(
 ) {
     const boardDimensions = useStore(chessboardStore, (x) => x.boardDimensions);
     const gameToken = useStore(liveChessStore, (x) => x.gameToken);
+
+    const queuedOvertimeRef = useRef<
+        Map<
+            number,
+            { overtimeRemovals: LogicalPoint[]; legalMoves: LegalMoves }
+        >
+    >(new Map());
 
     async function handleMoveUpdate({
         move,
@@ -46,6 +55,15 @@ export default function useLiveChessEvents(
         const decodedMove = decodeMovePath(move.path, boardDimensions.width);
         if (!isPendingMoveAck) {
             await applyMoveAnimated(decodedMove);
+        }
+
+        const queuedOvertime = queuedOvertimeRef.current.get(plyNumber);
+        if (queuedOvertime) {
+            legalMoves = queuedOvertime.legalMoves;
+            decodedMove.overtimeRemovals.push(
+                ...queuedOvertime.overtimeRemovals,
+            );
+            queuedOvertimeRef.current.delete(plyNumber);
         }
 
         const pieces = chessboardStore.getState().pieces;
@@ -112,6 +130,54 @@ export default function useLiveChessEvents(
 
     useGameEvent(gameToken, "DrawStateChangeAsync", (drawState) =>
         liveChessStore.getState().drawStateChange(drawState),
+    );
+
+    useGameEvent(
+        gameToken,
+        "ReceiveOvertimeAsync",
+        (plyNumber, removedFrom, encodedLegalMoves) => {
+            const { removePieceAt, addLegalMovesForPosition, positionHistory } =
+                chessboardStore.getState();
+
+            const legalMoves = decodeLegalMoves({
+                encoded: encodedLegalMoves,
+                boardWidth: boardDimensions.width,
+            });
+
+            const plyDiff = plyNumber - positionHistory.mainPlyCount;
+            if (plyDiff > 1) {
+                console.warn(
+                    `Received overtime for ply ${plyNumber}, which is ahead of current main ply ${positionHistory.mainPlyCount} by more than 1`,
+                );
+                refetchGame(liveChessStore, chessboardStore);
+                return;
+            } else if (plyDiff === 1) {
+                const queue = queuedOvertimeRef.current.get(plyNumber) ?? {
+                    overtimeRemovals: [],
+                    legalMoves,
+                };
+
+                queue.legalMoves = legalMoves;
+                queue.overtimeRemovals.push(removedFrom);
+                queuedOvertimeRef.current.set(plyNumber, queue);
+                return;
+            }
+
+            const position = positionHistory.getPositionWithPly(plyNumber);
+            if (!position) {
+                return;
+            }
+
+            addLegalMovesForPosition(legalMoves, position.positionId);
+            position.commitOvertimeRemoval(removedFrom);
+
+            if (
+                position.positionId ===
+                positionHistory.viewingPosition?.positionId
+            ) {
+                removePieceAt(removedFrom);
+            }
+        },
     );
 
     useGameEvent(gameToken, "GameEndedAsync", async (result, finalClocks) => {
