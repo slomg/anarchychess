@@ -4,6 +4,7 @@ import {
     createFakeBoardPieces,
     createFakeMove,
     createFakePiece,
+    createRandomPoint,
 } from "@/lib/testUtils/fakers/chessboardFakers";
 import {
     ForcedMovePriority,
@@ -590,7 +591,7 @@ describe("PiecesSlice", () => {
     });
 
     describe("updatePieces", () => {
-        it("should animate the pieces with minimal animation", () => {
+        it("should animate the pieces with minimal animation", async () => {
             const piece = createFakePiece({
                 position: logicalPoint({ x: 0, y: 0 }),
             });
@@ -605,12 +606,26 @@ describe("PiecesSlice", () => {
                 ...piece,
                 position: newPos,
             });
-            store.getState().updatePieces(newPieces);
+            await store.getState().updatePieces(newPieces);
 
             expect(playAnimationMock).toHaveBeenCalledExactlyOnceWith({
                 newPieces,
                 movedPieceIds: [piece.id],
             });
+        });
+
+        it("should clear prompts", async () => {
+            const { updatePieces, promptPromotion } = store.getState();
+            const promptPromise = promptPromotion({
+                at: createRandomPoint(),
+                pieces: [PieceType.ANTIQUEEN],
+                piece: createFakePiece(),
+            });
+
+            await updatePieces(createFakeBoardPieces());
+
+            const promptResult = await promptPromise;
+            expect(promptResult).toBeNull();
         });
     });
 });

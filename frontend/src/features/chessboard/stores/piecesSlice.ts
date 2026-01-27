@@ -6,11 +6,11 @@ import {
 } from "../lib/simulateMove";
 
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
-import { pointEquals } from "@/features/point/pointUtils";
+import { pointEquals, pointToStr } from "@/features/point/pointUtils";
 import type { ChessboardStore } from "./chessboardStore";
 import { LogicalPoint } from "@/features/point/types";
 import { ScreenPoint } from "@/features/point/types";
-import { MoveBounds, PieceID } from "../lib/types";
+import { MoveAnimation, MoveBounds, PieceID } from "../lib/types";
 import BoardPieces from "../lib/boardPieces";
 import { Position } from "../lib/position";
 import EventBus from "@/lib/eventBus";
@@ -32,13 +32,14 @@ export interface PiecesSlice {
     selectPiece(pieceId: PieceID): boolean;
     unselectPiece(): void;
 
+    applyMoveAnimated(move: Move): Promise<void>;
+    applyMoveImmediate(move: Move): Promise<void>;
+
     handleMousePieceDrop(args: {
         mousePoint: ScreenPoint;
         isDrag: boolean;
         isDoubleClick: boolean;
     }): Promise<{ success: boolean; needsDoubleClick?: boolean }>;
-    applyMoveAnimated(move: Move): Promise<void>;
-    applyMoveImmediate(move: Move): Promise<void>;
 
     updatePiecesFromPosition(position: Position): Promise<void>;
     updatePieces(newPieces: BoardPieces): Promise<void>;
@@ -112,6 +113,16 @@ export function createPiecesSlice(
             return movedPieceIds;
         }
 
+        function commitPositionChange(newPieces: BoardPieces) {
+            const { discardAllPrompts } = get();
+
+            discardAllPrompts();
+            set((state) => {
+                state.pieces = newPieces;
+                state.selectedPieceId = null;
+            });
+        }
+
         return {
             ...initState,
 
@@ -124,7 +135,7 @@ export function createPiecesSlice(
             pieceMovementEvent: new EventBus(),
 
             selectPiece(pieceId) {
-                const {  pieces, selectedPieceId } = get();
+                const { pieces, selectedPieceId } = get();
                 const piece = pieces.getById(pieceId);
                 if (!piece) {
                     console.warn(
@@ -140,33 +151,32 @@ export function createPiecesSlice(
                 return true;
             },
             unselectPiece() {
-
                 set((state) => {
                     state.selectedPieceId = null;
                 });
             },
 
-            async applyMoveImmediate(move: Move): Promise<void> {
+            async applyMoveImmediate(move) {
                 const { playAnimation, pieces } = get();
                 const animation = simulateMove(pieces, move);
 
-                set((state) => {
-                    state.pieces = animation.newPieces;
-                });
+                commitPositionChange(animation.newPieces);
                 await playAnimation(animation);
             },
 
-            async applyMoveAnimated(move: Move): Promise<void> {
+            async applyMoveAnimated(move) {
                 const { playAnimationBatch, pieces } = get();
 
                 const positions = simulateMoveWithIntermediates(pieces, move);
                 const lastPosition = positions.steps.at(-1);
                 if (!lastPosition) return;
 
-                set((state) => {
-                    state.pieces = lastPosition.newPieces;
-                });
+                commitPositionChange(lastPosition.newPieces);
                 await playAnimationBatch(positions);
+            },
+
+                set((state) => {
+                });
             },
 
             async handleMousePieceDrop({ mousePoint, isDrag, isDoubleClick }) {
@@ -217,9 +227,7 @@ export function createPiecesSlice(
             setImmediatePieces(pieces) {
                 const { resetLastMove } = get();
                 resetLastMove();
-                set((state) => {
-                    state.pieces = pieces;
-                });
+                commitPositionChange(pieces);
             },
 
             async updatePiecesFromPosition(position) {
@@ -230,11 +238,6 @@ export function createPiecesSlice(
                     position.pieces,
                 );
 
-                set((state) => {
-                    state.pieces = position.pieces;
-                    state.selectedPieceId = null;
-                });
-
                 const moveBounds: MoveBounds = {
                     from: position.move.from,
                     to: position.move.to,
@@ -242,6 +245,7 @@ export function createPiecesSlice(
                 const isCapture = position.move.captures.length > 0;
                 const isPromotion = position.move.promotesTo !== null;
 
+                commitPositionChange(position.pieces);
                 await playAnimation({
                     newPieces: position.pieces,
                     movedPieceIds,
@@ -256,10 +260,7 @@ export function createPiecesSlice(
                 const { pieces, playAnimation } = get();
 
                 const movedPieceIds = findMovedPiecesBetween(pieces, newPieces);
-                set((state) => {
-                    state.pieces = newPieces;
-                    state.selectedPieceId = null;
-                });
+                commitPositionChange(newPieces);
                 await playAnimation({ newPieces, movedPieceIds });
             },
 
