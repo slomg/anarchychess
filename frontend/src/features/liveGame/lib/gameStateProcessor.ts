@@ -49,7 +49,6 @@ export function createStoreProps(
         userId: viewerUserId,
         playerColor: viewerColor,
     };
-    console.log(gameState.moveHistory);
 
     const live: LiveChessStoreProps = {
         gameToken,
