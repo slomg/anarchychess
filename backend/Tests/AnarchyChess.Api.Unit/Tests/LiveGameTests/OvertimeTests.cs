@@ -401,13 +401,13 @@ public class OvertimeTests
     {
         _overtime.StartOvertimeTurn(GameColor.White, new ChessBoard(), _state);
 
-        double addMs = _settings.OvertimeRemovalInterval.TotalMilliseconds * 5 + 750;
+        double addMs = _settings.InitialOvertimeRemovalInterval.TotalMilliseconds * 5 + 750;
         _timeProviderMock.GetUtcNow().Returns(_fakeNow.AddMilliseconds(addMs));
 
         _overtime.TryEndOvertimeTurn(GameColor.White, _state);
 
         var expected = TimeSpan.FromMilliseconds(
-            addMs % _settings.OvertimeRemovalInterval.TotalMilliseconds
+            addMs % _settings.InitialOvertimeRemovalInterval.TotalMilliseconds
         );
 
         _state.PlayerOvertime[GameColor.White].Remainder.Should().Be(expected);
@@ -424,7 +424,7 @@ public class OvertimeTests
         _overtime.TryEndOvertimeTurn(GameColor.White, _state);
 
         var expected = TimeSpan.FromMilliseconds(
-            500 + 750 % _settings.OvertimeRemovalInterval.TotalMilliseconds
+            500 + 750 % _settings.InitialOvertimeRemovalInterval.TotalMilliseconds
         );
         _state.PlayerOvertime[GameColor.White].Remainder.Should().Be(expected);
     }
@@ -434,7 +434,7 @@ public class OvertimeTests
     {
         _overtime.StartOvertimeTurn(GameColor.White, new ChessBoard(), _state);
         _state.PlayerOvertime[GameColor.White].Remainder =
-            _settings.OvertimeRemovalInterval - TimeSpan.FromMilliseconds(200);
+            _settings.InitialOvertimeRemovalInterval - TimeSpan.FromMilliseconds(200);
         _timeProviderMock.GetUtcNow().Returns(_fakeNow.AddMilliseconds(500));
 
         _overtime.TryEndOvertimeTurn(GameColor.White, _state);
@@ -442,7 +442,7 @@ public class OvertimeTests
         _state
             .PlayerOvertime[GameColor.White]
             .Remainder.Should()
-            .Be(_settings.OvertimeRemovalInterval);
+            .Be(_settings.InitialOvertimeRemovalInterval);
     }
 
     [Fact]
@@ -455,7 +455,7 @@ public class OvertimeTests
 
         var result = _overtime.GetTimeUntilNextRemoval(GameColor.White, _state);
 
-        result.Should().Be(_settings.OvertimeRemovalInterval);
+        result.Should().Be(_settings.InitialOvertimeRemovalInterval);
     }
 
     [Fact]
@@ -472,7 +472,9 @@ public class OvertimeTests
 
         var result = _overtime.GetTimeUntilNextRemoval(GameColor.White, _state);
 
-        result.Should().Be(_settings.OvertimeRemovalInterval - TimeSpan.FromMilliseconds(400));
+        result
+            .Should()
+            .Be(_settings.InitialOvertimeRemovalInterval - TimeSpan.FromMilliseconds(400));
     }
 
     [Fact]

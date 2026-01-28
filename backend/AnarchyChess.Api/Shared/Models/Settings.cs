@@ -84,7 +84,8 @@ public class LobbySettings
 public class GameSettings
 {
     public TimeSpan FirstMoveGracePeriod { get; set; }
-    public TimeSpan OvertimeRemovalInterval { get; set; }
+    public TimeSpan OvertimeInitialRemovalInterval { get; set; }
+    public TimeSpan OvertimeSaveIntervalReduction { get; set; }
 
     public int DefaultRating { get; set; }
     public int KFactor { get; set; }

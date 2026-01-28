@@ -120,11 +120,11 @@ public class Overtime(
         var nowMs = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
         var distanceFromLastMove = nowMs - state.LastMoveAtTimestamp;
         playerOvertime.Remainder += TimeSpan.FromMilliseconds(
-            distanceFromLastMove % _settings.OvertimeRemovalInterval.TotalMilliseconds
+            distanceFromLastMove % _settings.InitialOvertimeRemovalInterval.TotalMilliseconds
         );
-        if (playerOvertime.Remainder > _settings.OvertimeRemovalInterval)
+        if (playerOvertime.Remainder > _settings.InitialOvertimeRemovalInterval)
         {
-            playerOvertime.Remainder = _settings.OvertimeRemovalInterval;
+            playerOvertime.Remainder = _settings.InitialOvertimeRemovalInterval;
         }
     }
 
@@ -132,10 +132,10 @@ public class Overtime(
     {
         if (!state.PlayerOvertime.TryGetValue(playerColor, out var playerOvertime))
         {
-            return _settings.OvertimeRemovalInterval;
+            return _settings.InitialOvertimeRemovalInterval;
         }
 
-        return _settings.OvertimeRemovalInterval - playerOvertime.Remainder;
+        return _settings.InitialOvertimeRemovalInterval - playerOvertime.Remainder;
     }
 
     public bool HasEnteredOvertime(GameColor playerColor, OvertimeState state) =>
