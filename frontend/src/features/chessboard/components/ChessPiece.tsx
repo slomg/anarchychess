@@ -2,14 +2,13 @@ import { memo, useRef } from "react";
 import clsx from "clsx";
 
 import { useChessboardStore } from "@/features/chessboard/hooks/useChessboard";
-import { Point } from "@/features/point/types";
-import { PieceID } from "../lib/types";
-
-import ChessSquare from "./ChessSquare";
-import useBoardInteraction from "../hooks/useBoardInteraction";
-import getPieceImage from "../lib/pieceImage";
-import { ChessSquareRef } from "./CoordSquare";
 import DoubleClickIndicator, { DoubleClickRef } from "./DoubleClickIndicator";
+import useBoardInteraction from "../hooks/useBoardInteraction";
+import { Point } from "@/features/point/types";
+import { ChessSquareRef } from "./CoordSquare";
+import getPieceImage from "../lib/pieceImage";
+import ChessSquare from "./ChessSquare";
+import { PieceID } from "../lib/types";
 
 const DOUBLE_CLICK_MS = 250;
 
@@ -20,7 +19,6 @@ const ChessPiece = ({ id }: { id: PieceID }) => {
         pieceColor,
         isSelected,
         isAnimating,
-        isRemoving,
         disableDrag,
         screenPointToPiece,
         selectPiece,
@@ -33,7 +31,6 @@ const ChessPiece = ({ id }: { id: PieceID }) => {
             pieceColor: piece?.color,
             isSelected: x.selectedPieceId === id,
             isAnimating: x.animatingPieceIds.has(id),
-            isRemoving: x.removingPieceIds.has(id),
             disableDrag: x.disableDrag,
             screenPointToPiece: x.screenPointToPiece,
             selectPiece: x.selectPiece,
@@ -41,6 +38,7 @@ const ChessPiece = ({ id }: { id: PieceID }) => {
             handleMousePieceDrop: x.handleMousePieceDrop,
         };
     });
+
     const piecePosition = useChessboardStore(
         (x) =>
             (x.animatingPieces?.getById(id) ?? x.pieces.getById(id))?.position,
@@ -122,8 +120,9 @@ const ChessPiece = ({ id }: { id: PieceID }) => {
         piecePosition === undefined ||
         pieceType === undefined ||
         pieceColor === undefined
-    )
+    ) {
         return null;
+    }
     return (
         <>
             <ChessSquare
@@ -134,7 +133,6 @@ const ChessPiece = ({ id }: { id: PieceID }) => {
                     bg-no-repeat transition-colors select-none`,
                     isAnimating && "transition-transform duration-100 ease-out",
                     isDragging && "z-30",
-                    isRemoving && "opacity-50",
                 )}
                 ref={pieceRef}
                 style={{

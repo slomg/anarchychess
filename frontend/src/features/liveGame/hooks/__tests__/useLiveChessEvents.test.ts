@@ -30,6 +30,7 @@ import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessS
 import { createNFakePositionHistory } from "@/lib/testUtils/fakers/positionHistoryFaker";
 import { createFakeGameResultData } from "@/lib/testUtils/fakers/gameResultDataFaker";
 import { createFakeMoveSnapshot } from "@/lib/testUtils/fakers/moveSnapshotFaker";
+import { createFakeMovePath } from "@/lib/testUtils/fakers/movePathFaker";
 import { EventHandlers } from "@/features/signalR/hooks/useSignalREvent";
 import { createFakeClocks } from "@/lib/testUtils/fakers/clocksFaker";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
@@ -38,6 +39,7 @@ import LegalMoves from "@/features/chessboard/lib/legalMoves";
 import { refetchGame } from "../../lib/gameStateProcessor";
 import { logicalPoint } from "@/features/point/pointUtils";
 import useLiveChessEvents from "../useLiveChessEvents";
+import constants from "@/lib/constants";
 
 vi.mock("@/features/liveGame/hooks/useGameHub");
 vi.mock("@/features/liveGame/lib/gameStateProcessor");
@@ -62,6 +64,12 @@ describe("useLiveChessEvents", () => {
         return renderHook(() =>
             useLiveChessEvents(liveChessStore, chessboardStore),
         );
+    }
+
+    function encodeMoves(moves: MovePath[]): string {
+        const json = JSON.stringify(moves);
+        const compressed = brotliCompressSync(Buffer.from(json));
+        return compressed.toString("base64");
     }
 
     function setupStandardStoresForMove() {
@@ -123,7 +131,7 @@ describe("useLiveChessEvents", () => {
                 await gameEventHandlers.SyncRevisionAsync?.(newRevision);
             });
 
-            expect(refetchGame).toHaveBeenCalledWith(
+            expect(refetchGame).toHaveBeenCalledExactlyOnceWith(
                 liveChessStore,
                 chessboardStore,
             );
@@ -258,12 +266,6 @@ describe("useLiveChessEvents", () => {
     });
 
     describe("OpponentMoveMadeAsync", () => {
-        function encodeMoves(moves: MovePath[]): string {
-            const json = JSON.stringify(moves);
-            const compressed = brotliCompressSync(Buffer.from(json));
-            return compressed.toString("base64");
-        }
-
         it("should apply move and set legal moves for the next player", async () => {
             setupStandardStoresForMove();
             renderLiveChessEvents();
@@ -327,6 +329,166 @@ describe("useLiveChessEvents", () => {
         });
     });
 
+    describe("ReceiveOvertimeAsync", () => {
+        function setupOvertimeTest() {
+            chessboardStore.setState({
+                positionHistory: createNFakePositionHistory(3),
+            });
+        }
+
+        it("should refetch the game if plyNumber is ahead by more than 1", async () => {
+            setupOvertimeTest();
+            renderLiveChessEvents();
+
+            const mainPly =
+                chessboardStore.getState().positionHistory.mainPlyCount;
+            const removedFrom = logicalPoint({ x: 0, y: 0 });
+            const encodedLegalMoves = encodeMoves([]);
+
+            await act(async () => {
+                gameEventHandlers.ReceiveOvertimeAsync?.(
+                    mainPly + 2,
+                    removedFrom,
+                    encodedLegalMoves,
+                );
+            });
+
+            expect(refetchGame).toHaveBeenCalledExactlyOnceWith(
+                liveChessStore,
+                chessboardStore,
+            );
+        });
+
+        it("should apply overtime immediately if plyNumber matches current main ply", async () => {
+            setupOvertimeTest();
+            renderLiveChessEvents();
+
+            const mainPly =
+                chessboardStore.getState().positionHistory.mainPlyCount;
+            const removedFrom = logicalPoint({ x: 1, y: 2 });
+
+            const movePath = [createFakeMovePath()];
+            const encodedLegalMoves = encodeMoves(movePath);
+            const decodedLegalMoves = decodeMovePathIntoLegalMoves({
+                paths: movePath,
+                boardWidth: constants.BOARD_WIDTH,
+            });
+
+            const addLegalMovesSpy = vi.spyOn(
+                chessboardStore.getState(),
+                "addLegalMovesForPosition",
+            );
+            const removePieceSpy = vi.spyOn(
+                chessboardStore.getState(),
+                "removePieceAt",
+            );
+
+            const targetPosition = chessboardStore
+                .getState()
+                .positionHistory.getPositionWithPly(mainPly)!;
+
+            await act(async () => {
+                await gameEventHandlers.ReceiveOvertimeAsync?.(
+                    mainPly,
+                    removedFrom,
+                    encodedLegalMoves,
+                );
+            });
+
+            expect(addLegalMovesSpy).toHaveBeenCalledExactlyOnceWith(
+                decodedLegalMoves,
+                targetPosition.positionId,
+            );
+            expect(removePieceSpy).toHaveBeenCalledExactlyOnceWith(removedFrom);
+        });
+
+        it("should queue overtime for the next ply and apply it when the next move arrives", async () => {
+            setupOvertimeTest();
+            renderLiveChessEvents();
+
+            const mainPly =
+                chessboardStore.getState().positionHistory.mainPlyCount;
+            const removedFrom = logicalPoint({ x: 1, y: 1 });
+
+            const movePath = [createFakeMovePath()];
+            const encodedLegalMoves = encodeMoves(movePath);
+            const decodedLegalMoves = decodeMovePathIntoLegalMoves({
+                paths: movePath,
+                boardWidth: constants.BOARD_WIDTH,
+            });
+
+            await act(async () => {
+                await gameEventHandlers.ReceiveOvertimeAsync?.(
+                    mainPly + 1,
+                    removedFrom,
+                    encodedLegalMoves,
+                );
+            });
+            let latestPosition =
+                chessboardStore.getState().positionHistory.viewingPosition!;
+            expect(latestPosition.move.overtimeRemovals.length).toBe(0);
+
+            await triggerMoveMade({ sideToMove: GameColor.BLACK });
+
+            latestPosition =
+                chessboardStore.getState().positionHistory.viewingPosition!;
+            const { getViewedPositionLegalMoves } = chessboardStore.getState();
+
+            expect(latestPosition.move.overtimeRemovals).toEqual([removedFrom]);
+            expect(getViewedPositionLegalMoves()).toEqual(decodedLegalMoves);
+        });
+
+        it("should accumulate multiple overtime removals for the same ply and apply them when the next move arrives", async () => {
+            setupOvertimeTest();
+            renderLiveChessEvents();
+
+            const mainPly =
+                chessboardStore.getState().positionHistory.mainPlyCount;
+
+            const removed1 = logicalPoint({ x: 1, y: 1 });
+            const removed2 = logicalPoint({ x: 2, y: 2 });
+            const removed3 = logicalPoint({ x: 3, y: 3 });
+
+            const movePath = [createFakeMovePath()];
+            const encodedLegalMoves = encodeMoves(movePath);
+            const decodedLegalMoves = decodeMovePathIntoLegalMoves({
+                paths: movePath,
+                boardWidth: constants.BOARD_WIDTH,
+            });
+
+            await act(async () => {
+                await gameEventHandlers.ReceiveOvertimeAsync?.(
+                    mainPly + 1,
+                    removed1,
+                    encodedLegalMoves,
+                );
+                await gameEventHandlers.ReceiveOvertimeAsync?.(
+                    mainPly + 1,
+                    removed2,
+                    encodedLegalMoves,
+                );
+                await gameEventHandlers.ReceiveOvertimeAsync?.(
+                    mainPly + 1,
+                    removed3,
+                    encodedLegalMoves,
+                );
+            });
+
+            await triggerMoveMade({ sideToMove: GameColor.BLACK });
+
+            const latestPosition =
+                chessboardStore.getState().positionHistory.viewingPosition!;
+            const { getViewedPositionLegalMoves } = chessboardStore.getState();
+
+            expect(latestPosition.move.overtimeRemovals).toEqual([
+                removed1,
+                removed2,
+                removed3,
+            ]);
+            expect(getViewedPositionLegalMoves()).toEqual(decodedLegalMoves);
+        });
+    });
+
     describe("GameEndedAsync", () => {
         it("should update liveChessStore, disable chessboard movement, and set final clocks", async () => {
             liveChessStore.setState({ resultData: null });
@@ -350,6 +512,21 @@ describe("useLiveChessEvents", () => {
 
             const chessboardState = chessboardStore.getState();
             expect(chessboardState.allowHistoryChanges).toBe(true);
+        });
+    });
+
+    describe("ReceiveErrorAsync", () => {
+        it("should refetch the game", async () => {
+            renderLiveChessEvents();
+
+            await act(async () => {
+                gameEventHandlers.ReceiveErrorAsync?.([]);
+            });
+
+            expect(refetchGame).toHaveBeenCalledExactlyOnceWith(
+                liveChessStore,
+                chessboardStore,
+            );
         });
     });
 });

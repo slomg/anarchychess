@@ -21,7 +21,7 @@ public class GameData
     public required string InitialFen { get; init; }
 
     [Id(5)]
-    public List<MoveSnapshot> MoveSnapshots { get; init; } = [];
+    public MoveHistory MoveHistory { get; init; } = new();
 
     [Id(6)]
     public required GameCoreState Core { get; init; }
@@ -35,6 +35,8 @@ public class GameData
     [Id(9)]
     public GameNotifierState NotifierState { get; init; } = new();
 
+    [Id(11)]
+    public OvertimeState OvertimeState { get; init; } = new();
 
     [Id(10)]
     public GameResultData? Result { get; set; }

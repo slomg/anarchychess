@@ -9,9 +9,8 @@ import {
 import { createNFakePositionHistory } from "@/lib/testUtils/fakers/positionHistoryFaker";
 import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
 import { ChessboardStore, createChessboardStore } from "../chessboardStore";
-import { createFakePosition } from "@/lib/testUtils/fakers/positionFaker";
+import { ChildPositionNode, PositionId } from "../../lib/position";
 import PositionHistory from "../../lib/positionHistory";
-import { PositionId } from "../../lib/position";
 import LegalMoves from "../../lib/legalMoves";
 
 describe("HistorySlice", () => {
@@ -271,8 +270,8 @@ describe("HistorySlice", () => {
     describe("addPosition", () => {
         it("should add the new position to positionHistory", async () => {
             const positionHistoryMock = mock<PositionHistory>();
-            const newPosition = createFakePosition();
             const newPositionProps = createFakePositionProps();
+            const newPosition = new ChildPositionNode(newPositionProps);
             const legalMoves = createFakeLegalMoves();
 
             positionHistoryMock.addNextPosition.mockReturnValue(newPosition);
@@ -298,8 +297,8 @@ describe("HistorySlice", () => {
     describe("addSidelinePosition", () => {
         it("should add the new position as a slideline to positionHistory", async () => {
             const positionHistoryMock = mock<PositionHistory>();
-            const newPosition = createFakePosition();
             const newPositionProps = createFakePositionProps();
+            const newPosition = new ChildPositionNode(newPositionProps);
             const legalMoves = createFakeLegalMoves();
             positionHistoryMock.addNextSidelinePosition.mockReturnValue(
                 newPosition,
@@ -337,7 +336,7 @@ describe("HistorySlice", () => {
             });
 
             const result = store.getState().getViewedPositionLegalMoves();
-            expect(result).toEqual(new LegalMoves());
+            expect(result).toBe(LegalMoves.StableEmpty);
         });
 
         it("should return empty LegalMoves when viewing a non latest position and history changes are not allowed", () => {
@@ -354,7 +353,7 @@ describe("HistorySlice", () => {
             });
 
             const result = store.getState().getViewedPositionLegalMoves();
-            expect(result).toEqual(new LegalMoves());
+            expect(result).toBe(LegalMoves.StableEmpty);
         });
 
         it("should return legal moves when viewing a non latest position and history changes are allowed", () => {
@@ -398,7 +397,7 @@ describe("HistorySlice", () => {
             });
 
             const result = store.getState().getViewedPositionLegalMoves();
-            expect(result).toEqual(new LegalMoves());
+            expect(result).toBe(LegalMoves.StableEmpty);
         });
 
         it("should handle undefined viewing position id", () => {

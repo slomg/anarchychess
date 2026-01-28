@@ -5,7 +5,11 @@ import {
     RootPositionNode,
 } from "../position";
 import BoardPieces from "../boardPieces";
-import { createFakeBoardPieces } from "@/lib/testUtils/fakers/chessboardFakers";
+import {
+    createFakeBoardPieces,
+    createFakePiece,
+} from "@/lib/testUtils/fakers/chessboardFakers";
+import { logicalPoint } from "@/features/point/pointUtils";
 
 describe("RootPositionNode", () => {
     let root: RootPositionNode;
@@ -65,7 +69,7 @@ describe("RootPositionNode", () => {
             expect(root.variations).toContain(child);
             expect(root.subVariationByKey.size).toBe(0);
             expect(child.prev).toBeNull();
-            expect(child.ply).toBe(0);
+            expect(child.ply).toBe(1);
             expect(child).toEqual(expect.objectContaining(childProps));
         });
 
@@ -122,7 +126,7 @@ describe("RootPositionNode", () => {
 
             expect(child).toEqual(expect.objectContaining(props));
             expect(child.prev).toBeNull();
-            expect(child.ply).toBe(0);
+            expect(child.ply).toBe(1);
             expect(root.subVariationByKey.get(props.move.moveKey)).toBe(child);
             expect(root.variations).toEqual([child]);
             expect(root.next).toBeNull();
@@ -189,12 +193,8 @@ describe("ChildPositionNode", () => {
 
     describe("constructor", () => {
         it("should create a child node with correct properties", () => {
-            expect(child.pieces).toEqual(rootProps.pieces);
-            expect(child.fen).toBe(rootProps.fen);
-            expect(child.sideToMove).toBe(rootProps.sideToMove);
-            expect(child.move).toBe(rootProps.move);
-            expect(child.san).toBe(rootProps.san);
-            expect(child.ply).toBe(0);
+            expect(child).toEqual(expect.objectContaining(rootProps));
+            expect(child.ply).toBe(1);
             expect(child.prev).toBeNull();
             expect(child.next).toBeNull();
             expect(child.variations).toEqual([]);
@@ -228,6 +228,53 @@ describe("ChildPositionNode", () => {
             expect(createdSub.prev).toBe(child);
             expect(createdSub.ply).toBe(child.ply + 1);
             expect(createdSub).toEqual(expect.objectContaining(props));
+        });
+    });
+
+    describe("commitOvertimeRemoval", () => {
+        it("should remove a piece from the board at the given point", () => {
+            const point = child.move.from;
+            expect(child.pieces.getByPosition(point)).toBeUndefined();
+
+            child.commitOvertimeRemoval(point);
+
+            expect(child.pieces.getByPosition(point)).toBeUndefined();
+        });
+
+        it("should record the removed point in move.overtimeRemovals", () => {
+            const point = child.move.from;
+            expect(child.move.overtimeRemovals).toHaveLength(0);
+
+            child.commitOvertimeRemoval(point);
+
+            expect(child.move.overtimeRemovals).toContainEqual(point);
+        });
+
+        it("should accumulate multiple overtime removals", () => {
+            const piece1 = createFakePiece({
+                position: logicalPoint({ x: 1, y: 1 }),
+            });
+            const piece2 = createFakePiece({
+                position: logicalPoint({ x: 2, y: 2 }),
+            });
+            const initialPieces = BoardPieces.fromPieces(piece1, piece2);
+            const expectedPieces = new BoardPieces(initialPieces);
+            expectedPieces.remove(piece1.id);
+            expectedPieces.remove(piece2.id);
+
+            const child = new ChildPositionNode(
+                createFakePositionProps({ pieces: initialPieces }),
+            );
+
+            child.commitOvertimeRemoval(piece1.position);
+            child.commitOvertimeRemoval(piece2.position);
+
+            expect(child.move.overtimeRemovals).toEqual([
+                piece1.position,
+                piece2.position,
+            ]);
+
+            expect(child.pieces).toEqual(expectedPieces);
         });
     });
 

@@ -321,6 +321,7 @@ export type MovePath = {
     specialType?: SpecialMoveType | null;
     forcedPriority?: ForcedMovePriority | null;
     emphasizeSquare?: boolean | null;
+    overtimeRemovalIdxs?: Array<number> | null;
 };
 
 export type IntermediateSquarePath = {

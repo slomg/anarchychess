@@ -22,6 +22,7 @@ export interface GamePlaySlice extends GamePlaySliceProps {
     isInteractionAllowed(): boolean;
     receiveLiveMove(clocks: Clocks, sideToMove: GameColor): void;
     markPendingMoveAck(): void;
+    cancelPendingMoveAch(): void;
 
     setClocks(clocks: Clocks): void;
 }
@@ -67,6 +68,11 @@ export function createGamePlaySlice(
         markPendingMoveAck() {
             set((state) => {
                 state.isPendingMoveAck = true;
+            });
+        },
+        cancelPendingMoveAch() {
+            set((state) => {
+                state.isPendingMoveAck = false;
             });
         },
 

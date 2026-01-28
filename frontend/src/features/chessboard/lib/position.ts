@@ -1,6 +1,7 @@
 import { GameColor } from "@/lib/apiClient";
 import BoardPieces from "./boardPieces";
 import { Move, MoveKey } from "./types";
+import { LogicalPoint } from "@/features/point/types";
 
 export type PositionId = string & { __brand: "PositionId" };
 
@@ -23,6 +24,8 @@ export interface Position {
     positionId: PositionId;
     variations: readonly Position[];
     subVariationByKey: ReadonlyMap<MoveKey, Position>;
+
+    commitOvertimeRemoval(removeFrom: LogicalPoint): void;
     [Symbol.iterator](): IterableIterator<Position>;
 }
 
@@ -132,12 +135,12 @@ export class ChildPositionNode extends PositionNode implements Position {
         super(props.pieces);
         this._parent = parent;
 
-        this._pieces = props.pieces;
+        this._pieces = new BoardPieces(props.pieces);
         this._fen = props.fen;
         this._sideToMove = props.sideToMove;
         this._move = props.move;
         this._san = props.san;
-        this._ply = parent ? parent.ply + 1 : 0;
+        this._ply = parent ? parent.ply + 1 : 1;
     }
 
     get fen(): string {
@@ -162,6 +165,11 @@ export class ChildPositionNode extends PositionNode implements Position {
 
     get prev(): ChildPositionNode | null {
         return this._parent;
+    }
+
+    commitOvertimeRemoval(removeFrom: LogicalPoint): void {
+        this._pieces.removeFrom(removeFrom);
+        this._move.overtimeRemovals.push(removeFrom);
     }
 
     override *[Symbol.iterator](): IterableIterator<ChildPositionNode> {

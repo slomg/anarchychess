@@ -9,9 +9,12 @@ import { StoreApi } from "zustand";
 import ChessboardStoreContext from "../../contexts/chessboardStoreContext";
 import IntermediateSquarePrompt from "../IntermediateSquarePrompt";
 import { LogicalPoint } from "@/features/point/types";
+import { PieceID } from "../../lib/types";
 
 describe("IntermediateSquarePrompt", () => {
     let store: StoreApi<ChessboardStore>;
+
+    const pieceId: PieceID = "test piece";
 
     beforeEach(() => {
         store = createChessboardStore();
@@ -25,7 +28,7 @@ describe("IntermediateSquarePrompt", () => {
         );
 
     it("should render nothing when nextIntermediates is empty", () => {
-        store.setState({ nextIntermediates: [] });
+        store.setState({ pendingIntermediate: null });
         renderComponent();
         expect(
             screen.queryByTestId("intermediateSquarePromptOverlay"),
@@ -37,7 +40,9 @@ describe("IntermediateSquarePrompt", () => {
             logicalPoint({ x: 1, y: 1 }),
             logicalPoint({ x: 2, y: 2 }),
         ];
-        store.setState({ nextIntermediates: points });
+        store.setState({
+            pendingIntermediate: { nextOptions: points, pieceId },
+        });
 
         renderComponent();
 
@@ -55,7 +60,7 @@ describe("IntermediateSquarePrompt", () => {
 
         let resolvedPoint: LogicalPoint | null = logicalPoint({ x: 6, y: 9 });
         store.setState({
-            nextIntermediates: points,
+            pendingIntermediate: { nextOptions: points, pieceId },
             resolveNextIntermediate: (point) => (resolvedPoint = point),
         });
 
@@ -75,7 +80,7 @@ describe("IntermediateSquarePrompt", () => {
         ];
         let resolvedPoint: LogicalPoint | null = null;
         store.setState({
-            nextIntermediates: points,
+            pendingIntermediate: { nextOptions: points, pieceId },
             resolveNextIntermediate: (point) => (resolvedPoint = point),
         });
 
@@ -92,7 +97,7 @@ describe("IntermediateSquarePrompt", () => {
 
         let resolvedPoint: LogicalPoint | null = null;
         store.setState({
-            nextIntermediates: points,
+            pendingIntermediate: { nextOptions: points, pieceId },
             resolveNextIntermediate: (point) => (resolvedPoint = point),
         });
 

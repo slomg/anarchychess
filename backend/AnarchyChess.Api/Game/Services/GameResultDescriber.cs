@@ -10,7 +10,7 @@ public interface IGameResultDescriber
     GameEndStatus KingCaptured(GameColor by);
     GameEndStatus Resignation(GameColor by);
     GameEndStatus Abandoned(GameColor by);
-    GameEndStatus Timeout(GameColor by);
+    GameEndStatus Overtime(GameColor by);
     GameEndStatus Aborted(GameColor by);
 
     GameEndStatus DrawByAgreement();
@@ -36,8 +36,8 @@ public class GameResultDescriber : IGameResultDescriber
     public GameEndStatus Abandoned(GameColor by) =>
         new(GetResultByLoser(by), $"{by} Abandoned the Game");
 
-    public GameEndStatus Timeout(GameColor by) =>
-        new(GetResultByLoser(by), $"{by.Invert()} Won by Timeout");
+    public GameEndStatus Overtime(GameColor by) =>
+        new(GetResultByLoser(by), $"{by}'s King Got Bored and Left");
 
     public GameEndStatus ThreeFold() => new(GameResult.Draw, "Draw by 3-Fold Repetition");
 

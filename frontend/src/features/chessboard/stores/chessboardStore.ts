@@ -30,11 +30,12 @@ import { BoardSlice, BoardSliceProps, createBoardSlice } from "./boardSlice";
 import { AudioSlice, AudioSliceProps, createAudioSlice } from "./audioSlice";
 import { createPromotionSlice, PromotionSlice } from "./promotionSlice";
 import { OverlaySlice, createOverlaySlice } from "./overlaySlice";
+import { createPromptSlice, PromptSlice } from "./promptSlice";
 import { CoreSlice, createCoreSlice } from "./coreSlice";
+import PositionHistory from "../lib/positionHistory";
 import BoardPieces from "../lib/boardPieces";
 import { GameColor } from "@/lib/apiClient";
 import constants from "@/lib/constants";
-import PositionHistory from "../lib/positionHistory";
 
 export type ChessboardStore = BoardSlice &
     PiecesSlice &
@@ -44,6 +45,7 @@ export type ChessboardStore = BoardSlice &
     OverlaySlice &
     InteractionSlice &
     IntermediateSlice &
+    PromptSlice &
     AnimationSlice &
     AudioSlice &
     CoreSlice;
@@ -78,6 +80,7 @@ export function createChessboardStore(
                 ...createOverlaySlice(...a),
                 ...createInteractionSlice(...a),
                 ...createIntermediateSlice(...a),
+                ...createPromptSlice(...a),
                 ...createAnimationSlice(initState)(...a),
                 ...createAudioSlice(initState)(...a),
                 ...createCoreSlice(...a),

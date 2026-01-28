@@ -128,6 +128,25 @@ describe("simulateMove", () => {
         expect(result.isCapture).toEqual(false);
     });
 
+    it("should not set isCapture to true if captures come from overtime", () => {
+        const piece = createFakePiece({
+            position: logicalPoint({ x: 0, y: 0 }),
+        });
+        const overtimePiece = createFakePiece({
+            position: logicalPoint({ x: 1, y: 1 }),
+        });
+        const pieces = BoardPieces.fromPieces(piece, overtimePiece);
+        const move = createFakeMove({
+            from: piece.position,
+            to: overtimePiece.position,
+            overtimeRemovals: [overtimePiece.position],
+        });
+
+        const result = simulateMove(pieces, move);
+
+        expect(result.isCapture).toEqual(false);
+    });
+
     it("should forward specialMoveType", () => {
         const piece = createFakePiece({
             position: logicalPoint({ x: 7, y: 7 }),
@@ -185,7 +204,7 @@ describe("simulateMoveWithIntermediates", () => {
         });
     });
 
-    it("should include removedPieceIds from the final move", () => {
+    it("should include removedPieces from the final move", () => {
         const movingPiece = createFakePiece({
             position: logicalPoint({ x: 0, y: 0 }),
         });
@@ -207,19 +226,18 @@ describe("simulateMoveWithIntermediates", () => {
 
         const result = simulateMoveWithIntermediates(pieces, move);
 
-        expect(new Set(...result.removedPieceIds)).toEqual(
-            new Set(capturePiece.id),
+        expect(result.removedPieces).toEqual(
+            new Map([[capturePiece.id, capturePiece]]),
         );
 
-        expect(result.steps[0].newPieces.getById(capturePiece.id)).toEqual(
-            capturePiece,
-        );
-        expect(result.steps[1].newPieces.getById(capturePiece.id)).toEqual(
-            capturePiece,
-        );
-
-        expect(result.steps[2].newPieces.getById(capturePiece.id)).toEqual(
-            undefined,
-        );
+        expect(
+            result.steps[0].newPieces.getById(capturePiece.id),
+        ).not.toBeDefined();
+        expect(
+            result.steps[1].newPieces.getById(capturePiece.id),
+        ).not.toBeDefined();
+        expect(
+            result.steps[2].newPieces.getById(capturePiece.id),
+        ).not.toBeDefined();
     });
 });

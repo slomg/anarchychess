@@ -7,6 +7,7 @@ using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Shared.Models;
+using AnarchyChess.Api.Shared.Services;
 using AnarchyChess.Api.TestInfrastructure;
 using AnarchyChess.Api.TestInfrastructure.Factories;
 using AnarchyChess.Api.TestInfrastructure.NSubtituteExtenstion;
@@ -24,10 +25,11 @@ public class MoveHandlerTests : BaseIntegrationTest
     private readonly MoveHandler _handler;
 
     private readonly GameSettings _settings;
-    private readonly GameClock _gameClock;
+    private readonly GameClock _clock;
+    private readonly Overtime _overtime;
     private readonly IFenEncoder _fenEncoder;
     private readonly ISanCalculator _sanCalculator;
-    private readonly IGameCore _gameCore;
+    private readonly IGameCore _core;
     private readonly IGameResultDescriber _gameResultDescriber;
 
     private readonly GameToken _gameToken = "testtoken";
@@ -41,7 +43,7 @@ public class MoveHandlerTests : BaseIntegrationTest
     public MoveHandlerTests(AnarchyChessWebApplicationFactory factory)
         : base(factory)
     {
-        _gameCore = Scope.ServiceProvider.GetRequiredService<IGameCore>();
+        _core = Scope.ServiceProvider.GetRequiredService<IGameCore>();
         _fenEncoder = Scope.ServiceProvider.GetRequiredService<IFenEncoder>();
         _sanCalculator = Scope.ServiceProvider.GetRequiredService<ISanCalculator>();
         _gameResultDescriber = Scope.ServiceProvider.GetRequiredService<IGameResultDescriber>();
@@ -49,34 +51,38 @@ public class MoveHandlerTests : BaseIntegrationTest
         var settings = Scope.ServiceProvider.GetRequiredService<IOptions<AppSettings>>();
         _settings = settings.Value.Game;
 
-        _gameClock = new(
+        _clock = new(settings, _timeProviderMock);
+        _overtime = new(
             settings,
-            Scope.ServiceProvider.GetRequiredService<IGameResultDescriber>(),
-            _timeProviderMock
+            Scope.ServiceProvider.GetRequiredService<IRandomProvider>(),
+            _timeProviderMock,
+            Scope.ServiceProvider.GetRequiredService<IPlayableMoveProvider>(),
+            Scope.ServiceProvider.GetRequiredService<IMoveEncoder>()
         );
 
         _handler = new MoveHandler(
             Scope.ServiceProvider.GetRequiredService<ILogger<MoveHandler>>(),
             Scope.ServiceProvider.GetRequiredService<IOptions<AppSettings>>(),
             Scope.ServiceProvider.GetRequiredService<IGameCore>(),
-            _gameClock,
-            _notifierMock
+            _clock,
+            _notifierMock,
+            _overtime
         );
 
         _timeProviderMock.GetUtcNow().Returns(_fakeNow);
-        _gameData = GameUtils.CreateGameData(_gameCore, _gameClock);
+        _gameData = GameUtils.CreateGameData(_core, _clock);
     }
 
     [Fact]
     public async Task HandleMoveAsync_with_a_valid_move_creates_a_correct_move_made_notification()
     {
-        await GameUtils.GoOutOfGracePeriodAsync(_handler, _gameCore, _gameToken, _gameData);
+        await GameUtils.GoOutOfGracePeriodAsync(_handler, _core, _gameToken, _gameData);
         _notifierMock.ClearReceivedCalls();
 
         var in2Seconds = _fakeNow + TimeSpan.FromSeconds(2);
         _timeProviderMock.GetUtcNow().Returns(in2Seconds);
 
-        var move = GameUtils.GetLegalMove(_gameCore, _gameData);
+        var move = GameUtils.GetLegalMove(_core, _gameData);
         var result = await _handler.HandleMoveAsync(
             moveMadeBy: _gameData.Players.WhitePlayer.UserId,
             new MoveKey(move),
@@ -90,7 +96,7 @@ public class MoveHandlerTests : BaseIntegrationTest
             + _gameData.Pool.TimeControl.IncrementSeconds * 1000 // add increment
             - 2 * 1000; // removed elapsed time
 
-        var legalMoves = _gameCore.GetLegalMoves(_gameData.Core);
+        var legalMoves = _core.GetLegalMoves(_gameData.Core);
         MoveSnapshot expectedMoveSnapshot = new(
             Path: MovePath.FromMove(move, GameLogicConstants.BoardWidth),
             Fen: _fenEncoder.EncodeFen(_gameData.Core.Board).FullFen,
@@ -121,7 +127,7 @@ public class MoveHandlerTests : BaseIntegrationTest
                                 PlyNumber: 3,
                                 Clocks: expectedClock,
                                 SideToMoveUserId: _gameData.Players.BlackPlayer.UserId,
-                                EncodedLegalMoves: _gameCore.EncodeLegalMoves(_gameData.Core),
+                                EncodedLegalMoves: _core.EncodeLegalMoves(_gameData.Core),
                                 DidMoveEndGame: false
                             )
                         )
@@ -154,7 +160,7 @@ public class MoveHandlerTests : BaseIntegrationTest
         board.PlacePiece(new("a1"), PieceFactory.White(PieceType.Queen));
         board.PlacePiece(new("a3"), PieceFactory.Black(PieceType.King));
         board.PlacePiece(new("b1"), PieceFactory.White(PieceType.King));
-        var gameData = GameUtils.CreateGameData(_gameCore, _gameClock, board: board);
+        var gameData = GameUtils.CreateGameData(_core, _clock, board: board);
 
         var result = await _handler.HandleMoveAsync(
             gameData.Players.WhitePlayer.UserId,
@@ -180,7 +186,7 @@ public class MoveHandlerTests : BaseIntegrationTest
 
         var result = await _handler.HandleMoveAsync(
             _gameData.Players.WhitePlayer.UserId,
-            new MoveKey(GameUtils.GetLegalMove(_gameCore, _gameData)),
+            new MoveKey(GameUtils.GetLegalMove(_core, _gameData)),
             _gameToken,
             _gameData,
             CT
@@ -204,7 +210,7 @@ public class MoveHandlerTests : BaseIntegrationTest
 
         var result = await _handler.HandleMoveAsync(
             _gameData.Players.WhitePlayer.UserId,
-            new MoveKey(GameUtils.GetLegalMove(_gameCore, _gameData)),
+            new MoveKey(GameUtils.GetLegalMove(_core, _gameData)),
             _gameToken,
             _gameData,
             CT
@@ -224,23 +230,99 @@ public class MoveHandlerTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task HandleMoveAsync_ends_game_if_times_out()
+    public async Task HandleMoveAsync_starts_overtime_for_next_player_if_they_are_timed_out()
     {
-        var gameData = GameUtils.CreateGameData(
-            _gameCore,
-            _gameClock,
-            timeControl: new TimeControlSettings(BaseSeconds: 0, IncrementSeconds: 0)
-        );
+        ChessBoard board = new();
+        board.PlacePiece(new("a1"), PieceFactory.White(PieceType.King));
+        board.PlacePiece(new("b1"), PieceFactory.White(PieceType.King));
+        board.PlacePiece(new("h8"), PieceFactory.Black(PieceType.King));
+        var gameData = GameUtils.CreateGameData(_core, _clock, board: board);
+        await GameUtils.GoOutOfGracePeriodAsync(_handler, _core, _gameToken, gameData);
 
-        var result = await _handler.HandleMoveAsync(
+        var timeoutTime = _fakeNow + TimeSpan.FromSeconds(gameData.Pool.TimeControl.BaseSeconds);
+        _timeProviderMock.GetUtcNow().Returns(timeoutTime);
+
+        var whiteMove = GameUtils.GetLegalMove(_core, gameData);
+        await _handler.HandleMoveAsync(
             gameData.Players.WhitePlayer.UserId,
-            new MoveKey(GameUtils.GetLegalMove(_gameCore, gameData)),
+            new MoveKey(whiteMove),
             _gameToken,
             gameData,
             CT
         );
 
-        result.IsError.Should().BeFalse();
-        result.Value.Should().Be(_gameResultDescriber.Timeout(GameColor.White));
+        await _handler.HandleMoveAsync(
+            gameData.Players.BlackPlayer.UserId,
+            new MoveKey(GameUtils.GetLegalMove(_core, gameData)),
+            _gameToken,
+            gameData,
+            CT
+        );
+
+        _overtime.HasEnteredOvertime(GameColor.White, gameData.OvertimeState).Should().BeTrue();
+        _overtime.HasEnteredOvertime(GameColor.Black, gameData.OvertimeState).Should().BeFalse();
+
+        gameData
+            .OvertimeState.LastMoveAtTimestamp.Should()
+            .Be(timeoutTime.ToUnixTimeMilliseconds());
+        await _notifierMock
+            .Received(1)
+            .NotifyNextOvertimeAsync(
+                gameData.Players.WhitePlayer.UserId,
+                plyNumber: gameData.MoveHistory.Moves.Count,
+                removeFrom: Arg.Is<AlgebraicPoint>(p =>
+                    p == new AlgebraicPoint("a1")
+                    || p == new AlgebraicPoint("b1")
+                    || p == whiteMove.To
+                ),
+                gameToken: _gameToken
+            );
+    }
+
+    [Fact]
+    public async Task HandleMoveAsync_does_not_start_overtime_if_next_player_is_not_timed_out()
+    {
+        await GameUtils.GoOutOfGracePeriodAsync(_handler, _core, _gameToken, _gameData);
+
+        await _handler.HandleMoveAsync(
+            _gameData.Players.WhitePlayer.UserId,
+            new MoveKey(GameUtils.GetLegalMove(_core, _gameData)),
+            _gameToken,
+            _gameData,
+            CT
+        );
+
+        _overtime.HasEnteredOvertime(GameColor.White, _gameData.OvertimeState).Should().BeFalse();
+        _overtime.HasEnteredOvertime(GameColor.Black, _gameData.OvertimeState).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task HandleMoveAsync_ends_overtime_turn_and_sets_remainder()
+    {
+        await GameUtils.GoOutOfGracePeriodAsync(_handler, _core, _gameToken, _gameData);
+
+        // force white into overtime before move
+        _overtime.StartOvertimeTurn(GameColor.White, _gameData.Core.Board, _gameData.OvertimeState);
+
+        _timeProviderMock
+            .GetUtcNow()
+            .Returns(
+                _fakeNow
+                    .Add(_settings.OvertimeRemovalInterval)
+                    .Add(_settings.OvertimeRemovalInterval / 2)
+            );
+
+        await _handler.HandleMoveAsync(
+            _gameData.Players.WhitePlayer.UserId,
+            new MoveKey(GameUtils.GetLegalMove(_core, _gameData)),
+            _gameToken,
+            _gameData,
+            CT
+        );
+
+        _gameData
+            .OvertimeState.PlayerOvertime[GameColor.White]
+            .Remainder.Should()
+            .Be(_settings.OvertimeRemovalInterval / 2);
     }
 }

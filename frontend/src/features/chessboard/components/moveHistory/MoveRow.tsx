@@ -32,7 +32,7 @@ const MoveRow = ({
         }),
     );
 
-    const moveNumber = whitePosition.ply / 2 + 1;
+    const moveNumber = Math.ceil(whitePosition.ply / 2);
     const color = moveNumber % 2 === 0 ? "bg-white/10" : "";
     const selectedClass = "bg-blue-300/30";
     return (

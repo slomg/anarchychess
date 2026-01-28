@@ -5,13 +5,18 @@ import { LogicalPoint } from "@/features/point/types";
 import ChessSquare from "./ChessSquare";
 
 const IntermediateSquarePrompt = () => {
-    const { nextIntermediates, resolveNextIntermediate } = useChessboardStore(
+    const { pendingIntermediate, resolveNextIntermediate } = useChessboardStore(
         (x) => ({
-            nextIntermediates: x.nextIntermediates,
+            pendingIntermediate: x.pendingIntermediate,
             resolveNextIntermediate: x.resolveNextIntermediate,
         }),
     );
-    if (nextIntermediates.length === 0) return null;
+    if (
+        pendingIntermediate === null ||
+        pendingIntermediate.nextOptions.length === 0
+    ) {
+        return null;
+    }
 
     return (
         <div
@@ -22,7 +27,7 @@ const IntermediateSquarePrompt = () => {
                 e.stopPropagation();
             }}
         >
-            {nextIntermediates.map((point, i) => (
+            {pendingIntermediate.nextOptions.map((point, i) => (
                 <IntermediateSquare point={point} key={i} />
             ))}
         </div>

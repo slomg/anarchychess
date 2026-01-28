@@ -175,11 +175,11 @@ public class GameCoreTests : BaseIntegrationTest
     }
 
     [Fact]
-    public void GetChessBoard_returns_the_chessboard()
+    public void GetReadOnlyBoard_returns_the_chessboard()
     {
         var state = StartGame();
 
-        var result = _gameCore.GetChessBoard(state);
+        var result = _gameCore.GetReadOnlyBoard(state);
 
         result.Should().Be(state.Board);
     }
@@ -193,17 +193,16 @@ public class GameCoreTests : BaseIntegrationTest
         board.PlacePiece(new("a3"), PieceFactory.White());
         board.PlacePiece(new("a4"), PieceFactory.Black());
         var state = StartGame(new() { Board = board });
-        List<AlgebraicPoint> positionsToRemove = [new("a1"), new("a2")];
+        AlgebraicPoint toRemove = new("a1");
 
         ChessBoard expectedBoard = new(board);
         expectedBoard.RemovePiece(new("a1"));
-        expectedBoard.RemovePiece(new("a2"));
 
         var newLegalMoves = new LegalMoveSet(
             MoveMap: new Dictionary<MoveKey, Move>(),
             MovePaths: new MovePathFaker().Generate(3)
         );
-        _gameCore.RemovePieces(positionsToRemove, newLegalMoves, state);
+        _gameCore.RemovePiece(toRemove, newLegalMoves, state);
 
         state.Board.Should().BeEquivalentTo(expectedBoard);
         state.LegalMoves.Should().BeEquivalentTo(newLegalMoves);

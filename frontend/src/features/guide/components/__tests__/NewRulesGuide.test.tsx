@@ -20,6 +20,7 @@ describe("NewRulesGuide", () => {
             "Self-Bishop Castle Capture",
             "Forced En Passant",
             "Long Passant",
+            "Bouncing Bishop",
             "Il Vaticano",
             "Omnipotent Pawn",
             "Vertical Castling",

@@ -15,6 +15,8 @@ export default class LegalMoves {
     _hasForcedMoves: boolean = false;
     _emphasizedSquares: LogicalPoint[] = [];
 
+    static readonly StableEmpty = new LegalMoves();
+
     constructor(moves?: Move[]) {
         if (!moves) return;
 

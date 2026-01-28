@@ -19,6 +19,7 @@ import { decodeFen } from "../../chessboard/lib/fenDecoder";
 import { LiveChessViewer } from "../stores/gamePlaySlice";
 import { ClockSnapshot } from "./types";
 import constants from "@/lib/constants";
+import BoardPieces from "@/features/chessboard/lib/boardPieces";
 
 export interface ProcessedGameState {
     live: LiveChessStoreProps;
@@ -66,7 +67,9 @@ export function createStoreProps(
         resultData: gameState.resultData ?? null,
     };
     const board: ChessboardProps = {
-        pieces: lastPosition?.pieces ?? positionHistory.rootPieces,
+        pieces: new BoardPieces(
+            lastPosition?.pieces ?? positionHistory.rootPieces,
+        ),
         positionHistory,
 
         legalMovesByPosition: new Map([

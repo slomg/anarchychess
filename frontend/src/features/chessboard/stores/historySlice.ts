@@ -190,13 +190,13 @@ export function createHistorySlice(
                 !allowHistoryChanges &&
                 !positionHistory.isViewingLatestPosition;
             if (hideLegalMoves || cannotModifyHistory) {
-                return new LegalMoves();
+                return LegalMoves.StableEmpty;
             }
 
             return (
                 legalMovesByPosition.get(
                     positionHistory.viewingPosition?.positionId,
-                ) ?? new LegalMoves()
+                ) ?? LegalMoves.StableEmpty
             );
         },
 

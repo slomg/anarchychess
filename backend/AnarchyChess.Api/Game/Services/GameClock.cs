@@ -13,7 +13,8 @@ public interface IGameClock
     double CalculateTimeLeftMs(GameColor color, GameClockState state, bool isTicking = true);
     void CommitLastTurn(GameColor color, GameClockState state);
     double CommitTurn(GameColor color, GameClockState state);
-    GameEndStatus? DetectTimeout(GameColor tickingPlayer, GameClockState state);
+    bool IsTimeout(GameColor player, bool isTicking, GameClockState state);
+    bool IsInGracePeriod(GameColor player, GameClockState state);
 }
 
 [GenerateSerializer]
@@ -33,14 +34,9 @@ public class GameClockState
     public bool IsFrozen { get; set; }
 }
 
-public class GameClock(
-    IOptions<AppSettings> settings,
-    IGameResultDescriber gameResultDescriber,
-    TimeProvider timeProvider
-) : IGameClock
+public class GameClock(IOptions<AppSettings> settings, TimeProvider timeProvider) : IGameClock
 {
     private readonly GameSettings _settings = settings.Value.Game;
-    private readonly IGameResultDescriber _gameResultDescriber = gameResultDescriber;
     private readonly TimeProvider _timeProvider = timeProvider;
 
     public ClockSnapshot ToSnapshot(GameClockState state)
@@ -104,53 +100,14 @@ public class GameClock(
         return GetEffectiveTimeLeftMs(timeLeft, clockPlayer, state, isTicking);
     }
 
-    public GameEndStatus? DetectTimeout(GameColor tickingPlayer, GameClockState state)
-    {
-        var isWhiteOvertime = IsOvertime(
-            GameColor.White,
-            isTicking: tickingPlayer is GameColor.White,
-            state
-        );
-        var isBlackOvertime = IsOvertime(
-            GameColor.Black,
-            isTicking: tickingPlayer is GameColor.Black,
-            state
-        );
-
-        GameColor timedOutColor;
-        if (isWhiteOvertime)
-        {
-            timedOutColor = GameColor.White;
-        }
-        else if (isBlackOvertime)
-        {
-            timedOutColor = GameColor.Black;
-        }
-        else
-        {
-            return null;
-        }
-
-        var clockPlayer = state.Clocks[timedOutColor];
-        if (clockPlayer.IsInGracePeriod)
-        {
-            return _gameResultDescriber.Aborted(by: timedOutColor);
-        }
-        else if (clockPlayer.TimeUntilAbandonMs is not null)
-        {
-            return _gameResultDescriber.Abandoned(by: timedOutColor);
-        }
-        else
-        {
-            return _gameResultDescriber.Timeout(by: timedOutColor);
-        }
-    }
-
-    public bool IsOvertime(GameColor player, bool isTicking, GameClockState state)
+    public bool IsTimeout(GameColor player, bool isTicking, GameClockState state)
     {
         var timeLeftMs = CalculateTimeLeftMs(player, state, isTicking);
         return timeLeftMs <= 10;
     }
+
+    public bool IsInGracePeriod(GameColor player, GameClockState state) =>
+        state.Clocks[player].IsInGracePeriod;
 
     private double GetEffectiveTimeLeftMs(
         double prevTimeLeft,

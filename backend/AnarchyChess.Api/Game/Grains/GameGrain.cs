@@ -25,10 +25,12 @@ public class GameGrain : Grain, IGameGrain, IRemindable
     private readonly IPersistentState<GameGrainState> _state;
     private readonly IMoveHandler _moveHandler;
     private readonly IDrawHandler _drawHandler;
+    private readonly IClockHandler _clockHandler;
+    private readonly IGameEndHandler _gameEndHandler;
+    private readonly IOvertime _overtime;
     private readonly IGameCore _core;
     private readonly IGameResultDescriber _resultDescriber;
     private readonly IGameNotifier _gameNotifier;
-    private readonly IGameFinalizer _gameFinalizer;
     private readonly IGameClock _clock;
 
     private IGrainTimer? _clockTimer;
@@ -38,11 +40,13 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         [PersistentState(StateName)] IPersistentState<GameGrainState> state,
         IMoveHandler moveHandler,
         IDrawHandler drawHandler,
+        IClockHandler clockHandler,
+        IGameEndHandler gameEndHandler,
+        IOvertime overtime,
         IGameCore core,
         IGameClock clock,
         IGameResultDescriber resultDescriber,
-        IGameNotifier gameNotifier,
-        IGameFinalizer gameFinalizer
+        IGameNotifier gameNotifier
     )
     {
         _gameToken = this.GetPrimaryKeyString();
@@ -51,11 +55,13 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         _state = state;
         _moveHandler = moveHandler;
         _drawHandler = drawHandler;
+        _clockHandler = clockHandler;
+        _gameEndHandler = gameEndHandler;
+        _overtime = overtime;
         _core = core;
         _clock = clock;
         _resultDescriber = resultDescriber;
         _gameNotifier = gameNotifier;
-        _gameFinalizer = gameFinalizer;
     }
 
     public async Task StartGameAsync(
@@ -77,7 +83,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             ClockState = _clock.Create(pool.TimeControl),
         };
 
-        ScheduleTimeoutTimer(_state.State.CurrentGame);
+        ScheduleTimeoutTimer(_clockHandler.GetClockDueTime(_state.State.CurrentGame));
         await this.RegisterOrUpdateReminder(
             ClockReactivationReminder,
             dueTime: TimeSpan.FromMinutes(5),
@@ -158,7 +164,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             return GameErrors.PlayerInvalid;
 
         GameEndStatus endStatus =
-            game.MoveSnapshots.Count < 2
+            game.MoveHistory.Moves.Count < 2
                 ? _resultDescriber.Aborted(player.Color)
                 : _resultDescriber.Resignation(player.Color);
 
@@ -233,7 +239,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         {
             await EndGameAsync(endStatus, game, token);
         }
-        ScheduleTimeoutTimer(game);
+        ScheduleTimeoutTimer(_clockHandler.GetClockDueTime(game));
         await _state.WriteStateAsync(token);
         return Result.Success;
     }
@@ -255,7 +261,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
     {
         if (TryGetOngoingGame(out var game))
         {
-            ScheduleTimeoutTimer(game);
+            ScheduleTimeoutTimer(_clockHandler.GetClockDueTime(game));
         }
 
         return base.OnActivateAsync(cancellationToken);
@@ -266,18 +272,16 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         if (!TryGetOngoingGame(out var game))
             return;
 
-        var timeoutResult = _clock.DetectTimeout(
-            tickingPlayer: _core.SideToMove(game.Core),
-            game.ClockState
-        );
-        if (timeoutResult is null)
+        var (rescheduleTo, endResult) = await _clockHandler.OnClockTickAsync(_gameToken, game);
+        if (endResult is not null)
         {
-            ScheduleTimeoutTimer(game);
-            return;
+            await EndGameAsync(endResult, game, token);
+            await _state.WriteStateAsync(token);
         }
-
-        await EndGameAsync(timeoutResult, game, token);
-        await _state.WriteStateAsync(token);
+        if (rescheduleTo is not null)
+        {
+            ScheduleTimeoutTimer(rescheduleTo.Value);
+        }
     }
 
     private async Task EndGameAsync(
@@ -291,15 +295,13 @@ public class GameGrain : Grain, IGameGrain, IRemindable
 
         _logger.LogInformation("Game {GameToken} eneded by {EndStatus}", _gameToken, endStatus);
 
-        _clock.CommitLastTurn(_core.SideToMove(game.Core), game.ClockState);
         var state = GetGameState(game);
-
-        game.Result = await _gameFinalizer.FinalizeGameAsync(_gameToken, state, endStatus, token);
-        await _gameNotifier.NotifyGameEndedAsync(
+        game.Result = await _gameEndHandler.HandleGameEndAsync(
+            state,
+            endStatus,
             _gameToken,
-            game.Result,
-            _clock.ToSnapshot(game.ClockState),
-            game.NotifierState
+            game,
+            token
         );
 
         var streamProvider = this.GetStreamProvider(StreamingConstants.StreamProvider);
@@ -332,23 +334,19 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             SideToMove: _core.SideToMove(game.Core),
             InitialFen: game.InitialFen,
             LegalMoves: _core.GetLegalMoves(game.Core).MovePaths,
-            MoveHistory: game.MoveSnapshots,
+            MoveHistory: game.MoveHistory.Moves,
             DrawState: game.DrawRequest.GetState(),
             ResultData: game.Result
         );
         return gameState;
     }
 
-    private void ScheduleTimeoutTimer(GameData game)
+    private void ScheduleTimeoutTimer(TimeSpan dueTime)
     {
         _clockTimer?.Dispose();
-
-        var sideToMove = _core.SideToMove(game.Core);
         _clockTimer = this.RegisterGrainTimer(
             callback: OnClockTimerElapsedAsync,
-            dueTime: TimeSpan.FromMilliseconds(
-                _clock.CalculateTimeLeftMs(sideToMove, game.ClockState)
-            ),
+            dueTime: dueTime,
             period: Timeout.InfiniteTimeSpan
         );
     }

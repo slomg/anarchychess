@@ -1,6 +1,7 @@
-import { ChessboardProps } from "@/features/chessboard/stores/chessboardStore";
 import { decodeMovePath, decodeMovePathIntoLegalMoves } from "../moveDecoder";
 import { createFakeGameState } from "@/lib/testUtils/fakers/gameStateFaker";
+import { createFakeMove } from "@/lib/testUtils/fakers/chessboardFakers";
+import PositionHistory from "@/features/chessboard/lib/positionHistory";
 import { simulateMove } from "@/features/chessboard/lib/simulateMove";
 import { LiveChessStoreProps } from "../../stores/liveChessStore";
 import mockSequentialUUID from "@/lib/testUtils/mocks/mockUuids";
@@ -9,18 +10,62 @@ import { LiveChessViewer } from "../../stores/gamePlaySlice";
 import { MoveBounds } from "@/features/chessboard/lib/types";
 import { logicalPoint } from "@/features/point/pointUtils";
 import { createStoreProps } from "../gameStateProcessor";
-import { LogicalPoint } from "@/features/point/types";
 import { GameColor, GameResult } from "@/lib/apiClient";
 import constants from "@/lib/constants";
-import PositionHistory from "@/features/chessboard/lib/positionHistory";
-import { createFakeMove } from "@/lib/testUtils/fakers/chessboardFakers";
 
 describe("createStoreProps", () => {
-    it("should return the complete and correct store props object", () => {
+    it("should create correct live store props", () => {
+        const gameState = createFakeGameState();
+        const viewerUserId = gameState.blackPlayer.userId;
+
+        const { live } = createStoreProps(
+            "game-token",
+            viewerUserId,
+            gameState,
+        );
+
+        expect(live).toEqual<LiveChessStoreProps>({
+            gameToken: "game-token",
+            sourceRevision: gameState.revision,
+            initialFen: gameState.initialFen,
+
+            whitePlayer: gameState.whitePlayer,
+            blackPlayer: gameState.blackPlayer,
+            sideToMove: gameState.sideToMove,
+
+            pool: gameState.pool,
+            viewer: {
+                userId: viewerUserId,
+                playerColor: GameColor.BLACK,
+            },
+
+            drawState: gameState.drawState,
+            clocks: gameState.clocks,
+            resultData: null,
+        });
+    });
+
+    it("should create board props with correct orientation and dimensions", () => {
+        const gameState = createFakeGameState();
+        const viewerUserId = gameState.blackPlayer.userId;
+
+        const { board } = createStoreProps(
+            "game-token",
+            viewerUserId,
+            gameState,
+        );
+
+        expect(board.viewingFrom).toBe(GameColor.BLACK);
+        expect(board.boardDimensions).toEqual({
+            width: constants.BOARD_WIDTH,
+            height: constants.BOARD_HEIGHT,
+        });
+    });
+
+    it("should build position history and last move from move history", () => {
         mockSequentialUUID();
 
         const gameState = createFakeGameState({
-            initialFen: constants.INITIAL_FEN,
             // f5 f6 Nh3 Nc8
             moveHistory: [
                 {
@@ -68,43 +113,20 @@ describe("createStoreProps", () => {
                     timeLeft: 50,
                 },
             ],
-            legalMoves: [
-                { fromIdx: 0, toIdx: 1, moveKey: "0" },
-                { fromIdx: 2, toIdx: 3, moveKey: "1" },
-            ],
-            drawState: {
-                activeRequester: GameColor.WHITE,
-                whiteCooldown: 6,
-                blackCooldown: 9,
-            },
         });
 
-        const result = createStoreProps(
+        const { board } = createStoreProps(
             "game-token",
             gameState.blackPlayer.userId,
             gameState,
         );
 
-        const baseMs = gameState.pool.timeControl.baseSeconds * 1000;
-        let pieces = new BoardPieces(constants.DEFAULT_CHESS_BOARD);
-
-        function applyMove(from: LogicalPoint, to: LogicalPoint) {
-            const { newPieces } = simulateMove(
-                pieces,
-                createFakeMove({ from, to }),
-            );
-            pieces = newPieces;
-        }
-
+        // moves and clocks from the test setup
         // start position history ids after piece ids
         mockSequentialUUID({ startAt: constants.DEFAULT_CHESS_BOARD.size });
+        const baseMs = gameState.pool.timeControl.baseSeconds * 1000;
+        let pieces = new BoardPieces(constants.DEFAULT_CHESS_BOARD);
         const positionHistory = new PositionHistory(new BoardPieces(pieces));
-        // clocks: {
-        //     whiteClock: baseMs,
-        //     blackClock: baseMs,
-        // },
-
-        // moves and clocks from the test setup
         const moves = [
             {
                 from: logicalPoint({ x: 5, y: 1 }),
@@ -145,7 +167,11 @@ describe("createStoreProps", () => {
         ];
 
         for (const move of moves) {
-            applyMove(move.from, move.to);
+            const { newPieces } = simulateMove(
+                pieces,
+                createFakeMove({ from: move.from, to: move.to }),
+            );
+            pieces = newPieces;
             positionHistory.addNextPosition({
                 pieces,
                 move: move.decoded,
@@ -162,48 +188,26 @@ describe("createStoreProps", () => {
             to: lastPosition.move.to,
         };
 
-        const legalMoves = decodeMovePathIntoLegalMoves({
-            paths: gameState.legalMoves,
-            boardWidth: constants.BOARD_WIDTH,
-        });
+        expect(board.lastMove).toEqual(lastMove);
+        expect(board.positionHistory).toEqual(positionHistory);
+        expect(board.pieces).toEqual(lastPosition.pieces);
+    });
 
-        expect(result).toEqual<{
-            live: LiveChessStoreProps;
-            board: ChessboardProps;
-        }>({
-            live: {
-                gameToken: "game-token",
-                sourceRevision: gameState.revision,
-                whitePlayer: gameState.whitePlayer,
-                blackPlayer: gameState.blackPlayer,
-                sideToMove: gameState.sideToMove,
-                initialFen: gameState.initialFen,
+    it("should map legal moves to the current position", () => {
+        const gameState = createFakeGameState();
+        const { board } = createStoreProps(
+            "game-token",
+            gameState.blackPlayer.userId,
+            gameState,
+        );
 
-                pool: gameState.pool,
-                viewer: {
-                    userId: gameState.blackPlayer.userId,
-                    playerColor: GameColor.BLACK,
-                },
-
-                drawState: gameState.drawState,
-                clocks: gameState.clocks,
-                resultData: null,
-            },
-            board: {
-                pieces,
-                legalMovesByPosition: new Map([
-                    [lastPosition.positionId, legalMoves],
-                ]),
-                boardDimensions: {
-                    width: constants.BOARD_WIDTH,
-                    height: constants.BOARD_HEIGHT,
-                },
-                positionHistory,
-                lastMove,
-                viewingFrom: GameColor.BLACK,
-                allowHistoryChanges: false,
-            },
-        });
+        const positionId = board.positionHistory!.viewingPosition?.positionId;
+        expect(board.legalMovesByPosition.get(positionId)).toEqual(
+            decodeMovePathIntoLegalMoves({
+                paths: gameState.legalMoves,
+                boardWidth: constants.BOARD_WIDTH,
+            }),
+        );
     });
 
     it("should return the right viewer for spectator", () => {

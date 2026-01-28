@@ -29,11 +29,9 @@ describe("useEnsureLegalMovesForViewedPosition", () => {
     const initialFen = "initial fen";
 
     const getNextLegalMovesMock = vi.mocked(getNextLegalMoves);
-    const reselectPieceMock = vi.fn();
 
     beforeEach(() => {
         chessboardStore = createChessboardStore();
-        chessboardStore.setState({ reselectPiece: reselectPieceMock });
 
         const legalMoves = [createFakeMovePath()];
         getNextLegalMovesMock.mockResolvedValue({
@@ -70,7 +68,6 @@ describe("useEnsureLegalMovesForViewedPosition", () => {
         expect(
             chessboardStore.getState().getViewedPositionLegalMoves(),
         ).toEqual(expectedLegalMoves);
-        expect(reselectPieceMock).toHaveBeenCalledOnce();
     });
 
     it("should not fetch legal moves if they already exist for the viewed position", async () => {
@@ -85,7 +82,6 @@ describe("useEnsureLegalMovesForViewedPosition", () => {
         act(() => chessboardStore.getState().setAllowHistoryChanges(true));
 
         expect(getNextLegalMovesMock).not.toHaveBeenCalled();
-        expect(reselectPieceMock).not.toHaveBeenCalledOnce();
         expect(
             chessboardStore.getState().getViewedPositionLegalMoves(),
         ).toEqual(prevLegalMoves);
@@ -124,7 +120,6 @@ describe("useEnsureLegalMovesForViewedPosition", () => {
         await act(() => chessboardStore.getState().addPosition(position));
 
         expect(getNextLegalMovesMock).not.toHaveBeenCalled();
-        expect(reselectPieceMock).not.toHaveBeenCalledOnce();
         expect(
             chessboardStore.getState().getViewedPositionLegalMoves(),
         ).toEqual(new LegalMoves());

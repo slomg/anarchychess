@@ -7,9 +7,13 @@ import { Move, PieceID } from "../lib/types";
 import BoardPieces from "../lib/boardPieces";
 import { MoveNode } from "../lib/legalMoves";
 
+export interface PendingIntermediate {
+    nextOptions: LogicalPoint[];
+    pieceId: PieceID;
+}
+
 export interface IntermediateSlice {
-    nextIntermediates: LogicalPoint[];
-    intermediateVisited: LogicalPoint[];
+    pendingIntermediate: PendingIntermediate | null;
 
     resolveNextIntermediate: ((move: LogicalPoint | null) => void) | null;
     disambiguateIntermediates(
@@ -26,12 +30,12 @@ export const createIntermediateSlice: StateCreator<
     [],
     IntermediateSlice
 > = (set, get) => ({
-    nextIntermediates: [],
-    intermediateVisited: [],
+    pendingIntermediate: null,
     resolveNextIntermediate: null,
 
     async disambiguateIntermediates(dest, moveNode, pieceId, pieces) {
         const { animatePiece } = get();
+
         try {
             while (true) {
                 const movesThatEndHere = moveNode.terminalMoves;
@@ -52,7 +56,10 @@ export const createIntermediateSlice: StateCreator<
                 const choice = await new Promise<LogicalPoint | null>(
                     (resolve) => {
                         set((state) => {
-                            state.nextIntermediates = nextOptions;
+                            state.pendingIntermediate = {
+                                nextOptions: nextOptions,
+                                pieceId,
+                            };
                             state.resolveNextIntermediate = resolve;
                         });
                     },
@@ -75,7 +82,7 @@ export const createIntermediateSlice: StateCreator<
             }
         } finally {
             set((state) => {
-                state.nextIntermediates = [];
+                state.pendingIntermediate = null;
                 state.resolveNextIntermediate = null;
             });
         }

@@ -11,16 +11,12 @@ namespace AnarchyChess.Api.Game.Services;
 
 public interface IGameCore
 {
-    byte[] EncodeLegalMoves(GameCoreState state);
-    IReadOnlyChessBoard GetChessBoard(GameCoreState state);
+    CompressedMoves EncodeLegalMoves(GameCoreState state);
+    IReadOnlyChessBoard GetReadOnlyBoard(GameCoreState state);
     LegalMoveSet GetLegalMoves(GameCoreState state);
     ErrorOr<MoveResult> MakeMove(MoveKey key, GameCoreState state);
     MoveResult MakeMove(Move move, GameCoreState state);
-    void RemovePieces(
-        IEnumerable<AlgebraicPoint> positions,
-        LegalMoveSet newLegalMoves,
-        GameCoreState state
-    );
+    void RemovePiece(AlgebraicPoint removeFrom, LegalMoveSet newLegalMoves, GameCoreState state);
     GameColor SideToMove(GameCoreState state);
     FenNotation StartGame(GameCoreState state);
 }
@@ -139,25 +135,21 @@ public class GameCore(
         return moveResult;
     }
 
-    public void RemovePieces(
-        IEnumerable<AlgebraicPoint> positions,
+    public void RemovePiece(
+        AlgebraicPoint removeFrom,
         LegalMoveSet newLegalMoves,
         GameCoreState state
     )
     {
-        foreach (var point in positions)
-        {
-            state.Board.RemovePiece(point);
-        }
-
+        state.Board.RemovePiece(removeFrom);
         state.LegalMoves = newLegalMoves;
     }
 
     public LegalMoveSet GetLegalMoves(GameCoreState state) => state.LegalMoves;
 
-    public IReadOnlyChessBoard GetChessBoard(GameCoreState state) => state.Board;
+    public IReadOnlyChessBoard GetReadOnlyBoard(GameCoreState state) => state.Board;
 
-    public byte[] EncodeLegalMoves(GameCoreState state)
+    public CompressedMoves EncodeLegalMoves(GameCoreState state)
     {
         var legalMoves = GetLegalMoves(state);
         return _moveEncoder.EncodeMoves(legalMoves.MovePaths);

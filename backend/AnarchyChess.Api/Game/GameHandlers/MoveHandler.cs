@@ -26,7 +26,8 @@ public class MoveHandler(
     IOptions<AppSettings> settings,
     IGameCore core,
     IGameClock clock,
-    IGameNotifier notifier
+    IGameNotifier notifier,
+    IOvertime overtime
 ) : IMoveHandler
 {
     private readonly ILogger<MoveHandler> _logger = logger;
@@ -34,6 +35,7 @@ public class MoveHandler(
     private readonly IGameCore _core = core;
     private readonly IGameClock _clock = clock;
     private readonly IGameNotifier _notifier = notifier;
+    private readonly IOvertime _overtime = overtime;
 
     public async Task<ErrorOr<GameEndStatus?>> HandleMoveAsync(
         UserId moveMadeBy,
@@ -47,7 +49,7 @@ public class MoveHandler(
         if (currentPlayer.UserId != moveMadeBy)
         {
             _logger.LogWarning(
-                "User {UserId} attmpted to move a piece, but their id doesn't match the current player {PlayingUserId}",
+                "User {UserId} attempted to move a piece, but their id doesn't match the current player {PlayingUserId}",
                 moveMadeBy,
                 currentPlayer?.UserId
             );
@@ -71,7 +73,7 @@ public class MoveHandler(
             notification: new(
                 GameToken: gameToken,
                 Move: moveSnapshot,
-                PlyNumber: game.MoveSnapshots.Count,
+                PlyNumber: game.MoveHistory.Moves.Count,
                 Clocks: _clock.ToSnapshot(game.ClockState),
                 SideToMoveUserId: nextPlayer.UserId,
                 EncodedLegalMoves: _core.EncodeLegalMoves(game.Core),
@@ -81,12 +83,9 @@ public class MoveHandler(
         );
 
         await HandleDrawForMoveAsync(moveBy: currentPlayer.Color, gameToken, game);
-        var timeoutStatus = _clock.DetectTimeout(
-            tickingPlayer: _core.SideToMove(game.Core),
-            game.ClockState
-        );
-
-        return moveResult.EndStatus ?? timeoutStatus;
+        _overtime.TryEndOvertimeTurn(currentPlayer.Color, game.OvertimeState);
+        await StartNextOvertimeTurnAsync(sideToMove: nextPlayer, gameToken, game);
+        return moveResult.EndStatus;
     }
 
     private MoveSnapshot BuildAndStoreMove(
@@ -97,16 +96,8 @@ public class MoveHandler(
     )
     {
         var timeLeft = _clock.CommitTurn(movedBy, game.ClockState);
-
-        MoveSnapshot moveSnapshot = new(
-            Path: moveResult.MovePath,
-            Fen: moveResult.Fen.FullFen,
-            NextSideToMove: nextPlayer,
-            San: moveResult.San,
-            timeLeft
-        );
-        game.MoveSnapshots.Add(moveSnapshot);
-        return moveSnapshot;
+        MoveSnapshot snapshot = game.MoveHistory.AddMove(nextPlayer, moveResult, timeLeft);
+        return snapshot;
     }
 
     private async Task HandleDrawForMoveAsync(GameColor moveBy, GameToken gameToken, GameData game)
@@ -119,6 +110,30 @@ public class MoveHandler(
                 gameToken,
                 game.DrawRequest.GetState(),
                 game.NotifierState
+            );
+        }
+    }
+
+    private async Task StartNextOvertimeTurnAsync(
+        GamePlayer sideToMove,
+        GameToken gameToken,
+        GameData game
+    )
+    {
+        if (!_clock.IsTimeout(sideToMove.Color, isTicking: true, game.ClockState))
+        {
+            return;
+        }
+
+        var board = _core.GetReadOnlyBoard(game.Core);
+        var nextRemoval = _overtime.StartOvertimeTurn(sideToMove.Color, board, game.OvertimeState);
+        if (nextRemoval is not null)
+        {
+            await _notifier.NotifyNextOvertimeAsync(
+                sideToMove.UserId,
+                plyNumber: game.MoveHistory.Moves.Count,
+                removeFrom: nextRemoval.Value,
+                gameToken: gameToken
             );
         }
     }

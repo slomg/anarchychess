@@ -1,5 +1,6 @@
 ﻿using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.SignalR;
+using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Shared.Models;
@@ -23,6 +24,19 @@ public interface IGameNotifier
         GameNotifierState state
     );
     Task NotifyMoveMadeAsync(MoveNotification notification, GameNotifierState state);
+    Task NotifyOvertimeAsync(
+        int plyNumber,
+        AlgebraicPoint removeFrom,
+        CompressedMoves encodedLegalMoves,
+        GameToken gameToken,
+        GameNotifierState state
+    );
+    Task NotifyNextOvertimeAsync(
+        UserId userId,
+        int plyNumber,
+        AlgebraicPoint removeFrom,
+        GameToken gameToken
+    );
 }
 
 public record MoveNotification(
@@ -31,7 +45,7 @@ public record MoveNotification(
     int PlyNumber,
     ClockSnapshot Clocks,
     UserId SideToMoveUserId,
-    IReadOnlyCollection<byte> EncodedLegalMoves,
+    CompressedMoves EncodedLegalMoves,
     bool DidMoveEndGame
 );
 
@@ -72,6 +86,32 @@ public class GameNotifier(IHubContext<GameHub, IGameHubClient> hub) : IGameNotif
                 encodedLegalMoves: notification.EncodedLegalMoves,
                 clock: notification.Clocks
             );
+    }
+
+    public async Task NotifyNextOvertimeAsync(
+        UserId userId,
+        int plyNumber,
+        AlgebraicPoint removeFrom,
+        GameToken gameToken
+    )
+    {
+        await _hub
+            .Clients.Group(UserGameGroup(gameToken, userId))
+            .ReceiveNextOvertimeAsync(plyNumber, removeFrom);
+    }
+
+    public async Task NotifyOvertimeAsync(
+        int plyNumber,
+        AlgebraicPoint removeFrom,
+        CompressedMoves encodedLegalMoves,
+        GameToken gameToken,
+        GameNotifierState state
+    )
+    {
+        state.Revision++;
+        await _hub
+            .Clients.Group(gameToken)
+            .ReceiveOvertimeAsync(plyNumber, removeFrom, encodedLegalMoves);
     }
 
     public Task NotifyDrawStateChangeAsync(

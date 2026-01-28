@@ -9,7 +9,7 @@ export default function useSyncBoardInteraction(
 ): void {
     useEffect(() => {
         const { isInteractionAllowed } = liveChessStore.getState();
-        const { setHideLegalMoves, reselectPiece } = chessboardStore.getState();
+        const { setHideLegalMoves } = chessboardStore.getState();
 
         const initialInteractionAllowed = isInteractionAllowed();
         setHideLegalMoves(!initialInteractionAllowed);
@@ -21,7 +21,6 @@ export default function useSyncBoardInteraction(
             prevInteractionAllowed = updatedInteractionAllowed;
 
             setHideLegalMoves(!updatedInteractionAllowed);
-            reselectPiece();
         });
         return unsub;
     }, [liveChessStore, chessboardStore]);

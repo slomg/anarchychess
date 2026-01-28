@@ -24,6 +24,34 @@ describe("PositionHistory", () => {
         });
     });
 
+    describe("getPositionWithPly", () => {
+        it("should return undefined for an empty history", () => {
+            expect(history.getPositionWithPly(1)).toBeUndefined();
+            expect(history.getPositionWithPly(0)).toBeUndefined();
+            expect(history.getPositionWithPly(10)).toBeUndefined();
+        });
+
+        it("should return undefined for a ply beyond the main line", () => {
+            const pos1 = history.addNextPosition(createFakePositionProps());
+            const pos2 = history.addNextPosition(createFakePositionProps());
+
+            expect(history.getPositionWithPly(1)).toBe(pos1);
+            expect(history.getPositionWithPly(2)).toBe(pos2);
+            expect(history.getPositionWithPly(3)).toBeUndefined();
+            expect(history.getPositionWithPly(100)).toBeUndefined();
+        });
+
+        it("should return undefined for sub variation plies", () => {
+            const pos1 = history.addNextPosition(createFakePositionProps());
+            history.goToStart();
+            const subVar = history.addNextSidelinePosition(
+                createFakePositionProps(),
+            );
+
+            expect(history.getPositionWithPly(subVar.ply)).toEqual(pos1);
+        });
+    });
+
     describe("getNextPositionWithKey", () => {
         it("should return false when history is empty", () => {
             expect(
@@ -339,6 +367,7 @@ describe("PositionHistory", () => {
             expect(history.mainPlyCount).toBe(1);
             expect(history.totalPlyCount).toBe(1);
             expect(history.viewingPosition).toBe(pos);
+            expect(history.getPositionWithPly(1)).toEqual(pos);
         });
 
         it("should append to the main line for next positions", () => {
@@ -349,6 +378,7 @@ describe("PositionHistory", () => {
             expect(history.totalPlyCount).toBe(2);
             expect([...history]).toEqual([pos1, pos2]);
             expect(history.viewingPosition).toBe(pos2);
+            expect(history.getPositionWithPly(2)).toEqual(pos2);
         });
 
         it("should return the existing first mainline variation if move key is the same when viewing root", () => {
@@ -376,6 +406,7 @@ describe("PositionHistory", () => {
             expect(history.viewingPosition).toBe(firstPositionVariation);
             expect(history.mainPlyCount).toBe(1);
             expect(history.totalPlyCount).toBe(2);
+            expect(history.getPositionWithPly(2)).toBeUndefined();
 
             const retrieved = history.goToPosition(
                 firstPositionVariation.positionId,
@@ -410,6 +441,7 @@ describe("PositionHistory", () => {
             expect(pos1.variations).toEqual([pos2, pos1Variation]);
             expect(history.mainPlyCount).toBe(2);
             expect(history.totalPlyCount).toBe(3);
+            expect(history.getPositionWithPly(3)).toBeUndefined();
         });
 
         it("should return the existing variation if move key already exists as main variation", () => {

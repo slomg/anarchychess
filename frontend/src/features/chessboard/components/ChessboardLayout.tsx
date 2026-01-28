@@ -27,12 +27,14 @@ export interface ChessboardLayoutProps {
     breakpoints?: ChessboardBreakpoint[];
     defaultOffset?: PaddingOffset;
     className?: string;
+    children?: React.ReactNode;
 }
 
 const ChessboardLayout = ({
     breakpoints = [],
     defaultOffset,
     className,
+    children,
 }: ChessboardLayoutProps) => {
     const [boardSize, setBoardSize] = useState<number>(0);
     const { setBoardRect, onPointerDown, onPointerUp } = useChessboardStore(
@@ -148,6 +150,7 @@ const ChessboardLayout = ({
             <PromotionPrompt />
             <PieceRenderer />
             <Coords />
+            {children}
         </div>
     );
 };

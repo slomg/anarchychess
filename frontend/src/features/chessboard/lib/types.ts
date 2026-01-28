@@ -28,6 +28,8 @@ export interface Move {
     forcedPriority: ForcedMovePriority;
     specialType: SpecialMoveType;
     emphasizeSquare: boolean;
+
+    overtimeRemovals: LogicalPoint[];
 }
 
 export type MoveKey = string & { __brand: "MoveKey" };
@@ -64,11 +66,12 @@ export interface AnimationStep {
     specialType?: SpecialMoveType | null;
     isCapture?: boolean;
     isPromotion?: boolean;
+    hasOvertimeRemovals?: boolean;
 }
 
 export interface MoveAnimation {
     steps: AnimationStep[];
-    removedPieceIds: PieceID[];
+    removedPieces?: Map<PieceID, Piece>;
 }
 
 export interface GameReplay {

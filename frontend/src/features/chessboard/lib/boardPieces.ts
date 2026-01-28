@@ -1,5 +1,3 @@
-import { immerable } from "immer";
-
 import { LogicalPoint, StrPoint } from "@/features/point/types";
 import { Move, Piece, PieceID } from "./types";
 import { pointToStr } from "@/features/point/pointUtils";
@@ -16,8 +14,6 @@ interface GatheredMoves {
 }
 
 export default class BoardPieces {
-    [immerable] = true;
-
     _byId: Map<PieceID, Piece>;
     _byPosition: Map<StrPoint, PieceID>;
 
@@ -57,20 +53,13 @@ export default class BoardPieces {
 
     playMove(move: Move): {
         movedPieceIds: PieceID[];
-        removedPieceIds: PieceID[];
+        removedPieces: Map<PieceID, Piece>;
     } {
         const { pieceMoves, movedPieceIds } = this._gatherMoves(move);
-        const removedPieceIds: PieceID[] = [];
 
         // step 1: remove all captures first
         // so we don't capture any piece that just moved
-        for (const capture of move.captures) {
-            const capturedPiece = this.getByPosition(capture);
-            if (capturedPiece) {
-                this.delete(capturedPiece.id);
-                removedPieceIds.push(capturedPiece.id);
-            }
-        }
+        const removedPieces = this.removeCapturedPiecesFromMove(move);
 
         // step 2: clear all origin squares of moving pieces
         // this is done before placing pieces to handle swaps correctly
@@ -90,13 +79,28 @@ export default class BoardPieces {
             movedPieceIds.add(spawn.id);
         }
 
-        if (move.promotesTo !== null)
+        if (move.promotesTo !== null) {
             this.getByPosition(move.to)!.type = move.promotesTo;
+        }
 
         return {
-            removedPieceIds,
+            removedPieces,
             movedPieceIds: [...movedPieceIds],
         };
+    }
+
+    removeCapturedPiecesFromMove(move: Move): Map<PieceID, Piece> {
+        const removedPieces: Map<PieceID, Piece> = new Map();
+
+        for (const capture of [...move.captures, ...move.overtimeRemovals]) {
+            const capturedPiece = this.getByPosition(capture);
+            if (capturedPiece) {
+                this.remove(capturedPiece.id);
+                removedPieces.set(capturedPiece.id, capturedPiece);
+            }
+        }
+
+        return removedPieces;
     }
 
     movePiece(pieceId: PieceID, to: LogicalPoint) {
@@ -123,11 +127,26 @@ export default class BoardPieces {
         this._byPosition.set(pointToStr(position), newPiece.id);
     }
 
-    delete(pieceId: PieceID): void {
-        const piece = this._byId.get(pieceId);
-        if (!piece) return;
+    remove(pieceId: PieceID): boolean {
+        const piece = this.getById(pieceId);
+        if (!piece) {
+            return false;
+        }
+
         this._byId.delete(pieceId);
         this._byPosition.delete(pointToStr(piece.position));
+        return true;
+    }
+
+    removeFrom(position: LogicalPoint): boolean {
+        const piece = this.getByPosition(position);
+        if (!piece) {
+            return false;
+        }
+
+        this._byId.delete(piece.id);
+        this._byPosition.delete(pointToStr(position));
+        return true;
     }
 
     values(): IterableIterator<Piece> {

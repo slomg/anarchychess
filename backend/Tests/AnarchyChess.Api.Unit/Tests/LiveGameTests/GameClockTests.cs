@@ -17,7 +17,6 @@ public class GameClockTests
     private readonly GameClockState _state;
 
     private readonly GameSettings _settings;
-    private readonly GameResultDescriber _gameResultDescriber = new();
 
     private readonly TimeProvider _timeProviderMock = Substitute.For<TimeProvider>();
     private readonly DateTimeOffset _fakeNow = DateTimeOffset.UtcNow;
@@ -28,7 +27,7 @@ public class GameClockTests
         _timeProviderMock.GetUtcNow().Returns(_fakeNow);
         _settings = settings.Game;
 
-        _clock = new(Options.Create(settings), _gameResultDescriber, _timeProviderMock);
+        _clock = new(Options.Create(settings), _timeProviderMock);
 
         _state = _clock.Create(_timeControl);
         _state.Clocks[GameColor.White].IsInGracePeriod = false;
@@ -289,117 +288,53 @@ public class GameClockTests
     }
 
     [Fact]
-    public void DetectTimeout_returns_null_when_no_player_has_timed_out()
-    {
-        _state.Clocks[GameColor.White].TimeLeftMs = 200_000;
-        _state.Clocks[GameColor.Black].TimeLeftMs = 200_000;
-
-        var result = _clock.DetectTimeout(GameColor.White, _state);
-
-        result.Should().BeNull();
-    }
-
-    [Fact]
-    public void DetectTimeout_returns_white_timeout_when_white_time_runs_out()
-    {
-        _state.Clocks[GameColor.White].TimeLeftMs = 100;
-        _state.Clocks[GameColor.Black].TimeLeftMs = 200_000;
-
-        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(90));
-
-        var result = _clock.DetectTimeout(GameColor.White, _state);
-
-        result.Should().BeEquivalentTo(_gameResultDescriber.Timeout(GameColor.White));
-    }
-
-    [Fact]
-    public void DetectTimeout_returns_black_timeout_when_black_time_is_exhausted()
-    {
-        _state.Clocks[GameColor.Black].TimeLeftMs = 100;
-        _state.Clocks[GameColor.White].TimeLeftMs = 200_000;
-
-        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(90));
-
-        var result = _clock.DetectTimeout(GameColor.Black, _state);
-
-        result.Should().BeEquivalentTo(_gameResultDescriber.Timeout(GameColor.Black));
-    }
-
-    [Fact]
-    public void DetectTimeout_aborts_game_when_player_times_out_in_grace_period()
-    {
-        _state.Clocks[GameColor.White].IsInGracePeriod = true;
-        _state.Clocks[GameColor.White].TimeUntilAbandonMs = 50;
-        _state.Clocks[GameColor.White].TimeLeftMs = 300_000;
-
-        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(100));
-
-        var result = _clock.DetectTimeout(GameColor.White, _state);
-
-        result.Should().BeEquivalentTo(_gameResultDescriber.Aborted(GameColor.White));
-    }
-
-    [Fact]
-    public void DetectTimeout_abandons_game_when_player_times_out_during_abandon_window()
-    {
-        _state.Clocks[GameColor.White].IsInGracePeriod = false;
-        _state.Clocks[GameColor.White].TimeUntilAbandonMs = 50;
-        _state.Clocks[GameColor.White].TimeLeftMs = 300_000;
-
-        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(100));
-
-        var result = _clock.DetectTimeout(GameColor.White, _state);
-
-        result.Should().BeEquivalentTo(_gameResultDescriber.Abandoned(GameColor.White));
-    }
-
-    [Fact]
-    public void DetectTimeout_only_considers_ticking_player_for_elapsed_time()
-    {
-        _state.Clocks[GameColor.White].TimeLeftMs = 200_000;
-        _state.Clocks[GameColor.Black].TimeLeftMs = 100;
-
-        _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(90));
-
-        var result = _clock.DetectTimeout(GameColor.White, _state);
-
-        result.Should().BeNull();
-    }
-
-    [Fact]
-    public void IsOvertime_returns_true_for_time_under_10_ms()
+    public void IsTimeout_returns_true_for_time_under_10_ms()
     {
         _state.Clocks[GameColor.White].TimeLeftMs = 100;
 
         _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(90));
 
-        var result = _clock.IsOvertime(GameColor.White, isTicking: true, _state);
+        var result = _clock.IsTimeout(GameColor.White, isTicking: true, _state);
 
         result.Should().BeTrue();
     }
 
     [Fact]
-    public void IsOvertime_returns_false_for_time_over_10_ms()
+    public void IsTimeout_returns_false_for_time_over_10_ms()
     {
         _state.Clocks[GameColor.White].TimeLeftMs = 100;
 
         _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(89));
 
-        var result = _clock.IsOvertime(GameColor.White, isTicking: true, _state);
+        var result = _clock.IsTimeout(GameColor.White, isTicking: true, _state);
 
         result.Should().BeFalse();
     }
 
     [Fact]
-    public void IsOvertime_only_ticks_when_asked()
+    public void IsTimeout_only_ticks_when_asked()
     {
         _state.Clocks[GameColor.Black].TimeLeftMs = 100;
         _timeProviderMock.GetUtcNow().Returns(_fakeNow + TimeSpan.FromMilliseconds(90));
 
-        var tickingResult = _clock.IsOvertime(GameColor.Black, isTicking: true, _state);
-        var notTickingResult = _clock.IsOvertime(GameColor.Black, isTicking: false, _state);
+        var tickingResult = _clock.IsTimeout(GameColor.Black, isTicking: true, _state);
+        var notTickingResult = _clock.IsTimeout(GameColor.Black, isTicking: false, _state);
 
         tickingResult.Should().BeTrue();
         notTickingResult.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(GameColor.White, true)]
+    [InlineData(GameColor.White, false)]
+    [InlineData(GameColor.Black, true)]
+    [InlineData(GameColor.Black, false)]
+    public void IsInGracePeriod_returns_expected_value(GameColor color, bool inGrace)
+    {
+        _state.Clocks[color].IsInGracePeriod = inGrace;
+
+        var result = _clock.IsInGracePeriod(color, _state);
+
+        result.Should().Be(inGrace);
     }
 }

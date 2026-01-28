@@ -8,7 +8,7 @@ import {
     PoolKey,
 } from "@/lib/apiClient";
 
-import { LiveChessStore, LiveChessStoreProps } from "./liveChessStore";
+import type { LiveChessStore, LiveChessStoreProps } from "./liveChessStore";
 
 export interface GameStateSliceProps {
     gameToken: string;

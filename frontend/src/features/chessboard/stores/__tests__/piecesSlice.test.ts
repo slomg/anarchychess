@@ -4,6 +4,7 @@ import {
     createFakeBoardPieces,
     createFakeMove,
     createFakePiece,
+    createRandomPoint,
 } from "@/lib/testUtils/fakers/chessboardFakers";
 import {
     ForcedMovePriority,
@@ -12,17 +13,25 @@ import {
     SpecialMoveType,
 } from "@/lib/apiClient";
 
+import {
+    AnimationStep,
+    IntermediateSquare,
+    Move,
+    MoveAnimation,
+} from "../../lib/types";
+
+import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
 import { ChessboardStore, createChessboardStore } from "../chessboardStore";
-import { AnimationStep, IntermediateSquare, Move } from "../../lib/types";
-import { createFakePosition } from "@/lib/testUtils/fakers/positionFaker";
 import { logicalPoint, screenPoint } from "@/features/point/pointUtils";
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
 import flushMicrotasks from "@/lib/testUtils/flushMicrotasks";
+import { ChildPositionNode } from "../../lib/position";
 import { LogicalPoint } from "@/features/point/types";
 import { ScreenPoint } from "@/features/point/types";
 import BoardPieces from "../../lib/boardPieces";
 import LegalMoves from "../../lib/legalMoves";
 import { Piece } from "../../lib/types";
+import constants from "@/lib/constants";
 
 vi.mock("@/features/audio/audioPlayer");
 
@@ -79,11 +88,9 @@ describe("PiecesSlice", () => {
             const piece = createFakePiece({
                 position: logicalPoint({ x: 0, y: 0 }),
             });
-            const highlightLegalMovesMock = vi.fn(() => true);
 
             store.setState({
                 pieces: BoardPieces.fromPieces(piece),
-                highlightLegalMoves: highlightLegalMovesMock,
                 selectedPieceId: null,
             });
 
@@ -91,81 +98,18 @@ describe("PiecesSlice", () => {
 
             expect(result).toBe(true);
             expect(store.getState().selectedPieceId).toBe(piece.id);
-            expect(highlightLegalMovesMock).toHaveBeenCalledWith(piece);
         });
     });
 
     describe("unselectPiece", () => {
-        it("should hide legal moves and clear selectedPieceId", () => {
-            const hideLegalMovesMock = vi.fn();
+        it("should clear selectedPieceId", () => {
             store.setState({
                 selectedPieceId: "0",
-                unhighlightLegalMoves: hideLegalMovesMock,
             });
 
             store.getState().unselectPiece();
 
-            expect(hideLegalMovesMock).toHaveBeenCalled();
             expect(store.getState().selectedPieceId).toBeNull();
-        });
-    });
-
-    describe("reselectPiece", () => {
-        it("should do nothing if no piece is selected", () => {
-            const highlightLegalMovesMock = vi.fn();
-            const unhighlightLegalMovesMock = vi.fn();
-
-            store.setState({
-                selectedPieceId: null,
-                highlightLegalMoves: highlightLegalMovesMock,
-                unhighlightLegalMoves: unhighlightLegalMovesMock,
-            });
-
-            const result = store.getState().reselectPiece();
-
-            expect(result).toBe(false);
-            expect(unhighlightLegalMovesMock).toHaveBeenCalledOnce();
-            expect(highlightLegalMovesMock).not.toHaveBeenCalled();
-        });
-
-        it("should do nothing if the selected piece does not exist", () => {
-            const highlightLegalMovesMock = vi.fn();
-            const unhighlightLegalMovesMock = vi.fn();
-
-            store.setState({
-                selectedPieceId: "nonexistent",
-                highlightLegalMoves: highlightLegalMovesMock,
-                unhighlightLegalMoves: unhighlightLegalMovesMock,
-            });
-
-            const result = store.getState().reselectPiece();
-
-            expect(result).toBe(false);
-            expect(unhighlightLegalMovesMock).toHaveBeenCalledOnce();
-            expect(highlightLegalMovesMock).not.toHaveBeenCalled();
-        });
-
-        it("should call highlightLegalMoves with the selected piece if it exists", () => {
-            const piece = createFakePiece({
-                position: logicalPoint({ x: 0, y: 0 }),
-            });
-            const highlightLegalMovesMock = vi.fn();
-            const unhighlightLegalMovesMock = vi.fn();
-
-            store.setState({
-                pieces: BoardPieces.fromPieces(piece),
-                selectedPieceId: piece.id,
-                highlightLegalMoves: highlightLegalMovesMock,
-                unhighlightLegalMoves: unhighlightLegalMovesMock,
-            });
-
-            const result = store.getState().reselectPiece();
-
-            expect(result).toBe(true);
-            expect(highlightLegalMovesMock).toHaveBeenCalledExactlyOnceWith(
-                piece,
-            );
-            expect(unhighlightLegalMovesMock).not.toHaveBeenCalled();
         });
     });
 
@@ -204,7 +148,9 @@ describe("PiecesSlice", () => {
                     expectedAnimationPieces,
                 );
 
-                vi.advanceTimersByTime(100);
+                vi.advanceTimersByTime(constants.PIECE_ANIMATION_LENGTH_MS);
+                await flushMicrotasks();
+                vi.advanceTimersByTime(constants.ANIMATION_STEP_DELAY_MS);
                 await flushMicrotasks();
             }
         });
@@ -230,6 +176,50 @@ describe("PiecesSlice", () => {
             expectPieces({ piece, position: move.to });
             expect(store.getState().animatingPieceIds).toEqual(
                 new Set([piece.id]),
+            );
+        });
+    });
+
+    describe("removePieceAt", () => {
+        it("should remove the piece and animate it", async () => {
+            const piece = createFakePiece({
+                position: logicalPoint({ x: 3, y: 3 }),
+            });
+            const otherPiece = createFakePiece({
+                position: logicalPoint({ x: 4, y: 4 }),
+            });
+            const pieces = BoardPieces.fromPieces(piece, otherPiece);
+
+            const discardPromptsForPieceMock = vi.fn();
+            const playAnimationBatchMock = vi.fn();
+
+            store.setState({
+                pieces,
+                discardPromptsForPiece: discardPromptsForPieceMock,
+                playAnimationBatch: playAnimationBatchMock,
+            });
+
+            const expectedNewPieces = new BoardPieces(pieces);
+            expectedNewPieces.remove(piece.id);
+
+            const expectedAnimation: MoveAnimation = {
+                steps: [
+                    {
+                        newPieces: expectedNewPieces,
+                        movedPieceIds: [],
+                    },
+                ],
+                removedPieces: new Map([[piece.id, piece]]),
+            };
+
+            await store.getState().removePieceAt(piece.position);
+
+            expect(store.getState().pieces).toEqual(expectedNewPieces);
+            expect(discardPromptsForPieceMock).toHaveBeenCalledExactlyOnceWith(
+                piece.id,
+            );
+            expect(playAnimationBatchMock).toHaveBeenCalledExactlyOnceWith(
+                expectedAnimation,
             );
         });
     });
@@ -554,9 +544,14 @@ describe("PiecesSlice", () => {
 
         it("should set pieces with playAnimation", async () => {
             const newPos = logicalPoint({ x: 1, y: 1 });
-            const position = createFakePosition({
-                pieces: BoardPieces.fromPieces({ ...piece, position: newPos }),
-            });
+            const position = new ChildPositionNode(
+                createFakePositionProps({
+                    pieces: BoardPieces.fromPieces({
+                        ...piece,
+                        position: newPos,
+                    }),
+                }),
+            );
 
             await store.getState().updatePiecesFromPosition(position);
 
@@ -574,15 +569,17 @@ describe("PiecesSlice", () => {
 
         it("should set isCapture to true if position move is a capture", async () => {
             const newPos = logicalPoint({ x: 1, y: 1 });
-            const position = createFakePosition({
-                pieces: BoardPieces.fromPieces({
-                    ...piece,
-                    position: newPos,
+            const position = new ChildPositionNode(
+                createFakePositionProps({
+                    pieces: BoardPieces.fromPieces({
+                        ...piece,
+                        position: newPos,
+                    }),
+                    move: createFakeMove({
+                        captures: [logicalPoint({ x: 1, y: 1 })],
+                    }),
                 }),
-                move: createFakeMove({
-                    captures: [logicalPoint({ x: 1, y: 1 })],
-                }),
-            });
+            );
 
             await store.getState().updatePiecesFromPosition(position);
 
@@ -600,15 +597,17 @@ describe("PiecesSlice", () => {
 
         it("should pass specialType to playAnimation when present", async () => {
             const newPos = logicalPoint({ x: 2, y: 2 });
-            const position = createFakePosition({
-                pieces: BoardPieces.fromPieces({
-                    ...piece,
-                    position: newPos,
+            const position = new ChildPositionNode(
+                createFakePositionProps({
+                    pieces: BoardPieces.fromPieces({
+                        ...piece,
+                        position: newPos,
+                    }),
+                    move: createFakeMove({
+                        specialType: SpecialMoveType.KNOOKLEAR_FUSION,
+                    }),
                 }),
-                move: createFakeMove({
-                    specialType: SpecialMoveType.KNOOKLEAR_FUSION,
-                }),
-            });
+            );
 
             await store.getState().updatePiecesFromPosition(position);
 
@@ -626,15 +625,17 @@ describe("PiecesSlice", () => {
 
         it("should set isPromotion=true when promotesTo is defined", async () => {
             const newPos = logicalPoint({ x: 0, y: 7 });
-            const position = createFakePosition({
-                pieces: BoardPieces.fromPieces({
-                    ...piece,
-                    position: newPos,
+            const position = new ChildPositionNode(
+                createFakePositionProps({
+                    pieces: BoardPieces.fromPieces({
+                        ...piece,
+                        position: newPos,
+                    }),
+                    move: createFakeMove({
+                        promotesTo: PieceType.QUEEN,
+                    }),
                 }),
-                move: createFakeMove({
-                    promotesTo: PieceType.QUEEN,
-                }),
-            });
+            );
 
             await store.getState().updatePiecesFromPosition(position);
 
@@ -652,7 +653,7 @@ describe("PiecesSlice", () => {
     });
 
     describe("updatePieces", () => {
-        it("should animate the pieces with minimal animation", () => {
+        it("should animate the pieces with minimal animation", async () => {
             const piece = createFakePiece({
                 position: logicalPoint({ x: 0, y: 0 }),
             });
@@ -667,12 +668,26 @@ describe("PiecesSlice", () => {
                 ...piece,
                 position: newPos,
             });
-            store.getState().updatePieces(newPieces);
+            await store.getState().updatePieces(newPieces);
 
             expect(playAnimationMock).toHaveBeenCalledExactlyOnceWith({
                 newPieces,
                 movedPieceIds: [piece.id],
             });
+        });
+
+        it("should clear prompts", async () => {
+            const { updatePieces, promptPromotion } = store.getState();
+            const promptPromise = promptPromotion({
+                at: createRandomPoint(),
+                pieces: [PieceType.ANTIQUEEN],
+                piece: createFakePiece(),
+            });
+
+            await updatePieces(createFakeBoardPieces());
+
+            const promptResult = await promptPromise;
+            expect(promptResult).toBeNull();
         });
     });
 });

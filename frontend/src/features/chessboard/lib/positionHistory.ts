@@ -14,8 +14,8 @@ import { MoveKey } from "./types";
 export default class PositionHistory {
     [immerable] = true;
 
-    _mainBranchPlies = 0;
     _byPositionId: Map<PositionId, ChildPositionNode> = new Map();
+    _byPly: Map<number, ChildPositionNode> = new Map();
 
     _root: RootPositionNode;
     _tail: ChildPositionNode | null = null;
@@ -39,7 +39,7 @@ export default class PositionHistory {
     }
 
     get mainPlyCount(): number {
-        return this._mainBranchPlies;
+        return this._tail?.ply ?? 0;
     }
 
     get totalPlyCount(): number {
@@ -48,6 +48,10 @@ export default class PositionHistory {
 
     get isViewingLatestPosition(): boolean {
         return this._viewingPosition?.positionId === this._tail?.positionId;
+    }
+
+    getPositionWithPly(ply: number): ChildPositionNode | undefined {
+        return this._byPly.get(ply);
     }
 
     getNextPositionWithKey(key: MoveKey): Position | undefined {
@@ -130,7 +134,7 @@ export default class PositionHistory {
 
         if (isMainVariation) {
             this._tail = nextPosition;
-            this._mainBranchPlies++;
+            this._byPly.set(nextPosition.ply, nextPosition);
         }
 
         return nextPosition;

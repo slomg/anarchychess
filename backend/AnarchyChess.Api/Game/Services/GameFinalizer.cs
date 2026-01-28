@@ -21,12 +21,14 @@ public interface IGameFinalizer
 }
 
 public class GameFinalizer(
+    ILogger<GameFinalizer> logger,
     UserManager<AuthedUser> userManager,
     IRatingService ratingService,
     IGameArchiveService gameArchiveService,
     IUnitOfWork unitOfWork
 ) : IGameFinalizer
 {
+    private readonly ILogger<GameFinalizer> _logger = logger;
     private readonly UserManager<AuthedUser> _userManager = userManager;
     private readonly IRatingService _ratingService = ratingService;
     private readonly IGameArchiveService _gameArchiveService = gameArchiveService;
@@ -40,14 +42,21 @@ public class GameFinalizer(
     )
     {
         var ratingChange = await UpdateRatingAsync(state, endStatus.Result, token);
-        await _gameArchiveService.CreateArchiveAsync(
-            gameToken,
-            state,
-            endStatus,
-            ratingChange,
-            token
-        );
-        await _unitOfWork.CompleteAsync(token);
+        try
+        {
+            await _gameArchiveService.CreateArchiveAsync(
+                gameToken,
+                state,
+                endStatus,
+                ratingChange,
+                token
+            );
+            await _unitOfWork.CompleteAsync(token);
+        }
+        catch (Exception err)
+        {
+            _logger.LogError(err, "Failed saving game");
+        }
 
         GameResultData result = new(
             Result: endStatus.Result,

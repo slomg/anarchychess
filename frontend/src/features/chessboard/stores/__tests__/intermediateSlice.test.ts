@@ -25,9 +25,13 @@ describe("IntermediateSlice", () => {
         vi.useFakeTimers({ shouldAdvanceTime: true });
     });
 
-    function expectNextIntermediates(...expected: LogicalPoint[]) {
-        const actual = store.getState().nextIntermediates;
-        expect(sortPoints(actual)).toEqual(sortPoints(expected));
+    function expectPendingIntermediate(...expected: LogicalPoint[]) {
+        const nextIntermediate = store.getState().pendingIntermediate;
+        expect(nextIntermediate).not.toBeNull();
+        expect(sortPoints(nextIntermediate!.nextOptions)).toEqual(
+            sortPoints(expected),
+        );
+        expect(nextIntermediate!.pieceId).toEqual(pieceId);
     }
 
     it("should return terminal moves if ther are no intermediates", async () => {
@@ -89,7 +93,7 @@ describe("IntermediateSlice", () => {
                 pieces,
             );
 
-        expectNextIntermediates(
+        expectPendingIntermediate(
             logicalPoint({ x: 1, y: 1 }),
             logicalPoint({ x: 2, y: 2 }),
             logicalPoint({ x: 3, y: 3 }),
@@ -140,7 +144,7 @@ describe("IntermediateSlice", () => {
 
         await flushMicrotasks();
 
-        expectNextIntermediates(
+        expectPendingIntermediate(
             logicalPoint({ x: 2, y: 2 }),
             logicalPoint({ x: 3, y: 3 }),
         );
@@ -245,11 +249,13 @@ describe("IntermediateSlice", () => {
                 pieces,
             );
 
-        expect(store.getState().nextIntermediates.length).toBeGreaterThan(0);
+        expect(
+            store.getState().pendingIntermediate?.nextOptions.length,
+        ).toBeGreaterThan(0);
         store.getState().resolveNextIntermediate!(logicalPoint({ x: 2, y: 2 }));
 
         await promise;
-        expect(store.getState().nextIntermediates).toEqual([]);
+        expect(store.getState().pendingIntermediate).toBeNull();
         expect(store.getState().resolveNextIntermediate).toBeNull();
     });
 });

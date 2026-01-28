@@ -2,6 +2,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
@@ -45,7 +46,8 @@ public class MoveEncoderTests
                 PromotesTo: null,
                 SpecialType: null,
                 ForcedPriority: null,
-                EmphasizeSquare: false
+                EmphasizeSquare: false,
+                OvertimeRemovalIdxs: null
             ),
         ];
 
@@ -65,9 +67,10 @@ public class MoveEncoderTests
         decompressed.Should().BeEmpty();
     }
 
-    private List<MovePath>? DecompressToPath(byte[] compressedBytes)
+    private List<MovePath>? DecompressToPath(CompressedMoves compressedMoves)
     {
-        using var input = new MemoryStream(compressedBytes);
+        byte[] bytes = Convert.FromBase64String(compressedMoves);
+        using var input = new MemoryStream(bytes);
         using var brotli = new BrotliStream(input, CompressionMode.Decompress);
         using var reader = new StreamReader(brotli, Encoding.UTF8);
         var json = reader.ReadToEnd();

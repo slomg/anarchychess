@@ -6,6 +6,7 @@ using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.Shared.Models;
+using AnarchyChess.Api.Shared.Services;
 using AnarchyChess.Api.Streaming;
 using AnarchyChess.Api.TestInfrastructure;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
@@ -35,6 +36,7 @@ public class GameGrainTests : BaseOrleansIntegrationTest
     private readonly GameClock _gameClock;
     private readonly IGameResultDescriber _gameResultDescriber;
     private readonly IGameCore _gameCore;
+    private readonly Overtime _overtime;
     private readonly GameSettings _settings;
 
     private readonly IGameNotifier _gameNotifierMock = Substitute.For<IGameNotifier>();
@@ -60,19 +62,32 @@ public class GameGrainTests : BaseOrleansIntegrationTest
             IOptions<AppSettings>
         >();
         var gameFinalizer = ApiTestBase.Scope.ServiceProvider.GetRequiredService<IGameFinalizer>();
-        _gameClock = new(
+        _gameClock = new(settings, _timeProviderMock);
+
+        _overtime = new(
             settings,
-            ApiTestBase.Scope.ServiceProvider.GetRequiredService<IGameResultDescriber>(),
-            _timeProviderMock
+            ApiTestBase.Scope.ServiceProvider.GetRequiredService<IRandomProvider>(),
+            _timeProviderMock,
+            ApiTestBase.Scope.ServiceProvider.GetRequiredService<IPlayableMoveProvider>(),
+            ApiTestBase.Scope.ServiceProvider.GetRequiredService<IMoveEncoder>()
         );
+        GameEndHandler endHandler = new(_gameCore, _gameClock, _gameNotifierMock, gameFinalizer);
         MoveHandler moveHandler = new(
             Substitute.For<ILogger<MoveHandler>>(),
             settings,
             _gameCore,
             _gameClock,
-            _gameNotifierMock
+            _gameNotifierMock,
+            _overtime
         );
         DrawHandler drawHandler = new(settings, _gameResultDescriber, _gameNotifierMock);
+        ClockHandler clockHandler = new(
+            _gameClock,
+            _gameCore,
+            _overtime,
+            _gameNotifierMock,
+            _gameResultDescriber
+        );
 
         _settings = settings.Value.Game;
         _timeProviderMock.GetUtcNow().Returns(_fakeNow);
@@ -83,8 +98,11 @@ public class GameGrainTests : BaseOrleansIntegrationTest
         Silo.ServiceProvider.AddService(_gameNotifierMock);
         Silo.ServiceProvider.AddService(gameFinalizer);
         Silo.ServiceProvider.AddService(settings);
+        Silo.ServiceProvider.AddService<IOvertime>(_overtime);
         Silo.ServiceProvider.AddService<IMoveHandler>(moveHandler);
         Silo.ServiceProvider.AddService<IDrawHandler>(drawHandler);
+        Silo.ServiceProvider.AddService<IClockHandler>(clockHandler);
+        Silo.ServiceProvider.AddService<IGameEndHandler>(endHandler);
 
         _state = Silo.StorageManager.GetStorage<GameGrainState>(GameGrain.StateName).State;
         _stateStats = Silo.StorageManager.GetStorageStats(GameGrain.StateName)!;
@@ -203,6 +221,38 @@ public class GameGrainTests : BaseOrleansIntegrationTest
         );
         _stateStats.Writes.Should().BeGreaterThan(1);
         await TestGameEndedAsync(grain, _gameResultDescriber.ThreeFold());
+    }
+
+    [Fact]
+    public async Task MovePieceAsync_reschedules_clock()
+    {
+        var grain = await CreateGrainAsync();
+        await StartGameAsync(grain);
+        await GoOutOfGracePeriodAsync(grain);
+
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow.AddSeconds(10));
+        await MakeLegalMoveAsync(grain, _whitePlayer);
+
+        Silo.TimerRegistry.Mock.Invocations.Clear();
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow.AddSeconds(100));
+        await MakeLegalMoveAsync(grain, _blackPlayer);
+
+        // it should now schedule to timer to WHITES clock, so base seconds - 10 + increment
+        var context = Silo.GetContextFromGrain(grain);
+        Silo.TimerRegistry.Mock.Verify(x =>
+            x.RegisterGrainTimer(
+                context,
+                It.IsAny<Func<It.IsAnyType, CancellationToken, Task>>(),
+                It.IsAny<It.IsAnyType>(),
+                new()
+                {
+                    DueTime = TimeSpan.FromSeconds(
+                        _pool.TimeControl.BaseSeconds - 10 + _pool.TimeControl.IncrementSeconds
+                    ),
+                    Period = Timeout.InfiniteTimeSpan,
+                }
+            )
+        );
     }
 
     [Fact]

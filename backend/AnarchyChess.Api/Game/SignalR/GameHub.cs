@@ -1,6 +1,7 @@
 ﻿using AnarchyChess.Api.Game.Grains;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
+using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Infrastructure;
 using AnarchyChess.Api.Infrastructure.SignalR;
@@ -13,14 +14,21 @@ namespace AnarchyChess.Api.Game.SignalR;
 public interface IGameHubClient : IAnarchyChessHubClient
 {
     Task SyncRevisionAsync(int currentRevision);
+
     Task MoveMadeAsync(MoveSnapshot move, int plyNumber, ClockSnapshot clock, bool didMoveEndGame);
     Task OpponentMoveMadeAsync(
         MoveSnapshot move,
         int plyNumber,
-        IEnumerable<byte> encodedLegalMoves,
+        CompressedMoves encodedLegalMoves,
         ClockSnapshot clock
     );
 
+    Task ReceiveNextOvertimeAsync(int plyNumber, AlgebraicPoint removeFrom);
+    Task ReceiveOvertimeAsync(
+        int plyNumber,
+        AlgebraicPoint removeFrom,
+        CompressedMoves encodedLegalMoves
+    );
     Task DrawStateChangeAsync(DrawState drawState);
     Task GameEndedAsync(GameResultData result, ClockSnapshot finalClocks);
 

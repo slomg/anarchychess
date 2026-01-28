@@ -25,7 +25,6 @@ describe("AnimationSlice", () => {
                         movedPieceIds: [piece.id],
                     },
                 ],
-                removedPieceIds: [],
             };
 
             const promise = store.getState().playAnimationBatch(animation);
@@ -54,7 +53,6 @@ describe("AnimationSlice", () => {
                         movedPieceIds: [piece1.id],
                     },
                 ],
-                removedPieceIds: [],
             };
             const secondAnimation: MoveAnimation = {
                 steps: [
@@ -63,7 +61,6 @@ describe("AnimationSlice", () => {
                         movedPieceIds: [piece2.id],
                     },
                 ],
-                removedPieceIds: [],
             };
 
             const firstPromise = store
@@ -87,7 +84,7 @@ describe("AnimationSlice", () => {
             expect(store.getState().animatingPieceIds.size).toBe(0);
         });
 
-        it("should handle removedPieceIds correctly", async () => {
+        it("should handle removedPieces correctly", async () => {
             const movingPiece = createFakePiece();
             const removedPiece = createFakePiece();
             const animation: MoveAnimation = {
@@ -98,19 +95,19 @@ describe("AnimationSlice", () => {
                         isCapture: true,
                     },
                 ],
-                removedPieceIds: [removedPiece.id],
+                removedPieces: new Map([[removedPiece.id, removedPiece]]),
             };
 
             const promise = store.getState().playAnimationBatch(animation);
 
-            expect(store.getState().removingPieceIds).toEqual(
-                new Set([removedPiece.id]),
+            expect(store.getState().removingPieces).toEqual(
+                animation.removedPieces,
             );
 
             vi.advanceTimersByTime(constants.PIECE_ANIMATION_LENGTH_MS);
             await promise;
 
-            expect(store.getState().removingPieceIds).toEqual(new Set());
+            expect(store.getState().removingPieces).toEqual(new Map());
         });
 
         it("should display initialSpawnPositions before showing newPieces", async () => {
@@ -135,7 +132,6 @@ describe("AnimationSlice", () => {
                         initialSpawnPositions,
                     },
                 ],
-                removedPieceIds: [],
             };
 
             const promise = store.getState().playAnimationBatch(animation);
@@ -168,7 +164,6 @@ describe("AnimationSlice", () => {
                         isCapture: true,
                     },
                 ],
-                removedPieceIds: [],
             };
 
             const promise = store.getState().playAnimationBatch(animation);
@@ -219,7 +214,6 @@ describe("AnimationSlice", () => {
                         moveBounds: moveBounds3,
                     },
                 ],
-                removedPieceIds: [],
             };
 
             const promise = store.getState().playAnimationBatch(animation);
@@ -241,17 +235,6 @@ describe("AnimationSlice", () => {
             await promise;
 
             expect(store.getState().lastMove).toEqual(moveBounds3);
-        });
-
-        it("should hide legal moves", async () => {
-            const hideLegalMovesMock = vi.fn();
-            store.setState({ unhighlightLegalMoves: hideLegalMovesMock });
-
-            await store
-                .getState()
-                .playAnimationBatch({ steps: [], removedPieceIds: [] });
-
-            expect(hideLegalMovesMock).toHaveBeenCalledOnce();
         });
     });
 

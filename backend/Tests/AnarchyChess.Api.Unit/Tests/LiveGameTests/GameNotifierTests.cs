@@ -65,7 +65,7 @@ public class GameNotifierTests
             PlyNumber: 5,
             Clocks: new ClockSnapshotFaker(),
             SideToMoveUserId: _userId,
-            EncodedLegalMoves: [1, 2, 3],
+            EncodedLegalMoves: "encoded",
             DidMoveEndGame: true
         );
 
@@ -87,6 +87,41 @@ public class GameNotifierTests
                 encodedLegalMoves: notification.EncodedLegalMoves,
                 clock: notification.Clocks
             );
+        state.Revision.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task NotifyNextOvertimeAsync_sends_ply_and_point_to_player()
+    {
+        int plyNumber = 516;
+        AlgebraicPoint removeFrom = new("g6");
+
+        await _notifier.NotifyNextOvertimeAsync(_userId, plyNumber, removeFrom, _gameToken);
+
+        await _clientUserGameGroupProxyMock
+            .Received(1)
+            .ReceiveNextOvertimeAsync(plyNumber, removeFrom);
+    }
+
+    [Fact]
+    public async Task NotifyOvertimeAsync_sends_positions_and_increments_revision()
+    {
+        GameNotifierState state = new() { Revision = 0 };
+        AlgebraicPoint removedFrom = new("e6");
+        CompressedMoves encodedLegalMoves = "encoded1";
+        int plyNumber = 123;
+
+        await _notifier.NotifyOvertimeAsync(
+            plyNumber,
+            removedFrom,
+            encodedLegalMoves,
+            _gameToken,
+            state
+        );
+
+        await _clientGameGroupProxyMock
+            .Received(1)
+            .ReceiveOvertimeAsync(plyNumber, removedFrom, encodedLegalMoves);
         state.Revision.Should().Be(1);
     }
 

@@ -8,7 +8,6 @@ import {
     GamePlaySlice,
     GamePlaySliceProps,
 } from "./gamePlaySlice";
-
 import {
     createGameStateSlice,
     GameStateSlice,
@@ -19,7 +18,6 @@ import { createRematchSlice, RematchSlice } from "./rematchSlice";
 
 export type LiveChessStoreProps = GamePlaySliceProps & GameStateSliceProps;
 export type LiveChessStore = GamePlaySlice & GameStateSlice & RematchSlice;
-
 enableMapSet();
 export default function createLiveChessStore(initState: LiveChessStoreProps) {
     return createWithEqualityFn<LiveChessStore>()(

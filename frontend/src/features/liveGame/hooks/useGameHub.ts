@@ -9,6 +9,8 @@ import {
 
 import useSignalREmitter from "@/features/signalR/hooks/useSignalREmitter";
 import useSignalREvent from "@/features/signalR/hooks/useSignalREvent";
+import { SignalRError } from "@/features/signalR/lib/types";
+import { LogicalPoint } from "@/features/point/types";
 import constants from "@/lib/constants";
 
 export type GameClientEvents = {
@@ -25,9 +27,16 @@ export type GameClientEvents = {
         encodedLegalMoves: string,
         clocks: Clocks,
     ];
-    GameEndedAsync: [result: GameResultData, finalClocks: Clocks];
+
+    ReceiveNextOvertimeAsync: [plyNumber: number, removedFrom: LogicalPoint];
+    ReceiveOvertimeAsync: [
+        plyNumber: number,
+        removedFrom: LogicalPoint,
+        encodedLegalMoves: string,
+    ];
 
     DrawStateChangeAsync: [drawState: DrawState];
+    GameEndedAsync: [result: GameResultData, finalClocks: Clocks];
 
     ChatMessageAsync: [senderUsername: string, message: string];
     ChatMessageDeliveredAsync: [cooldownLeftMs: number];
@@ -36,6 +45,8 @@ export type GameClientEvents = {
     RematchRequestedAsync: [];
     RematchCancelledAsync: [];
     RematchAccepted: [createdGameToken: string];
+
+    ReceiveErrorAsync: [errors: SignalRError[]];
 };
 
 type GameHubEvents = {

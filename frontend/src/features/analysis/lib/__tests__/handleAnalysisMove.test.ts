@@ -10,6 +10,10 @@ import {
     createFakeMove,
 } from "@/lib/testUtils/fakers/chessboardFakers";
 import {
+    ChildPositionNode,
+    PositionProps,
+} from "@/features/chessboard/lib/position";
+import {
     addAnalysisMove,
     addSidelineAnalysisMove,
 } from "../handleAnalysisMove";
@@ -24,9 +28,7 @@ import { createFakeAnalysisPosition } from "@/lib/testUtils/fakers/analysisPosit
 import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
 import { decodeMovePathIntoLegalMoves } from "@/features/liveGame/lib/moveDecoder";
 import { createFakeMovePath } from "@/lib/testUtils/fakers/movePathFaker";
-import { createFakePosition } from "@/lib/testUtils/fakers/positionFaker";
 import PositionHistory from "@/features/chessboard/lib/positionHistory";
-import { PositionProps } from "@/features/chessboard/lib/position";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
 import LegalMoves from "@/features/chessboard/lib/legalMoves";
 import { Move } from "@/features/chessboard/lib/types";
@@ -109,7 +111,7 @@ describe("addAnalysisMove", () => {
 
     it("should call getNextAnalysisPosition viewing position fen when viewing a position", async () => {
         const { addPosition } = chessboardStore.getState();
-        const initialPosition = addPosition(createFakePosition());
+        const initialPosition = addPosition(createFakePositionProps());
 
         await addAnalysisMove({ chessboardStore, rootFen, move, prevPieces });
 
@@ -126,7 +128,7 @@ describe("addAnalysisMove", () => {
 
     it("should add the new position and decoded legal moves to the store", async () => {
         const newAnalysisPosition = createFakeAnalysisPosition();
-        const newPosition = createFakePosition();
+        const newPosition = new ChildPositionNode(createFakePositionProps());
         const addPositionMock = vi.fn();
         chessboardStore.setState({ addPosition: addPositionMock });
 
@@ -245,7 +247,7 @@ describe("addSidelineAnalysisMove", () => {
     it("should add the position as a sideline", async () => {
         const move = createFakeMove();
         const newAnalysisPosition = createFakeAnalysisPosition();
-        const newPosition = createFakePosition();
+        const newPosition = new ChildPositionNode(createFakePositionProps());
         const addSidelinePositionMock = vi.fn();
         chessboardStore.setState({
             allowHistoryChanges: true,
