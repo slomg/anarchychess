@@ -308,8 +308,8 @@ public class MoveHandlerTests : BaseIntegrationTest
             .GetUtcNow()
             .Returns(
                 _fakeNow
-                    .Add(_settings.InitialOvertimeRemovalInterval)
-                    .Add(_settings.InitialOvertimeRemovalInterval / 2)
+                    .Add(_settings.OvertimeInitialRemovalInterval)
+                    .Add(_settings.OvertimeInitialRemovalInterval / 2)
             );
 
         await _handler.HandleMoveAsync(
@@ -323,6 +323,6 @@ public class MoveHandlerTests : BaseIntegrationTest
         _gameData
             .OvertimeState.PlayerOvertime[GameColor.White]
             .Remainder.Should()
-            .Be(_settings.InitialOvertimeRemovalInterval / 2);
+            .Be(_settings.OvertimeInitialRemovalInterval / 2);
     }
 }

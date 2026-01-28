@@ -139,7 +139,7 @@ public class ClockHandlerTests : BaseIntegrationTest
 
         var (rescheduleTo, endResult) = await _handler.OnClockTickAsync(_gameToken, gameData);
 
-        rescheduleTo.Should().Be(_settings.InitialOvertimeRemovalInterval);
+        rescheduleTo.Should().Be(_settings.OvertimeInitialRemovalInterval);
         endResult.Should().BeNull();
         _overtime.HasEnteredOvertime(GameColor.White, gameData.OvertimeState).Should().BeTrue();
         await _notifierMock
@@ -182,7 +182,7 @@ public class ClockHandlerTests : BaseIntegrationTest
 
         var (rescheduleTo, endStatus) = await _handler.OnClockTickAsync(_gameToken, gameData);
 
-        rescheduleTo.Should().Be(_settings.InitialOvertimeRemovalInterval);
+        rescheduleTo.Should().Be(_settings.OvertimeInitialRemovalInterval);
         endStatus.Should().BeNull();
 
         await _notifierMock
