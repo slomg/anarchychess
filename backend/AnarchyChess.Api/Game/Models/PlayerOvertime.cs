@@ -3,6 +3,14 @@
 namespace AnarchyChess.Api.Game.Models;
 
 [GenerateSerializer]
+[Alias("AnarchyChess.Api.Game.Models.NextOvertimeRemoval")]
+public record NextOvertimeRemoval(
+    AlgebraicPoint RemoveFrom,
+    PieceType PieceType,
+    GameColor? PieceColor
+);
+
+[GenerateSerializer]
 [Alias("AnarchyChess.Api.Game.Models.PlayerOvertime")]
 public class PlayerOvertime
 {
@@ -10,5 +18,5 @@ public class PlayerOvertime
     public TimeSpan Remainder { get; set; }
 
     [Id(1)]
-    public AlgebraicPoint? PickedNextRemoval { get; set; }
+    public NextOvertimeRemoval? PickedNextRemoval { get; set; }
 }

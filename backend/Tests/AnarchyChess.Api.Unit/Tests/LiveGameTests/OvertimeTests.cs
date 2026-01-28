@@ -131,7 +131,11 @@ public class OvertimeTests
         board.PlacePiece(new("e8"), PieceFactory.Black(PieceType.King));
         _state.PlayerOvertime[GameColor.White] = new PlayerOvertime
         {
-            PickedNextRemoval = pickedPoint,
+            PickedNextRemoval = new(
+                RemoveFrom: pickedPoint,
+                PieceType: PieceType.Rook,
+                PieceColor: GameColor.White
+            ),
         };
         MockRandom(board, nextPoint);
         _overtime.StartOvertimeTurn(GameColor.White, board, _state);
@@ -260,7 +264,16 @@ public class OvertimeTests
         var result = _overtime.StartOvertimeTurn(GameColor.White, board, _state);
 
         result.Should().Be(point);
-        _state.PlayerOvertime[GameColor.White].PickedNextRemoval.Should().Be(point);
+        _state
+            .PlayerOvertime[GameColor.White]
+            .PickedNextRemoval.Should()
+            .Be(
+                new NextOvertimeRemoval(
+                    RemoveFrom: point,
+                    PieceType: PieceType.Rook,
+                    PieceColor: GameColor.White
+                )
+            );
         board.IsEmpty(point).Should().BeFalse();
     }
 
@@ -274,14 +287,27 @@ public class OvertimeTests
         board.PlacePiece(newPoint, PieceFactory.White(PieceType.Queen));
         _state.PlayerOvertime[GameColor.White] = new PlayerOvertime
         {
-            PickedNextRemoval = pickedPoint,
+            PickedNextRemoval = new(
+                RemoveFrom: pickedPoint,
+                PieceType: PieceType.Rook,
+                PieceColor: GameColor.White
+            ),
         };
         MockRandom(board, newPoint);
 
         var result = _overtime.StartOvertimeTurn(GameColor.White, board, _state);
 
         result.Should().Be(pickedPoint);
-        _state.PlayerOvertime[GameColor.White].PickedNextRemoval.Should().Be(pickedPoint);
+        _state
+            .PlayerOvertime[GameColor.White]
+            .PickedNextRemoval.Should()
+            .Be(
+                new NextOvertimeRemoval(
+                    RemoveFrom: pickedPoint,
+                    PieceType: PieceType.Rook,
+                    PieceColor: GameColor.White
+                )
+            );
     }
 
     [Fact]
@@ -292,14 +318,74 @@ public class OvertimeTests
         board.PlacePiece(point, PieceFactory.White(PieceType.Rook));
         _state.PlayerOvertime[GameColor.White] = new PlayerOvertime
         {
-            PickedNextRemoval = new AlgebraicPoint("a1"),
+            PickedNextRemoval = new(
+                RemoveFrom: new AlgebraicPoint("a1"),
+                PieceType: PieceType.Knook,
+                GameColor.White
+            ),
         };
         MockRandom(board, point);
 
         var result = _overtime.StartOvertimeTurn(GameColor.White, board, _state);
 
         result.Should().Be(point);
-        _state.PlayerOvertime[GameColor.White].PickedNextRemoval.Should().Be(point);
+        var nextRemoval = _state.PlayerOvertime[GameColor.White].PickedNextRemoval;
+        nextRemoval.Should().NotBeNull();
+        nextRemoval.RemoveFrom.Should().Be(point);
+    }
+
+    [Fact]
+    public void StartOvertimeTurn_picks_new_piece_if_existing_piece_has_wrong_color_even_if_type_matches()
+    {
+        ChessBoard board = new();
+        AlgebraicPoint stalePoint = new("a1");
+        AlgebraicPoint newPoint = new("b2");
+        board.PlacePiece(stalePoint, PieceFactory.Black(PieceType.Rook));
+        board.PlacePiece(newPoint, PieceFactory.White(PieceType.Queen));
+        _state.PlayerOvertime[GameColor.White] = new PlayerOvertime
+        {
+            PickedNextRemoval = new(
+                RemoveFrom: stalePoint,
+                PieceType: PieceType.Rook,
+                PieceColor: GameColor.White
+            ),
+        };
+
+        MockRandom(board, newPoint);
+
+        var result = _overtime.StartOvertimeTurn(GameColor.White, board, _state);
+
+        result.Should().Be(newPoint);
+        var nextRemoval = _state.PlayerOvertime[GameColor.White].PickedNextRemoval;
+        nextRemoval.Should().NotBeNull();
+        nextRemoval.RemoveFrom.Should().Be(newPoint);
+    }
+
+    [Fact]
+    public void StartOvertimeTurn_picks_new_piece_if_existing_piece_has_wrong_type_even_if_color_matches()
+    {
+        ChessBoard board = new();
+        AlgebraicPoint stalePoint = new("a1");
+        AlgebraicPoint newPoint = new("b2");
+        board.PlacePiece(stalePoint, PieceFactory.White(PieceType.Queen));
+        board.PlacePiece(newPoint, PieceFactory.White(PieceType.Rook));
+        _state.PlayerOvertime[GameColor.White] = new PlayerOvertime
+        {
+            PickedNextRemoval = new(
+                RemoveFrom: stalePoint,
+                PieceType: PieceType.Rook,
+                PieceColor: GameColor.White
+            ),
+        };
+
+        MockRandom(board, newPoint);
+
+        var result = _overtime.StartOvertimeTurn(GameColor.White, board, _state);
+
+        result.Should().Be(newPoint);
+        var nextRemoval = _state.PlayerOvertime[GameColor.White].PickedNextRemoval;
+        nextRemoval.Should().NotBeNull();
+        nextRemoval.RemoveFrom.Should().Be(newPoint);
     }
 
     [Fact]

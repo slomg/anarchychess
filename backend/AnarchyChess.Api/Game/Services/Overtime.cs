@@ -1,10 +1,10 @@
-﻿using AnarchyChess.Api.Game.Models;
+﻿using System.Data;
+using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.Shared.Models;
 using AnarchyChess.Api.Shared.Services;
 using Microsoft.Extensions.Options;
-using System.Data;
 
 namespace AnarchyChess.Api.Game.Services;
 
@@ -76,7 +76,7 @@ public class Overtime(
         }
 
         ChessBoard editingBoard = new(board);
-        editingBoard.RemovePiece(removeFrom.Value);
+        editingBoard.RemovePiece(removeFrom.RemoveFrom);
 
         int kingCount = editingBoard.GetAllPiecesWith(PieceType.King, playerColor).Count;
         var legalMoves = _playableMoveProvider.CalculateAllPlayableMoves(editingBoard);
@@ -87,8 +87,8 @@ public class Overtime(
         playerOvertime.PickedNextRemoval = nextRemoval;
 
         OvertimeRemovalResult result = new(
-            RemoveFrom: removeFrom.Value,
-            NextRemoval: nextRemoval,
+            RemoveFrom: removeFrom.RemoveFrom,
+            NextRemoval: nextRemoval?.RemoveFrom,
             NewLegalMoves: legalMoves,
             EncodedLegalMoves: encoded
         );
@@ -107,7 +107,7 @@ public class Overtime(
 
         playerOvertime.PickedNextRemoval = PickNextRemoval(playerColor, board, playerOvertime);
         state.PlayerOvertime[playerColor] = playerOvertime;
-        return playerOvertime.PickedNextRemoval;
+        return playerOvertime.PickedNextRemoval?.RemoveFrom;
     }
 
     public void TryEndOvertimeTurn(GameColor playerColor, OvertimeState state)
@@ -141,14 +141,19 @@ public class Overtime(
     public bool HasEnteredOvertime(GameColor playerColor, OvertimeState state) =>
         state.PlayerOvertime.ContainsKey(playerColor);
 
-    private AlgebraicPoint? PickNextRemoval(
+    private NextOvertimeRemoval? PickNextRemoval(
         GameColor playerColor,
         IReadOnlyChessBoard board,
         PlayerOvertime playerOvertime
     )
     {
         var pickedNextRemoval = playerOvertime.PickedNextRemoval;
-        if (pickedNextRemoval is not null && !board.IsEmpty(pickedNextRemoval.Value))
+        if (
+            pickedNextRemoval is not null
+            && board.TryGetPieceAt(pickedNextRemoval.RemoveFrom, out var piece)
+            && piece.Type == pickedNextRemoval.PieceType
+            && piece.Color == pickedNextRemoval.PieceColor
+        )
         {
             return pickedNextRemoval;
         }
@@ -156,7 +161,7 @@ public class Overtime(
         return PickRandomPiece(playerColor, board);
     }
 
-    private AlgebraicPoint? PickRandomPiece(GameColor playerColor, IReadOnlyChessBoard board)
+    private NextOvertimeRemoval? PickRandomPiece(GameColor playerColor, IReadOnlyChessBoard board)
     {
         List<(AlgebraicPoint Position, Piece Occupant)> pieces =
         [
@@ -180,6 +185,12 @@ public class Overtime(
                     }
             )
             .Position;
-        return removeFrom;
+        var piece = board.PeekPieceAt(removeFrom);
+        if (piece is null)
+        {
+            return null;
+        }
+
+        return new(removeFrom, piece.Type, piece.Color);
     }
 }
