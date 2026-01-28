@@ -30,6 +30,7 @@ import { GameState, Preferences } from "@/lib/apiClient";
 import GameOverPopup from "./GameOverPopup";
 import useConst from "@/hooks/useConst";
 import GameChat from "./GameChat";
+import OvertimeAlert from "./OvertimeAlert";
 
 const LiveChessboard = ({
     gameToken,
@@ -90,7 +91,9 @@ const LiveChessboard = ({
                                 ]}
                                 defaultOffset={{ width: 626, height: 164 }}
                                 className="mx-auto"
-                            />
+                            >
+                                <OvertimeAlert />
+                            </ChessboardLayout>
                             <LiveChessboardProfile
                                 side={ProfileSide.CurrentlyPlaying}
                             />
