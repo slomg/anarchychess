@@ -27,7 +27,6 @@ public class GameGrain : Grain, IGameGrain, IRemindable
     private readonly IDrawHandler _drawHandler;
     private readonly IClockHandler _clockHandler;
     private readonly IGameEndHandler _gameEndHandler;
-    private readonly IOvertime _overtime;
     private readonly IGameCore _core;
     private readonly IGameResultDescriber _resultDescriber;
     private readonly IGameNotifier _gameNotifier;
@@ -42,7 +41,6 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         IDrawHandler drawHandler,
         IClockHandler clockHandler,
         IGameEndHandler gameEndHandler,
-        IOvertime overtime,
         IGameCore core,
         IGameClock clock,
         IGameResultDescriber resultDescriber,
@@ -57,7 +55,6 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         _drawHandler = drawHandler;
         _clockHandler = clockHandler;
         _gameEndHandler = gameEndHandler;
-        _overtime = overtime;
         _core = core;
         _clock = clock;
         _resultDescriber = resultDescriber;

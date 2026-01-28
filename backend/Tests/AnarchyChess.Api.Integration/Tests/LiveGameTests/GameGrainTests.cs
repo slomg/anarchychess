@@ -36,7 +36,6 @@ public class GameGrainTests : BaseOrleansIntegrationTest
     private readonly GameClock _gameClock;
     private readonly IGameResultDescriber _gameResultDescriber;
     private readonly IGameCore _gameCore;
-    private readonly Overtime _overtime;
     private readonly GameSettings _settings;
 
     private readonly IGameNotifier _gameNotifierMock = Substitute.For<IGameNotifier>();
@@ -64,7 +63,7 @@ public class GameGrainTests : BaseOrleansIntegrationTest
         var gameFinalizer = ApiTestBase.Scope.ServiceProvider.GetRequiredService<IGameFinalizer>();
         _gameClock = new(settings, _timeProviderMock);
 
-        _overtime = new(
+        Overtime overtime = new(
             settings,
             ApiTestBase.Scope.ServiceProvider.GetRequiredService<IRandomProvider>(),
             _timeProviderMock,
@@ -78,13 +77,13 @@ public class GameGrainTests : BaseOrleansIntegrationTest
             _gameCore,
             _gameClock,
             _gameNotifierMock,
-            _overtime
+            overtime
         );
         DrawHandler drawHandler = new(settings, _gameResultDescriber, _gameNotifierMock);
         ClockHandler clockHandler = new(
             _gameClock,
             _gameCore,
-            _overtime,
+            overtime,
             _gameNotifierMock,
             _gameResultDescriber
         );
@@ -98,7 +97,6 @@ public class GameGrainTests : BaseOrleansIntegrationTest
         Silo.ServiceProvider.AddService(_gameNotifierMock);
         Silo.ServiceProvider.AddService(gameFinalizer);
         Silo.ServiceProvider.AddService(settings);
-        Silo.ServiceProvider.AddService<IOvertime>(_overtime);
         Silo.ServiceProvider.AddService<IMoveHandler>(moveHandler);
         Silo.ServiceProvider.AddService<IDrawHandler>(drawHandler);
         Silo.ServiceProvider.AddService<IClockHandler>(clockHandler);
