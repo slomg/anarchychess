@@ -120,7 +120,6 @@ export function createPiecesSlice(
             discardAllPrompts();
             set((state) => {
                 state.pieces = newPieces;
-                state.selectedPieceId = null;
             });
         }
 
