@@ -17,6 +17,9 @@ public class PlayerOvertime
     [Id(0)]
     public TimeSpan Remainder { get; set; }
 
+    [Id(2)]
+    public required TimeSpan RemovalInterval { get; set; }
+
     [Id(1)]
     public NextOvertimeRemoval? PickedNextRemoval { get; set; }
 }

@@ -69,26 +69,26 @@ public class Overtime(
         }
         playerOvertime.Remainder = TimeSpan.Zero;
 
-        var removeFrom = PickNextRemoval(playerColor, board, playerOvertime);
-        if (removeFrom is null)
+        var currentRemoval = PickNextRemoval(playerColor, board, playerOvertime).nextRemoval;
+        if (currentRemoval is null)
         {
             return (RemovalResult: null, IsGameOver: true);
         }
 
         ChessBoard editingBoard = new(board);
-        editingBoard.RemovePiece(removeFrom.RemoveFrom);
+        editingBoard.RemovePiece(currentRemoval.RemoveFrom);
 
         int kingCount = editingBoard.GetAllPiecesWith(PieceType.King, playerColor).Count;
         var legalMoves = _playableMoveProvider.CalculateAllPlayableMoves(editingBoard);
         var encoded = _moveEncoder.EncodeMoves(legalMoves.MovePaths);
         bool isGameOver = kingCount == 0;
 
-        var nextRemoval = isGameOver ? null : PickRandomPiece(playerColor, editingBoard);
-        playerOvertime.PickedNextRemoval = nextRemoval;
+        var upcomingRemoval = isGameOver ? null : PickRandomPiece(playerColor, editingBoard);
+        playerOvertime.PickedNextRemoval = upcomingRemoval;
 
         OvertimeRemovalResult result = new(
-            RemoveFrom: removeFrom.RemoveFrom,
-            NextRemoval: nextRemoval?.RemoveFrom,
+            RemoveFrom: currentRemoval.RemoveFrom,
+            NextRemoval: upcomingRemoval?.RemoveFrom,
             NewLegalMoves: legalMoves,
             EncodedLegalMoves: encoded
         );
@@ -103,9 +103,25 @@ public class Overtime(
     {
         state.LastMoveAtTimestamp = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
 
-        var playerOvertime = state.PlayerOvertime.GetValueOrDefault(playerColor, new());
+        var playerOvertime = state.PlayerOvertime.GetValueOrDefault(
+            playerColor,
+            new() { RemovalInterval = _settings.OvertimeInitialRemovalInterval }
+        );
 
-        playerOvertime.PickedNextRemoval = PickNextRemoval(playerColor, board, playerOvertime);
+        var (nextRemoval, wasRemovalAvoided) = PickNextRemoval(playerColor, board, playerOvertime);
+        playerOvertime.PickedNextRemoval = nextRemoval;
+        if (wasRemovalAvoided)
+        {
+            playerOvertime.RemovalInterval = TimeSpan.FromMilliseconds(
+                Math.Max(
+                    _settings.OvertimeMinimumRemovalInterval.TotalMilliseconds,
+                    playerOvertime.RemovalInterval.TotalMilliseconds
+                        - _settings.OvertimeSaveIntervalReduction.TotalMilliseconds
+                )
+            );
+            playerOvertime.Remainder = TimeSpan.Zero;
+        }
+
         state.PlayerOvertime[playerColor] = playerOvertime;
         return playerOvertime.PickedNextRemoval?.RemoveFrom;
     }
@@ -120,45 +136,45 @@ public class Overtime(
         var nowMs = _timeProvider.GetUtcNow().ToUnixTimeMilliseconds();
         var distanceFromLastMove = nowMs - state.LastMoveAtTimestamp;
         playerOvertime.Remainder += TimeSpan.FromMilliseconds(
-            distanceFromLastMove % _settings.OvertimeRemovalInterval.TotalMilliseconds
+            distanceFromLastMove % playerOvertime.RemovalInterval.TotalMilliseconds
         );
-        if (playerOvertime.Remainder > _settings.OvertimeRemovalInterval)
-        {
-            playerOvertime.Remainder = _settings.OvertimeRemovalInterval;
-        }
     }
 
     public TimeSpan GetTimeUntilNextRemoval(GameColor playerColor, OvertimeState state)
     {
         if (!state.PlayerOvertime.TryGetValue(playerColor, out var playerOvertime))
         {
-            return _settings.OvertimeRemovalInterval;
+            return _settings.OvertimeInitialRemovalInterval;
         }
 
-        return _settings.OvertimeRemovalInterval - playerOvertime.Remainder;
+        return playerOvertime.RemovalInterval - playerOvertime.Remainder;
     }
 
     public bool HasEnteredOvertime(GameColor playerColor, OvertimeState state) =>
         state.PlayerOvertime.ContainsKey(playerColor);
 
-    private NextOvertimeRemoval? PickNextRemoval(
+    private (NextOvertimeRemoval? nextRemoval, bool wasRemovalAvoided) PickNextRemoval(
         GameColor playerColor,
         IReadOnlyChessBoard board,
         PlayerOvertime playerOvertime
     )
     {
         var pickedNextRemoval = playerOvertime.PickedNextRemoval;
+        if (pickedNextRemoval is null)
+        {
+            return (nextRemoval: PickRandomPiece(playerColor, board), wasRemovalAvoided: false);
+        }
+
         if (
-            pickedNextRemoval is not null
-            && board.TryGetPieceAt(pickedNextRemoval.RemoveFrom, out var piece)
+            board.TryGetPieceAt(pickedNextRemoval.RemoveFrom, out var piece)
             && piece.Type == pickedNextRemoval.PieceType
             && piece.Color == pickedNextRemoval.PieceColor
         )
         {
-            return pickedNextRemoval;
+            return (nextRemoval: pickedNextRemoval, wasRemovalAvoided: false);
         }
 
-        return PickRandomPiece(playerColor, board);
+        return (nextRemoval: PickRandomPiece(playerColor, board), wasRemovalAvoided: true);
     }
 
     private NextOvertimeRemoval? PickRandomPiece(GameColor playerColor, IReadOnlyChessBoard board)
