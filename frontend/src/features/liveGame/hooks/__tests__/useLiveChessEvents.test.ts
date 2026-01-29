@@ -402,6 +402,34 @@ describe("useLiveChessEvents", () => {
             expect(removePieceSpy).toHaveBeenCalledExactlyOnceWith(removedFrom);
         });
 
+        it("should immediately remove a piece if ReceiveOvertimeAsync arrives for a past ply", async () => {
+            setupOvertimeTest();
+            renderLiveChessEvents();
+
+            const mainPly =
+                chessboardStore.getState().positionHistory.mainPlyCount;
+            const removedFrom = logicalPoint({ x: 0, y: 0 });
+
+            const removePieceSpy = vi.spyOn(
+                chessboardStore.getState(),
+                "removePieceAt",
+            );
+
+            await act(async () => {
+                await gameEventHandlers.ReceiveOvertimeAsync?.(
+                    mainPly - 1,
+                    removedFrom,
+                    encodeMoves([]),
+                );
+            });
+
+            expect(removePieceSpy).toHaveBeenCalledExactlyOnceWith(removedFrom);
+            const pastPosition = chessboardStore
+                .getState()
+                .positionHistory.getPositionWithPly(mainPly - 1)!;
+            expect(pastPosition.move.overtimeRemovals).toContain(removedFrom);
+        });
+
         it("should queue overtime for the next ply and apply it when the next move arrives", async () => {
             setupOvertimeTest();
             renderLiveChessEvents();

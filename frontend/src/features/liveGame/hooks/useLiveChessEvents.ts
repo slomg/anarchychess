@@ -46,7 +46,7 @@ export default function useLiveChessEvents(
         const { isPendingMoveAck, receiveLiveMove } = liveChessStore.getState();
 
         // we missed a move... we need to refetch the state
-        if (plyNumber - 1 != positionHistory.mainPlyCount) {
+        if (plyNumber - 1 !== positionHistory.mainPlyCount) {
             await refetchGame(liveChessStore, chessboardStore);
             return;
         }
@@ -171,10 +171,10 @@ export default function useLiveChessEvents(
             addLegalMovesForPosition(legalMoves, position.positionId);
             position.commitOvertimeRemoval(removedFrom);
 
-            if (
-                position.positionId ===
-                positionHistory.viewingPosition?.positionId
-            ) {
+            // at this point, the overtime removals have already been recorded in the position.
+            // removePieceAt animates this change immediately, since the animation system only runs when called.
+            // plyDiff <= 0 means this removal affects the current or past position, so we should reflect it on the board now.
+            if (plyDiff <= 0) {
                 removePieceAt(removedFrom);
             }
         },

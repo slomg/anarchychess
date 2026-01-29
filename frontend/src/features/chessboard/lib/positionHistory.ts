@@ -50,7 +50,7 @@ export default class PositionHistory {
         return this._viewingPosition?.positionId === this._tail?.positionId;
     }
 
-    getPositionWithPly(ply: number): ChildPositionNode | undefined {
+    getPositionWithPly(ply: number): Position | undefined {
         return this._byPly.get(ply);
     }
 
