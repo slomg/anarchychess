@@ -170,13 +170,7 @@ export default function useLiveChessEvents(
 
             addLegalMovesForPosition(legalMoves, position.positionId);
             position.commitOvertimeRemoval(removedFrom);
-
-            // at this point, the overtime removals have already been recorded in the position.
-            // removePieceAt animates this change immediately, since the animation system only runs when called.
-            // plyDiff <= 0 means this removal affects the current or past position, so we should reflect it on the board now.
-            if (plyDiff <= 0) {
-                removePieceAt(removedFrom);
-            }
+            removePieceAt(removedFrom);
         },
     );
 
