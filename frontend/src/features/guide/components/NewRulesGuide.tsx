@@ -1,29 +1,31 @@
 import verticalcastling1 from "@public/assets/examples/verticalcastling1.png";
 import verticalcastling2 from "@public/assets/examples/verticalcastling2.png";
 import verticalcastling3 from "@public/assets/examples/verticalcastling3.png";
-import bouncingbishop1 from "@public/assets/examples/bouncingbishop1.png";
-import bouncingbishop2 from "@public/assets/examples/bouncingbishop2.png";
-import bouncingbishop3 from "@public/assets/examples/bouncingbishop3.png";
-import ilvaticano1 from "@public/assets/examples/ilvaticano1.png";
-import ilvaticano2 from "@public/assets/examples/ilvaticano2.png";
-import longpassant1 from "@public/assets/examples/longpassant1.png";
-import longpassant2 from "@public/assets/examples/longpassant2.png";
-import longpassant3 from "@public/assets/examples/longpassant3.png";
-import bishopcastle1 from "@public/assets/examples/bishopcastle1.png";
-import bishopcastle2 from "@public/assets/examples/bishopcastle2.png";
-import kingtouch1 from "@public/assets/examples/kingtouch1.png";
-import kingcapture1 from "@public/assets/examples/kingcapture1.png";
-import kingcapture2 from "@public/assets/examples/kingcapture2.png";
 import forcedenpassant1 from "@public/assets/examples/forcedenpassant1.png";
 import forcedenpassant2 from "@public/assets/examples/forcedenpassant2.png";
 import forcedenpassant3 from "@public/assets/examples/forcedenpassant3.png";
-import omnipotentpawn1 from "@public/assets/examples/omnipotentpawn1.png";
-import omnipotentpawn2 from "@public/assets/examples/omnipotentpawn2.png";
-import omnipotentpawn3 from "@public/assets/examples/omnipotentpawn3.png";
 import knooklearfusion1 from "@public/assets/examples/knooklearfusion1.png";
 import knooklearfusion2 from "@public/assets/examples/knooklearfusion2.png";
 import queenbetadecay1 from "@public/assets/examples/queenbetadecay1.png";
 import queenbetadecay2 from "@public/assets/examples/queenbetadecay2.png";
+import bouncingbishop1 from "@public/assets/examples/bouncingbishop1.png";
+import bouncingbishop2 from "@public/assets/examples/bouncingbishop2.png";
+import bouncingbishop3 from "@public/assets/examples/bouncingbishop3.png";
+import omnipotentpawn1 from "@public/assets/examples/omnipotentpawn1.png";
+import omnipotentpawn2 from "@public/assets/examples/omnipotentpawn2.png";
+import omnipotentpawn3 from "@public/assets/examples/omnipotentpawn3.png";
+import bishopcastle1 from "@public/assets/examples/bishopcastle1.png";
+import bishopcastle2 from "@public/assets/examples/bishopcastle2.png";
+import longpassant1 from "@public/assets/examples/longpassant1.png";
+import longpassant2 from "@public/assets/examples/longpassant2.png";
+import longpassant3 from "@public/assets/examples/longpassant3.png";
+import kingcapture1 from "@public/assets/examples/kingcapture1.png";
+import kingcapture2 from "@public/assets/examples/kingcapture2.png";
+import ilvaticano1 from "@public/assets/examples/ilvaticano1.png";
+import ilvaticano2 from "@public/assets/examples/ilvaticano2.png";
+import kingtouch1 from "@public/assets/examples/kingtouch1.png";
+import overtime1 from "@public/assets/examples/overtime1.png";
+import overtime2 from "@public/assets/examples/overtime2.png";
 
 import GuideCard from "@/features/guide/components/GuideCard";
 import Card from "@/components/ui/Card";
@@ -54,29 +56,22 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
             />
 
             <GuideCard
-                title="Self-Bishop Castle Capture"
+                title="Overtime"
                 points={[
-                    "Your own bishop is blocking castling by occupying a square your king or rook would land on after castling.",
-                    "You may still castle, capturing your own bishop in the process.",
+                    "When you run out of time, you don't instantly lose, you enter overtime.",
+                    "Every few seconds, a piece on your side will get bored and leave the board.",
+                    "The piece that is about to leave is highlighted. Moving that piece excites it, so it will not leave on the next removal, and the removal timer resets.",
+                    "Moving any other piece does not reset the timer, and the same piece will still be pending removal next turn.",
+                    "Each time you save a piece by moving it, other pieces will get jealous and the next removals will happen faster, forcing you to choose carefully which pieces to save.",
+                    "Once your king leave the board, you lose the game.",
                 ]}
-                images={[bishopcastle1, bishopcastle2]}
+                images={[overtime1, overtime2]}
             />
 
             <GuideCard
                 title="Forced En Passant"
                 points={["If en passant is possible, you must play it."]}
                 images={[forcedenpassant1, forcedenpassant2, forcedenpassant3]}
-            />
-
-            <GuideCard
-                title="Long Passant"
-                points={[
-                    "An en passant is possible.",
-                    "A diagonal chain of aligned pieces continue beyond the target pawn.",
-                    "You can continue down the chain in a single move, capturing every piece in the chain.",
-                    "If the chain ends on the back rank, your pawn promotes as normal.",
-                ]}
-                images={[longpassant1, longpassant2, longpassant3]}
             />
 
             <GuideCard
@@ -92,13 +87,12 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
             />
 
             <GuideCard
-                title="Il Vaticano"
+                title="Self-Bishop Castle Capture"
                 points={[
-                    "There are exactly two squares between your bishops.",
-                    "Two enemy pieces occupy those squares.",
-                    "Your bishops can swap places and capture both enemy pieces in one move.",
+                    "Your own bishop is blocking castling by occupying a square your king or rook would land on after castling.",
+                    "You may still castle, capturing your own bishop in the process.",
                 ]}
-                images={[ilvaticano1, ilvaticano2]}
+                images={[bishopcastle1, bishopcastle2]}
             />
 
             <GuideCard
@@ -109,6 +103,27 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
                     "Double click the opponent piece that just captured, and your Omnipotent Pawn spawns on the square and captures it.",
                 ]}
                 images={[omnipotentpawn1, omnipotentpawn2, omnipotentpawn3]}
+            />
+
+            <GuideCard
+                title="Long Passant"
+                points={[
+                    "An en passant is possible.",
+                    "A diagonal chain of aligned pieces continue beyond the target pawn.",
+                    "You can continue down the chain in a single move, capturing every piece in the chain.",
+                    "If the chain ends on the back rank, your pawn promotes as normal.",
+                ]}
+                images={[longpassant1, longpassant2, longpassant3]}
+            />
+
+            <GuideCard
+                title="Il Vaticano"
+                points={[
+                    "There are exactly two squares between your bishops.",
+                    "Two enemy pieces occupy those squares.",
+                    "Your bishops can swap places and capture both enemy pieces in one move.",
+                ]}
+                images={[ilvaticano1, ilvaticano2]}
             />
 
             <GuideCard
