@@ -12,8 +12,8 @@ const HomeDiscordSection = () => {
     return (
         <section
             className="grid grid-rows-[auto_auto] justify-center gap-10
-                bg-[#0b0f16] p-15 lg:grid-cols-[auto_auto] lg:grid-rows-1
-                lg:gap-x-10"
+                bg-[#0c141b] p-5 lg:grid-cols-[auto_auto] lg:grid-rows-1
+                lg:gap-x-10 lg:p-15"
         >
             <div
                 className="order-1 mx-auto my-auto flex flex-col items-center
@@ -73,9 +73,11 @@ const HomeDiscordSection = () => {
                     </p>
                 </div>
             </div>
+
             <div
-                className="flex w-full flex-col items-center gap-3 text-center
-                    lg:max-w-lg lg:items-start lg:text-start"
+                className="flex w-full flex-col items-center gap-3 px-10
+                    text-center lg:max-w-lg lg:items-start lg:px-0
+                    lg:text-start"
             >
                 <h2 className="text-5xl">
                     Want Something{" "}

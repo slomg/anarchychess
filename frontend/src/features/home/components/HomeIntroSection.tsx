@@ -14,7 +14,7 @@ const HomeIntroSection = () => {
     return (
         <section
             className="grid grid-rows-[auto_auto] justify-center gap-10
-                bg-[#0d151d] p-15 lg:grid-cols-[auto_auto] lg:grid-rows-1
+                bg-[#0e1720] p-15 lg:grid-cols-[auto_auto] lg:grid-rows-1
                 lg:gap-x-20"
         >
             <div
