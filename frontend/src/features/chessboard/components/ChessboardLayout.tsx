@@ -37,13 +37,13 @@ const ChessboardLayout = ({
     children,
 }: ChessboardLayoutProps) => {
     const [boardSize, setBoardSize] = useState<number>(0);
-    const { setBoardRect, onPointerDown, onPointerUp } = useChessboardStore(
-        (x) => ({
+    const { setBoardRect, onPointerDown, onPointerUp, disableDrag } =
+        useChessboardStore((x) => ({
             setBoardRect: x.setBoardRect,
             onPointerDown: x.onPointerDown,
             onPointerUp: x.onPointerUp,
-        }),
-    );
+            disableDrag: x.disableDrag,
+        }));
     const boardDimensions = useChessboardStore((x) => x.boardDimensions);
 
     const ref = useRef<HTMLDivElement>(null);
@@ -120,7 +120,8 @@ const ChessboardLayout = ({
         <div
             data-testid="chessboard"
             className={twMerge(
-                "relative cursor-pointer touch-none select-none",
+                "relative cursor-pointer select-none",
+                !disableDrag && "touch-none",
                 className,
             )}
             style={{ width: `${boardSize}px`, height: `${boardSize}px` }}
