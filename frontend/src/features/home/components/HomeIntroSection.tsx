@@ -26,7 +26,7 @@ const HomeIntroSection = () => {
                     of Anarchy Chess
                 </h2>
 
-                <p className="text-text/80 text-xl">
+                <p className="text-text/80 text-xl text-pretty">
                     Don&apos;t worry, no one knows what&apos;s going on
                 </p>
                 <p className="text-text/80 text-sm">
