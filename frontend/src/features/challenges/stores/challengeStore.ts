@@ -19,7 +19,7 @@ export interface ChallengeStore {
 
 export function createChallengeStore(initState: ChallengeStoreProps) {
     return createWithEqualityFn<ChallengeStore>()(
-        immer((set, get) => ({
+        immer((set) => ({
             ...initState,
             isExpired:
                 new Date().getTime() >=
@@ -30,7 +30,7 @@ export function createChallengeStore(initState: ChallengeStoreProps) {
                     state.challenge = challenge;
                     state.isExpired =
                         new Date().getTime() >=
-                        new Date(get().challenge.expiresAt).getTime();
+                        new Date(challenge.expiresAt).getTime();
                 });
             },
             setCancelled(cancelledBy) {

@@ -58,7 +58,7 @@ describe("challengeStore", () => {
         it("should set isExpired to true if the new challenge has already expired", () => {
             const now = Date.now();
             const expiredChallenge = createFakeChallengeRequest({
-                expiresAt: new Date(now - 1000).toISOString(),
+                expiresAt: new Date(now - 10000).toISOString(),
             });
             store.setState({ isExpired: false });
 

@@ -81,7 +81,7 @@ export default function useLiveChessEvents(
             },
             legalMoves,
         );
-        receiveLiveMove(clocks, move.nextSideToMove);
+        receiveLiveMove(plyNumber, clocks, move.nextSideToMove);
         return position;
     }
 
@@ -179,8 +179,13 @@ export default function useLiveChessEvents(
     });
 
     useGameEvent(gameToken, "GameEndedAsync", async (result, finalClocks) => {
-        liveChessStore.getState().endGame(result, finalClocks);
-        chessboardStore.getState().setAllowHistoryChanges(true);
+        const { setAllowHistoryChanges, positionHistory } =
+            chessboardStore.getState();
+
+        liveChessStore
+            .getState()
+            .endGame(positionHistory.mainPlyCount, result, finalClocks);
+        setAllowHistoryChanges(true);
         AudioPlayer.playAudio(AudioType.GAME_END);
     });
 }

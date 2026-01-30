@@ -536,7 +536,7 @@ describe("useLiveChessEvents", () => {
 
             const liveState = liveChessStore.getState();
             expect(liveState.resultData).toEqual(gameResult);
-            expect(liveState.clocks).toEqual(finalClocks);
+            expect(liveState.liveClocks).toEqual(finalClocks);
 
             const chessboardState = chessboardStore.getState();
             expect(chessboardState.allowHistoryChanges).toBe(true);

@@ -4,24 +4,42 @@ import clsx from "clsx";
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
 import useLiveChessStore from "../hooks/useLiveChessStore";
 import { GameColor } from "@/lib/apiClient";
+import { useChessboardStore } from "@/features/chessboard/hooks/useChessboard";
 
 const GameClock = ({ color }: { color: GameColor }) => {
-    const clock = useLiveChessStore((x) =>
-        color === GameColor.WHITE ? x.clocks.whiteClock : x.clocks.blackClock,
-    );
     const viewer = useLiveChessStore((x) => x.viewer);
     const { sideToMove, serverClockAheadByMs, clockLastUpdated, isFrozen } =
         useLiveChessStore((x) => ({
             sideToMove: x.sideToMove,
             serverClockAheadByMs: x.serverClockAheadByMs,
-            clockLastUpdated: x.clocks.lastUpdated,
-            isFrozen: x.clocks.isFrozen,
+            clockLastUpdated: x.liveClocks.lastUpdated,
+            isFrozen: x.liveClocks.isFrozen,
         }));
+    const liveClock = useLiveChessStore((x) =>
+        color === GameColor.WHITE
+            ? x.liveClocks.whiteClock
+            : x.liveClocks.blackClock,
+    );
 
-    const [timeLeftMs, setTimeLeftMs] = useState<number>(clock.timeLeftMs);
+    const viewingPlyNumber = useChessboardStore(
+        (x) => x.positionHistory.viewingPosition?.ply ?? 0,
+    );
+    const snapshotTimeLeftMs = useLiveChessStore((x) => {
+        const clockSnapshot = x.getClockSnapshot(viewingPlyNumber);
+        if (clockSnapshot === null) {
+            return null;
+        }
+
+        return color === GameColor.WHITE
+            ? clockSnapshot.whiteClock
+            : clockSnapshot.blackClock;
+    });
+
+    const baseTimeLeftMs = snapshotTimeLeftMs ?? liveClock.timeLeftMs;
+    const [timeLeftMs, setTimeLeftMs] = useState<number>(baseTimeLeftMs);
     const [timeUntilAbandonedMs, setTimeUntilAbandonedMs] = useState<
         number | null
-    >(clock.timeUntilAbandonMs ?? null);
+    >(liveClock.timeUntilAbandonMs ?? null);
 
     const playedWarningSoundRef = useRef<boolean>(false);
 
@@ -38,7 +56,7 @@ const GameClock = ({ color }: { color: GameColor }) => {
     const updateTimeLeft = useEffectEvent(() => {
         if (!isTicking) {
             setTimeUntilAbandonedMs(null);
-            setTimeLeftMs(clock.timeLeftMs);
+            setTimeLeftMs(baseTimeLeftMs);
             return;
         }
 
@@ -47,12 +65,12 @@ const GameClock = ({ color }: { color: GameColor }) => {
             serverClockAheadByMs,
         );
 
-        if (!clock.isInGracePeriod) {
-            setTimeLeftMs(clock.timeLeftMs - timePassed);
+        if (!liveClock.isInGracePeriod) {
+            setTimeLeftMs(baseTimeLeftMs - timePassed);
         }
 
-        if (typeof clock.timeUntilAbandonMs === "number") {
-            setTimeUntilAbandonedMs(clock.timeUntilAbandonMs - timePassed);
+        if (typeof liveClock.timeUntilAbandonMs === "number") {
+            setTimeUntilAbandonedMs(liveClock.timeUntilAbandonMs - timePassed);
         } else {
             setTimeUntilAbandonedMs(null);
         }
@@ -60,7 +78,7 @@ const GameClock = ({ color }: { color: GameColor }) => {
 
     useEffect(() => {
         updateTimeLeft();
-    }, [clock.timeLeftMs, clock.timeUntilAbandonMs, clockLastUpdated]);
+    }, [baseTimeLeftMs, liveClock.timeUntilAbandonMs, clockLastUpdated]);
 
     useEffect(() => {
         if (!isTicking) return;
@@ -73,8 +91,8 @@ const GameClock = ({ color }: { color: GameColor }) => {
             clearInterval(interval);
         };
     }, [
-        clock.timeLeftMs,
-        clock.timeUntilAbandonMs,
+        baseTimeLeftMs,
+        liveClock.timeUntilAbandonMs,
         clockLastUpdated,
         isTicking,
         isInTimeTrouble,

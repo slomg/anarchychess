@@ -1,7 +1,10 @@
+import { createFakeClockPlayer } from "@/lib/testUtils/fakers/createFakeClockPlayer";
+import { createFakeMoveSnapshot } from "@/lib/testUtils/fakers/moveSnapshotFaker";
 import { decodeMovePath, decodeMovePathIntoLegalMoves } from "../moveDecoder";
 import { createFakeGameState } from "@/lib/testUtils/fakers/gameStateFaker";
 import { createFakeMove } from "@/lib/testUtils/fakers/chessboardFakers";
 import PositionHistory from "@/features/chessboard/lib/positionHistory";
+import { createFakeClocks } from "@/lib/testUtils/fakers/clocksFaker";
 import { simulateMove } from "@/features/chessboard/lib/simulateMove";
 import { LiveChessStoreProps } from "../../stores/liveChessStore";
 import mockSequentialUUID from "@/lib/testUtils/mocks/mockUuids";
@@ -40,7 +43,8 @@ describe("createStoreProps", () => {
             },
 
             drawState: gameState.drawState,
-            clocks: gameState.clocks,
+            liveClocks: gameState.clocks,
+            clockSnapshotByPly: expect.anything(),
             resultData: null,
         });
     });
@@ -237,5 +241,53 @@ describe("createStoreProps", () => {
         );
 
         expect(result.board.allowHistoryChanges).toBe(true);
+    });
+
+    it("should initialize clock snapshots correctly for each ply", () => {
+        const gameState = createFakeGameState({
+            moveHistory: [
+                createFakeMoveSnapshot({ timeLeft: 295_000 }),
+                createFakeMoveSnapshot({ timeLeft: 290_000 }),
+                createFakeMoveSnapshot({ timeLeft: 285_000 }),
+                createFakeMoveSnapshot({ timeLeft: 270_000 }),
+            ],
+            clocks: createFakeClocks({
+                whiteClock: createFakeClockPlayer({ timeLeftMs: 280_000 }),
+                blackClock: createFakeClockPlayer({ timeLeftMs: 270_000 }),
+            }),
+        });
+        gameState.pool.timeControl.baseSeconds = 300; // 5 min base
+
+        const { live } = createStoreProps(
+            "game-token",
+            gameState.whitePlayer.userId,
+            gameState,
+        );
+
+        const snapshots = live.clockSnapshotByPly;
+
+        expect(snapshots.size).toBe(5);
+
+        expect(snapshots.get(0)).toEqual({
+            whiteClock: 300_000,
+            blackClock: 300_000,
+        });
+        expect(snapshots.get(1)).toEqual({
+            whiteClock: 295_000,
+            blackClock: 300_000,
+        });
+        expect(snapshots.get(2)).toEqual({
+            whiteClock: 295_000,
+            blackClock: 290_000,
+        });
+        expect(snapshots.get(3)).toEqual({
+            whiteClock: 285_000,
+            blackClock: 290_000,
+        });
+        // final clocks
+        expect(snapshots.get(4)).toEqual({
+            whiteClock: 280_000,
+            blackClock: 270_000,
+        });
     });
 });

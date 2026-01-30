@@ -77,10 +77,11 @@ describe("GameStateSlice", () => {
                 blackRatingChange: 10,
             };
             const setClocksMock = vi.fn();
+            const plyNumber = 2;
             store.setState({ setClocks: setClocksMock });
             const finalClocks = createFakeClocks({ isFrozen: true });
 
-            store.getState().endGame(resultData, finalClocks);
+            store.getState().endGame(plyNumber, resultData, finalClocks);
 
             const state = store.getState();
             expect(state.whitePlayer.rating).toBe(
@@ -92,7 +93,10 @@ describe("GameStateSlice", () => {
                     resultData.blackRatingChange!,
             );
             expect(state.resultData).toBe(resultData);
-            expect(setClocksMock).toHaveBeenCalledExactlyOnceWith(finalClocks);
+            expect(setClocksMock).toHaveBeenCalledExactlyOnceWith(
+                plyNumber,
+                finalClocks,
+            );
         });
     });
 

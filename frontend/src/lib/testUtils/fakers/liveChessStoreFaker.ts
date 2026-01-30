@@ -19,6 +19,7 @@ export function createFakeLiveChessStoreProps(
             ? GameColor.WHITE
             : override.viewerColor;
     const viewer = createFakeViewer(whitePlayer, blackPlayer, viewerColor);
+    const liveClocks = createFakeClocks();
 
     return {
         gameToken: faker.string.alpha(16),
@@ -39,7 +40,16 @@ export function createFakeLiveChessStoreProps(
             },
         },
 
-        clocks: createFakeClocks(),
+        liveClocks: createFakeClocks(),
+        clockSnapshotByPly: new Map([
+            [
+                0,
+                {
+                    whiteClock: liveClocks.whiteClock.timeLeftMs,
+                    blackClock: liveClocks.blackClock.timeLeftMs,
+                },
+            ],
+        ]),
         drawState: {
             activeRequester: null,
             whiteCooldown: 0,

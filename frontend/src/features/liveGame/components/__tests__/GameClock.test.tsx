@@ -1,50 +1,66 @@
-import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
 import { StoreApi } from "zustand";
+import { act, render, screen } from "@testing-library/react";
+
+import {
+    ChessboardStore,
+    createChessboardStore,
+} from "@/features/chessboard/stores/chessboardStore";
 import createLiveChessStore, {
     LiveChessStore,
 } from "@/features/liveGame/stores/liveChessStore";
-import { GameColor } from "@/lib/apiClient";
-import { act, render, screen } from "@testing-library/react";
-import LiveChessStoreContext from "@/features/liveGame/contexts/liveChessContext";
-import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
-import GameClock from "../GameClock";
-import { createFakeClocks } from "@/lib/testUtils/fakers/clocksFaker";
+
+import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardStoreContext";
+import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
+import { createFakeGameResultData } from "@/lib/testUtils/fakers/gameResultDataFaker";
 import { createFakeClockPlayer } from "@/lib/testUtils/fakers/createFakeClockPlayer";
+import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
+import LiveChessStoreContext from "@/features/liveGame/contexts/liveChessContext";
+import { createFakeBoardPieces } from "@/lib/testUtils/fakers/chessboardFakers";
+import PositionHistory from "@/features/chessboard/lib/positionHistory";
+import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
+import { createFakeClocks } from "@/lib/testUtils/fakers/clocksFaker";
+import { GameColor } from "@/lib/apiClient";
+import GameClock from "../GameClock";
 
 vi.mock("@/features/audio/audioPlayer");
 
 describe("GameClock", () => {
-    let store: StoreApi<LiveChessStore>;
+    let liveStore: StoreApi<LiveChessStore>;
+    let chessboardStore: StoreApi<ChessboardStore>;
 
     beforeEach(() => {
         vi.useFakeTimers();
         vi.setSystemTime(1000);
-        store = createLiveChessStore(
+
+        liveStore = createLiveChessStore(
             createFakeLiveChessStoreProps({
-                clocks: createFakeClocks({
+                liveClocks: createFakeClocks({
                     whiteClock: createFakeClockPlayer({ timeLeftMs: 300_000 }),
                     blackClock: createFakeClockPlayer({ timeLeftMs: 300_000 }),
                 }),
                 sideToMove: GameColor.WHITE,
             }),
         );
+        chessboardStore = createChessboardStore();
     });
 
-    it("should render initial time correctly", () => {
-        render(
-            <LiveChessStoreContext.Provider value={store}>
-                <GameClock color={GameColor.WHITE} />
+    function renderWithCtx(color: GameColor) {
+        return render(
+            <LiveChessStoreContext.Provider value={liveStore}>
+                <ChessboardStoreContext.Provider value={chessboardStore}>
+                    <GameClock color={color} />
+                </ChessboardStoreContext.Provider>
             </LiveChessStoreContext.Provider>,
         );
+    }
+
+    it("should render initial time correctly", () => {
+        renderWithCtx(GameColor.WHITE);
         expect(screen.getByText("05:00")).toBeInTheDocument();
     });
 
     it("should count down over time when active", () => {
-        render(
-            <LiveChessStoreContext.Provider value={store}>
-                <GameClock color={GameColor.WHITE} />
-            </LiveChessStoreContext.Provider>,
-        );
+        renderWithCtx(GameColor.WHITE);
         act(() => {
             vi.advanceTimersByTime(10_000);
         });
@@ -53,13 +69,9 @@ describe("GameClock", () => {
     });
 
     it("should not count down when it's not the player's turn", () => {
-        store.setState({ sideToMove: GameColor.BLACK });
+        liveStore.setState({ sideToMove: GameColor.BLACK });
 
-        render(
-            <LiveChessStoreContext.Provider value={store}>
-                <GameClock color={GameColor.WHITE} />
-            </LiveChessStoreContext.Provider>,
-        );
+        renderWithCtx(GameColor.WHITE);
         act(() => {
             vi.advanceTimersByTime(10_000);
         });
@@ -68,18 +80,14 @@ describe("GameClock", () => {
     });
 
     it("should freeze clock when isFrozen is true", () => {
-        store.setState({
-            clocks: createFakeClocks({
+        liveStore.setState({
+            liveClocks: createFakeClocks({
                 whiteClock: createFakeClockPlayer({ timeLeftMs: 300_000 }),
                 isFrozen: true,
             }),
         });
 
-        render(
-            <LiveChessStoreContext.Provider value={store}>
-                <GameClock color={GameColor.WHITE} />
-            </LiveChessStoreContext.Provider>,
-        );
+        renderWithCtx(GameColor.WHITE);
 
         act(() => {
             vi.advanceTimersByTime(10_000);
@@ -90,17 +98,13 @@ describe("GameClock", () => {
     });
 
     it("should show decimal seconds and animate under 20s", () => {
-        store.setState({
-            clocks: createFakeClocks({
+        liveStore.setState({
+            liveClocks: createFakeClocks({
                 whiteClock: createFakeClockPlayer({ timeLeftMs: 15_000 }),
             }),
         });
 
-        render(
-            <LiveChessStoreContext.Provider value={store}>
-                <GameClock color={GameColor.WHITE} />
-            </LiveChessStoreContext.Provider>,
-        );
+        renderWithCtx(GameColor.WHITE);
         act(() => {
             vi.advanceTimersByTime(5000);
         });
@@ -111,18 +115,14 @@ describe("GameClock", () => {
     });
 
     it("should apply 'text-red-600' class when clock is zero and frozen", () => {
-        store.setState({
-            clocks: createFakeClocks({
+        liveStore.setState({
+            liveClocks: createFakeClocks({
                 whiteClock: createFakeClockPlayer({ timeLeftMs: 0 }),
                 isFrozen: true,
             }),
         });
 
-        render(
-            <LiveChessStoreContext.Provider value={store}>
-                <GameClock color={GameColor.WHITE} />
-            </LiveChessStoreContext.Provider>,
-        );
+        renderWithCtx(GameColor.WHITE);
 
         act(() => {
             vi.advanceTimersByTime(1000);
@@ -134,17 +134,13 @@ describe("GameClock", () => {
     });
 
     it("should show OVERTIME once time is over", () => {
-        store.setState({
-            clocks: createFakeClocks({
+        liveStore.setState({
+            liveClocks: createFakeClocks({
                 whiteClock: createFakeClockPlayer({ timeLeftMs: 5000 }),
             }),
         });
 
-        render(
-            <LiveChessStoreContext.Provider value={store}>
-                <GameClock color={GameColor.WHITE} />
-            </LiveChessStoreContext.Provider>,
-        );
+        renderWithCtx(GameColor.WHITE);
         act(() => {
             vi.advanceTimersByTime(7000);
         });
@@ -153,18 +149,14 @@ describe("GameClock", () => {
     });
 
     it("should stop ticking when isFrozen is true", () => {
-        store.setState({
-            clocks: createFakeClocks({
+        liveStore.setState({
+            liveClocks: createFakeClocks({
                 whiteClock: createFakeClockPlayer({ timeLeftMs: 1000 }),
                 isFrozen: true,
             }),
         });
 
-        render(
-            <LiveChessStoreContext.Provider value={store}>
-                <GameClock color={GameColor.WHITE} />
-            </LiveChessStoreContext.Provider>,
-        );
+        renderWithCtx(GameColor.WHITE);
         act(() => {
             vi.advanceTimersByTime(10000);
         });
@@ -173,17 +165,13 @@ describe("GameClock", () => {
     });
 
     it("should apply increment to the clock when turn changes", () => {
-        store.setState({
-            clocks: createFakeClocks({
+        liveStore.setState({
+            liveClocks: createFakeClocks({
                 whiteClock: createFakeClockPlayer({ timeLeftMs: 300_000 }),
             }),
         });
 
-        render(
-            <LiveChessStoreContext.Provider value={store}>
-                <GameClock color={GameColor.WHITE} />
-            </LiveChessStoreContext.Provider>,
-        );
+        renderWithCtx(GameColor.WHITE);
 
         act(() => {
             vi.advanceTimersByTime(5000);
@@ -192,10 +180,10 @@ describe("GameClock", () => {
         expect(screen.getByText("04:55")).toBeInTheDocument();
 
         act(() => {
-            store.setState({
+            liveStore.setState({
                 sideToMove: GameColor.BLACK,
-                clocks: {
-                    ...store.getState().clocks,
+                liveClocks: {
+                    ...liveStore.getState().liveClocks,
                     whiteClock: createFakeClockPlayer({ timeLeftMs: 305_000 }),
                     lastUpdated: Date.now().valueOf(),
                 },
@@ -206,19 +194,15 @@ describe("GameClock", () => {
     });
 
     it("should play warning sound once when time goes under 20s", () => {
-        store.setState({
-            clocks: createFakeClocks({
+        liveStore.setState({
+            liveClocks: createFakeClocks({
                 whiteClock: createFakeClockPlayer({ timeLeftMs: 21_000 }),
             }),
             sideToMove: GameColor.WHITE,
             viewer: { playerColor: GameColor.WHITE, userId: "id" },
         });
 
-        render(
-            <LiveChessStoreContext.Provider value={store}>
-                <GameClock color={GameColor.WHITE} />
-            </LiveChessStoreContext.Provider>,
-        );
+        renderWithCtx(GameColor.WHITE);
 
         expect(AudioPlayer.playAudio).not.toHaveBeenCalled();
 
@@ -232,26 +216,22 @@ describe("GameClock", () => {
     });
 
     it("should not play sound if viewer is not the player", () => {
-        store.setState({
-            clocks: createFakeClocks({
+        liveStore.setState({
+            liveClocks: createFakeClocks({
                 whiteClock: createFakeClockPlayer({ timeLeftMs: 15_000 }),
             }),
             sideToMove: GameColor.WHITE,
             viewer: { playerColor: GameColor.BLACK, userId: "id" }, // not same color
         });
 
-        render(
-            <LiveChessStoreContext.Provider value={store}>
-                <GameClock color={GameColor.WHITE} />
-            </LiveChessStoreContext.Provider>,
-        );
+        renderWithCtx(GameColor.WHITE);
 
         expect(AudioPlayer.playAudio).not.toHaveBeenCalled();
     });
 
     it("should not play sound when clock is frozen", () => {
-        store.setState({
-            clocks: createFakeClocks({
+        liveStore.setState({
+            liveClocks: createFakeClocks({
                 whiteClock: createFakeClockPlayer({ timeLeftMs: 15_000 }),
                 isFrozen: true,
             }),
@@ -259,28 +239,20 @@ describe("GameClock", () => {
             viewer: { playerColor: GameColor.WHITE, userId: "id" },
         });
 
-        render(
-            <LiveChessStoreContext.Provider value={store}>
-                <GameClock color={GameColor.WHITE} />
-            </LiveChessStoreContext.Provider>,
-        );
+        renderWithCtx(GameColor.WHITE);
 
         expect(AudioPlayer.playAudio).not.toHaveBeenCalled();
     });
 
     it("should account for server clock ahead ", () => {
-        store.setState({
-            clocks: createFakeClocks({
+        liveStore.setState({
+            liveClocks: createFakeClocks({
                 whiteClock: createFakeClockPlayer({ timeLeftMs: 60_000 }),
             }),
             serverClockAheadByMs: 5_000,
         });
 
-        render(
-            <LiveChessStoreContext.Provider value={store}>
-                <GameClock color={GameColor.WHITE} />
-            </LiveChessStoreContext.Provider>,
-        );
+        renderWithCtx(GameColor.WHITE);
 
         act(() => {
             vi.advanceTimersByTime(1_000);
@@ -292,18 +264,14 @@ describe("GameClock", () => {
     });
 
     it("should account for server clock behind", () => {
-        store.setState({
-            clocks: createFakeClocks({
+        liveStore.setState({
+            liveClocks: createFakeClocks({
                 whiteClock: createFakeClockPlayer({ timeLeftMs: 60_000 }),
             }),
             serverClockAheadByMs: -3_000,
         });
 
-        render(
-            <LiveChessStoreContext.Provider value={store}>
-                <GameClock color={GameColor.WHITE} />
-            </LiveChessStoreContext.Provider>,
-        );
+        renderWithCtx(GameColor.WHITE);
 
         act(() => {
             vi.advanceTimersByTime(2_000);
@@ -315,25 +283,21 @@ describe("GameClock", () => {
     });
 
     it("should initialize time accounting for server clock drift", () => {
-        store.setState({
-            clocks: createFakeClocks({
+        liveStore.setState({
+            liveClocks: createFakeClocks({
                 whiteClock: createFakeClockPlayer({ timeLeftMs: 60_000 }),
             }),
             serverClockAheadByMs: 5_000,
         });
 
-        render(
-            <LiveChessStoreContext.Provider value={store}>
-                <GameClock color={GameColor.WHITE} />
-            </LiveChessStoreContext.Provider>,
-        );
+        renderWithCtx(GameColor.WHITE);
 
         expect(screen.getByText("00:55")).toBeInTheDocument();
     });
 
     it("should render timeUntilAbandonedMs when ticking", () => {
-        store.setState({
-            clocks: createFakeClocks({
+        liveStore.setState({
+            liveClocks: createFakeClocks({
                 whiteClock: createFakeClockPlayer({
                     timeLeftMs: 300_000,
                     timeUntilAbandonMs: 10_000,
@@ -341,18 +305,14 @@ describe("GameClock", () => {
             }),
         });
 
-        render(
-            <LiveChessStoreContext.Provider value={store}>
-                <GameClock color={GameColor.WHITE} />
-            </LiveChessStoreContext.Provider>,
-        );
+        renderWithCtx(GameColor.WHITE);
 
         expect(screen.getByText("move in 10s")).toBeInTheDocument();
     });
 
     it("should decrement timeUntilAbandonedMs as time passes", () => {
-        store.setState({
-            clocks: createFakeClocks({
+        liveStore.setState({
+            liveClocks: createFakeClocks({
                 whiteClock: createFakeClockPlayer({
                     timeLeftMs: 300_000,
                     timeUntilAbandonMs: 10_000,
@@ -360,11 +320,7 @@ describe("GameClock", () => {
             }),
         });
 
-        render(
-            <LiveChessStoreContext.Provider value={store}>
-                <GameClock color={GameColor.WHITE} />
-            </LiveChessStoreContext.Provider>,
-        );
+        renderWithCtx(GameColor.WHITE);
 
         act(() => {
             vi.advanceTimersByTime(3_000);
@@ -374,8 +330,8 @@ describe("GameClock", () => {
     });
 
     it("should not render timeUntilAbandonedMs when it is null", () => {
-        store.setState({
-            clocks: createFakeClocks({
+        liveStore.setState({
+            liveClocks: createFakeClocks({
                 whiteClock: createFakeClockPlayer({
                     timeLeftMs: 300_000,
                     timeUntilAbandonMs: null,
@@ -383,18 +339,14 @@ describe("GameClock", () => {
             }),
         });
 
-        render(
-            <LiveChessStoreContext.Provider value={store}>
-                <GameClock color={GameColor.WHITE} />
-            </LiveChessStoreContext.Provider>,
-        );
+        renderWithCtx(GameColor.WHITE);
 
         expect(screen.queryByText(/move in \d+s/)).toBeNull();
     });
 
     it("should not render timeUntilAbandonedMs when not ticking", () => {
-        store.setState({
-            clocks: createFakeClocks({
+        liveStore.setState({
+            liveClocks: createFakeClocks({
                 whiteClock: createFakeClockPlayer({
                     timeLeftMs: 300_000,
                     timeUntilAbandonMs: 10_000,
@@ -403,12 +355,54 @@ describe("GameClock", () => {
             sideToMove: GameColor.BLACK,
         });
 
-        render(
-            <LiveChessStoreContext.Provider value={store}>
-                <GameClock color={GameColor.WHITE} />
-            </LiveChessStoreContext.Provider>,
-        );
+        renderWithCtx(GameColor.WHITE);
 
         expect(screen.queryByText(/move in \d+s/)).toBeNull();
+    });
+
+    it("should render the snapshot clock for a past ply", () => {
+        liveStore.setState({
+            resultData: createFakeGameResultData(),
+            clockSnapshotByPly: new Map([
+                [2, { whiteClock: 250_000, blackClock: 245_000 }],
+            ]),
+        });
+
+        const positionHistory = new PositionHistory(createFakeBoardPieces());
+        positionHistory.addNextPosition(createFakePositionProps());
+        const pos2 = positionHistory.addNextPosition(createFakePositionProps());
+        positionHistory.addNextPosition(createFakePositionProps());
+        positionHistory.goToPosition(pos2.positionId);
+        chessboardStore.setState({ positionHistory });
+
+        renderWithCtx(GameColor.WHITE);
+
+        expect(screen.getByText("04:10")).toBeInTheDocument(); // 250,000ms -> 4:10
+    });
+
+    it("should update the clock when switching plies", async () => {
+        liveStore.setState({
+            resultData: createFakeGameResultData(),
+            clockSnapshotByPly: new Map([
+                [1, { whiteClock: 290_000, blackClock: 295_000 }],
+                [2, { whiteClock: 250_000, blackClock: 245_000 }],
+            ]),
+        });
+
+        const positionHistory = new PositionHistory(createFakeBoardPieces());
+        const pos1 = positionHistory.addNextPosition(createFakePositionProps());
+        const pos2 = positionHistory.addNextPosition(createFakePositionProps());
+        positionHistory.addNextPosition(createFakePositionProps());
+        positionHistory.goToPosition(pos1.positionId);
+        chessboardStore.setState({ positionHistory });
+
+        renderWithCtx(GameColor.WHITE);
+        expect(screen.getByText("04:50")).toBeInTheDocument();
+
+        await act(() =>
+            chessboardStore.getState().goToPosition(pos2.positionId),
+        );
+
+        expect(screen.getByText("04:10")).toBeInTheDocument();
     });
 });

@@ -3,9 +3,10 @@ import { StoreApi } from "zustand";
 import createLiveChessStore, { LiveChessStore } from "../liveChessStore";
 
 import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
-import { createFakeClocks } from "@/lib/testUtils/fakers/clocksFaker";
-import { Clocks, GameColor } from "@/lib/apiClient";
 import { createFakeGameResultData } from "@/lib/testUtils/fakers/gameResultDataFaker";
+import { createFakeClocks } from "@/lib/testUtils/fakers/clocksFaker";
+import { ClockSnapshot } from "../../lib/types";
+import { GameColor } from "@/lib/apiClient";
 
 describe("gamePlaySlice", () => {
     let store: StoreApi<LiveChessStore>;
@@ -22,7 +23,9 @@ describe("gamePlaySlice", () => {
 
             const store = createLiveChessStore(
                 createFakeLiveChessStoreProps({
-                    clocks: createFakeClocks({ serverTime: fakeServerTime }),
+                    liveClocks: createFakeClocks({
+                        serverTime: fakeServerTime,
+                    }),
                 }),
             );
 
@@ -104,52 +107,58 @@ describe("gamePlaySlice", () => {
     });
 
     describe("receiveLiveMove", () => {
-        it("should update clocks, sideToMove, and clear isPendingMoveAck", () => {
-            const newClocks: Clocks = createFakeClocks({ serverTime: 1 });
+        it("should update sideToMove and clear isPendingMoveAck", () => {
             const newSideToMove = GameColor.BLACK;
+            const plyNumber = 2;
 
             store.setState({
                 isPendingMoveAck: true,
-                clocks: createFakeClocks({ serverTime: 2 }),
                 sideToMove: GameColor.WHITE,
-            });
-
-            store.getState().receiveLiveMove(newClocks, newSideToMove);
-            const state = store.getState();
-
-            expect(state.clocks).toBe(newClocks);
-            expect(state.sideToMove).toBe(newSideToMove);
-            expect(state.isPendingMoveAck).toBe(false);
-        });
-
-        it("should call decrementDrawCooldown", () => {
-            const decrementDrawCooldownMock = vi.fn();
-            store.setState({
-                decrementDrawCooldown: decrementDrawCooldownMock,
             });
 
             store
                 .getState()
-                .receiveLiveMove(createFakeClocks(), GameColor.WHITE);
+                .receiveLiveMove(plyNumber, createFakeClocks(), newSideToMove);
+            const state = store.getState();
+
+            expect(state.sideToMove).toBe(newSideToMove);
+            expect(state.isPendingMoveAck).toBe(false);
+        });
+
+        it("should decrement cooldown", () => {
+            const decrementDrawCooldownMock = vi.fn();
+            store.setState({
+                decrementDrawCooldown: decrementDrawCooldownMock,
+            });
+            const plyNumber = 3;
+
+            store
+                .getState()
+                .receiveLiveMove(
+                    plyNumber,
+                    createFakeClocks(),
+                    GameColor.WHITE,
+                );
 
             expect(decrementDrawCooldownMock).toHaveBeenCalledOnce();
         });
 
-        it("should update serverClockAheadByMs based on the new server time", () => {
-            const fakeNow = 1000;
-            vi.setSystemTime(fakeNow);
-
-            store.setState({ serverClockAheadByMs: 0 });
-
-            const newServerTime = fakeNow + 2000;
-            const newClocks = createFakeClocks({
-                serverTime: newServerTime,
+        it("should set clocks", () => {
+            const setClocksMock = vi.fn();
+            store.setState({
+                setClocks: setClocksMock,
             });
+            const newClocks = createFakeClocks();
+            const plyNumber = 3;
 
-            store.getState().receiveLiveMove(newClocks, GameColor.BLACK);
+            store
+                .getState()
+                .receiveLiveMove(plyNumber, newClocks, GameColor.WHITE);
 
-            const state = store.getState();
-            expect(state.serverClockAheadByMs).toBe(newServerTime - fakeNow);
+            expect(setClocksMock).toHaveBeenCalledExactlyOnceWith(
+                plyNumber,
+                newClocks,
+            );
         });
     });
 
@@ -165,14 +174,91 @@ describe("gamePlaySlice", () => {
     });
 
     describe("setClocks", () => {
-        it("should update clocks", () => {
+        it("should update live clocks", () => {
             const oldClocks = createFakeClocks({ serverTime: 1 });
-            store.setState({ clocks: oldClocks });
+            store.setState({ liveClocks: oldClocks });
 
             const newClocks = createFakeClocks({ serverTime: 2 });
-            store.getState().setClocks(newClocks);
+            store.getState().setClocks(1, newClocks);
 
-            expect(store.getState().clocks).toEqual(newClocks);
+            expect(store.getState().liveClocks).toEqual(newClocks);
+        });
+
+        it("should update serverClockAheadByMs based on the new server time", () => {
+            const fakeNow = 1000;
+            vi.setSystemTime(fakeNow);
+
+            store.setState({ serverClockAheadByMs: 0 });
+
+            const newServerTime = fakeNow + 2000;
+            const newClocks = createFakeClocks({
+                serverTime: newServerTime,
+            });
+
+            store.getState().setClocks(1, newClocks);
+
+            const state = store.getState();
+            expect(state.serverClockAheadByMs).toBe(newServerTime - fakeNow);
+        });
+
+        it("should add the snapshot", () => {
+            const newClocks = createFakeClocks();
+            const plyNumber = 3;
+
+            store.getState().setClocks(plyNumber, newClocks);
+
+            expect(
+                store.getState().clockSnapshotByPly.get(plyNumber),
+            ).toEqual<ClockSnapshot>({
+                whiteClock: newClocks.whiteClock.timeLeftMs,
+                blackClock: newClocks.blackClock.timeLeftMs,
+            });
+        });
+    });
+
+    describe("getClockSnapshot", () => {
+        it("should return null if the game is ongoing ", () => {
+            store.setState({
+                resultData: null,
+                clockSnapshotByPly: new Map([
+                    [1, { whiteClock: 100, blackClock: 200 }],
+                ]),
+            });
+
+            expect(store.getState().getClockSnapshot(1)).toBeNull();
+            expect(store.getState().getClockSnapshot(0)).toBeNull();
+        });
+
+        it("should return the correct snapshot if game is over", () => {
+            const ply0: ClockSnapshot = {
+                whiteClock: 300_000,
+                blackClock: 300_000,
+            };
+            const ply1: ClockSnapshot = {
+                whiteClock: 295_000,
+                blackClock: 300_000,
+            };
+            store.setState({
+                resultData: createFakeGameResultData(),
+                clockSnapshotByPly: new Map([
+                    [0, ply0],
+                    [1, ply1],
+                ]),
+            });
+
+            expect(store.getState().getClockSnapshot(0)).toEqual(ply0);
+            expect(store.getState().getClockSnapshot(1)).toEqual(ply1);
+        });
+
+        it("should return null if game is over but snapshot for ply does not exist", () => {
+            store.setState({
+                resultData: createFakeGameResultData(),
+                clockSnapshotByPly: new Map([
+                    [0, { whiteClock: 300_000, blackClock: 300_000 }],
+                ]),
+            });
+
+            expect(store.getState().getClockSnapshot(1)).toBeNull();
         });
     });
 });

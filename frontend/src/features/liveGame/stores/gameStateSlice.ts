@@ -27,7 +27,11 @@ export interface GameStateSliceProps {
 export interface GameStateSlice extends GameStateSliceProps {
     decrementDrawCooldown(): void;
     drawStateChange(drawState: DrawState): void;
-    endGame(resultData: GameResultData, finalClocks: Clocks): void;
+    endGame(
+        plyNumber: number,
+        resultData: GameResultData,
+        finalClocks: Clocks,
+    ): void;
 
     resetState(initState: LiveChessStoreProps): void;
 }
@@ -62,10 +66,10 @@ export function createGameStateSlice(
             });
         },
 
-        endGame(resultData, finalClocks) {
+        endGame(plyNumber, resultData, finalClocks) {
             const { setClocks } = get();
 
-            setClocks(finalClocks);
+            setClocks(plyNumber, finalClocks);
             set((state) => {
                 if (state.whitePlayer.rating && resultData.whiteRatingChange)
                     state.whitePlayer.rating += resultData.whiteRatingChange;

@@ -2,6 +2,7 @@ import { StateCreator } from "zustand";
 
 import type { LiveChessStore } from "./liveChessStore";
 import { Clocks, GameColor } from "@/lib/apiClient";
+import { ClockSnapshot } from "../lib/types";
 
 export interface LiveChessViewer {
     userId: string;
@@ -10,21 +11,32 @@ export interface LiveChessViewer {
 
 export interface GamePlaySliceProps {
     sideToMove: GameColor;
-    clocks: Clocks;
+    clockSnapshotByPly: Map<number, ClockSnapshot>;
+    liveClocks: Clocks;
 
     viewer: LiveChessViewer;
 }
 
-export interface GamePlaySlice extends GamePlaySliceProps {
+export interface GamePlaySlice {
+    sideToMove: GameColor;
+    clockSnapshotByPly: Map<number, ClockSnapshot>;
+    liveClocks: Clocks;
+
+    viewer: LiveChessViewer;
     isPendingMoveAck: boolean;
     serverClockAheadByMs: number;
 
     isInteractionAllowed(): boolean;
-    receiveLiveMove(clocks: Clocks, sideToMove: GameColor): void;
+    receiveLiveMove(
+        plyNumber: number,
+        clocks: Clocks,
+        sideToMove: GameColor,
+    ): void;
     markPendingMoveAck(): void;
     cancelPendingMoveAch(): void;
 
-    setClocks(clocks: Clocks): void;
+    setClocks(plyNumber: number, clocks: Clocks): void;
+    getClockSnapshot(plyNumber: number): ClockSnapshot | null;
 }
 
 export function createGamePlaySlice(
@@ -40,7 +52,7 @@ export function createGamePlaySlice(
 
         isPendingMoveAck: false,
         serverClockAheadByMs:
-            initState.clocks.serverTime - new Date().valueOf(),
+            initState.liveClocks.serverTime - new Date().valueOf(),
 
         isInteractionAllowed() {
             const { resultData, viewer, sideToMove } = get();
@@ -51,15 +63,12 @@ export function createGamePlaySlice(
             return isGameOver || viewer.playerColor === sideToMove;
         },
 
-        receiveLiveMove(clocks, sideToMove) {
-            const { decrementDrawCooldown } = get();
+        receiveLiveMove(plyNumber, clocks, sideToMove) {
+            const { decrementDrawCooldown, setClocks } = get();
 
             decrementDrawCooldown();
-            const serverClockAheadByMs =
-                clocks.serverTime - new Date().valueOf();
+            setClocks(plyNumber, clocks);
             set((state) => {
-                state.serverClockAheadByMs = serverClockAheadByMs;
-                state.clocks = clocks;
                 state.sideToMove = sideToMove;
                 state.isPendingMoveAck = false;
             });
@@ -76,10 +85,25 @@ export function createGamePlaySlice(
             });
         },
 
-        setClocks(clocks) {
+        setClocks(plyNumber, clocks) {
+            const serverClockAheadByMs =
+                clocks.serverTime - new Date().valueOf();
             set((state) => {
-                state.clocks = clocks;
+                state.serverClockAheadByMs = serverClockAheadByMs;
+                state.liveClocks = clocks;
+                state.clockSnapshotByPly.set(plyNumber, {
+                    whiteClock: clocks.whiteClock.timeLeftMs,
+                    blackClock: clocks.blackClock.timeLeftMs,
+                });
             });
+        },
+        getClockSnapshot(plyNumber) {
+            const { clockSnapshotByPly, resultData } = get();
+            if (resultData === null) {
+                return null;
+            }
+
+            return clockSnapshotByPly.get(plyNumber) ?? null;
         },
     });
 }
