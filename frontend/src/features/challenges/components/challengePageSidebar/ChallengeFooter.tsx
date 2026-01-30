@@ -20,9 +20,10 @@ const ChallengeFooter = () => {
     const user = useSessionUser();
     const router = useRouter();
 
-    const { setCancelled, isExpired } = useChallengeStore((x) => ({
+    const { setCancelled, setExpired, isExpired } = useChallengeStore((x) => ({
         setCancelled: x.setCancelled,
-        isExpired: x.isExpired(),
+        setExpired: x.setExpired,
+        isExpired: x.isExpired,
     }));
     const challenge = useChallengeStore((x) => x.challenge);
     const expiresAt = new Date(challenge.expiresAt);
@@ -101,7 +102,10 @@ const ChallengeFooter = () => {
 
             {error && <span className="text-error">{error}</span>}
 
-            <CountdownText getTimeUntil={() => expiresAt}>
+            <CountdownText
+                getTimeUntil={() => expiresAt}
+                onDateReached={setExpired}
+            >
                 {({ countdown }) => (
                     <p
                         className="text-text/70"

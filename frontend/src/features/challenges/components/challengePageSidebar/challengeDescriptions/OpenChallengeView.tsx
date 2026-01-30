@@ -13,7 +13,7 @@ const OpenChallengeView = () => {
     const [qrCodeB64, setQrCodeB64] = useState<string>();
 
     const isOver = useChallengeStore(
-        (x) => x.isExpired() || x.challenge.cancelledBy != null,
+        (x) => x.isExpired || x.challenge.cancelledBy != null,
     );
 
     async function copyChallengeLink() {

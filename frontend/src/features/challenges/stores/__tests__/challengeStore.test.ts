@@ -11,31 +11,27 @@ describe("challengeStore", () => {
     beforeEach(() => {
         challenge = createFakeChallengeRequest();
         store = createChallengeStore({
-            challenge: challenge,
+            challenge,
         });
     });
 
     describe("isExpired", () => {
-        it("should return false when not expired", async () => {
-            const now = Date.now();
-            vi.setSystemTime(now);
-            challenge.expiresAt = new Date(now + 60000).toISOString();
-            store.setState({ challenge });
+        it("should be false if challenge has not expired", () => {
+            challenge.expiresAt = new Date(Date.now() + 60000).toISOString();
+            store = createChallengeStore({
+                challenge,
+            });
 
-            expect(store.getState().isExpired()).toBe(false);
+            expect(store.getState().isExpired).toBe(false);
         });
 
-        it("should return true after it expires", () => {
-            const now = Date.now();
-            vi.setSystemTime(now);
-            challenge.expiresAt = new Date(now + 60000).toISOString();
-            store.setState({ challenge });
+        it("should be true if challenge has expired", () => {
+            challenge.expiresAt = new Date(Date.now() - 100).toISOString();
+            store = createChallengeStore({
+                challenge,
+            });
 
-            expect(store.getState().isExpired()).toBe(false);
-
-            vi.setSystemTime(now + 61000);
-
-            expect(store.getState().isExpired()).toBe(true);
+            expect(store.getState().isExpired).toBe(true);
         });
     });
 
@@ -53,6 +49,13 @@ describe("challengeStore", () => {
             store.getState().setCancelled("user123");
 
             expect(store.getState().challenge.cancelledBy).toBe("user123");
+        });
+    });
+
+    describe("setExpired", () => {
+        it("should set isExpired to true", () => {
+            store.getState().setExpired();
+            expect(store.getState().isExpired).toBe(true);
         });
     });
 });

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { StoreApi } from "zustand";
 
 import {
@@ -85,10 +85,7 @@ describe("ChallengeFooter", () => {
     });
 
     it("should render ChallengeOver when challenge is expired", () => {
-        challengeMock.expiresAt = new Date(
-            new Date().getTime() - 100,
-        ).toISOString();
-        challengeStore.setState({ challenge: challengeMock });
+        challengeStore.setState({ isExpired: true });
 
         render(
             <SessionProvider user={userMock}>
@@ -120,6 +117,27 @@ describe("ChallengeFooter", () => {
         const countdown = screen.getByTestId("challengeFooterExpiresIn");
         expect(countdown).toBeInTheDocument();
         expect(countdown.textContent).toBe("Expires in 00:01:00");
+    });
+
+    it("should mark as expired once expired", async () => {
+        const now = Date.now();
+        vi.setSystemTime(now);
+        challengeMock.expiresAt = new Date(now + 60000).toISOString();
+        challengeStore.setState({ challenge: challengeMock });
+
+        expect(challengeStore.getState().isExpired).toBe(false);
+
+        render(
+            <SessionProvider user={userMock}>
+                <ChallengeStoreContext.Provider value={challengeStore}>
+                    <ChallengeFooter />
+                </ChallengeStoreContext.Provider>
+            </SessionProvider>,
+        );
+
+        await act(() => vi.advanceTimersByTime(61000));
+
+        expect(challengeStore.getState().isExpired).toBe(true);
     });
 
     it("should disable Accept button and show guest message for rated challenge when user is guest", () => {
