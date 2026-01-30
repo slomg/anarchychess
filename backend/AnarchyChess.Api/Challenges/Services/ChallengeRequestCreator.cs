@@ -69,7 +69,7 @@ public class ChallengeRequestCreator(
         return challengeResult;
     }
 
-    private ChallengeRequest CreateChallengeWithoutRecipient(
+    private static ChallengeRequest CreateChallengeWithoutRecipient(
         ChallengeToken challengeToken,
         MinimalProfile requester,
         PoolKey pool,
