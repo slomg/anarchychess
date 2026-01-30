@@ -38,8 +38,8 @@ const HomeDiscordSection = () => {
                     </div>
 
                     <p>
-                        Overtime chaos: instead of instantly losing your pieces
-                        just start leaving
+                        instead of instantly losing when you run out of time,
+                        your pieces just start leaving
                     </p>
                 </div>
 

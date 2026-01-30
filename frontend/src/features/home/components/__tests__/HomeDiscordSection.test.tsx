@@ -18,7 +18,11 @@ describe("HomeDiscordSection", () => {
         expect(screen.getByText("Sniper Bishop")).toBeInTheDocument();
         expect(screen.getByText("slomg")).toBeInTheDocument();
 
-        expect(screen.getByText(/overtime chaos/i)).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                /instead of instantly losing when you run out of time, your pieces just start leaving/i,
+            ),
+        ).toBeInTheDocument();
 
         expect(screen.getByText(/omg i love this/i)).toBeInTheDocument();
     });
