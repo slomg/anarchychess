@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     title: "Anarchy Chess",
     description:
         "Play Anarchy Chess online with wild, custom rules and unique pieces inspired by r/AnarchyChess." +
-        "Explore chaotic chess variants, challenge friends, complete quests, climb the ranks, and experience the unpredictable fun of anarchychess gameplay.",
+        "Explore the chaotic chess variant, challenge friends, complete quests, climb the ranks, and experience the unpredictable fun of anarchychess gameplay.",
     keywords: [
         "chess",
         "anarchy chess",
