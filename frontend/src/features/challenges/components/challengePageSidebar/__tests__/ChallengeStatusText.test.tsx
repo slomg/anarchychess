@@ -1,13 +1,15 @@
-import { ChallengeRequest } from "@/lib/apiClient";
-import { StoreApi } from "zustand";
-import ChallengeStatusText from "../ChallengeStatusText";
 import { render, screen } from "@testing-library/react";
-import { createFakeChallengeRequest } from "@/lib/testUtils/fakers/challengeRequestFaker";
+import { StoreApi } from "zustand";
+
 import {
     ChallengeStore,
     createChallengeStore,
 } from "@/features/challenges/stores/challengeStore";
+
+import { createFakeChallengeRequest } from "@/lib/testUtils/fakers/challengeRequestFaker";
 import ChallengeStoreContext from "@/features/challenges/contexts/challengeContext";
+import ChallengeStatusText from "../ChallengeStatusText";
+import { ChallengeRequest } from "@/lib/apiClient";
 
 describe("ChallengeStatusText", () => {
     let challengeMock: ChallengeRequest;
@@ -37,7 +39,7 @@ describe("ChallengeStatusText", () => {
         expect(text).toHaveClass("text-active");
     });
 
-    it("should render 'Challenge Expired' when isExpired is true", () => {
+    it("should render 'Challenge Expired' when expired", () => {
         challengeStore.setState({ isExpired: true });
         renderWithProviders();
 
@@ -46,11 +48,8 @@ describe("ChallengeStatusText", () => {
         expect(text).toHaveClass("text-over");
     });
 
-    it("should render 'Challenge Cancelled' when isCancelled is true and cancelled requester", () => {
-        challengeStore.setState({
-            isCancelled: true,
-            cancelledBy: challengeMock.requester.userId,
-        });
+    it("should render 'Challenge Cancelled' when cancelled requester", () => {
+        challengeMock.cancelledBy = challengeMock.requester.userId;
         renderWithProviders();
 
         const text = screen.getByText("Challenge Cancelled");
@@ -58,23 +57,8 @@ describe("ChallengeStatusText", () => {
         expect(text).toHaveClass("text-over");
     });
 
-    it("should render 'Challenge Cancelled' when isCancelled is true and cancelled by is null", () => {
-        challengeStore.setState({
-            isCancelled: true,
-            cancelledBy: null,
-        });
-        renderWithProviders();
-
-        const text = screen.getByText("Challenge Cancelled");
-        expect(text).toBeInTheDocument();
-        expect(text).toHaveClass("text-over");
-    });
-
-    it("should render 'Challenge Declined' when isCancelled is true and cancelled by recipient", () => {
-        challengeStore.setState({
-            isCancelled: true,
-            cancelledBy: challengeMock.recipient?.userId,
-        });
+    it("should render 'Challenge Declined' when cancelled by recipient", () => {
+        challengeMock.cancelledBy = challengeMock.recipient?.userId;
         renderWithProviders();
 
         const text = screen.getByText("Challenge Declined");

@@ -17,7 +17,7 @@ public interface IChallengeNotifier
     );
     Task NotifyChallengeReceived(ConnectionId recipientConnectionId, ChallengeRequest challenge);
     Task NotifyChallengeReceived(UserId recipientId, ChallengeRequest challenge);
-    Task SubscribeToChallengeAsync(ConnectionId connectionId, ChallengeToken challengeToken);
+    Task SubscribeToChallengeAsync(ConnectionId connectionId, ChallengeRequest challenge);
 }
 
 public class ChallengeNotifier(IHubContext<ChallengeHub, IChallengeHubClient> hub)
@@ -54,8 +54,12 @@ public class ChallengeNotifier(IHubContext<ChallengeHub, IChallengeHubClient> hu
     public Task NotifyChallengeAccepted(GameToken gameToken, ChallengeToken challengeToken) =>
         _hub.Clients.Group(challengeToken).ChallengeAcceptedAsync(gameToken, challengeToken);
 
-    public Task SubscribeToChallengeAsync(
+    public async Task SubscribeToChallengeAsync(
         ConnectionId connectionId,
-        ChallengeToken challengeToken
-    ) => _hub.Groups.AddToGroupAsync(connectionId, challengeToken);
+        ChallengeRequest challenge
+    )
+    {
+        await _hub.Clients.Client(connectionId).ReceiveUpdatedChallengeAsync(challenge);
+        await _hub.Groups.AddToGroupAsync(connectionId, challenge.ChallengeToken);
+    }
 }

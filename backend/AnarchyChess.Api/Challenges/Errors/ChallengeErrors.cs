@@ -28,4 +28,7 @@ public static class ChallengeErrors
 
     public static Error NotFound =>
         Error.NotFound(ErrorCodes.ChallengeNotFound, "Challenge not found");
+
+    public static Error ChallengeClosed =>
+        Error.Conflict(ErrorCodes.ChallengeClosed, "Challenge is no longer available");
 }

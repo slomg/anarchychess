@@ -73,7 +73,8 @@ describe("OpenChallengeView", () => {
     });
 
     it("should update correctly when challenge is over", async () => {
-        challengeStore.setState({ isCancelled: true });
+        challengeMock.cancelledBy = "cancelled by";
+
         render(
             <ChallengeStoreContext.Provider value={challengeStore}>
                 <OpenChallengeView />

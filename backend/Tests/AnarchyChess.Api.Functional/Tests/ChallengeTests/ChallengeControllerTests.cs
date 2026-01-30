@@ -204,10 +204,14 @@ public class ChallengeControllerTests(AnarchyChessWebApplicationFactory factory)
         cancelResponse.IsSuccessful.Should().BeTrue();
 
         var get1 = await ApiClient.Api.GetChallengeAsync(challenge1.ChallengeToken);
-        get1.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        get1.IsSuccessful.Should().BeTrue();
+        get1.Content.Should().NotBeNull();
+        get1.Content.CancelledBy.Should().Be(recipient.Id);
 
         var get2 = await ApiClient.Api.GetChallengeAsync(challenge2.ChallengeToken);
-        get2.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        get2.IsSuccessful.Should().BeTrue();
+        get2.Content.Should().NotBeNull();
+        get2.Content.CancelledBy.Should().Be(recipient.Id);
     }
 
     private async Task<ChallengeRequest> CreateChallengeAsync(

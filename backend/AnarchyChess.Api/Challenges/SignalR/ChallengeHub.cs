@@ -15,6 +15,7 @@ public interface IChallengeHubClient : IAnarchyChessHubClient
     public Task ChallengeReceivedAsync(ChallengeRequest challenge);
     public Task ChallengeCancelledAsync(UserId? cancelledBy, ChallengeToken challengeToken);
     public Task ChallengeAcceptedAsync(GameToken gameToken, ChallengeToken challengeToken);
+    public Task ReceiveUpdatedChallengeAsync(ChallengeRequest challenge);
 }
 
 [Authorize(AuthPolicies.ActiveSession)]

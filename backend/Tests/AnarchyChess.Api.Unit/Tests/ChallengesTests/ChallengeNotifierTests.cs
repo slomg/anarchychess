@@ -15,6 +15,8 @@ public class ChallengeNotifierTests
     private readonly UserId _requesterId = "test requester id";
     private readonly UserId _recipientId = "test recipient id";
 
+    private readonly ConnectionId _connId = "test-connection";
+
     private readonly IHubContext<ChallengeHub, IChallengeHubClient> _hubContextMock =
         Substitute.For<IHubContext<ChallengeHub, IChallengeHubClient>>();
     private readonly IHubClients<IChallengeHubClient> _clientsMock = Substitute.For<
@@ -25,6 +27,8 @@ public class ChallengeNotifierTests
         Substitute.For<IChallengeHubClient>();
     private readonly IChallengeHubClient _recipientProxyMock =
         Substitute.For<IChallengeHubClient>();
+    private readonly IChallengeHubClient _clientConnProxyMock =
+        Substitute.For<IChallengeHubClient>();
     private readonly IGroupManager _groupManagerMock = Substitute.For<IGroupManager>();
 
     private readonly ChallengeNotifier _notifier;
@@ -33,6 +37,7 @@ public class ChallengeNotifierTests
     {
         _clientsMock.User(_requesterId).Returns(_requesterProxyMock);
         _clientsMock.User(_recipientId).Returns(_recipientProxyMock);
+        _clientsMock.Client(_connId).Returns(_clientConnProxyMock);
         _hubContextMock.Clients.Returns(_clientsMock);
         _hubContextMock.Groups.Returns(_groupManagerMock);
 
@@ -52,15 +57,11 @@ public class ChallengeNotifierTests
     [Fact]
     public async Task NotifyChallengeReceivedAsync_with_a_connection_id_notifies_the_correct_client()
     {
-        ConnectionId connId = "test-connection";
-        var clientConnProxyMock = Substitute.For<IChallengeHubClient>();
-        _clientsMock.Client(connId).Returns(clientConnProxyMock);
-
         var challenge = new ChallengeRequestFaker().Generate();
 
-        await _notifier.NotifyChallengeReceived(connId, challenge);
+        await _notifier.NotifyChallengeReceived(_connId, challenge);
 
-        await clientConnProxyMock.Received(1).ChallengeReceivedAsync(challenge);
+        await _clientConnProxyMock.Received(1).ChallengeReceivedAsync(challenge);
     }
 
     [Fact]
@@ -110,13 +111,13 @@ public class ChallengeNotifierTests
     [Fact]
     public async Task SubscribeToChallengeAsync_adds_connection_to_group()
     {
-        ConnectionId connId = "conn-123";
-        ChallengeToken challengeToken = "challenge-123";
+        var challenge = new ChallengeRequestFaker().Generate();
 
-        await _notifier.SubscribeToChallengeAsync(connId, challengeToken);
+        await _notifier.SubscribeToChallengeAsync(_connId, challenge);
 
+        await _clientConnProxyMock.Received(1).ReceiveUpdatedChallengeAsync(challenge);
         await _groupManagerMock
             .Received(1)
-            .AddToGroupAsync(connId, challengeToken, Arg.Any<CancellationToken>());
+            .AddToGroupAsync(_connId, challenge.ChallengeToken, Arg.Any<CancellationToken>());
     }
 }

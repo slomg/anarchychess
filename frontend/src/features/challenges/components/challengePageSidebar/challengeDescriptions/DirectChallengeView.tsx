@@ -7,7 +7,7 @@ import ChallengeStatusText from "../ChallengeStatusText";
 
 const DirectChallengeView = () => {
     const { isOver, recipient } = useChallengeStore((x) => ({
-        isOver: x.isCancelled || x.isExpired,
+        isOver: x.challenge.cancelledBy || x.isExpired,
         recipient: x.challenge.recipient,
     }));
     if (!recipient) return null;

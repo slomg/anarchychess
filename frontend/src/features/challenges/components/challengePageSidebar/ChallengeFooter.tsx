@@ -19,13 +19,11 @@ const ChallengeFooter = () => {
     const user = useSessionUser();
     const router = useRouter();
 
-    const { isCancelled, setCancelled, isExpired, setExpired } =
-        useChallengeStore((x) => ({
-            isCancelled: x.isCancelled,
-            setCancelled: x.setCancelled,
-            isExpired: x.isExpired,
-            setExpired: x.setExpired,
-        }));
+    const { setCancelled, isExpired, setExpired } = useChallengeStore((x) => ({
+        setCancelled: x.setCancelled,
+        isExpired: x.isExpired,
+        setExpired: x.setExpired,
+    }));
     const challenge = useChallengeStore((x) => x.challenge);
     const expiresAt = new Date(challenge.expiresAt);
 
@@ -71,7 +69,7 @@ const ChallengeFooter = () => {
         }
     }
 
-    if (isCancelled || isExpired)
+    if (challenge.cancelledBy || isExpired)
         return (
             <Card className="flex-1 items-center">
                 <ChallengeOver />

@@ -505,6 +505,8 @@ export type ChallengeRequest = {
     recipient?: MinimalProfile | null;
     pool: PoolKey;
     expiresAt: string;
+    cancelledBy?: string | null;
+    resolvedGame?: string | null;
 };
 
 export type PoolKeyRequest = {
@@ -593,6 +595,7 @@ export enum ErrorCode {
     CHALLENGE_AUTHED_ONLY_POOL = "Challenge.AuthedOnlyPool",
     CHALLENGE_CANNOT_ACCEPT = "Challenge.CannotAccept",
     CHALLENGE_NOT_FOUND = "Challenge.NotFound",
+    CHALLENGE_CLOSED = "Challenge.Closed",
 }
 
 export type GetRatingArchivesData = {

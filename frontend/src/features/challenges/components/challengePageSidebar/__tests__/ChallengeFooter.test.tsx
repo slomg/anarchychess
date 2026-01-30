@@ -68,7 +68,7 @@ describe("ChallengeFooter", () => {
     });
 
     it("should render ChallengeOver when challenge is cancelled", () => {
-        challengeStore.setState({ isCancelled: true });
+        challengeMock.cancelledBy = "cancelled by";
 
         render(
             <SessionProvider user={userMock}>

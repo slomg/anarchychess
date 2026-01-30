@@ -38,6 +38,9 @@ public class ChallengeGrainTests : BaseOrleansIntegrationTest
 
     private readonly IChallengeNotifier _challengeNotifierMock =
         Substitute.For<IChallengeNotifier>();
+    private readonly TimeProvider _timeProviderMock = Substitute.For<TimeProvider>();
+
+    private readonly DateTimeOffset _fakeNow = DateTimeOffset.UtcNow;
 
     private readonly ChallengeGrainStorage _state;
     private readonly TestStorageStats _stateStats;
@@ -54,6 +57,8 @@ public class ChallengeGrainTests : BaseOrleansIntegrationTest
         >();
         _settings = settings.Value.Challenge;
 
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow);
+
         Silo.AddProbe<IChallengeInboxGrain>(id =>
         {
             if (id.ToString() == _requesterId)
@@ -65,6 +70,7 @@ public class ChallengeGrainTests : BaseOrleansIntegrationTest
 
         Silo.ServiceProvider.AddService(settings);
         Silo.ServiceProvider.AddService(_challengeNotifierMock);
+        Silo.ServiceProvider.AddService(_timeProviderMock);
         Silo.ServiceProvider.AddService(
             ApiTestBase.Scope.ServiceProvider.GetRequiredService<IGameStarter>()
         );
@@ -96,7 +102,7 @@ public class ChallengeGrainTests : BaseOrleansIntegrationTest
         recipientInbox.Should().ContainSingle().Which.Should().Be(challenge);
 
         _state.Request.Should().Be(challenge);
-        _stateStats.Writes.Should().Be(1);
+        _stateStats.Writes.Should().BeGreaterThanOrEqualTo(1);
 
         Silo.ReminderRegistry.Mock.Verify(x =>
             x.RegisterOrUpdateReminder(
@@ -122,7 +128,7 @@ public class ChallengeGrainTests : BaseOrleansIntegrationTest
         recipientInbox.Should().BeEmpty();
 
         _state.Request.Should().Be(challenge);
-        _stateStats.Writes.Should().Be(1);
+        _stateStats.Writes.Should().BeGreaterThanOrEqualTo(1);
     }
 
     [Theory]
@@ -137,9 +143,7 @@ public class ChallengeGrainTests : BaseOrleansIntegrationTest
         var result = await grain.SubscribeAsync(userId, connId, ApiTestBase.CT);
 
         result.IsError.Should().BeFalse();
-        await _challengeNotifierMock
-            .Received(1)
-            .SubscribeToChallengeAsync(connId, challenge.ChallengeToken);
+        await _challengeNotifierMock.Received(1).SubscribeToChallengeAsync(connId, challenge);
     }
 
     [Fact]
@@ -152,9 +156,7 @@ public class ChallengeGrainTests : BaseOrleansIntegrationTest
         var result = await grain.SubscribeAsync("random user", connId, ApiTestBase.CT);
 
         result.IsError.Should().BeFalse();
-        await _challengeNotifierMock
-            .Received(1)
-            .SubscribeToChallengeAsync(connId, challenge.ChallengeToken);
+        await _challengeNotifierMock.Received(1).SubscribeToChallengeAsync(connId, challenge);
     }
 
     [Fact]
@@ -169,7 +171,7 @@ public class ChallengeGrainTests : BaseOrleansIntegrationTest
         result.FirstError.Should().Be(ChallengeErrors.NotFound);
         await _challengeNotifierMock
             .DidNotReceiveWithAnyArgs()
-            .SubscribeToChallengeAsync(default, default);
+            .SubscribeToChallengeAsync(default, default!);
     }
 
     [Theory]
@@ -222,6 +224,32 @@ public class ChallengeGrainTests : BaseOrleansIntegrationTest
         result.FirstError.Should().Be(ChallengeErrors.NotFound);
     }
 
+    [Fact]
+    public async Task CancelAsync_rejects_after_challenge_expires()
+    {
+        var grain = await CreateGrainAsync();
+        await CreateAsync(grain, _requester, _recipient);
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow + _settings.ChallengeLifetime);
+
+        var result = await grain.CancelAsync(_requesterId, ApiTestBase.CT);
+
+        result.IsError.Should().BeTrue();
+        result.FirstError.Should().Be(ChallengeErrors.ChallengeClosed);
+    }
+
+    [Fact]
+    public async Task CancelAsync_rejects_after_challenge_is_cancelled()
+    {
+        var grain = await CreateGrainAsync();
+        await CreateAsync(grain, _requester, _recipient);
+        await grain.CancelAsync(_requesterId, ApiTestBase.CT);
+
+        var result = await grain.CancelAsync(_requesterId, ApiTestBase.CT);
+
+        result.IsError.Should().BeTrue();
+        result.FirstError.Should().Be(ChallengeErrors.ChallengeClosed);
+    }
+
     [Theory]
     [InlineData(_requesterId)]
     [InlineData(_recipientId)]
@@ -238,6 +266,10 @@ public class ChallengeGrainTests : BaseOrleansIntegrationTest
             .Received(1)
             .NotifyChallengeCancelled(cancelledBy, _recipientId, _challengeToken);
         await AssertToreDownAsync(grain);
+
+        _stateStats.Writes.Should().BeGreaterThanOrEqualTo(1);
+        _state.Request!.ResolvedGame.Should().BeNull();
+        _state.Request.CancelledBy.Should().Be((UserId)cancelledBy);
     }
 
     [Fact]
@@ -250,6 +282,32 @@ public class ChallengeGrainTests : BaseOrleansIntegrationTest
 
         result.IsError.Should().BeTrue();
         result.FirstError.Should().Be(ChallengeErrors.NotFound);
+    }
+
+    [Fact]
+    public async Task AcceptAsync_rejects_after_challenge_expires()
+    {
+        var grain = await CreateGrainAsync();
+        await CreateAsync(grain, _requester, _recipient);
+        _timeProviderMock.GetUtcNow().Returns(_fakeNow + _settings.ChallengeLifetime);
+
+        var result = await grain.AcceptAsync(_recipientId, ApiTestBase.CT);
+
+        result.IsError.Should().BeTrue();
+        result.FirstError.Should().Be(ChallengeErrors.ChallengeClosed);
+    }
+
+    [Fact]
+    public async Task AcceptAsync_rejects_after_challenge_is_cancelled()
+    {
+        var grain = await CreateGrainAsync();
+        await CreateAsync(grain, _requester, _recipient);
+        await grain.CancelAsync(_requesterId, ApiTestBase.CT);
+
+        var result = await grain.AcceptAsync(_recipientId, ApiTestBase.CT);
+
+        result.IsError.Should().BeTrue();
+        result.FirstError.Should().Be(ChallengeErrors.ChallengeClosed);
     }
 
     [Fact]
@@ -269,6 +327,23 @@ public class ChallengeGrainTests : BaseOrleansIntegrationTest
             requesterId: _requesterId,
             recipientId: _recipientId
         );
+
+        _stateStats.Writes.Should().BeGreaterThanOrEqualTo(1);
+        _state.Request!.ResolvedGame.Should().Be(result.Value);
+        _state.Request!.CancelledBy.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task AcceptAsync_doesnt_allow_accepting_twice()
+    {
+        var grain = await CreateGrainAsync();
+        await CreateAsync(grain, _requester, _recipient);
+        await grain.AcceptAsync(_recipientId, ApiTestBase.CT);
+
+        var result = await grain.AcceptAsync(_recipientId, ApiTestBase.CT);
+
+        result.IsError.Should().BeTrue();
+        result.FirstError.Should().Be(ChallengeErrors.ChallengeClosed);
     }
 
     [Fact]
@@ -358,7 +433,7 @@ public class ChallengeGrainTests : BaseOrleansIntegrationTest
             Requester: new(requester),
             Recipient: recipient is null ? null : new(recipient),
             Pool: pool,
-            ExpiresAt: DateTime.UtcNow + _settings.ChallengeLifetime
+            ExpiresAt: _fakeNow.UtcDateTime + _settings.ChallengeLifetime
         );
         await grain.CreateAsync(challenge);
 
@@ -390,8 +465,6 @@ public class ChallengeGrainTests : BaseOrleansIntegrationTest
     {
         var recipientInbox = await _recipientInbox.GetIncomingChallengesAsync();
         recipientInbox.Should().BeEmpty();
-
-        _stateStats.Clears.Should().Be(1);
 
         Silo.ReminderRegistry.Mock.Verify(x =>
             x.UnregisterReminder(

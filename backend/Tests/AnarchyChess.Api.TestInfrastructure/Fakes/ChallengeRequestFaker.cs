@@ -12,5 +12,7 @@ public class ChallengeRequestFaker : RecordFaker<ChallengeRequest>
         RuleFor(x => x.Recipient, f => new MinimalProfileFaker().Generate());
         RuleFor(x => x.Pool, f => new PoolKeyFaker().Generate());
         RuleFor(x => x.ExpiresAt, f => f.Date.Future());
+        RuleFor(x => x.CancelledBy, f => null);
+        RuleFor(x => x.ResolvedGame, f => null);
     }
 }

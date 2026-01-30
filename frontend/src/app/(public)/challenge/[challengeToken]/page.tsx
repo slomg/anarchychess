@@ -1,8 +1,11 @@
-import WithSession from "@/features/auth/hocs/WithSession";
-import ChallengeSidebar from "@/features/challenges/components/challengePageSidebar/ChallengeSidebar";
+import constants from "@/lib/constants";
+
 import StaticChessboardWithSidebar from "@/features/chessboard/components/StaticChessboardWithSidebar";
-import { getChallenge } from "@/lib/apiClient";
+import ChallengeSidebar from "@/features/challenges/components/challengePageSidebar/ChallengeSidebar";
+import WithSession from "@/features/auth/hocs/WithSession";
 import dataOrThrow from "@/lib/apiClient/dataOrThrow";
+import { getChallenge } from "@/lib/apiClient";
+import { redirect } from "next/navigation";
 
 export const metadata = { title: "Challenge - Anarchy Chess" };
 
@@ -22,6 +25,12 @@ export default async function ChallengePage({
                         auth: () => accessToken,
                     }),
                 );
+
+                if (challenge.resolvedGame != null) {
+                    redirect(
+                        `${constants.PATHS.GAME}/${challenge.resolvedGame}`,
+                    );
+                }
 
                 return (
                     <StaticChessboardWithSidebar

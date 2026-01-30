@@ -36,71 +36,161 @@ describe("useChallengeEvents", () => {
         );
     });
 
-    it("should redirect when ChallengeAcceptedAsync with the right challenge id", async () => {
-        const routerMock = mockRouter();
-        const gameToken = "test game token";
-        renderHook(() =>
-            useChallengeEvents(challengeStore, challengeMock.challengeToken),
-        );
+    describe("ChallengeAcceptedAsync", () => {
+        it("should redirect if the challenge token is correct", async () => {
+            const routerMock = mockRouter();
+            const gameToken = "test game token";
+            renderHook(() =>
+                useChallengeEvents(
+                    challengeStore,
+                    challengeMock.challengeToken,
+                ),
+            );
 
-        await act(() =>
-            challengeEventHandlers["ChallengeAcceptedAsync"]?.(
-                gameToken,
-                challengeMock.challengeToken,
-            ),
-        );
+            await act(() =>
+                challengeEventHandlers.ChallengeAcceptedAsync?.(
+                    gameToken,
+                    challengeMock.challengeToken,
+                ),
+            );
 
-        expect(routerMock.push).toHaveBeenCalledExactlyOnceWith(
-            `${constants.PATHS.GAME}/${gameToken}`,
-        );
+            expect(routerMock.push).toHaveBeenCalledExactlyOnceWith(
+                `${constants.PATHS.GAME}/${gameToken}`,
+            );
+        });
+
+        it("should not redirect if the challenge token is incorrect", async () => {
+            const routerMock = mockRouter();
+            renderHook(() =>
+                useChallengeEvents(
+                    challengeStore,
+                    challengeMock.challengeToken,
+                ),
+            );
+
+            await act(() =>
+                challengeEventHandlers.ChallengeAcceptedAsync?.(
+                    "test game token",
+                    "some random challenge",
+                ),
+            );
+
+            expect(routerMock.push).not.toHaveBeenCalled();
+        });
     });
 
-    it("should not redirect when ChallengeAcceptedAsync with the wrong challenge id", async () => {
-        const routerMock = mockRouter();
-        renderHook(() =>
-            useChallengeEvents(challengeStore, challengeMock.challengeToken),
-        );
+    describe("ChallengeCancelledAsync", () => {
+        it("should mark as cancelled if the challenge token is correct", async () => {
+            const cancelledBy = "cancelled by";
+            renderHook(() =>
+                useChallengeEvents(
+                    challengeStore,
+                    challengeMock.challengeToken,
+                ),
+            );
 
-        await act(() =>
-            challengeEventHandlers["ChallengeAcceptedAsync"]?.(
-                "test game token",
-                "some random challenge",
-            ),
-        );
+            await act(() =>
+                challengeEventHandlers.ChallengeCancelledAsync?.(
+                    cancelledBy,
+                    challengeMock.challengeToken,
+                ),
+            );
 
-        expect(routerMock.push).not.toHaveBeenCalled();
-    });
-
-    it("should mark as cancelled when ChallengeCancelledAsync with the right challenge id", async () => {
-        const cancelledBy = "cancelled by";
-        renderHook(() =>
-            useChallengeEvents(challengeStore, challengeMock.challengeToken),
-        );
-
-        await act(() =>
-            challengeEventHandlers["ChallengeCancelledAsync"]?.(
+            expect(challengeStore.getState().challenge.cancelledBy).toBe(
                 cancelledBy,
-                challengeMock.challengeToken,
-            ),
-        );
+            );
+        });
 
-        expect(challengeStore.getState().isCancelled).toBe(true);
-        expect(challengeStore.getState().cancelledBy).toBe(cancelledBy);
+        it("should not do anything if the challenge token is incorrect", async () => {
+            renderHook(() =>
+                useChallengeEvents(
+                    challengeStore,
+                    challengeMock.challengeToken,
+                ),
+            );
+
+            await act(() =>
+                challengeEventHandlers.ChallengeCancelledAsync?.(
+                    "cancelled by",
+                    "some random challenge",
+                ),
+            );
+
+            expect(
+                challengeStore.getState().challenge.cancelledBy,
+            ).toBeNullable();
+        });
     });
 
-    it("should not do anything when ChallengeCancelledAsync with the wrong challenge id", async () => {
-        renderHook(() =>
-            useChallengeEvents(challengeStore, challengeMock.challengeToken),
-        );
+    describe("ReceiveUpdatedChallengeAsync", () => {
+        it("should set the challenge if the challenge token is correct", async () => {
+            const routerMock = mockRouter();
+            const newChallenge = createFakeChallengeRequest({
+                challengeToken: challengeMock.challengeToken,
+            });
+            renderHook(() =>
+                useChallengeEvents(
+                    challengeStore,
+                    challengeMock.challengeToken,
+                ),
+            );
 
-        await act(() =>
-            challengeEventHandlers["ChallengeCancelledAsync"]?.(
-                "cancelled by",
-                "some random challenge",
-            ),
-        );
+            await act(() =>
+                challengeEventHandlers.ReceiveUpdatedChallengeAsync?.(
+                    newChallenge,
+                ),
+            );
 
-        expect(challengeStore.getState().isCancelled).toBe(false);
-        expect(challengeStore.getState().cancelledBy).toBe(null);
+            const setChallenge = challengeStore.getState().challenge;
+            expect(setChallenge).toEqual(newChallenge);
+            expect(setChallenge).not.toEqual(challengeMock);
+            expect(routerMock.push).not.toHaveBeenCalled();
+        });
+
+        it("should redirect if resolvedGame is defined", async () => {
+            const routerMock = mockRouter();
+            const newChallenge = createFakeChallengeRequest({
+                challengeToken: challengeMock.challengeToken,
+                resolvedGame: "game token",
+            });
+            renderHook(() =>
+                useChallengeEvents(
+                    challengeStore,
+                    challengeMock.challengeToken,
+                ),
+            );
+
+            await act(() =>
+                challengeEventHandlers.ReceiveUpdatedChallengeAsync?.(
+                    newChallenge,
+                ),
+            );
+
+            expect(routerMock.push).toHaveBeenCalledExactlyOnceWith(
+                `${constants.PATHS.GAME}/${newChallenge.resolvedGame}`,
+            );
+        });
+
+        it("should do nothing if the challenge token is incorrect", async () => {
+            const routerMock = mockRouter();
+            const newChallenge = createFakeChallengeRequest({
+                challengeToken: "different token",
+            });
+            renderHook(() =>
+                useChallengeEvents(
+                    challengeStore,
+                    challengeMock.challengeToken,
+                ),
+            );
+
+            await act(() =>
+                challengeEventHandlers.ReceiveUpdatedChallengeAsync?.(
+                    newChallenge,
+                ),
+            );
+
+            expect(challengeStore.getState().challenge).toEqual(challengeMock);
+            expect(routerMock.push).not.toHaveBeenCalled();
+        });
     });
 });

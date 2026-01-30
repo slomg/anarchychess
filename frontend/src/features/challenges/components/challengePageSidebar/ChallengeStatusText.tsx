@@ -9,13 +9,8 @@ const ChallengeStatusText = ({
     activeClassName: string;
     overClassName: string;
 }) => {
-    const { challenge, isCancelled, cancelledBy, isExpired } =
-        useChallengeStore((x) => ({
-            challenge: x.challenge,
-            isCancelled: x.isCancelled,
-            cancelledBy: x.cancelledBy,
-            isExpired: x.isExpired,
-        }));
+    const isExpired = useChallengeStore((x) => x.isExpired);
+    const challenge = useChallengeStore((x) => x.challenge);
 
     let text: string;
     let className: string;
@@ -23,9 +18,9 @@ const ChallengeStatusText = ({
     if (isExpired) {
         text = "Challenge Expired";
         className = overClassName;
-    } else if (isCancelled) {
+    } else if (challenge.cancelledBy) {
         text =
-            cancelledBy === challenge.recipient?.userId
+            challenge.cancelledBy === challenge.recipient?.userId
                 ? "Challenge Declined"
                 : "Challenge Cancelled";
         className = overClassName;

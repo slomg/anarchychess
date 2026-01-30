@@ -16,7 +16,9 @@ export default function useChallengeEvents(
         (gameToken, challengeToken) => {
             const currentChallengeToken =
                 challengeStore.getState().challenge.challengeToken;
-            if (challengeToken !== currentChallengeToken) return;
+            if (challengeToken !== currentChallengeToken) {
+                return;
+            }
 
             router.push(`${constants.PATHS.GAME}/${gameToken}`);
         },
@@ -28,8 +30,29 @@ export default function useChallengeEvents(
         (cancelledBy, challengeToken) => {
             const { challenge: currentChallenge, setCancelled } =
                 challengeStore.getState();
-            if (challengeToken !== currentChallenge.challengeToken) return;
+            if (challengeToken !== currentChallenge.challengeToken) {
+                return;
+            }
             setCancelled(cancelledBy);
+        },
+    );
+
+    useChallengeInstanceEvent(
+        challengeToken,
+        "ReceiveUpdatedChallengeAsync",
+        (challenge) => {
+            const { challenge: currentChallenge, setChallenge } =
+                challengeStore.getState();
+            if (challenge.challengeToken !== currentChallenge.challengeToken) {
+                return;
+            }
+
+            setChallenge(challenge);
+            if (challenge.resolvedGame) {
+                router.push(
+                    `${constants.PATHS.GAME}/${challenge.resolvedGame}`,
+                );
+            }
         },
     );
 }

@@ -55,7 +55,7 @@ public class ChallengeGrain : Grain, IChallengeGrain, IRemindable
     private readonly ILogger<ChallengeGrain> _logger;
     private readonly IPersistentState<ChallengeGrainStorage> _state;
     private readonly ChallengeSettings _settings;
-
+    private readonly TimeProvider _timeProvider;
     private readonly IChallengeNotifier _challengeNotifier;
     private readonly IGameStarter _gameStarter;
 
@@ -63,6 +63,7 @@ public class ChallengeGrain : Grain, IChallengeGrain, IRemindable
         ILogger<ChallengeGrain> logger,
         [PersistentState(StateName)] IPersistentState<ChallengeGrainStorage> state,
         IOptions<AppSettings> settings,
+        TimeProvider timeProvider,
         IChallengeNotifier challengeNotifier,
         IGameStarter gameStarter
     )
@@ -70,6 +71,7 @@ public class ChallengeGrain : Grain, IChallengeGrain, IRemindable
         _logger = logger;
         _state = state;
         _settings = settings.Value.Challenge;
+        _timeProvider = timeProvider;
         _challengeNotifier = challengeNotifier;
         _gameStarter = gameStarter;
 
@@ -115,12 +117,16 @@ public class ChallengeGrain : Grain, IChallengeGrain, IRemindable
     {
         var request = _state.State.Request;
         if (request is null)
+        {
             return ChallengeErrors.NotFound;
+        }
 
         if (request.Recipient is not null && IsUserSpectator(userId))
+        {
             return ChallengeErrors.NotFound;
+        }
 
-        await _challengeNotifier.SubscribeToChallengeAsync(connectionId, _challengeToken);
+        await _challengeNotifier.SubscribeToChallengeAsync(connectionId, request);
         return Result.Success;
     }
 
@@ -131,10 +137,14 @@ public class ChallengeGrain : Grain, IChallengeGrain, IRemindable
     {
         var request = _state.State.Request;
         if (request is null)
+        {
             return Task.FromResult<ErrorOr<ChallengeRequest>>(ChallengeErrors.NotFound);
+        }
 
         if (request.Recipient is not null && IsUserSpectator(requestedBy))
+        {
             return Task.FromResult<ErrorOr<ChallengeRequest>>(ChallengeErrors.NotFound);
+        }
 
         return Task.FromResult<ErrorOr<ChallengeRequest>>(request);
     }
@@ -145,7 +155,14 @@ public class ChallengeGrain : Grain, IChallengeGrain, IRemindable
     )
     {
         if (!IsUserRequester(cancelledBy) && !IsUserRecipient(cancelledBy))
+        {
             return ChallengeErrors.NotFound;
+        }
+
+        if (!IsAvailable())
+        {
+            return ChallengeErrors.ChallengeClosed;
+        }
 
         _logger.LogInformation(
             "Challenge {ChallengeToken} cancelled by {CancelledBy}",
@@ -164,13 +181,24 @@ public class ChallengeGrain : Grain, IChallengeGrain, IRemindable
     {
         var request = _state.State.Request;
         if (request is null)
+        {
             return ChallengeErrors.NotFound;
+        }
 
         if (request.Recipient is not null && !IsUserRecipient(acceptedBy))
+        {
             return ChallengeErrors.NotFound;
+        }
+
+        if (!IsAvailable())
+        {
+            return ChallengeErrors.ChallengeClosed;
+        }
 
         if (request.Pool.PoolType is PoolType.Rated && acceptedBy.IsGuest)
+        {
             return ChallengeErrors.AuthedOnlyPool;
+        }
 
         var gameToken = await _gameStarter.StartGameWithRandomColorsAsync(
             userId1: request.Requester.UserId,
@@ -181,7 +209,9 @@ public class ChallengeGrain : Grain, IChallengeGrain, IRemindable
         );
         await _challengeNotifier.NotifyChallengeAccepted(gameToken, _challengeToken);
 
-        await TearDownChallengeAsync(token);
+        _state.State.Request = request with { ResolvedGame = gameToken };
+        await TearDownChallengeAsync();
+        await _state.WriteStateAsync(token);
         _logger.LogInformation("Challenge {ChallengeToken} accepted", _challengeToken);
 
         return gameToken;
@@ -208,12 +238,15 @@ public class ChallengeGrain : Grain, IChallengeGrain, IRemindable
                 recipientId: _state.State.Request.Recipient?.UserId,
                 _challengeToken
             );
+
+            _state.State.Request = _state.State.Request with { CancelledBy = cancelledBy };
+            await _state.WriteStateAsync(token);
         }
 
-        await TearDownChallengeAsync(token);
+        await TearDownChallengeAsync();
     }
 
-    private async Task TearDownChallengeAsync(CancellationToken token = default)
+    private async Task TearDownChallengeAsync()
     {
         if (_state.State.Request?.Recipient is not null)
         {
@@ -222,10 +255,11 @@ public class ChallengeGrain : Grain, IChallengeGrain, IRemindable
                 .RecordChallengeRemovedAsync(_challengeToken);
         }
 
-        await _state.ClearStateAsync(token);
         var reminder = await this.GetReminder(TimeoutReminderName);
         if (reminder is not null)
+        {
             await this.UnregisterReminder(reminder);
+        }
     }
 
     private bool IsUserRequester(UserId userId) => userId == _state.State.Request?.Requester.UserId;
@@ -236,4 +270,15 @@ public class ChallengeGrain : Grain, IChallengeGrain, IRemindable
     private bool IsUserSpectator(UserId userId) =>
         userId != _state.State.Request?.Recipient?.UserId
         && userId != _state.State.Request?.Requester.UserId;
+
+    private bool IsAvailable()
+    {
+        var request = _state.State.Request;
+        if (request is null)
+            return false;
+
+        return request.CancelledBy is null
+            && request.ResolvedGame is null
+            && _timeProvider.GetUtcNow() < request.ExpiresAt;
+    }
 }
