@@ -8,10 +8,7 @@ import { useMemo } from "react";
 export type ChallengeClientEvents = {
     ChallengeReceivedAsync: [challenge: ChallengeRequest];
 
-    ChallengeCancelledAsync: [
-        cancelledBy: string | null,
-        challengeToken: string,
-    ];
+    ChallengeCancelledAsync: [cancelledBy: string, challengeToken: string];
     ChallengeAcceptedAsync: [gameToken: string, challengeToken: string];
     ReceiveUpdatedChallengeAsync: [challenge: ChallengeRequest];
 };

@@ -154,6 +154,12 @@ public class ChallengeGrain : Grain, IChallengeGrain, IRemindable
         CancellationToken token = default
     )
     {
+        var request = _state.State.Request;
+        if (request is null)
+        {
+            return ChallengeErrors.NotFound;
+        }
+
         if (!IsUserRequester(cancelledBy) && !IsUserRecipient(cancelledBy))
         {
             return ChallengeErrors.NotFound;
@@ -170,7 +176,16 @@ public class ChallengeGrain : Grain, IChallengeGrain, IRemindable
             cancelledBy
         );
 
-        await ApplyCancellationAsync(cancelledBy, token);
+        await _challengeNotifier.NotifyChallengeCancelled(
+            cancelledBy: cancelledBy,
+            recipientId: request.Recipient?.UserId,
+            _challengeToken
+        );
+
+        _state.State.Request = request with { CancelledBy = cancelledBy };
+        await TearDownChallengeAsync();
+        await _state.WriteStateAsync(token);
+
         return Result.Deleted;
     }
 
@@ -223,26 +238,6 @@ public class ChallengeGrain : Grain, IChallengeGrain, IRemindable
             return;
 
         _logger.LogInformation("Challenge {ChallengeToken} expired", _challengeToken);
-        await ApplyCancellationAsync(cancelledBy: null);
-    }
-
-    private async Task ApplyCancellationAsync(
-        UserId? cancelledBy,
-        CancellationToken token = default
-    )
-    {
-        if (_state.State.Request is not null)
-        {
-            await _challengeNotifier.NotifyChallengeCancelled(
-                cancelledBy: cancelledBy,
-                recipientId: _state.State.Request.Recipient?.UserId,
-                _challengeToken
-            );
-
-            _state.State.Request = _state.State.Request with { CancelledBy = cancelledBy };
-            await _state.WriteStateAsync(token);
-        }
-
         await TearDownChallengeAsync();
     }
 

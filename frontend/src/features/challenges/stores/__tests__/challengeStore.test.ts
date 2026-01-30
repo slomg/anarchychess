@@ -1,7 +1,8 @@
 import { StoreApi } from "zustand";
+
+import { createFakeChallengeRequest } from "@/lib/testUtils/fakers/challengeRequestFaker";
 import { ChallengeStore, createChallengeStore } from "../challengeStore";
 import { ChallengeRequest } from "@/lib/apiClient";
-import { createFakeChallengeRequest } from "@/lib/testUtils/fakers/challengeRequestFaker";
 
 describe("challengeStore", () => {
     let store: StoreApi<ChallengeStore>;
@@ -35,6 +36,23 @@ describe("challengeStore", () => {
             vi.setSystemTime(now + 61000);
 
             expect(store.getState().isExpired()).toBe(true);
+        });
+    });
+
+    describe("setChallenge", () => {
+        it("should update the challenge in the store", () => {
+            const newChallenge = createFakeChallengeRequest();
+            store.getState().setChallenge(newChallenge);
+
+            expect(store.getState().challenge).toEqual(newChallenge);
+        });
+    });
+
+    describe("setCancelled", () => {
+        it("should update the cancelledBy property of the challenge", () => {
+            store.getState().setCancelled("user123");
+
+            expect(store.getState().challenge.cancelledBy).toBe("user123");
         });
     });
 });

@@ -49,6 +49,10 @@ const ChallengeFooter = () => {
     }
 
     async function onCancel() {
+        if (!user) {
+            return;
+        }
+
         setIsInAction(true);
         try {
             const { error } = await cancelChallenge({
@@ -63,7 +67,7 @@ const ChallengeFooter = () => {
                 return;
             }
 
-            setCancelled(user?.userId ?? null);
+            setCancelled(user.userId);
         } finally {
             setIsInAction(false);
         }

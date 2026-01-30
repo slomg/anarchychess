@@ -388,16 +388,13 @@ public class ChallengeGrainTests : BaseOrleansIntegrationTest
     }
 
     [Fact]
-    public async Task ReceiveReminder_cancels()
+    public async Task ReceiveReminder_tears_down()
     {
         var grain = await CreateGrainAsync();
         await CreateAsync(grain, _requester, _recipient);
 
         await Silo.FireAllReminders();
 
-        await _challengeNotifierMock
-            .Received(1)
-            .NotifyChallengeCancelled(cancelledBy: null, _recipientId, _challengeToken);
         await AssertToreDownAsync(grain);
     }
 
@@ -409,9 +406,6 @@ public class ChallengeGrainTests : BaseOrleansIntegrationTest
 
         await Silo.FireAllReminders();
 
-        await _challengeNotifierMock
-            .Received(1)
-            .NotifyChallengeCancelled(cancelledBy: null, recipientId: null, _challengeToken);
         await AssertToreDownAsync(grain);
     }
 

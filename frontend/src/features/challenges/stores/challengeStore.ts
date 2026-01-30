@@ -13,7 +13,7 @@ export interface ChallengeStore {
 
     isExpired(): boolean;
     setChallenge(challenge: ChallengeRequest): void;
-    setCancelled(cancelledBy: string | null): void;
+    setCancelled(cancelledBy: string): void;
 }
 
 export function createChallengeStore(initState: ChallengeStoreProps) {

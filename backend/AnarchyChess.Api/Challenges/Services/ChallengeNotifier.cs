@@ -11,7 +11,7 @@ public interface IChallengeNotifier
 {
     Task NotifyChallengeAccepted(GameToken gameToken, ChallengeToken challengeToken);
     Task NotifyChallengeCancelled(
-        UserId? cancelledBy,
+        UserId cancelledBy,
         UserId? recipientId,
         ChallengeToken challengeToken
     );
@@ -34,7 +34,7 @@ public class ChallengeNotifier(IHubContext<ChallengeHub, IChallengeHubClient> hu
     ) => _hub.Clients.Client(recipientConnectionId).ChallengeReceivedAsync(challenge);
 
     public async Task NotifyChallengeCancelled(
-        UserId? cancelledBy,
+        UserId cancelledBy,
         UserId? recipientId,
         ChallengeToken challengeToken
     )

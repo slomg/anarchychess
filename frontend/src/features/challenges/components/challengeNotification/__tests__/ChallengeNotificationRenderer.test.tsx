@@ -116,7 +116,7 @@ describe("ChallengeNotificationRenderer", () => {
 
         await act(() =>
             challengeEventHandlers["ChallengeCancelledAsync"]?.(
-                null,
+                challenges[0].requester.userId,
                 challenges[0].challengeToken,
             ),
         );
