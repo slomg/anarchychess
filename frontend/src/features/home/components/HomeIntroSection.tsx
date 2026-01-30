@@ -22,7 +22,8 @@ const HomeIntroSection = () => {
                     lg:max-w-lg lg:items-start lg:text-start"
             >
                 <h2 className="text-5xl text-balance">
-                    Discover the Madness of Anarchy Chess
+                    Discover the <span className="text-secondary">Madness</span>{" "}
+                    of Anarchy Chess
                 </h2>
 
                 <p className="text-text/80 text-xl">
