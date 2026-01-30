@@ -40,10 +40,7 @@ describe("ChallengeStatusText", () => {
     });
 
     it("should render 'Challenge Expired' when expired", () => {
-        challengeMock.expiresAt = new Date(
-            new Date().getTime() - 100,
-        ).toISOString();
-        challengeStore.setState({ challenge: challengeMock });
+        challengeStore.setState({ isExpired: true });
         renderWithProviders();
 
         const text = screen.getByText("Challenge Expired");

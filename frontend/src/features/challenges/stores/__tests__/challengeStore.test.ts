@@ -42,6 +42,30 @@ describe("challengeStore", () => {
 
             expect(store.getState().challenge).toEqual(newChallenge);
         });
+
+        it("should set isExpired to false if the new challenge has not expired", () => {
+            const now = Date.now();
+            const newChallenge = createFakeChallengeRequest({
+                expiresAt: new Date(now + 60000).toISOString(),
+            });
+            store.setState({ isExpired: true });
+
+            store.getState().setChallenge(newChallenge);
+
+            expect(store.getState().isExpired).toBe(false);
+        });
+
+        it("should set isExpired to true if the new challenge has already expired", () => {
+            const now = Date.now();
+            const expiredChallenge = createFakeChallengeRequest({
+                expiresAt: new Date(now - 1000).toISOString(),
+            });
+            store.setState({ isExpired: false });
+
+            store.getState().setChallenge(expiredChallenge);
+
+            expect(store.getState().isExpired).toBe(true);
+        });
     });
 
     describe("setCancelled", () => {

@@ -46,10 +46,7 @@ describe("RecipientChallengeView", () => {
     });
 
     it("should update correctly when challenge is over", () => {
-        challengeMock.expiresAt = new Date(
-            new Date().getTime() - 100,
-        ).toISOString();
-        challengeStore.setState({ challenge: challengeMock });
+        challengeStore.setState({ isExpired: true });
         render(
             <ChallengeStoreContext.Provider value={challengeStore}>
                 <RecipientChallengeView />
