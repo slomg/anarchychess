@@ -1,20 +1,21 @@
-import { act, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { StoreApi } from "zustand";
 
-import { createFakeChallengeRequest } from "@/lib/testUtils/fakers/challengeRequestFaker";
-import {
-    createFakeGuestUser,
-    createFakePrivateUser,
-} from "@/lib/testUtils/fakers/userFaker";
-import SessionProvider from "@/features/auth/contexts/sessionContext";
-import ChallengeFooter from "../ChallengeFooter";
-import { ChallengeRequest, PoolType, PrivateUser } from "@/lib/apiClient";
-import constants from "@/lib/constants";
 import {
     ChallengeStore,
     createChallengeStore,
 } from "@/features/challenges/stores/challengeStore";
+import {
+    createFakeGuestUser,
+    createFakePrivateUser,
+} from "@/lib/testUtils/fakers/userFaker";
+
+import { createFakeChallengeRequest } from "@/lib/testUtils/fakers/challengeRequestFaker";
 import ChallengeStoreContext from "@/features/challenges/contexts/challengeContext";
+import { ChallengeRequest, PoolType, PrivateUser } from "@/lib/apiClient";
+import SessionProvider from "@/features/auth/contexts/sessionContext";
+import ChallengeFooter from "../ChallengeFooter";
+import constants from "@/lib/constants";
 
 describe("ChallengeFooter", () => {
     let challengeStore: StoreApi<ChallengeStore>;
@@ -84,7 +85,10 @@ describe("ChallengeFooter", () => {
     });
 
     it("should render ChallengeOver when challenge is expired", () => {
-        challengeStore.setState({ isExpired: true });
+        challengeMock.expiresAt = new Date(
+            new Date().getTime() - 100,
+        ).toISOString();
+        challengeStore.setState({ challenge: challengeMock });
 
         render(
             <SessionProvider user={userMock}>
@@ -116,27 +120,6 @@ describe("ChallengeFooter", () => {
         const countdown = screen.getByTestId("challengeFooterExpiresIn");
         expect(countdown).toBeInTheDocument();
         expect(countdown.textContent).toBe("Expires in 00:01:00");
-    });
-
-    it("should mark as expired once expired", async () => {
-        const now = Date.now();
-        vi.setSystemTime(now);
-        challengeMock.expiresAt = new Date(now + 60000).toISOString();
-        challengeStore.setState({ challenge: challengeMock });
-
-        expect(challengeStore.getState().isExpired).toBe(false);
-
-        render(
-            <SessionProvider user={userMock}>
-                <ChallengeStoreContext.Provider value={challengeStore}>
-                    <ChallengeFooter />
-                </ChallengeStoreContext.Provider>
-            </SessionProvider>,
-        );
-
-        await act(() => vi.advanceTimersByTime(61000));
-
-        expect(challengeStore.getState().isExpired).toBe(true);
     });
 
     it("should disable Accept button and show guest message for rated challenge when user is guest", () => {

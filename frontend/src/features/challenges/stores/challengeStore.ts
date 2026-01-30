@@ -10,18 +10,17 @@ export interface ChallengeStoreProps {
 
 export interface ChallengeStore {
     challenge: ChallengeRequest;
-    readonly isExpired: boolean;
 
+    isExpired(): boolean;
     setChallenge(challenge: ChallengeRequest): void;
     setCancelled(cancelledBy: string | null): void;
-    setExpired(): void;
 }
 
 export function createChallengeStore(initState: ChallengeStoreProps) {
     return createWithEqualityFn<ChallengeStore>()(
         immer((set, get) => ({
             ...initState,
-            get isExpired() {
+            isExpired() {
                 return (
                     new Date().getTime() >=
                     new Date(get().challenge.expiresAt).getTime()
@@ -36,11 +35,6 @@ export function createChallengeStore(initState: ChallengeStoreProps) {
             setCancelled(cancelledBy) {
                 set((state) => {
                     state.challenge.cancelledBy = cancelledBy;
-                });
-            },
-            setExpired() {
-                set((state) => {
-                    state.isExpired = true;
                 });
             },
         })),

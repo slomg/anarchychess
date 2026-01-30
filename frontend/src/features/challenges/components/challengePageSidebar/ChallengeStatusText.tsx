@@ -9,7 +9,7 @@ const ChallengeStatusText = ({
     activeClassName: string;
     overClassName: string;
 }) => {
-    const isExpired = useChallengeStore((x) => x.isExpired);
+    const isExpired = useChallengeStore((x) => x.isExpired());
     const challenge = useChallengeStore((x) => x.challenge);
 
     let text: string;

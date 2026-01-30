@@ -1,3 +1,4 @@
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
 
@@ -5,12 +6,12 @@ import {
     useAuthedUser,
     useSessionUser,
 } from "@/features/auth/hooks/useSessionUser";
-import CountdownText from "@/components/CountdownText";
+
 import { acceptChallenge, cancelChallenge, PoolType } from "@/lib/apiClient";
+import useChallengeStore from "../../hooks/useChallengeStore";
+import CountdownText from "@/components/CountdownText";
 import Button from "@/components/ui/Button";
 import constants from "@/lib/constants";
-import { useRouter } from "next/navigation";
-import useChallengeStore from "../../hooks/useChallengeStore";
 import Card from "@/components/ui/Card";
 
 const ChallengeFooter = () => {
@@ -19,10 +20,9 @@ const ChallengeFooter = () => {
     const user = useSessionUser();
     const router = useRouter();
 
-    const { setCancelled, isExpired, setExpired } = useChallengeStore((x) => ({
+    const { setCancelled, isExpired } = useChallengeStore((x) => ({
         setCancelled: x.setCancelled,
-        isExpired: x.isExpired,
-        setExpired: x.setExpired,
+        isExpired: x.isExpired(),
     }));
     const challenge = useChallengeStore((x) => x.challenge);
     const expiresAt = new Date(challenge.expiresAt);
@@ -97,10 +97,7 @@ const ChallengeFooter = () => {
 
             {error && <span className="text-error">{error}</span>}
 
-            <CountdownText
-                getTimeUntil={() => expiresAt}
-                onDateReached={setExpired}
-            >
+            <CountdownText getTimeUntil={() => expiresAt}>
                 {({ countdown }) => (
                     <p
                         className="text-text/70"
