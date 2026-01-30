@@ -4,57 +4,63 @@ import constants from "@/lib/constants";
 
 const HomeFooter = () => {
     return (
-        <footer
-            className="mx-auto grid max-w-5xl flex-1 grid-cols-2 gap-5 bg-[#0b0f16] p-3 py-10
-                md:grid-cols-3 md:grid-rows-1"
-        >
+        <footer className="bg-[#090c12]">
             <div
-                className="col-span-2 flex flex-col items-center gap-3 text-center md:col-span-1
-                    md:items-start md:text-start"
+                className="mx-auto grid max-w-5xl flex-1 grid-cols-2 gap-5 p-3
+                    py-10 md:grid-cols-3 md:grid-rows-1"
             >
-                <h2 className="text-2xl font-bold">About Anarchy Chess</h2>
-                <p className="text-text/70 text-sm">
-                    Anarchy Chess is my reimagining of chess inspired by the
-                    ridiculous and stupid ideas of{" "}
-                    <Link
-                        href="https://reddit.com/r/anarchychess"
-                        className="text-link"
-                    >
-                        r/AnarchyChess
-                    </Link>
-                    . This website is literally just a shitpost that I spend a
-                    stupid amount of time on.
-                </p>
-            </div>
-
-            <div className="flex flex-col gap-3 text-center">
-                <h2 className="text-2xl font-bold">Quick Links</h2>
-                <ul className="text-text/70 flex flex-col gap-3">
-                    <li>
-                        <Link href={constants.PATHS.PLAY}>Play Now</Link>
-                    </li>
-                    <li>
-                        <Link href={constants.PATHS.DONATE}>Donate</Link>
-                    </li>
-                    <li>
-                        <Link href={constants.PATHS.GITHUB}>Source Code</Link>
-                    </li>
-                    <li>
-                        <Link href={constants.PATHS.TOS}>Terms of Service</Link>
-                    </li>
-                    <li>
-                        <Link href={constants.PATHS.PRIVACY}>
-                            Privacy Policy
+                <div
+                    className="col-span-2 flex flex-col items-center gap-3
+                        text-center md:col-span-1 md:items-start md:text-start"
+                >
+                    <h2 className="text-2xl font-bold">About Anarchy Chess</h2>
+                    <p className="text-text/70 text-sm">
+                        Anarchy Chess is my reimagining of chess inspired by the
+                        ridiculous and stupid ideas of{" "}
+                        <Link
+                            href="https://reddit.com/r/anarchychess"
+                            className="text-link"
+                        >
+                            r/AnarchyChess
                         </Link>
-                    </li>
-                </ul>
-            </div>
+                        . This website is literally just a shitpost that I spend
+                        a stupid amount of time on.
+                    </p>
+                </div>
 
-            <div className="flex flex-col items-center gap-3 md:items-end">
-                <h2 className="text-2xl font-bold">Follow Us</h2>
-                <div className="text-text/70 flex gap-3">
-                    <Link href={constants.PATHS.DISCORD}>Discord</Link>
-                    <Link href={constants.PATHS.YOUTUBE}>YouTube</Link>
+                <div className="flex flex-col gap-3 text-center">
+                    <h2 className="text-2xl font-bold">Quick Links</h2>
+                    <ul className="text-text/70 flex flex-col gap-3">
+                        <li>
+                            <Link href={constants.PATHS.PLAY}>Play Now</Link>
+                        </li>
+                        <li>
+                            <Link href={constants.PATHS.DONATE}>Donate</Link>
+                        </li>
+                        <li>
+                            <Link href={constants.PATHS.GITHUB}>
+                                Source Code
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href={constants.PATHS.TOS}>
+                                Terms of Service
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href={constants.PATHS.PRIVACY}>
+                                Privacy Policy
+                            </Link>
+                        </li>
+                    </ul>
+                </div>
+
+                <div className="flex flex-col items-center gap-3 md:items-end">
+                    <h2 className="text-2xl font-bold">Follow Us</h2>
+                    <div className="text-text/70 flex gap-3">
+                        <Link href={constants.PATHS.DISCORD}>Discord</Link>
+                        <Link href={constants.PATHS.YOUTUBE}>YouTube</Link>
+                    </div>
                 </div>
             </div>
         </footer>
