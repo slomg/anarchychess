@@ -12,7 +12,7 @@ const HomeDiscordSection = () => {
     return (
         <section
             className="grid grid-rows-[auto_auto] justify-center gap-10
-                bg-[#0c141b] p-5 lg:grid-cols-[auto_auto] lg:grid-rows-1
+                bg-[#0b131a] p-5 lg:grid-cols-[auto_auto] lg:grid-rows-1
                 lg:gap-x-10 lg:p-15"
         >
             <div
