@@ -15,7 +15,7 @@ describe("HomeDiscordSection", () => {
     it("should render both discord message previews", () => {
         render(<HomeDiscordSection />);
 
-        expect(screen.getByText("Sniper Bishop")).toBeInTheDocument();
+        expect(screen.getByText("John Bishop")).toBeInTheDocument();
         expect(screen.getByText("slomg")).toBeInTheDocument();
 
         expect(

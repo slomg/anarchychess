@@ -32,7 +32,7 @@ const HomeDiscordSection = () => {
                             height={36}
                         />
                         <span className="min-w-0 truncate font-medium">
-                            Sniper Bishop
+                            John Bishop
                         </span>
                         <span className="text-text/50 text-xs">2:30 PM</span>
                     </div>
