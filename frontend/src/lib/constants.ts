@@ -220,8 +220,8 @@ const DEFAULT_CHESS_BOARD = BoardPieces.fromPieces(
     { position: logicalPoint({ x: 8, y: 1 }), type: PieceType.PAWN, color: GameColor.WHITE, id: "18", },
     { position: logicalPoint({ x: 9, y: 1 }), type: PieceType.PAWN, color: GameColor.WHITE, id: "19", },
 
-    { position: logicalPoint({ x: 0, y: 4 }), type: PieceType.TRAITOR_ROOK, color: null, id: "20", },
-    { position: logicalPoint({ x: 9, y: 5 }), type: PieceType.TRAITOR_ROOK, color: null, id: "21", },
+    { position: logicalPoint({ x: 0, y: 6 }), type: PieceType.TRAITOR_ROOK, color: null, id: "20", },
+    { position: logicalPoint({ x: 9, y: 3 }), type: PieceType.TRAITOR_ROOK, color: null, id: "21", },
 
     { position: logicalPoint({ x: 0, y: 8 }), type: PieceType.PAWN, color: GameColor.BLACK, id: "22", },
     { position: logicalPoint({ x: 1, y: 8 }), type: PieceType.PAWN, color: GameColor.BLACK, id: "23", },
