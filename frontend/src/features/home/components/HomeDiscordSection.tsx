@@ -35,11 +35,12 @@ const HomeDiscordSection = () => {
                     className="mt-5 w-full max-w-sm"
                 >
                     <Button
-                        className="flex w-full items-center justify-center gap-5
+                        className="flex w-full items-center justify-center gap-3
                             px-10 text-3xl text-nowrap"
                     >
                         <Image
                             src={discordIcon}
+                            className="brightness-0 invert-100"
                             alt="discord logo"
                             width={40}
                             height={40}
