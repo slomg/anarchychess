@@ -49,6 +49,6 @@ describe("HomeDiscordSection", () => {
         expect(screen.getByAltText(/sniper bishop pfp/i)).toBeInTheDocument();
         expect(screen.getByAltText(/slomg pfp/i)).toBeInTheDocument();
         expect(screen.getByAltText(/discord logo/i)).toBeInTheDocument();
-        expect(screen.getByAltText(/pog/i)).toBeInTheDocument();
+        expect(screen.getByAltText(/xdd/i)).toBeInTheDocument();
     });
 });

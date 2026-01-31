@@ -180,7 +180,7 @@ const OPEN_SEEK_RESUBSCRIBE_INTERAVAL_MS = 1000 * 60 * 4;
 const ALLOW_ABORTION_UNTIL_MOVE = 1;
 
 const INITIAL_FEN =
-    "rhnbqkbcar/pppdppdppp/10/10/9+/+9/10/10/PPPDPPDPPP/RHNBQKBCAR";
+    "rhnbqkbcar/pppdppdppp/10/+9/10/10/9+/10/PPPDPPDPPP/RHNBQKBCAR";
 
 const LETTER_TO_PIECE: Record<string, PieceType> = {
     k: PieceType.KING,
@@ -220,8 +220,8 @@ const DEFAULT_CHESS_BOARD = BoardPieces.fromPieces(
     { position: logicalPoint({ x: 8, y: 1 }), type: PieceType.PAWN, color: GameColor.WHITE, id: "18", },
     { position: logicalPoint({ x: 9, y: 1 }), type: PieceType.PAWN, color: GameColor.WHITE, id: "19", },
 
-    { position: logicalPoint({ x: 0, y: 6 }), type: PieceType.TRAITOR_ROOK, color: null, id: "20", },
-    { position: logicalPoint({ x: 9, y: 3 }), type: PieceType.TRAITOR_ROOK, color: null, id: "21", },
+    { position: logicalPoint({ x: 9, y: 3 }), type: PieceType.TRAITOR_ROOK, color: null, id: "20", },
+    { position: logicalPoint({ x: 0, y: 6 }), type: PieceType.TRAITOR_ROOK, color: null, id: "21", },
 
     { position: logicalPoint({ x: 0, y: 8 }), type: PieceType.PAWN, color: GameColor.BLACK, id: "22", },
     { position: logicalPoint({ x: 1, y: 8 }), type: PieceType.PAWN, color: GameColor.BLACK, id: "23", },

@@ -1,79 +1,83 @@
-import {
-    AnimationStep,
-    MoveAnimation,
-    MoveBounds,
-    Piece,
-    PieceID,
-} from "./types";
-
+import { AnimationStep, MoveBounds, Piece, PieceID } from "./types";
 import BoardPieces from "./boardPieces";
 import { Move } from "./types";
-
-export function simulateMove(pieces: BoardPieces, move: Move): AnimationStep {
-    return simulateMoveDestination(pieces, move).step;
-}
 
 export function simulateMoveWithIntermediates(
     pieces: BoardPieces,
     move: Move,
-): MoveAnimation {
+): AnimationStep[] {
     const fromPiece = pieces.getByPosition(move.from);
-    if (!fromPiece) return { steps: [] };
+    if (!fromPiece) return [];
 
     const steps: AnimationStep[] = [];
     const currentPieces = new BoardPieces(pieces);
-    currentPieces.removeCapturedPiecesFromMove(move);
+    const intermediateFadedPieces =
+        currentPieces.removeRemovedPiecesFromMove(move);
     for (const intermediate of move.intermediates) {
         currentPieces.movePiece(fromPiece.id, intermediate.position);
 
         steps.push({
             newPieces: new BoardPieces(currentPieces),
             movedPieceIds: [fromPiece.id],
+            fadedPieces: intermediateFadedPieces,
             isCapture: intermediate.isCapture,
             specialType: move.specialType,
         });
     }
 
-    const mainMoveAnimation = simulateMoveDestination(pieces, move);
-    steps.push(mainMoveAnimation.step);
-    return {
-        steps,
-        removedPieces: mainMoveAnimation.removedPieces,
-    };
+    const mainMoveStep = simulateMove(pieces, move);
+    steps.push(mainMoveStep);
+    return steps;
 }
 
-function simulateMoveDestination(
+export function simulateMove(
     basePieces: BoardPieces,
     move: Move,
-): { step: AnimationStep; removedPieces: Map<PieceID, Piece> } {
+): AnimationStep {
     const newPieces = new BoardPieces(basePieces);
-    const { movedPieceIds, removedPieces } = newPieces.playMove(move);
+    const overtimeRemovals = getOvertimeRemovals(move, newPieces);
+
+    const movedPieceIds = newPieces.playMove(move);
 
     const initialSpawnPositions = createInitialSpawns(basePieces, move);
     const isCapture =
         move.captures &&
         move.captures.length > 0 &&
         move.intermediates.filter((x) => x.isCapture).length <
-            removedPieces.size;
+            move.captures.length;
     const moveBounds: MoveBounds = {
         from: move.from,
         to: move.to,
     };
 
     return {
-        step: {
-            newPieces,
-            movedPieceIds: [...movedPieceIds],
+        newPieces,
+        movedPieceIds: [...movedPieceIds],
 
-            initialSpawnPositions,
+        initialSpawnPositions,
+        fadedPieces: overtimeRemovals,
 
-            moveBounds: moveBounds,
-            isCapture,
-            isPromotion: move.promotesTo !== null,
-            specialType: move.specialType,
-        },
-        removedPieces,
+        moveBounds: moveBounds,
+        isCapture,
+        isPromotion: move.promotesTo !== null,
+        specialType: move.specialType,
     };
+}
+
+function getOvertimeRemovals(
+    move: Move,
+    pieces: BoardPieces,
+): Map<PieceID, Piece> | undefined {
+    if (move.overtimeRemovals.length === 0) {
+        return;
+    }
+
+    const overtimeRemovals = new Map<PieceID, Piece>();
+    for (const pos of move.overtimeRemovals) {
+        const piece = pieces.getByPosition(pos);
+        if (piece) overtimeRemovals.set(piece.id, piece);
+    }
+    return overtimeRemovals;
 }
 
 function createInitialSpawns(

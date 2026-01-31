@@ -1,12 +1,7 @@
 import { StateCreator } from "zustand";
+
+import { AnimationStep, MoveBounds, PieceID, Piece } from "../lib/types";
 import type { ChessboardStore } from "./chessboardStore";
-import {
-    AnimationStep,
-    MoveAnimation,
-    MoveBounds,
-    PieceID,
-    Piece,
-} from "../lib/types";
 import { LogicalPoint } from "@/features/point/types";
 import BoardPieces from "../lib/boardPieces";
 import constants from "@/lib/constants";
@@ -21,8 +16,8 @@ export interface AnimationSlice {
     removingPieces: Map<PieceID, Piece>;
     lastMove: MoveBounds | null;
 
-    playAnimationBatch(animation: MoveAnimation): Promise<void>;
-    playAnimation(animation: AnimationStep): Promise<void>;
+    playAnimation(steps: AnimationStep[]): Promise<void>;
+    playAnimation(...steps: AnimationStep[]): Promise<void>;
     animatePiece(
         pieceId: PieceID,
         newPosition: LogicalPoint,
@@ -44,7 +39,7 @@ export function createAnimationSlice(
         let currentAnimationCancelToken: { canceled: boolean } | null = null;
 
         async function processMoveAnimation(
-            animation: MoveAnimation,
+            animationSteps: AnimationStep[],
             persistent: boolean = false,
         ) {
             const { playAudioForAnimationStep } = get();
@@ -56,14 +51,10 @@ export function createAnimationSlice(
             const cancelToken = { canceled: false };
             currentAnimationCancelToken = cancelToken;
 
-            set((state) => {
-                state.removingPieces = animation.removedPieces ?? new Map();
-            });
-
-            for (let i = 0; i < animation.steps.length; i++) {
+            for (let i = 0; i < animationSteps.length; i++) {
                 if (cancelToken.canceled) break;
 
-                const step = animation.steps[i];
+                const step = animationSteps[i];
                 playAudioForAnimationStep(step);
                 if (step.initialSpawnPositions) {
                     await spawnPieces(step.initialSpawnPositions);
@@ -72,10 +63,11 @@ export function createAnimationSlice(
                 set((state) => {
                     state.animatingPieces = step.newPieces;
                     state.lastMove = step.moveBounds ?? null;
+                    state.removingPieces = step.fadedPieces ?? new Map();
                 });
                 await markPiecesAsAnimating(step.movedPieceIds);
 
-                if (i < animation.steps.length - 1) {
+                if (i < animationSteps.length - 1) {
                     await new Promise<void>((resolve) =>
                         setTimeout(
                             () => resolve(),
@@ -129,14 +121,12 @@ export function createAnimationSlice(
             animatingPieceIds: new Set(),
             removingPieces: new Map(),
 
-            async playAnimationBatch(animation) {
-                await processMoveAnimation(animation);
-            },
-
-            async playAnimation(animation) {
-                await processMoveAnimation({
-                    steps: [animation],
-                });
+            async playAnimation(steps) {
+                if (Array.isArray(steps)) {
+                    await processMoveAnimation(steps);
+                } else {
+                    await processMoveAnimation([steps]);
+                }
             },
 
             async animatePiece(pieceId, newPosition, pieces) {
@@ -146,14 +136,12 @@ export function createAnimationSlice(
 
                 newPieces.addAt(piece, newPosition);
                 await processMoveAnimation(
-                    {
-                        steps: [
-                            {
-                                newPieces,
-                                movedPieceIds: [pieceId],
-                            },
-                        ],
-                    },
+                    [
+                        {
+                            newPieces,
+                            movedPieceIds: [pieceId],
+                        },
+                    ],
                     true,
                 );
             },

@@ -61,17 +61,13 @@ export interface AnimationStep {
     movedPieceIds: PieceID[];
 
     initialSpawnPositions?: BoardPieces;
+    fadedPieces?: Map<PieceID, Piece>;
 
     moveBounds?: MoveBounds;
     specialType?: SpecialMoveType | null;
     isCapture?: boolean;
     isPromotion?: boolean;
     hasOvertimeRemovals?: boolean;
-}
-
-export interface MoveAnimation {
-    steps: AnimationStep[];
-    removedPieces?: Map<PieceID, Piece>;
 }
 
 export interface GameReplay {

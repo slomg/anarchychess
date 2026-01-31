@@ -163,6 +163,47 @@ describe("simulateMove", () => {
 
         expect(result.specialType).toEqual(move.specialType);
     });
+
+    it("should correctly return fadedPieces for overtime removals", () => {
+        const piece = createFakePiece({
+            position: logicalPoint({ x: 0, y: 0 }),
+        });
+        const overtimePiece1 = createFakePiece({
+            position: logicalPoint({ x: 1, y: 1 }),
+        });
+        const overtimePiece2 = createFakePiece({
+            position: logicalPoint({ x: 2, y: 2 }),
+        });
+        const capturePiece = createFakePiece({
+            position: logicalPoint({ x: 3, y: 3 }),
+        });
+
+        const pieces = BoardPieces.fromPieces(
+            piece,
+            overtimePiece1,
+            overtimePiece2,
+        );
+
+        const move = createFakeMove({
+            from: piece.position,
+            to: logicalPoint({ x: 3, y: 3 }),
+            overtimeRemovals: [
+                overtimePiece1.position,
+                overtimePiece2.position,
+            ],
+            captures: [capturePiece.position],
+        });
+
+        const result = simulateMove(pieces, move);
+
+        expect(result.fadedPieces).toEqual(
+            new Map([
+                [overtimePiece1.id, overtimePiece1],
+                [overtimePiece2.id, overtimePiece2],
+            ]),
+        );
+        expect(result.newPieces.getByPosition(move.to)?.id).toEqual(piece.id);
+    });
 });
 
 describe("simulateMoveWithIntermediates", () => {
@@ -183,23 +224,23 @@ describe("simulateMoveWithIntermediates", () => {
             captures: [],
         });
 
-        const results = simulateMoveWithIntermediates(pieces, move);
+        const resultSteps = simulateMoveWithIntermediates(pieces, move);
 
         const expected1 = new BoardPieces(pieces);
         expected1.movePiece(movingPiece.id, intermediates[0].position);
-        expect(results.steps[0].newPieces).toEqual(expected1);
-        expect(results.steps[0].isCapture).toBe(intermediates[0].isCapture);
+        expect(resultSteps[0].newPieces).toEqual(expected1);
+        expect(resultSteps[0].isCapture).toBe(intermediates[0].isCapture);
 
         const expected2 = new BoardPieces(pieces);
         expected2.movePiece(movingPiece.id, intermediates[1].position);
-        expect(results.steps[1].newPieces).toEqual(expected2);
-        expect(results.steps[1].isCapture).toBe(intermediates[1].isCapture);
+        expect(resultSteps[1].newPieces).toEqual(expected2);
+        expect(resultSteps[1].isCapture).toBe(intermediates[1].isCapture);
 
         const expectedFinal = new BoardPieces(pieces);
         expectedFinal.movePiece(movingPiece.id, move.to);
-        expect(results.steps[2].newPieces).toEqual(expectedFinal);
+        expect(resultSteps[2].newPieces).toEqual(expectedFinal);
 
-        results.steps.forEach((r) => {
+        resultSteps.forEach((r) => {
             expect(r.movedPieceIds).toEqual([movingPiece.id]);
         });
     });
@@ -224,20 +265,22 @@ describe("simulateMoveWithIntermediates", () => {
             captures: [capturePiece.position],
         });
 
-        const result = simulateMoveWithIntermediates(pieces, move);
+        const resultSteps = simulateMoveWithIntermediates(pieces, move);
 
-        expect(result.removedPieces).toEqual(
-            new Map([[capturePiece.id, capturePiece]]),
-        );
+        const expectedFadedPieces = new Map([[capturePiece.id, capturePiece]]);
+        expect(
+            resultSteps[0].newPieces.getById(capturePiece.id),
+        ).not.toBeDefined();
+        expect(resultSteps[0].fadedPieces).toEqual(expectedFadedPieces);
 
         expect(
-            result.steps[0].newPieces.getById(capturePiece.id),
+            resultSteps[1].newPieces.getById(capturePiece.id),
         ).not.toBeDefined();
+        expect(resultSteps[1].fadedPieces).toEqual(expectedFadedPieces);
+
         expect(
-            result.steps[1].newPieces.getById(capturePiece.id),
+            resultSteps[2].newPieces.getById(capturePiece.id),
         ).not.toBeDefined();
-        expect(
-            result.steps[2].newPieces.getById(capturePiece.id),
-        ).not.toBeDefined();
+        expect(resultSteps[2].fadedPieces).toBeUndefined();
     });
 });

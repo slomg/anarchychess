@@ -51,15 +51,12 @@ export default class BoardPieces {
         return this._byId.get(pieceId);
     }
 
-    playMove(move: Move): {
-        movedPieceIds: PieceID[];
-        removedPieces: Map<PieceID, Piece>;
-    } {
+    playMove(move: Move): PieceID[] {
         const { pieceMoves, movedPieceIds } = this._gatherMoves(move);
 
         // step 1: remove all captures first
         // so we don't capture any piece that just moved
-        const removedPieces = this.removeCapturedPiecesFromMove(move);
+        this.removeRemovedPiecesFromMove(move);
 
         // step 2: clear all origin squares of moving pieces
         // this is done before placing pieces to handle swaps correctly
@@ -83,13 +80,10 @@ export default class BoardPieces {
             this.getByPosition(move.to)!.type = move.promotesTo;
         }
 
-        return {
-            removedPieces,
-            movedPieceIds: [...movedPieceIds],
-        };
+        return [...movedPieceIds];
     }
 
-    removeCapturedPiecesFromMove(move: Move): Map<PieceID, Piece> {
+    removeRemovedPiecesFromMove(move: Move): Map<PieceID, Piece> {
         const removedPieces: Map<PieceID, Piece> = new Map();
 
         for (const capture of [...move.captures, ...move.overtimeRemovals]) {

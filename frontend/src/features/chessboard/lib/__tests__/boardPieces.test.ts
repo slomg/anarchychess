@@ -23,13 +23,12 @@ describe("BoardPieces", () => {
                 to: logicalPoint({ x: 1, y: 1 }),
             });
 
-            const result = pieces.playMove(move);
+            const movedPieceIdsResult = pieces.playMove(move);
 
             expect(pieces.getById(movingPiece.id)?.position).toEqual(
                 logicalPoint({ x: 1, y: 1 }),
             );
-            expect(result.movedPieceIds).toEqual([movingPiece.id]);
-            expect(result.removedPieces).toHaveLength(0);
+            expect(movedPieceIdsResult).toEqual([movingPiece.id]);
             expect(pieces.getById(unrelatedPiece.id)).toEqual(unrelatedPiece);
         });
 
@@ -48,16 +47,13 @@ describe("BoardPieces", () => {
                 captures: [capturedPiece.position],
             });
 
-            const result = pieces.playMove(move);
+            const movedPieceIdsResult = pieces.playMove(move);
 
             expect(pieces.getById(movingPiece.id)?.position).toEqual(
                 logicalPoint({ x: 1, y: 1 }),
             );
             expect(pieces.getById(capturedPiece.id)).toBeUndefined();
-            expect(result.movedPieceIds).toEqual([movingPiece.id]);
-            expect(result.removedPieces).toEqual(
-                new Map([[capturedPiece.id, capturedPiece]]),
-            );
+            expect(movedPieceIdsResult).toEqual([movingPiece.id]);
         });
 
         it("should apply side effects correctly", () => {
@@ -80,7 +76,7 @@ describe("BoardPieces", () => {
                 ],
             });
 
-            const result = pieces.playMove(move);
+            const movedPieceIdsResult = pieces.playMove(move);
 
             expect(pieces.getById(movingPiece.id)?.position).toEqual(
                 logicalPoint({ x: 2, y: 2 }),
@@ -88,11 +84,10 @@ describe("BoardPieces", () => {
             expect(pieces.getById(sideEffectPiece.id)?.position).toEqual(
                 logicalPoint({ x: 3, y: 3 }),
             );
-            expect(result.movedPieceIds).toEqual([
+            expect(movedPieceIdsResult).toEqual([
                 movingPiece.id,
                 sideEffectPiece.id,
             ]);
-            expect(result.removedPieces).toHaveLength(0);
         });
 
         it("should promote a piece if promotesTo is set", () => {
@@ -108,13 +103,12 @@ describe("BoardPieces", () => {
                 promotesTo: PieceType.KING,
             });
 
-            const result = pieces.playMove(move);
+            const movedPieceIdsResult = pieces.playMove(move);
 
             expect(pieces.getById(movingPiece.id)?.type).toEqual(
                 PieceType.KING,
             );
-            expect(result.movedPieceIds).toEqual([movingPiece.id]);
-            expect(result.removedPieces).toHaveLength(0);
+            expect(movedPieceIdsResult).toEqual([movingPiece.id]);
         });
 
         it("should spawn new pieces correctly", () => {
@@ -135,11 +129,11 @@ describe("BoardPieces", () => {
                 pieceSpawns: [spawn1, spawn2],
             });
 
-            const result = pieces.playMove(move);
+            const movedPieceIdsResult = pieces.playMove(move);
 
             expect(pieces.getById(spawn1.id)).toEqual(spawn1);
             expect(pieces.getById(spawn2.id)).toEqual(spawn2);
-            expect(result.movedPieceIds).toEqual([
+            expect(movedPieceIdsResult).toEqual([
                 movingPiece.id,
                 spawn1.id,
                 spawn2.id,
@@ -166,7 +160,7 @@ describe("BoardPieces", () => {
                 ],
             });
 
-            const result = pieces.playMove(move);
+            pieces.playMove(move);
 
             expect(pieces.getById(mainPiece.id)?.position).toEqual(
                 sideEffectPiece.position,
@@ -180,12 +174,6 @@ describe("BoardPieces", () => {
             expect(pieces.getByPosition(sideEffectPiece.position)?.id).toEqual(
                 mainPiece.id,
             );
-
-            expect(result.removedPieces).toHaveLength(0);
-            expect(result.movedPieceIds).toEqual([
-                mainPiece.id,
-                sideEffectPiece.id,
-            ]);
         });
 
         it("should handle self captures", () => {
@@ -198,9 +186,7 @@ describe("BoardPieces", () => {
                 captures: [piece.position],
             });
 
-            const result = pieces.playMove(move);
-
-            expect(result.removedPieces).toEqual(new Map([[piece.id, piece]]));
+            pieces.playMove(move);
 
             expect(pieces.getById(piece.id)).toBeUndefined();
             expect(pieces.getByPosition(move.to)).toBeUndefined();
@@ -232,7 +218,7 @@ describe("BoardPieces", () => {
                 captures: [capturedPiece.position],
             });
 
-            const result = pieces.removeCapturedPiecesFromMove(move);
+            const result = pieces.removeRemovedPiecesFromMove(move);
 
             expect(pieces.getById(movingPiece.id)?.position).toEqual(move.from);
             expect(pieces.getById(capturedPiece.id)).toBeUndefined();

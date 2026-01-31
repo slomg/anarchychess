@@ -10,7 +10,7 @@ import { pointEquals, pointToStr } from "@/features/point/pointUtils";
 import type { ChessboardStore } from "./chessboardStore";
 import { LogicalPoint } from "@/features/point/types";
 import { ScreenPoint } from "@/features/point/types";
-import { MoveAnimation, MoveBounds, PieceID } from "../lib/types";
+import { AnimationStep, MoveBounds, PieceID } from "../lib/types";
 import BoardPieces from "../lib/boardPieces";
 import { Position } from "../lib/position";
 import EventBus from "@/lib/eventBus";
@@ -165,19 +165,18 @@ export function createPiecesSlice(
             },
 
             async applyMoveAnimated(move) {
-                const { playAnimationBatch, pieces } = get();
+                const { playAnimation, pieces } = get();
 
-                const positions = simulateMoveWithIntermediates(pieces, move);
-                const lastPosition = positions.steps.at(-1);
-                if (!lastPosition) return;
+                const steps = simulateMoveWithIntermediates(pieces, move);
+                const lastStep = steps.at(-1);
+                if (!lastStep) return;
 
-                commitPositionChange(lastPosition.newPieces);
-                await playAnimationBatch(positions);
+                commitPositionChange(lastStep.newPieces);
+                await playAnimation(steps);
             },
 
             async removePieceAt(point) {
-                const { pieces, discardPromptsForPiece, playAnimationBatch } =
-                    get();
+                const { pieces, discardPromptsForPiece, playAnimation } = get();
 
                 const removePiece = pieces.getByPosition(point);
                 if (!removePiece) {
@@ -189,20 +188,17 @@ export function createPiecesSlice(
                 const newPieces = new BoardPieces(pieces);
                 newPieces.remove(removePiece.id);
 
-                const animation: MoveAnimation = {
-                    steps: [
-                        {
-                            newPieces,
-                            movedPieceIds: [],
-                        },
-                    ],
-                    removedPieces: new Map([[removePiece.id, removePiece]]),
+                const animation: AnimationStep = {
+                    newPieces,
+                    movedPieceIds: [],
+                    fadedPieces: new Map([[removePiece.id, removePiece]]),
                 };
+
                 discardPromptsForPiece(removePiece.id);
                 set((state) => {
                     state.pieces = newPieces;
                 });
-                await playAnimationBatch(animation);
+                await playAnimation(animation);
             },
 
             async handleMousePieceDrop({ mousePoint, isDrag, isDoubleClick }) {

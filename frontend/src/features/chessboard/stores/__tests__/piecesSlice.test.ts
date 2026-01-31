@@ -13,15 +13,9 @@ import {
     SpecialMoveType,
 } from "@/lib/apiClient";
 
-import {
-    AnimationStep,
-    IntermediateSquare,
-    Move,
-    MoveAnimation,
-} from "../../lib/types";
-
 import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
 import { ChessboardStore, createChessboardStore } from "../chessboardStore";
+import { AnimationStep, IntermediateSquare, Move } from "../../lib/types";
 import { logicalPoint, screenPoint } from "@/features/point/pointUtils";
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
 import flushMicrotasks from "@/lib/testUtils/flushMicrotasks";
@@ -196,20 +190,16 @@ describe("PiecesSlice", () => {
             store.setState({
                 pieces,
                 discardPromptsForPiece: discardPromptsForPieceMock,
-                playAnimationBatch: playAnimationBatchMock,
+                playAnimation: playAnimationBatchMock,
             });
 
             const expectedNewPieces = new BoardPieces(pieces);
             expectedNewPieces.remove(piece.id);
 
-            const expectedAnimation: MoveAnimation = {
-                steps: [
-                    {
-                        newPieces: expectedNewPieces,
-                        movedPieceIds: [],
-                    },
-                ],
-                removedPieces: new Map([[piece.id, piece]]),
+            const expectedAnimation: AnimationStep = {
+                newPieces: expectedNewPieces,
+                movedPieceIds: [],
+                fadedPieces: new Map([[piece.id, piece]]),
             };
 
             await store.getState().removePieceAt(piece.position);
