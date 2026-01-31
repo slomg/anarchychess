@@ -1,7 +1,7 @@
 [
     {
         "_comment": "castle self bishop capture",
-        "startingFen": "r1nbqkbcar/pppdp1dppp/2h7/10/5p3+/+4P4/10/7A2/PPPDP1DPPP/RHNBQKBC1R",
+        "startingFen": "r1nbqkbcar/pppdp1dppp/2h7/+9/5p4/5P4/9+/7A2/PPPDP1DPPP/RHNBQKBC1R",
         "moves": [
             {
                 "from": { "x": 7, "y": 0 },
@@ -23,7 +23,7 @@
     },
     {
         "_comment": "checker jumps and king promotion",
-        "startingFen": "r1nb1r2k1/ppp2a2pp/2hd1c1p2/6dq2/4pp3+/+6b2/4P3C1/2HN1P1A1P/PPPDBBDPP1/R3QK3R",
+        "startingFen": "r1nb1r2k1/ppp2a2pp/2hd1c+p2/6dq2/4pp4/7b2/4P3C1/1+HN1P1A1P/PPPDBBDPP1/R3QK3R",
         "moves": [
             {
                 "from": { "x": 8, "y": 9 },
@@ -47,7 +47,7 @@
     },
     {
         "_comment": "long passant",
-        "startingFen": "r1nbqkbcar/pp2ppdppp/h1p7/3d6/5P3+/+9/10/10/PPPDP1DPPP/RHNBQKBCAR",
+        "startingFen": "r1nbqkbcar/pp2ppdppp/h1p7/+2d6/5P4/10/9+/10/PPPDP1DPPP/RHNBQKBCAR",
         "moves": [
             {
                 "from": { "x": 4, "y": 8 },
@@ -68,7 +68,7 @@
     },
     {
         "_comment": "il vaticano",
-        "startingFen": "rhnbqkbcar/ppp4ppp/3d2d3/10/4ppB2+/+1B7/5P4/4P5/PPPD2DPPP/RHN1QK1CAR",
+        "startingFen": "rhnbqkbcar/ppp4ppp/3d2d3/+9/4ppB3/2B7/5P3+/4P5/PPPD2DPPP/RHN1QK1CAR",
         "moves": [
             {
                 "from": { "x": 2, "y": 4 },
@@ -117,7 +117,7 @@
     },
     {
         "_comment": "queen beta decay",
-        "startingFen": "rhnbqkbcar/pppdp1dppp/10/10/5p3+/+4P4/10/10/PPPDP1DPPP/RHNBQKBCAR",
+        "startingFen": "rhnbqkbcar/pppdp1dppp/10/+9/5p4/5P4/9+/10/PPPDP1DPPP/RHNBQKBCAR",
         "moves": [
             { "from": { "x": 4, "y": 0 }, "to": { "x": 7, "y": 3 } },
             {
@@ -154,7 +154,7 @@
     },
     {
         "_comment": "knooklear fusion",
-        "startingFen": "r3q1r3/ppp1badkpp/2hn1c1p2/4p5/2b2p1H1+/+4P4/3BP1R1Q1/5C1A2/PPPDN1DPPP/R2B3K2",
+        "startingFen": "r3q1r3/ppp1badkpp/2hn1c1p+1/4p5/2b2p1H2/5P4/3BP1R1Q1/3+1C1A2/PPPDN1DPPP/R2B3K2",
         "moves": [
             {
                 "from": { "x": 2, "y": 5 },
