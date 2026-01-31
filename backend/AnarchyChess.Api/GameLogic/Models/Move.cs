@@ -70,16 +70,19 @@ public record Move(
             EmphasizeSquare: emphasizeSquare
         ) { }
 
-    public IEnumerable<(AlgebraicPoint From, AlgebraicPoint To)> Flatten()
+    public IEnumerable<MoveStep> Flatten()
     {
         if (SideEffects != null)
         {
             foreach (var side in SideEffects)
             {
-                yield return (side.From, side.To);
+                yield return new(From: side.From, To: side.To, IsSelfCapture: side.From == side.To);
             }
         }
 
-        yield return (From, To);
+        bool isMainSelfCapture = From == To && PromotesTo is null;
+        yield return new(From: From, To: To, IsSelfCapture: isMainSelfCapture);
     }
 }
+
+public readonly record struct MoveStep(AlgebraicPoint From, AlgebraicPoint To, bool IsSelfCapture);

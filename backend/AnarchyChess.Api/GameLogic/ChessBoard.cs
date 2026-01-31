@@ -119,22 +119,28 @@ public class ChessBoard : IReadOnlyChessBoard, IEquatable<ChessBoard>
         // store each piece along with its final destination before changing the board
         // ensures we don't lose any piece if its original square gets overwritten during moves
         List<(Piece piece, AlgebraicPoint newPosition)> finalPositions = [];
-        foreach (var (from, to) in steps)
+        foreach (var step in steps)
         {
-            if (!IsWithinBoundaries(from) || !IsWithinBoundaries(to))
+            if (!IsWithinBoundaries(step.From) || !IsWithinBoundaries(step.To))
+            {
                 throw new ArgumentOutOfRangeException(
                     nameof(move),
                     "Move is out of board boundaries"
                 );
+            }
 
-            if (!TryGetPieceAt(from, out var piece))
+            if (!TryGetPieceAt(step.From, out var piece))
+            {
                 throw new ArgumentException(
                     $"Piece not found at the specified 'From' point",
                     nameof(move)
                 );
+            }
 
-            if (from != to)
-                finalPositions.Add((piece, to));
+            if (!step.IsSelfCapture)
+            {
+                finalPositions.Add((piece, step.To));
+            }
         }
 
         // step 1: remove all captured pieces first
@@ -147,9 +153,9 @@ public class ChessBoard : IReadOnlyChessBoard, IEquatable<ChessBoard>
         // step 2: clear all origin squares of moving pieces
         // this is done before placing pieces to handle swaps correctly
         // prevents a piece from deleting another that just moved into its destination
-        foreach (var (from, _) in steps)
+        foreach (var step in steps)
         {
-            RemovePiece(from);
+            RemovePiece(step.From);
         }
 
         // step 3: place all pieces in their final destinations

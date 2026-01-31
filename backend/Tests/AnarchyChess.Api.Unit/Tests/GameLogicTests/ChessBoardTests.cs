@@ -385,6 +385,20 @@ public class ChessBoardTests
     }
 
     [Fact]
+    public void PlayMove_doesnt_treat_promotions_in_place_as_self_captures()
+    {
+        ChessBoard board = new();
+        Piece piece = PieceFactory.White(hasMoved: false);
+        AlgebraicPoint position = new("a10");
+        board.PlacePiece(position, piece);
+        Move move = new(from: position, to: position, piece, promotesTo: PieceType.Queen);
+
+        board.PlayMove(move);
+
+        board.PeekPieceAt(position).Should().Be(piece with { Type = move.PromotesTo!.Value });
+    }
+
+    [Fact]
     public void PlayMove_flips_SideToMove_after_each_move()
     {
         ChessBoard board = new(sideToMove: GameColor.White);
