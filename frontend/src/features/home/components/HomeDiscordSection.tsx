@@ -100,7 +100,7 @@ const HomeDiscordSection = () => {
                         omg i love this{" "}
                         <Image
                             src={xdd}
-                            alt="pog"
+                            alt="xdd"
                             width={20}
                             height={20}
                             className="inline-block"
