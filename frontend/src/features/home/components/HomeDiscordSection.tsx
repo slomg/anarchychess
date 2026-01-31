@@ -40,7 +40,7 @@ const HomeDiscordSection = () => {
                     >
                         <Image
                             src={discordIcon}
-                            className="brightness-0 invert-100"
+                            className="brightness-0 invert-90"
                             alt="discord logo"
                             width={40}
                             height={40}
