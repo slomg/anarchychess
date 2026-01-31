@@ -16,67 +16,8 @@ const HomeDiscordSection = () => {
                 lg:gap-x-10 lg:p-15"
         >
             <div
-                className="order-1 mx-auto my-auto flex flex-col items-center
-                    gap-4 px-4 lg:order-0 lg:max-w-md lg:items-end"
-            >
-                <div
-                    className="flex flex-col gap-3 rounded-xl border
-                        border-white/10 bg-[#1f2433] p-5 shadow-md"
-                >
-                    <div className="flex items-center gap-3">
-                        <Image
-                            src={sniperBishopPfp}
-                            alt="sniper bishop pfp"
-                            className="flex-shrink-0 rounded-full"
-                            width={36}
-                            height={36}
-                        />
-                        <span className="min-w-0 truncate font-medium">
-                            John Bishop
-                        </span>
-                        <span className="text-text/50 text-xs">2:30 PM</span>
-                    </div>
-
-                    <p>
-                        instead of instantly losing when you run out of time,
-                        your pieces just start leaving
-                    </p>
-                </div>
-
-                <div
-                    className="flex w-full flex-col gap-3 rounded-xl border
-                        border-white/5 bg-[#1f2433] p-5 shadow-md lg:w-xs"
-                >
-                    <div className="flex items-center gap-3">
-                        <Image
-                            src={slomgPfp}
-                            alt="slomg pfp"
-                            className="flex-shrink-0 rounded-full"
-                            width={36}
-                            height={36}
-                        />
-                        <span className="min-w-0 truncate font-medium">
-                            slomg
-                        </span>
-                        <span className="text-text/50 text-xs">2:33 PM</span>
-                    </div>
-
-                    <p className="flex items-center gap-2">
-                        omg i love this{" "}
-                        <Image
-                            src={xdd}
-                            alt="pog"
-                            width={20}
-                            height={20}
-                            className="inline-block"
-                        />
-                    </p>
-                </div>
-            </div>
-
-            <div
                 className="flex w-full flex-col items-center gap-3 px-10
-                    text-center lg:max-w-lg lg:items-start lg:px-0
+                    text-center lg:order-1 lg:max-w-lg lg:items-start lg:px-0
                     lg:text-start"
             >
                 <h2 className="text-5xl">
@@ -106,6 +47,65 @@ const HomeDiscordSection = () => {
                         JOIN DISCORD
                     </Button>
                 </Link>
+            </div>
+
+            <div
+                className="mx-auto my-auto flex flex-col items-center gap-4 px-4
+                    lg:max-w-lg lg:items-end"
+            >
+                <div
+                    className="flex flex-col gap-3 rounded-xl border
+                        border-white/10 bg-[#1f2433] p-5 shadow-md"
+                >
+                    <div className="flex items-center gap-3">
+                        <Image
+                            src={sniperBishopPfp}
+                            alt="sniper bishop pfp"
+                            className="flex-shrink-0 rounded-full"
+                            width={36}
+                            height={36}
+                        />
+                        <span className="min-w-0 truncate font-medium">
+                            John Bishop
+                        </span>
+                        <span className="text-text/50 text-xs">2:30 PM</span>
+                    </div>
+
+                    <p>
+                        instead of instantly losing when you run out of time,
+                        your pieces just start leaving
+                    </p>
+                </div>
+
+                <div
+                    className="flex w-full flex-col gap-3 rounded-xl border
+                        border-white/5 bg-[#1f2433] p-5 shadow-md lg:w-md"
+                >
+                    <div className="flex items-center gap-3">
+                        <Image
+                            src={slomgPfp}
+                            alt="slomg pfp"
+                            className="flex-shrink-0 rounded-full"
+                            width={36}
+                            height={36}
+                        />
+                        <span className="min-w-0 truncate font-medium">
+                            slomg
+                        </span>
+                        <span className="text-text/50 text-xs">2:33 PM</span>
+                    </div>
+
+                    <p className="flex items-center gap-2">
+                        omg i love this{" "}
+                        <Image
+                            src={xdd}
+                            alt="pog"
+                            width={20}
+                            height={20}
+                            className="inline-block"
+                        />
+                    </p>
+                </div>
             </div>
         </section>
     );
