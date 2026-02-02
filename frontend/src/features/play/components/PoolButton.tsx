@@ -21,16 +21,20 @@ const PoolButton = ({
     });
 
     return (
-        <div className={clsx("relative", isSeeking && "animate-subtle-ping")}>
+        <div className={clsx("relative", isSeeking && "animate-breathe")}>
             {isMostPopular && (
-                <span className="absolute -top-5 left-1/2 -translate-x-1/2 transform text-sm text-nowrap">
+                <span
+                    className="absolute -top-5 left-1/2 -translate-x-1/2
+                        transform text-sm text-nowrap"
+                >
                     Most Popular
                 </span>
             )}
             <Button
                 onClick={toggleSeek}
                 className={clsx(
-                    "flex h-full w-full flex-col items-center justify-center rounded-sm",
+                    `flex h-full w-full flex-col items-center justify-center
+                    rounded-sm`,
                     isMostPopular && "border-accent border-3",
                 )}
             >

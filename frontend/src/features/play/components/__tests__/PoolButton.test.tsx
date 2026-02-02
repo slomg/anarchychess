@@ -75,7 +75,7 @@ describe("PoolButton", () => {
 
         expect(screen.getByText("searching...")).toBeInTheDocument();
         const wrapperDiv = container.querySelector("div");
-        expect(wrapperDiv?.className).toMatch(/animate-subtle-ping/);
+        expect(wrapperDiv?.className).toMatch(/animate-breathe/);
     });
 
     it("should call toggleSeek when the button is clicked", async () => {

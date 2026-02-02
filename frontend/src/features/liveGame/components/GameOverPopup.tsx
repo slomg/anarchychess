@@ -74,10 +74,7 @@ const GameOverPopup = () => {
 
             <div className="flex gap-3">
                 <Button
-                    className={clsx(
-                        "flex-1",
-                        isSeeking && "animate-subtle-ping",
-                    )}
+                    className={clsx("flex-1", isSeeking && "animate-breathe")}
                     onClick={() => toggleSeek()}
                 >
                     {isSeeking ? "SEARCHING..." : "NEW GAME"}
@@ -112,7 +109,7 @@ const RematchButton = () => {
                 onClick={toggleRematch}
                 className={clsx(
                     "flex-1",
-                    isRequestingRematch && "animate-subtle-ping",
+                    isRequestingRematch && "animate-breathe",
                 )}
             >
                 REMATCH
@@ -139,7 +136,10 @@ const PopupCardProfile = ({
             )}
         >
             <ProfilePicture userId={player.userId} />
-            <p className="w-full overflow-hidden text-sm text-ellipsis whitespace-nowrap">
+            <p
+                className="w-full overflow-hidden text-sm text-ellipsis
+                    whitespace-nowrap"
+            >
                 {player.userName}
             </p>
             {player.rating && ratingChange !== null && (

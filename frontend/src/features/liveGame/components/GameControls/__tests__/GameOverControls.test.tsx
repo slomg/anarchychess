@@ -49,7 +49,7 @@ describe("GameOverControls", () => {
 
         const newGameButton = screen.getByTestId("gameOverControlsNewGame");
         expect(newGameButton).toHaveTextContent("New Game");
-        expect(newGameButton).not.toHaveClass("animate-subtle-ping");
+        expect(newGameButton).not.toHaveClass("animate-breathe");
     });
 
     it("should show searching when seeking", () => {
@@ -62,7 +62,7 @@ describe("GameOverControls", () => {
 
         const newGameButton = screen.getByTestId("gameOverControlsNewGame");
         expect(newGameButton).toHaveTextContent("Searching...");
-        expect(newGameButton).toHaveClass("animate-subtle-ping");
+        expect(newGameButton).toHaveClass("animate-breathe");
     });
 
     it("should call toggleSeek when seeking new game", async () => {
@@ -87,7 +87,7 @@ describe("GameOverControls", () => {
 
         const rematchButton = screen.getByTestId("gameOverControlsRematch");
         expect(rematchButton).toHaveTextContent("Rematch");
-        expect(rematchButton).not.toHaveClass("animate-subtle-ping");
+        expect(rematchButton).not.toHaveClass("animate-breathe");
     });
 
     it("should show animate when requesting rematch", async () => {
@@ -100,7 +100,7 @@ describe("GameOverControls", () => {
 
         const rematchButton = screen.getByTestId("gameOverControlsRematch");
         expect(rematchButton).toHaveTextContent("Rematch");
-        expect(rematchButton).toHaveClass("animate-subtle-ping");
+        expect(rematchButton).toHaveClass("animate-breathe");
     });
 
     it("should call toggleRematch when clicking rematch", async () => {

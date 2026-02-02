@@ -41,7 +41,7 @@ describe("DirectChallengeView", () => {
         );
 
         const profilePicture = screen.getByTestId("profilePicture");
-        expect(profilePicture.className).toContain("animate-subtle-ping");
+        expect(profilePicture.className).toContain("animate-breathe");
     });
 
     it("should update correctly when challenge is over", () => {
@@ -54,7 +54,7 @@ describe("DirectChallengeView", () => {
         );
 
         const profilePicture = screen.getByTestId("profilePicture");
-        expect(profilePicture.className).not.toContain("animate-subtle-ping");
+        expect(profilePicture.className).not.toContain("animate-breathe");
 
         const statusText = screen.getByTestId("challengeStatusText");
         expect(statusText).toHaveClass("text-error");

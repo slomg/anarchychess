@@ -22,7 +22,7 @@ const DirectChallengeView = () => {
 
             <ProfilePicture
                 userId={recipient.userId}
-                className={clsx(!isOver && "animate-subtle-ping")}
+                className={clsx(!isOver && "animate-breathe")}
                 size={200}
             />
             <ProfileTooltip userId={recipient.userId}>

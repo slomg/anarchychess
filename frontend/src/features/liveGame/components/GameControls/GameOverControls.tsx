@@ -17,7 +17,7 @@ const GameOverControls = () => {
         <>
             <GameControlButton
                 icon={PlusIcon}
-                className={clsx(isSeeking && "animate-subtle-ping")}
+                className={clsx(isSeeking && "animate-breathe")}
                 onClick={toggleSeek}
                 data-testid="gameOverControlsNewGame"
             >
@@ -53,7 +53,7 @@ const RematchControls = () => {
         return (
             <GameControlButton
                 icon={ArrowPathIcon}
-                className={clsx(isRequestingRematch && "animate-subtle-ping")}
+                className={clsx(isRequestingRematch && "animate-breathe")}
                 onClick={toggleRematch}
                 data-testid="gameOverControlsRematch"
             >
