@@ -31,9 +31,7 @@ public struct BitBoard
 
     public UInt128 TraitorRooks;
 
-    public bool WhiteToMove;
-
-    public readonly UInt128 BitboardFor(BitPiece pieceType) =>
+    public readonly UInt128 BitboardFor(BitPieceDefinition pieceType) =>
         pieceType switch
         {
             BitPiece.WhiteKing => WhiteKings,
