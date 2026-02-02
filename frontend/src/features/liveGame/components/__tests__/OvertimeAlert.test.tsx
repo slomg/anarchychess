@@ -49,9 +49,7 @@ describe("OvertimeAlert", () => {
             </LiveChessStoreContext.Provider>,
         );
 
-        expect(
-            screen.queryByTestId("emphasizedSquare"),
-        ).not.toBeInTheDocument();
+        expect(screen.queryByTestId("overtimeSquare")).not.toBeInTheDocument();
     });
 
     it("should emphasize the square when the ply number is matching", () => {
@@ -76,7 +74,7 @@ describe("OvertimeAlert", () => {
             );
         });
 
-        const square = screen.getByTestId("emphasizedSquare");
+        const square = screen.getByTestId("overtimeSquare");
         expect(square).toBeInTheDocument();
         expect(square).toHaveAttribute("data-position", pointToStr(removeFrom));
     });
@@ -104,9 +102,7 @@ describe("OvertimeAlert", () => {
             );
         });
 
-        expect(
-            screen.queryByTestId("emphasizedSquare"),
-        ).not.toBeInTheDocument();
+        expect(screen.queryByTestId("overtimeSquare")).not.toBeInTheDocument();
     });
 
     it("should not emphasize the square when the game is over", () => {
@@ -126,9 +122,7 @@ describe("OvertimeAlert", () => {
             );
         });
 
-        expect(
-            screen.queryByTestId("emphasizedSquare"),
-        ).not.toBeInTheDocument();
+        expect(screen.queryByTestId("overtimeSquare")).not.toBeInTheDocument();
     });
 
     it("should replace the last alert after a new event", () => {
@@ -147,7 +141,7 @@ describe("OvertimeAlert", () => {
             gameEventHandlers.ReceiveNextOvertimeAsync?.(0, firstPoint);
         });
 
-        let square = screen.getByTestId("emphasizedSquare");
+        let square = screen.getByTestId("overtimeSquare");
         expect(square).toBeInTheDocument();
         expect(square).toHaveAttribute("data-position", pointToStr(firstPoint));
 
@@ -155,7 +149,7 @@ describe("OvertimeAlert", () => {
             gameEventHandlers.ReceiveNextOvertimeAsync?.(0, secondPoint);
         });
 
-        square = screen.getByTestId("emphasizedSquare");
+        square = screen.getByTestId("overtimeSquare");
         expect(square).toBeInTheDocument();
         expect(square).toHaveAttribute(
             "data-position",

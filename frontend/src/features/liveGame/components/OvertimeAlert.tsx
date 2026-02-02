@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-import { EmphasizedSquare } from "@/features/chessboard/components/EmphasizedSquare";
 import { useChessboardStore } from "@/features/chessboard/hooks/useChessboard";
+import ChessSquare from "@/features/chessboard/components/ChessSquare";
 import useLiveChessStore from "../hooks/useLiveChessStore";
 import { LogicalPoint } from "@/features/point/types";
 import { useGameEvent } from "../hooks/useGameHub";
@@ -34,6 +34,18 @@ const OvertimeAlert = () => {
         return null;
     }
 
-    return <EmphasizedSquare position={alert.removeFrom} />;
+    return <OvertimeSquare position={alert.removeFrom} />;
 };
 export default OvertimeAlert;
+
+const OvertimeSquare = ({ position }: { position: LogicalPoint }) => {
+    return (
+        <ChessSquare
+            data-testid="overtimeSquare"
+            className="animate-fade-in before:animate-freakout z-20
+                before:absolute before:inset-0 before:border-4
+                before:border-red-500 sm:before:border-6"
+            position={position}
+        />
+    );
+};

@@ -14,7 +14,7 @@ const EmphasizedSquaresRenderer = () => {
 };
 export default EmphasizedSquaresRenderer;
 
-export const EmphasizedSquare = ({ position }: { position: LogicalPoint }) => {
+const EmphasizedSquare = ({ position }: { position: LogicalPoint }) => {
     return (
         <ChessSquare
             data-testid="emphasizedSquare"
