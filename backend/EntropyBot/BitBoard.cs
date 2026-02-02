@@ -28,6 +28,7 @@ public struct BitBoard
 
     public UInt128 WhitePieces;
     public UInt128 BlackPieces;
+    public UInt128 Empty;
 
     public UInt128 TraitorRooks;
 
