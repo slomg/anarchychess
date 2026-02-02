@@ -1,6 +1,6 @@
 ﻿namespace EntropyBot;
 
-struct BitMove
+public struct BitMove
 {
     public byte From;
     public byte To;
