@@ -1,4 +1,4 @@
-﻿namespace EntropyBot;
+﻿namespace AnarchyBot;
 
 public struct BitMove
 {

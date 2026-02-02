@@ -1,4 +1,4 @@
-﻿namespace EntropyBot;
+﻿namespace AnarchyBot;
 
 [Flags]
 public enum BitMoveFlag : byte
