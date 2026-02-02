@@ -18,7 +18,7 @@ export const EmphasizedSquare = ({ position }: { position: LogicalPoint }) => {
     return (
         <ChessSquare
             data-testid="emphasizedSquare"
-            className="before:animate-freakout animate-fade-in z-20
+            className="animate-fade-in before:animate-subtle-ping z-20
                 before:absolute before:inset-0 before:border-4
                 before:border-red-500 sm:before:border-6"
             position={position}
