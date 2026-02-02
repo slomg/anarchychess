@@ -26,11 +26,46 @@ public struct Board
     public UInt128 BlackSterilePawns;
     public UInt128 BlackCheckers;
 
-    public UInt128 TraitorRooks;
-
     public UInt128 WhitePieces;
     public UInt128 BlackPieces;
 
+    public UInt128 TraitorRooks;
+
     public bool WhiteToMove;
-    public int HalfMoveClock;
+
+    public readonly UInt128 BitboardFor(BitPiece pieceType) =>
+        pieceType switch
+        {
+            BitPiece.WhiteKing => WhiteKings,
+            BitPiece.WhiteQueen => WhiteQueens,
+            BitPiece.WhitePawn => WhitePawns,
+            BitPiece.WhiteRook => WhiteRooks,
+            BitPiece.WhiteBishop => WhiteBishops,
+            BitPiece.WhiteHorsey => WhiteHorsies,
+            BitPiece.WhiteKnook => WhiteKnooks,
+            BitPiece.WhiteAntiqueen => WhiteAntiqueens,
+            BitPiece.WhiteUnderagePawn => WhiteUnderagePawns,
+            BitPiece.WhiteSterilePawn => WhiteSterilePawns,
+            BitPiece.WhiteChecker => WhiteCheckers,
+
+            BitPiece.BlackKing => BlackKings,
+            BitPiece.BlackQueen => BlackQueens,
+            BitPiece.BlackPawn => BlackPawns,
+            BitPiece.BlackRook => BlackRooks,
+            BitPiece.BlackBishop => BlackBishops,
+            BitPiece.BlackHorsey => BlackHorsies,
+            BitPiece.BlackKnook => BlackKnooks,
+            BitPiece.BlackAntiqueen => BlackAntiqueens,
+            BitPiece.BlackUnderagePawn => BlackUnderagePawns,
+            BitPiece.BlackSterilePawn => BlackSterilePawns,
+            BitPiece.BlackChecker => BlackCheckers,
+
+            BitPiece.TraitorRook => TraitorRooks,
+
+            _ => throw new ArgumentOutOfRangeException(
+                nameof(pieceType),
+                pieceType,
+                "Invalid piece"
+            ),
+        };
 }
