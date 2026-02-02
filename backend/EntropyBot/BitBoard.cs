@@ -32,7 +32,7 @@ public struct BitBoard
 
     public UInt128 TraitorRooks;
 
-    public readonly UInt128 BitboardFor(BitPieceDefinition pieceType) =>
+    public readonly UInt128 BitboardFor(BitPiece pieceType) =>
         pieceType switch
         {
             BitPiece.WhiteKing => WhiteKings,
