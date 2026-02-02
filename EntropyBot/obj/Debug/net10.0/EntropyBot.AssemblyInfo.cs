@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EntropyBot")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+71272ac213bd5e399b8f3f99aac1633ab165cd89")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+34108c9a90ae8a2acb368803803c16407c3225c8")]
 [assembly: System.Reflection.AssemblyProductAttribute("EntropyBot")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EntropyBot")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

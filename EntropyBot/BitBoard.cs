@@ -1,6 +1,6 @@
 ﻿namespace EntropyBot;
 
-public struct Board
+public struct BitBoard
 {
     public UInt128 WhiteKings;
     public UInt128 WhiteQueens;
