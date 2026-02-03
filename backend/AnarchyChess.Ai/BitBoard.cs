@@ -5,17 +5,17 @@ namespace AnarchyChess.Ai;
 
 public class BitBoard
 {
-    public UInt128[,] Bitboards { get; }
+    public UInt128[,] Bitboards { get; private set; }
 
-    public UInt128 WhitePieces { get; }
-    public UInt128 BlackPieces { get; }
-    public UInt128 NeutralPieces { get; }
-    public UInt128 Occupancy { get; }
+    public UInt128 WhitePieces { get; private set; }
+    public UInt128 BlackPieces { get; private set; }
+    public UInt128 NeutralPieces { get; private set; }
+    public UInt128 Occupancy { get; private set; }
 
-    public UInt128 HasMoved { get; }
+    public UInt128 HasMoved { get; private set; }
 
-    private UInt128 _whiteEnemy;
-    private UInt128 _blackEnemy;
+    public UInt128 WhiteEnemy { get; private set; }
+    public UInt128 BlackEnemy { get; private set; }
 
     public BitBoard(UInt128[,]? bitboards = null, UInt128? hasMoved = null)
     {
@@ -36,8 +36,8 @@ public class BitBoard
 
         Occupancy = WhitePieces | BlackPieces | NeutralPieces;
 
-        _whiteEnemy = BlackPieces | NeutralPieces;
-        _blackEnemy = WhitePieces | NeutralPieces;
+        WhiteEnemy = BlackPieces | NeutralPieces;
+        BlackEnemy = WhitePieces | NeutralPieces;
     }
 
     public static BitBoard FromPieces(Dictionary<AlgebraicPoint, Piece> pieces)
@@ -84,8 +84,8 @@ public class BitBoard
     public UInt128 BitboardForEnemyOf(BitPieceColor color) =>
         color switch
         {
-            BitPieceColor.White => _whiteEnemy,
-            BitPieceColor.Black => _blackEnemy,
+            BitPieceColor.White => WhiteEnemy,
+            BitPieceColor.Black => BlackEnemy,
             _ => 0,
         };
 }
