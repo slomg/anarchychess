@@ -1,7 +1,6 @@
 ﻿using System.Data;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.GameLogic;
-using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.Shared.Models;
 using AnarchyChess.Api.Shared.Services;
 using AnarchyChess.EngineShared;

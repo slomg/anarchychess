@@ -1,6 +1,5 @@
-﻿using AnarchyChess.Api.GameLogic.Models;
+﻿using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AnarchyChess.EngineShared;
-using AnarchyChess.Api.TestInfrastructure.Fakes;
 
 namespace AnarchyChess.Api.TestInfrastructure.Factories;
 

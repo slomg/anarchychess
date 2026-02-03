@@ -1,8 +1,8 @@
 ﻿using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Models;
-using AnarchyChess.EngineShared;
 using AnarchyChess.Api.GameLogic.PieceMovementRules;
 using AnarchyChess.Api.TestInfrastructure.Factories;
+using AnarchyChess.EngineShared;
 using NSubstitute;
 
 namespace AnarchyChess.Api.Unit.Tests.GameLogicTests.PieceMovementRuleTests;
