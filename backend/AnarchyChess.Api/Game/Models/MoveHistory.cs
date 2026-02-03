@@ -33,7 +33,7 @@ public class MoveHistory
             return;
         }
 
-        var removalIdx = removal.AsIndex(boardWidth);
+        var removalIdx = removal.AsIdx(boardWidth);
 
         var lastMove = _moveHistory[^1];
         byte[] newRemovals = [.. lastMove.Path.OvertimeRemovalIdxs ?? [], removalIdx];

@@ -26,11 +26,11 @@ public record MovePath(
     {
         var captures =
             move.Captures.Count != 0
-                ? move.Captures.Select(c => c.Position.AsIndex(boardWidth)).ToList()
+                ? move.Captures.Select(c => c.Position.AsIdx(boardWidth)).ToList()
                 : null;
         var triggers =
             move.TriggerSquares.Count != 0
-                ? move.TriggerSquares.Select(t => t.AsIndex(boardWidth)).ToList()
+                ? move.TriggerSquares.Select(t => t.AsIdx(boardWidth)).ToList()
                 : null;
         var intermediates =
             move.IntermediateSquares.Count != 0
@@ -54,8 +54,8 @@ public record MovePath(
                 : null;
 
         return new(
-            FromIdx: move.From.AsIndex(boardWidth),
-            ToIdx: move.To.AsIndex(boardWidth),
+            FromIdx: move.From.AsIdx(boardWidth),
+            ToIdx: move.To.AsIdx(boardWidth),
             MoveKey: moveKey ?? new MoveKey(move),
             CapturedIdxs: captures,
             TriggerIdxs: triggers,

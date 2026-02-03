@@ -11,7 +11,7 @@ public record MoveSideEffectPath(byte FromIdx, byte ToIdx)
         int boardWidth
     ) =>
         new(
-            FromIdx: moveSideEffect.From.AsIndex(boardWidth),
-            ToIdx: moveSideEffect.To.AsIndex(boardWidth)
+            FromIdx: moveSideEffect.From.AsIdx(boardWidth),
+            ToIdx: moveSideEffect.To.AsIdx(boardWidth)
         );
 }

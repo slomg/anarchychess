@@ -41,7 +41,7 @@ public class PlayableMoveProvider(ILegalMoveCalculator legalMoveCalculator) : IP
             moveMap[key] = move;
             if (move.EmphasizeSquare)
             {
-                HighlightIdxes.Add(move.From.AsIndex(board.Width));
+                HighlightIdxes.Add(move.From.AsIdx(board.Width));
             }
         }
 

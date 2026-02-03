@@ -11,6 +11,6 @@ public record PieceSpawnPath(PieceType Type, GameColor? Color, byte PosIdx)
         new(
             Type: pieceSpawn.Type,
             Color: pieceSpawn.Color,
-            PosIdx: pieceSpawn.Position.AsIndex(boardWidth)
+            PosIdx: pieceSpawn.Position.AsIdx(boardWidth)
         );
 }
