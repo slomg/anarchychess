@@ -4,7 +4,7 @@
 /// Defines the priority of the forced moves
 /// Higher values indicate higher priority
 /// </summary>
-public enum ForcedMovePriority
+public enum ForcedMovePriority : byte
 {
     None = 0,
     UnderagePawn = 1,
