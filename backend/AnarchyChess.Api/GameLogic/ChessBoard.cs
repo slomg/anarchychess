@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using AnarchyChess.Api.GameLogic.Extensions;
+using AnarchyChess.EngineShared.Extensions;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.EngineShared;
 

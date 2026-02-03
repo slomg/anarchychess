@@ -1,4 +1,4 @@
-﻿using AnarchyChess.Api.GameLogic.Extensions;
+﻿using AnarchyChess.EngineShared.Extensions;
 using AnarchyChess.Api.QuestLogic.Models;
 
 namespace AnarchyChess.Api.QuestLogic.QuestMetrics;

@@ -1,6 +1,4 @@
-﻿using AnarchyChess.EngineShared;
-
-namespace AnarchyChess.Api.GameLogic.Extensions;
+﻿namespace AnarchyChess.EngineShared.Extensions;
 
 public static class GameColorExtensions
 {

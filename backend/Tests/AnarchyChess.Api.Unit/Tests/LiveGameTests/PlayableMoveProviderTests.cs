@@ -1,7 +1,7 @@
 ﻿using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.GameLogic;
-using AnarchyChess.Api.GameLogic.Extensions;
+using AnarchyChess.EngineShared.Extensions;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.TestInfrastructure.Factories;

@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using AnarchyChess.Ai.BitPieceDefinition;
+using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai;
 
@@ -8,7 +9,8 @@ public interface IBitMovesGenerator
     void Generate(BitBoard board, Span<BitMove> moves, ref int movesCount);
     void GenerateForPiece(
         BitBoard board,
-        BitPieceType pieceType,
+        PieceType pieceType,
+        BitPieceColor color,
         Span<BitMove> moves,
         ref int movesCount
     );
@@ -16,36 +18,50 @@ public interface IBitMovesGenerator
 
 public sealed class BitMovesGenerator : IBitMovesGenerator
 {
-    private readonly Dictionary<BitPieceType, IBitPieceDefinition> _pieceDefinitions = new()
+    private readonly Dictionary<PieceType, IBitPieceDefinition> _pieceDefinitions = new()
     {
-        [BitPieceType.WhiteKing] = new BitKingDefinition(),
-        [BitPieceType.BlackKing] = new BitKingDefinition(),
+        [PieceType.King] = new BitKingDefinition(),
     };
 
     public void Generate(BitBoard board, Span<BitMove> moves, ref int movesCount)
     {
-        for (int pieceTypeIdx = 0; pieceTypeIdx < board.Bitboards.Length; pieceTypeIdx++)
+        for (int colorIdx = 0; colorIdx < board.Bitboards.GetLength(0); colorIdx++)
         {
-            BitPieceType pieceType = (BitPieceType)pieceTypeIdx;
-            UInt128 bitboard = board.BitboardFor(pieceType);
-            if (_pieceDefinitions.TryGetValue(pieceType, out var definition))
+            BitPieceColor color = (BitPieceColor)colorIdx;
+
+            for (int pieceTypeIdx = 0; pieceTypeIdx < board.Bitboards.GetLength(1); pieceTypeIdx++)
             {
-                GenerateForPieces(board, bitboard, definition, pieceType, moves, ref movesCount);
+                PieceType pieceType = (PieceType)pieceTypeIdx;
+                UInt128 bitboard = board.BitboardFor(pieceType, color);
+
+                if (_pieceDefinitions.TryGetValue(pieceType, out var definition))
+                {
+                    GenerateForPieces(
+                        board,
+                        bitboard,
+                        definition,
+                        pieceType,
+                        color,
+                        moves,
+                        ref movesCount
+                    );
+                }
             }
         }
     }
 
     public void GenerateForPiece(
         BitBoard board,
-        BitPieceType pieceType,
+        PieceType pieceType,
+        BitPieceColor color,
         Span<BitMove> moves,
         ref int movesCount
     )
     {
-        UInt128 bitboard = board.BitboardFor(pieceType);
+        UInt128 bitboard = board.BitboardFor(pieceType, color);
         if (_pieceDefinitions.TryGetValue(pieceType, out var definition))
         {
-            GenerateForPieces(board, bitboard, definition, pieceType, moves, ref movesCount);
+            GenerateForPieces(board, bitboard, definition, pieceType, color, moves, ref movesCount);
         }
     }
 
@@ -54,7 +70,8 @@ public sealed class BitMovesGenerator : IBitMovesGenerator
         BitBoard board,
         UInt128 bitboard,
         IBitPieceDefinition definition,
-        BitPieceType pieceType,
+        PieceType pieceType,
+        BitPieceColor color,
         Span<BitMove> moves,
         ref int movesCount
     )
@@ -64,7 +81,7 @@ public sealed class BitMovesGenerator : IBitMovesGenerator
             int squareIndex = BitboardHelpers.BitScanForward(ref bitboard);
             byte position = (byte)squareIndex;
 
-            definition.GenerateMoves(board, pieceType, position, moves, ref movesCount);
+            definition.GenerateMoves(board, pieceType, color, position, moves, ref movesCount);
         }
     }
 }

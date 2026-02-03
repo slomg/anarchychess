@@ -6,10 +6,10 @@ public struct BitMove
 {
     public required byte From;
     public required byte To;
-    public required BitPieceType Piece;
+    public required PieceType Piece;
 
     public UInt128 Captures;
-    public BitPieceType? PromotesTo;
+    public PieceType? PromotesTo;
     public ForcedMovePriority ForcedMovePriority;
     public SpecialMoveType SpecialMoveType;
 }
