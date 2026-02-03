@@ -23,12 +23,15 @@ public struct BitBoard
     {
         Bitboards =
             bitboards
-            ?? new UInt128[Enum.GetValues<GameColor>().Length, Enum.GetValues<BitPiece>().Length];
+            ?? new UInt128[
+                Enum.GetValues<GameColor>().Length,
+                Enum.GetValues<BitPieceType>().Length
+            ];
         NeutralBitboards =
-            neutralBitboards ?? new UInt128[Enum.GetValues<NeutralBitPiece>().Length];
+            neutralBitboards ?? new UInt128[Enum.GetValues<NeutralBitPieceType>().Length];
         HasMoved = hasMoved ?? 0;
 
-        for (int i = 0; i < Enum.GetValues<BitPiece>().Length; i++)
+        for (int i = 0; i < Enum.GetValues<BitPieceType>().Length; i++)
         {
             WhitePieces |= Bitboards[(int)GameColor.White, i];
             BlackPieces |= Bitboards[(int)GameColor.Black, i];
@@ -46,21 +49,21 @@ public struct BitBoard
     {
         UInt128[,] bitboards = new UInt128[
             Enum.GetValues<GameColor>().Length,
-            Enum.GetValues<BitPiece>().Length
+            Enum.GetValues<BitPieceType>().Length
         ];
-        UInt128[] neutralBitboards = new UInt128[Enum.GetValues<NeutralBitPiece>().Length];
+        UInt128[] neutralBitboards = new UInt128[Enum.GetValues<NeutralBitPieceType>().Length];
         UInt128 hasMoved = 0;
 
         foreach (var (point, piece) in pieces)
         {
             if (piece.Color is null)
             {
-                NeutralBitPiece type = BitPieceMap.Neutral[piece.Type];
+                NeutralBitPieceType type = BitPieceMap.Neutral[piece.Type];
                 neutralBitboards[(int)type] |= UInt128.One << point.AsIdx();
             }
             else
             {
-                BitPiece type = BitPieceMap.Colored[piece.Type];
+                BitPieceType type = BitPieceMap.Colored[piece.Type];
                 bitboards[(int)piece.Color.Value, (int)type] |= UInt128.One << point.AsIdx();
             }
 
@@ -73,10 +76,10 @@ public struct BitBoard
         return new BitBoard(bitboards, neutralBitboards, hasMoved);
     }
 
-    public readonly ref UInt128 BitboardFor(BitPiece pieceType, GameColor color) =>
+    public readonly ref UInt128 BitboardFor(BitPieceType pieceType, GameColor color) =>
         ref Bitboards[(int)color, (int)pieceType];
 
-    public readonly ref UInt128 BitboardFor(NeutralBitPiece pieceType) =>
+    public readonly ref UInt128 BitboardFor(NeutralBitPieceType pieceType) =>
         ref NeutralBitboards[(int)pieceType];
 
     public readonly bool HasPieceMoved(byte position) =>

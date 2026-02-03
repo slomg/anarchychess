@@ -1,6 +1,6 @@
 ﻿namespace AnarchyChess.Ai;
 
-public enum BitPiece
+public enum BitPieceType
 {
     King,
     Queen,

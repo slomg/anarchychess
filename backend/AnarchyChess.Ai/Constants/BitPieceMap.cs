@@ -4,29 +4,27 @@ namespace AnarchyChess.Ai.Constants;
 
 public static class BitPieceMap
 {
-    public static readonly IReadOnlyDictionary<PieceType, BitPiece> Colored = new Dictionary<
+    public static readonly IReadOnlyDictionary<PieceType, BitPieceType> Colored = new Dictionary<
         PieceType,
-        BitPiece
+        BitPieceType
     >
     {
-        [PieceType.King] = BitPiece.King,
-        [PieceType.Queen] = BitPiece.Queen,
-        [PieceType.Pawn] = BitPiece.Pawn,
-        [PieceType.Rook] = BitPiece.Rook,
-        [PieceType.Bishop] = BitPiece.Bishop,
-        [PieceType.Horsey] = BitPiece.Horsey,
-        [PieceType.Knook] = BitPiece.Knook,
-        [PieceType.Antiqueen] = BitPiece.Antiqueen,
-        [PieceType.UnderagePawn] = BitPiece.UnderagePawn,
-        [PieceType.SterilePawn] = BitPiece.SterilePawn,
-        [PieceType.Checker] = BitPiece.Checker,
+        [PieceType.King] = BitPieceType.King,
+        [PieceType.Queen] = BitPieceType.Queen,
+        [PieceType.Pawn] = BitPieceType.Pawn,
+        [PieceType.Rook] = BitPieceType.Rook,
+        [PieceType.Bishop] = BitPieceType.Bishop,
+        [PieceType.Horsey] = BitPieceType.Horsey,
+        [PieceType.Knook] = BitPieceType.Knook,
+        [PieceType.Antiqueen] = BitPieceType.Antiqueen,
+        [PieceType.UnderagePawn] = BitPieceType.UnderagePawn,
+        [PieceType.SterilePawn] = BitPieceType.SterilePawn,
+        [PieceType.Checker] = BitPieceType.Checker,
     };
 
-    public static readonly IReadOnlyDictionary<PieceType, NeutralBitPiece> Neutral = new Dictionary<
-        PieceType,
-        NeutralBitPiece
-    >
-    {
-        [PieceType.TraitorRook] = NeutralBitPiece.TraitorRook,
-    };
+    public static readonly IReadOnlyDictionary<PieceType, NeutralBitPieceType> Neutral =
+        new Dictionary<PieceType, NeutralBitPieceType>
+        {
+            [PieceType.TraitorRook] = NeutralBitPieceType.TraitorRook,
+        };
 }

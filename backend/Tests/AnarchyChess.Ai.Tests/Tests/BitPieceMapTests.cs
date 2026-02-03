@@ -9,19 +9,19 @@ public class BitPieceMapTests
     [Fact]
     public void Colored_maps_all_piece_types_correctly()
     {
-        var expected = new Dictionary<PieceType, BitPiece>
+        var expected = new Dictionary<PieceType, BitPieceType>
         {
-            [PieceType.King] = BitPiece.King,
-            [PieceType.Queen] = BitPiece.Queen,
-            [PieceType.Pawn] = BitPiece.Pawn,
-            [PieceType.Rook] = BitPiece.Rook,
-            [PieceType.Bishop] = BitPiece.Bishop,
-            [PieceType.Horsey] = BitPiece.Horsey,
-            [PieceType.Knook] = BitPiece.Knook,
-            [PieceType.Antiqueen] = BitPiece.Antiqueen,
-            [PieceType.UnderagePawn] = BitPiece.UnderagePawn,
-            [PieceType.SterilePawn] = BitPiece.SterilePawn,
-            [PieceType.Checker] = BitPiece.Checker,
+            [PieceType.King] = BitPieceType.King,
+            [PieceType.Queen] = BitPieceType.Queen,
+            [PieceType.Pawn] = BitPieceType.Pawn,
+            [PieceType.Rook] = BitPieceType.Rook,
+            [PieceType.Bishop] = BitPieceType.Bishop,
+            [PieceType.Horsey] = BitPieceType.Horsey,
+            [PieceType.Knook] = BitPieceType.Knook,
+            [PieceType.Antiqueen] = BitPieceType.Antiqueen,
+            [PieceType.UnderagePawn] = BitPieceType.UnderagePawn,
+            [PieceType.SterilePawn] = BitPieceType.SterilePawn,
+            [PieceType.Checker] = BitPieceType.Checker,
         };
 
         BitPieceMap.Colored.Should().BeEquivalentTo(expected);
@@ -30,15 +30,15 @@ public class BitPieceMapTests
     [Fact]
     public void Colored_has_expected_length()
     {
-        BitPieceMap.Colored.Count.Should().Be(Enum.GetValues<BitPiece>().Length);
+        BitPieceMap.Colored.Count.Should().Be(Enum.GetValues<BitPieceType>().Length);
     }
 
     [Fact]
     public void Neutral_maps_all_piece_types_correctly()
     {
-        var expected = new Dictionary<PieceType, NeutralBitPiece>
+        var expected = new Dictionary<PieceType, NeutralBitPieceType>
         {
-            [PieceType.TraitorRook] = NeutralBitPiece.TraitorRook,
+            [PieceType.TraitorRook] = NeutralBitPieceType.TraitorRook,
         };
 
         BitPieceMap.Neutral.Should().BeEquivalentTo(expected);
@@ -47,6 +47,6 @@ public class BitPieceMapTests
     [Fact]
     public void Neutral_has_expected_length()
     {
-        BitPieceMap.Neutral.Count.Should().Be(Enum.GetValues<NeutralBitPiece>().Length);
+        BitPieceMap.Neutral.Count.Should().Be(Enum.GetValues<NeutralBitPieceType>().Length);
     }
 }

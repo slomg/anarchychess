@@ -15,8 +15,6 @@ struct CastleInfo
 
 public sealed class BitKingDefinition : IBitPieceDefinition
 {
-    public BitPiece PieceType => BitPiece.King;
-
     // all castling masks don't include king and rook destinations, because we can capture our own bishop, so it's checked seperately
     private static readonly UInt128 WhiteKingSideBetweenMask =
         UInt128.One << new AlgebraicPoint("i1").AsIdx();
@@ -144,7 +142,7 @@ public sealed class BitKingDefinition : IBitPieceDefinition
             {
                 From = position,
                 To = (byte)toSquare,
-                Piece = BitPiece.King,
+                Piece = BitPieceType.King,
                 Captures = isCapture ? (UInt128.One << toSquare) : 0,
             };
         }
@@ -185,8 +183,8 @@ public sealed class BitKingDefinition : IBitPieceDefinition
         UInt128 rookStartMask = UInt128.One << castleInfo.RookStart;
 
         if (
-            (board.BitboardFor(BitPiece.King, color) & kingStartMask) == 0
-            || (board.BitboardFor(BitPiece.Rook, color) & rookStartMask) == 0
+            (board.BitboardFor(BitPieceType.King, color) & kingStartMask) == 0
+            || (board.BitboardFor(BitPieceType.Rook, color) & rookStartMask) == 0
         )
         {
             return;
@@ -206,11 +204,11 @@ public sealed class BitKingDefinition : IBitPieceDefinition
         UInt128 rookDestMask = UInt128.One << castleInfo.RookDest;
 
         UInt128 captureMask = 0;
-        if ((board.BitboardFor(BitPiece.Bishop, color) & kingDestMask) != 0)
+        if ((board.BitboardFor(BitPieceType.Bishop, color) & kingDestMask) != 0)
         {
             captureMask = UInt128.One << castleInfo.KingDest;
         }
-        else if ((board.BitboardFor(BitPiece.Bishop, color) & rookDestMask) != 0)
+        else if ((board.BitboardFor(BitPieceType.Bishop, color) & rookDestMask) != 0)
         {
             captureMask = UInt128.One << castleInfo.RookDest;
         }

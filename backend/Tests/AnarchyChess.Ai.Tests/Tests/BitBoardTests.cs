@@ -29,17 +29,17 @@ public class BitBoardTests
 
         // white pieces
         board
-            .BitboardFor(BitPiece.King, GameColor.White)
+            .BitboardFor(BitPieceType.King, GameColor.White)
             .Should()
             .Be(UInt128.One << new AlgebraicPoint("e1").AsIdx());
 
         board
-            .BitboardFor(BitPiece.Queen, GameColor.White)
+            .BitboardFor(BitPieceType.Queen, GameColor.White)
             .Should()
             .Be(UInt128.One << new AlgebraicPoint("d1").AsIdx());
 
         board
-            .BitboardFor(BitPiece.Rook, GameColor.White)
+            .BitboardFor(BitPieceType.Rook, GameColor.White)
             .Should()
             .Be(
                 (UInt128.One << new AlgebraicPoint("a1").AsIdx())
@@ -48,17 +48,17 @@ public class BitBoardTests
 
         // black pieces
         board
-            .BitboardFor(BitPiece.King, GameColor.Black)
+            .BitboardFor(BitPieceType.King, GameColor.Black)
             .Should()
             .Be(UInt128.One << new AlgebraicPoint("e10").AsIdx());
 
         board
-            .BitboardFor(BitPiece.Queen, GameColor.Black)
+            .BitboardFor(BitPieceType.Queen, GameColor.Black)
             .Should()
             .Be(UInt128.One << new AlgebraicPoint("d10").AsIdx());
 
         board
-            .BitboardFor(BitPiece.Rook, GameColor.Black)
+            .BitboardFor(BitPieceType.Rook, GameColor.Black)
             .Should()
             .Be(
                 (UInt128.One << new AlgebraicPoint("a10").AsIdx())
@@ -67,7 +67,7 @@ public class BitBoardTests
 
         // neutral pieces
         board
-            .BitboardFor(NeutralBitPiece.TraitorRook)
+            .BitboardFor(NeutralBitPieceType.TraitorRook)
             .Should()
             .Be(
                 (UInt128.One << new AlgebraicPoint("f4").AsIdx())
@@ -78,20 +78,20 @@ public class BitBoardTests
         board
             .WhitePieces.Should()
             .Be(
-                board.BitboardFor(BitPiece.King, GameColor.White)
-                    | board.BitboardFor(BitPiece.Queen, GameColor.White)
-                    | board.BitboardFor(BitPiece.Rook, GameColor.White)
+                board.BitboardFor(BitPieceType.King, GameColor.White)
+                    | board.BitboardFor(BitPieceType.Queen, GameColor.White)
+                    | board.BitboardFor(BitPieceType.Rook, GameColor.White)
             );
 
         board
             .BlackPieces.Should()
             .Be(
-                board.BitboardFor(BitPiece.King, GameColor.Black)
-                    | board.BitboardFor(BitPiece.Queen, GameColor.Black)
-                    | board.BitboardFor(BitPiece.Rook, GameColor.Black)
+                board.BitboardFor(BitPieceType.King, GameColor.Black)
+                    | board.BitboardFor(BitPieceType.Queen, GameColor.Black)
+                    | board.BitboardFor(BitPieceType.Rook, GameColor.Black)
             );
 
-        board.NeutralPieces.Should().Be(board.BitboardFor(NeutralBitPiece.TraitorRook));
+        board.NeutralPieces.Should().Be(board.BitboardFor(NeutralBitPieceType.TraitorRook));
 
         board.Occupancy.Should().Be(board.WhitePieces | board.BlackPieces | board.NeutralPieces);
     }

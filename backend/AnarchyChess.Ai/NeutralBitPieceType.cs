@@ -1,6 +1,6 @@
 ﻿namespace AnarchyChess.Ai;
 
-public enum NeutralBitPiece
+public enum NeutralBitPieceType
 {
     TraitorRook,
 }
