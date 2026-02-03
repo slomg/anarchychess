@@ -1,4 +1,4 @@
-﻿namespace AnarchyChess.Ai;
+﻿namespace AnarchyChess.Ai.Constants;
 
 public static class BitboardConstants
 {

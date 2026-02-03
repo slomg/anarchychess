@@ -1,4 +1,5 @@
-﻿using AnarchyChess.EngineShared;
+﻿using AnarchyChess.Ai.Constants;
+using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai.BitPieceDefinition;
 
