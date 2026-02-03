@@ -5,11 +5,8 @@ namespace AnarchyChess.Ai;
 
 public struct BitBoard
 {
-    public UInt128[,] Bitboards = new UInt128[
-        Enum.GetValues<GameColor>().Length,
-        Enum.GetValues<BitPiece>().Length
-    ];
-    public UInt128[] NeutralBitboards = new UInt128[Enum.GetValues<NeutralBitPiece>().Length];
+    public UInt128[,] Bitboards;
+    public UInt128[] NeutralBitboards;
 
     public UInt128 WhitePieces;
     public UInt128 BlackPieces;
@@ -18,11 +15,18 @@ public struct BitBoard
 
     public UInt128 HasMoved;
 
-    public BitBoard(UInt128[,] bitboards, UInt128[] neutralBitboards, UInt128 hasMoved)
+    public BitBoard(
+        UInt128[,]? bitboards = null,
+        UInt128[]? neutralBitboards = null,
+        UInt128? hasMoved = null
+    )
     {
-        Bitboards = bitboards;
-        NeutralBitboards = neutralBitboards;
-        HasMoved = hasMoved;
+        Bitboards =
+            bitboards
+            ?? new UInt128[Enum.GetValues<GameColor>().Length, Enum.GetValues<BitPiece>().Length];
+        NeutralBitboards =
+            neutralBitboards ?? new UInt128[Enum.GetValues<NeutralBitPiece>().Length];
+        HasMoved = hasMoved ?? 0;
 
         for (int i = 0; i < Enum.GetValues<BitPiece>().Length; i++)
         {
@@ -74,6 +78,11 @@ public struct BitBoard
 
     public readonly ref UInt128 BitboardFor(NeutralBitPiece pieceType) =>
         ref NeutralBitboards[(int)pieceType];
+
+    public readonly bool HasPieceMoved(byte position) =>
+        (HasMoved & (UInt128.One << position)) != 0;
+
+    public readonly bool HasPieceMoved(UInt128 mask) => (HasMoved & mask) != 0;
 
     public readonly UInt128 BitboardForFriendOf(GameColor color)
     {

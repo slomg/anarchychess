@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnarchyChess.Ai", "AnarchyC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnarchyChess.EngineTests.Shared", "Tests\AnarchyChess.EngineTests.Shared\AnarchyChess.EngineTests.Shared.csproj", "{E8F4DC5F-7100-0823-93D8-8DEBD387A58F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnarchyChess.Ai.Tests", "Tests\AnarchyChess.Ai.Tests\AnarchyChess.Ai.Tests.csproj", "{28762CFE-3489-4154-BF6F-7A7EF340F380}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -71,6 +73,10 @@ Global
 		{E8F4DC5F-7100-0823-93D8-8DEBD387A58F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E8F4DC5F-7100-0823-93D8-8DEBD387A58F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E8F4DC5F-7100-0823-93D8-8DEBD387A58F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28762CFE-3489-4154-BF6F-7A7EF340F380}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28762CFE-3489-4154-BF6F-7A7EF340F380}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28762CFE-3489-4154-BF6F-7A7EF340F380}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28762CFE-3489-4154-BF6F-7A7EF340F380}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -81,6 +87,7 @@ Global
 		{57378491-71D7-44DD-96AC-5CD803606583} = {D8BEFF13-C8F1-4723-A91A-8DB01F36A5B0}
 		{2BA701B2-DC42-4ACE-98E0-15F568BB9DE5} = {D8BEFF13-C8F1-4723-A91A-8DB01F36A5B0}
 		{E8F4DC5F-7100-0823-93D8-8DEBD387A58F} = {D8BEFF13-C8F1-4723-A91A-8DB01F36A5B0}
+		{28762CFE-3489-4154-BF6F-7A7EF340F380} = {D8BEFF13-C8F1-4723-A91A-8DB01F36A5B0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4B6764B7-66BC-48E0-8CF9-187DDB1291E2}

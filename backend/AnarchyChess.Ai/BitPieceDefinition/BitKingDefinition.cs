@@ -192,7 +192,7 @@ public sealed class BitKingDefinition : IBitPieceDefinition
             return;
         }
 
-        if ((board.HasMoved & kingStartMask) != 0 || (board.HasMoved & rookStartMask) != 0)
+        if (board.HasPieceMoved(kingStartMask) || board.HasPieceMoved(rookStartMask))
         {
             return;
         }
