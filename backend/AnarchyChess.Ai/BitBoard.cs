@@ -14,6 +14,9 @@ public class BitBoard
 
     public UInt128 HasMoved { get; }
 
+    private UInt128 _whiteEnemy;
+    private UInt128 _blackEnemy;
+
     public BitBoard(UInt128[,]? bitboards = null, UInt128? hasMoved = null)
     {
         Bitboards =
@@ -32,6 +35,9 @@ public class BitBoard
         }
 
         Occupancy = WhitePieces | BlackPieces | NeutralPieces;
+
+        _whiteEnemy = BlackPieces | NeutralPieces;
+        _blackEnemy = WhitePieces | NeutralPieces;
     }
 
     public static BitBoard FromPieces(Dictionary<AlgebraicPoint, Piece> pieces)
@@ -78,8 +84,8 @@ public class BitBoard
     public UInt128 BitboardForEnemyOf(BitPieceColor color) =>
         color switch
         {
-            BitPieceColor.White => BlackPieces | NeutralPieces,
-            BitPieceColor.Black => WhitePieces | NeutralPieces,
+            BitPieceColor.White => _whiteEnemy,
+            BitPieceColor.Black => _blackEnemy,
             _ => 0,
         };
 }
