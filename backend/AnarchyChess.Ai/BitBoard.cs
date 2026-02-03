@@ -11,6 +11,9 @@ public struct BitBoard
     public UInt128 WhitePieces;
     public UInt128 BlackPieces;
     public UInt128 NeutralPieces;
+    public UInt128 Occupancy;
+
+    public UInt128 HasMoved;
 
     public BitBoard()
     {
@@ -24,6 +27,8 @@ public struct BitBoard
         {
             NeutralPieces |= NeutralBitboards[i];
         }
+
+        Occupancy = WhitePieces | BlackPieces | NeutralPieces;
     }
 
     public readonly ref UInt128 BitboardFor(BitPiece pieceType, BitColor color) =>
