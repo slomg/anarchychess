@@ -2,69 +2,57 @@
 
 public struct BitBoard
 {
-    public UInt128 WhiteKings;
-    public UInt128 WhiteQueens;
-    public UInt128 WhitePawns;
-    public UInt128 WhiteRooks;
-    public UInt128 WhiteBishops;
-    public UInt128 WhiteHorsies;
-    public UInt128 WhiteKnooks;
-    public UInt128 WhiteAntiqueens;
-    public UInt128 WhiteUnderagePawns;
-    public UInt128 WhiteSterilePawns;
-    public UInt128 WhiteCheckers;
-
-    public UInt128 BlackKings;
-    public UInt128 BlackQueens;
-    public UInt128 BlackPawns;
-    public UInt128 BlackRooks;
-    public UInt128 BlackBishops;
-    public UInt128 BlackHorsies;
-    public UInt128 BlackKnooks;
-    public UInt128 BlackAntiqueens;
-    public UInt128 BlackUnderagePawns;
-    public UInt128 BlackSterilePawns;
-    public UInt128 BlackCheckers;
+    public UInt128[,] Bitboards = new UInt128[
+        Enum.GetValues<BitColor>().Length,
+        Enum.GetValues<BitPiece>().Length
+    ];
+    public UInt128[] NeutralBitboards = new UInt128[Enum.GetValues<NeutralBitPiece>().Length];
 
     public UInt128 WhitePieces;
     public UInt128 BlackPieces;
-    public UInt128 Empty;
+    public UInt128 NeutralPieces;
 
-    public UInt128 TraitorRooks;
-
-    public readonly UInt128 BitboardFor(BitPiece pieceType) =>
-        pieceType switch
+    public BitBoard()
+    {
+        for (int i = 0; i < Enum.GetValues<BitPiece>().Length; i++)
         {
-            BitPiece.WhiteKing => WhiteKings,
-            BitPiece.WhiteQueen => WhiteQueens,
-            BitPiece.WhitePawn => WhitePawns,
-            BitPiece.WhiteRook => WhiteRooks,
-            BitPiece.WhiteBishop => WhiteBishops,
-            BitPiece.WhiteHorsey => WhiteHorsies,
-            BitPiece.WhiteKnook => WhiteKnooks,
-            BitPiece.WhiteAntiqueen => WhiteAntiqueens,
-            BitPiece.WhiteUnderagePawn => WhiteUnderagePawns,
-            BitPiece.WhiteSterilePawn => WhiteSterilePawns,
-            BitPiece.WhiteChecker => WhiteCheckers,
+            WhitePieces |= Bitboards[(int)BitColor.White, i];
+            BlackPieces |= Bitboards[(int)BitColor.Black, i];
+        }
 
-            BitPiece.BlackKing => BlackKings,
-            BitPiece.BlackQueen => BlackQueens,
-            BitPiece.BlackPawn => BlackPawns,
-            BitPiece.BlackRook => BlackRooks,
-            BitPiece.BlackBishop => BlackBishops,
-            BitPiece.BlackHorsey => BlackHorsies,
-            BitPiece.BlackKnook => BlackKnooks,
-            BitPiece.BlackAntiqueen => BlackAntiqueens,
-            BitPiece.BlackUnderagePawn => BlackUnderagePawns,
-            BitPiece.BlackSterilePawn => BlackSterilePawns,
-            BitPiece.BlackChecker => BlackCheckers,
+        for (int i = 0; i < NeutralBitboards.Length; i++)
+        {
+            NeutralPieces |= NeutralBitboards[i];
+        }
+    }
 
-            BitPiece.TraitorRook => TraitorRooks,
+    public readonly ref UInt128 BitboardFor(BitPiece pieceType, BitColor color) =>
+        ref Bitboards[(int)color, (int)pieceType];
 
-            _ => throw new ArgumentOutOfRangeException(
-                nameof(pieceType),
-                pieceType,
-                "Invalid piece"
-            ),
-        };
+    public readonly ref UInt128 BitboardFor(NeutralBitPiece pieceType) =>
+        ref NeutralBitboards[(int)pieceType];
+
+    public readonly UInt128 BitboardForFriendOf(BitColor color)
+    {
+        if (color is BitColor.White)
+        {
+            return WhitePieces;
+        }
+        else
+        {
+            return BlackPieces;
+        }
+    }
+
+    public readonly UInt128 BitboardForEnemyOf(BitColor color)
+    {
+        if (color is BitColor.White)
+        {
+            return BlackPieces | NeutralPieces;
+        }
+        else
+        {
+            return WhitePieces | NeutralPieces;
+        }
+    }
 }
