@@ -67,7 +67,7 @@ public class AlgebraicPointTests : BaseUnitTest
     public void AsIndex_calculates_correct_index(int x, int y, int boardWidth, byte expectedIndex)
     {
         var point = new AlgebraicPoint(x, y);
-        var result = point.AsIndex(boardWidth);
+        var result = point.AsIdx(boardWidth);
         result.Should().Be(expectedIndex);
     }
 }

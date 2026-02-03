@@ -11,7 +11,7 @@ public record IntermediateSquarePath(byte PosIdx, bool IsCapture)
         int boardWidth
     ) =>
         new(
-            PosIdx: intermediateSquare.Position.AsIndex(boardWidth),
+            PosIdx: intermediateSquare.Position.AsIdx(boardWidth),
             IsCapture: intermediateSquare.IsCapture
         );
 }

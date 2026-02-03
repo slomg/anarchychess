@@ -49,7 +49,7 @@ public readonly record struct AlgebraicPoint(int X, int Y)
         return $"{rank}{Y + 1}";
     }
 
-    public byte AsIndex(int boardWidth) => (byte)(Y * boardWidth + X);
+    public byte AsIdx(int boardWidth) => (byte)(Y * boardWidth + X);
 
     public override string ToString() => AsAlgebraic();
 }

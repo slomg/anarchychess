@@ -83,6 +83,6 @@ public class MoveHistoryTests
         _history
             .Moves[1]
             .Path.OvertimeRemovalIdxs.Should()
-            .BeEquivalentTo([1, 2, removal.AsIndex(10)]);
+            .BeEquivalentTo([1, 2, removal.AsIdx(10)]);
     }
 }
