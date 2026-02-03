@@ -1,5 +1,5 @@
 ﻿using AnarchyChess.Api.Game.Models;
-using AnarchyChess.Api.GameLogic.Models;
+using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Api.Analysis.Models;
 

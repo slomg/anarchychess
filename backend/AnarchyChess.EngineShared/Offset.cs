@@ -1,4 +1,4 @@
-﻿namespace AnarchyChess.Api.GameLogic.Models;
+﻿namespace AnarchyChess.EngineShared;
 
 public readonly record struct Offset(int X, int Y)
 {

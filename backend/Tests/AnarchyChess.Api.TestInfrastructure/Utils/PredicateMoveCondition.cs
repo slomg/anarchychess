@@ -1,4 +1,5 @@
 ﻿using AnarchyChess.Api.GameLogic.Models;
+using AnarchyChess.EngineShared;
 using AnarchyChess.Api.QuestLogic.MoveConditions;
 
 namespace AnarchyChess.Api.TestInfrastructure.Utils;

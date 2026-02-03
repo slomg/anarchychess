@@ -4,6 +4,7 @@ using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.Shared.Models;
 using AnarchyChess.Api.Shared.Services;
+using AnarchyChess.EngineShared;
 using Microsoft.Extensions.Options;
 
 namespace AnarchyChess.Api.Game.Services;

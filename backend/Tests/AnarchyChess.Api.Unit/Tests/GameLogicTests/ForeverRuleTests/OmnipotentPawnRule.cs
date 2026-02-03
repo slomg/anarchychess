@@ -1,6 +1,7 @@
 ﻿using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.ForeverRules;
 using AnarchyChess.Api.GameLogic.Models;
+using AnarchyChess.EngineShared;
 using AnarchyChess.Api.TestInfrastructure.Factories;
 using AwesomeAssertions;
 

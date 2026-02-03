@@ -1,10 +1,10 @@
-﻿using Bogus;
-using AnarchyChess.Api.ArchivedGames.Entities;
+﻿using AnarchyChess.Api.ArchivedGames.Entities;
 using AnarchyChess.Api.Game.Models;
-using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.Profile.Models;
+using AnarchyChess.EngineShared;
+using Bogus;
 
 namespace AnarchyChess.Api.TestInfrastructure.Fakes;
 

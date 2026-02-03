@@ -1,5 +1,5 @@
 ﻿using AnarchyChess.Api.Game.Services;
-using AnarchyChess.Api.GameLogic.Models;
+using AnarchyChess.EngineShared;
 using AwesomeAssertions;
 
 namespace AnarchyChess.Api.Unit.Tests.LiveGameTests;

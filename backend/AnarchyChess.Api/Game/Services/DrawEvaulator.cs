@@ -2,6 +2,7 @@
 using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
+using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Api.Game.Services;
 

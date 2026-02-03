@@ -1,7 +1,7 @@
 ﻿using AnarchyChess.Api.GameLogic;
-using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.TestInfrastructure;
 using AnarchyChess.Api.TestInfrastructure.Utils;
+using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Api.Integration.Tests.GameLogicTests.PieceDefinitionTests;
 

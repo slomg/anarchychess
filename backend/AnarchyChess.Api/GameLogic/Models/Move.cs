@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Api.GameLogic.Models;
 

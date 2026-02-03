@@ -1,5 +1,6 @@
 ﻿using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameLogic.MovementBehaviours;
+using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Api.GameLogic.PieceMovementRules;
 

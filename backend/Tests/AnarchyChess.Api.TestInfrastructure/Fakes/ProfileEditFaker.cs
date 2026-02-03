@@ -1,5 +1,5 @@
-﻿using Bogus;
-using AnarchyChess.Api.Profile.DTOs;
+﻿using AnarchyChess.Api.Profile.DTOs;
+using Bogus;
 
 namespace AnarchyChess.Api.TestInfrastructure.Fakes;
 

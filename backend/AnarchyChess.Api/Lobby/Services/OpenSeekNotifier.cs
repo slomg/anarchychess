@@ -1,8 +1,8 @@
 ﻿using AnarchyChess.Api.Lobby.Models;
 using AnarchyChess.Api.Lobby.SignalR;
 using AnarchyChess.Api.Matchmaking.Models;
-using AnarchyChess.Api.Shared.Models;
 using AnarchyChess.Api.Profile.Models;
+using AnarchyChess.Api.Shared.Models;
 using Microsoft.AspNetCore.SignalR;
 
 namespace AnarchyChess.Api.Lobby.Services;

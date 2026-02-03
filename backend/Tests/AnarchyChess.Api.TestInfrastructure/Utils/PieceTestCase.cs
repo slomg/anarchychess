@@ -4,6 +4,7 @@ using AnarchyChess.Api.GameLogic.Extensions;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.TestInfrastructure.Factories;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
+using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Api.TestInfrastructure.Utils;
 

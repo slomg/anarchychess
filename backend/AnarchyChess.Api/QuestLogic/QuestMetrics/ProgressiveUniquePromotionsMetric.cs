@@ -1,5 +1,5 @@
-﻿using AnarchyChess.Api.GameLogic.Models;
-using AnarchyChess.Api.QuestLogic.Models;
+﻿using AnarchyChess.Api.QuestLogic.Models;
+using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Api.QuestLogic.QuestMetrics;
 

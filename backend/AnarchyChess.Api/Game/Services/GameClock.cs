@@ -1,7 +1,7 @@
 ﻿using AnarchyChess.Api.Game.Models;
-using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Shared.Models;
+using AnarchyChess.EngineShared;
 using Microsoft.Extensions.Options;
 
 namespace AnarchyChess.Api.Game.Services;

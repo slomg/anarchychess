@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.Infrastructure;
+using AnarchyChess.EngineShared;
 using NJsonSchema;
 using NJsonSchema.Annotations;
 

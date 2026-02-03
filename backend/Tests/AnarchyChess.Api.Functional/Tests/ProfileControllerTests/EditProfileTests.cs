@@ -7,7 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AnarchyChess.Api.Functional.Tests.ProfileControllerTests;
 
-public class EditProfileTests(AnarchyChessWebApplicationFactory factory) : BaseFunctionalTest(factory)
+public class EditProfileTests(AnarchyChessWebApplicationFactory factory)
+    : BaseFunctionalTest(factory)
 {
     [Fact]
     public async Task EditProfile_modifies_the_user_when_provided_with_valid_data()

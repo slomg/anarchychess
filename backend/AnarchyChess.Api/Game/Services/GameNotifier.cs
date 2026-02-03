@@ -1,9 +1,9 @@
 ﻿using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.SignalR;
-using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Shared.Models;
+using AnarchyChess.EngineShared;
 using Microsoft.AspNetCore.SignalR;
 
 namespace AnarchyChess.Api.Game.Services;

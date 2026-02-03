@@ -4,6 +4,7 @@ using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Extensions;
 using AnarchyChess.Api.GameLogic.Models;
+using AnarchyChess.EngineShared;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 

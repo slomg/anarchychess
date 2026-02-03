@@ -1,12 +1,12 @@
 ﻿using AnarchyChess.Api.Game.Grains;
 using AnarchyChess.Api.Game.Models;
-using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.Profile.Entities;
 using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Shared.Services;
 using AnarchyChess.Api.UserRating.Services;
+using AnarchyChess.EngineShared;
 using Microsoft.AspNetCore.Identity;
 
 namespace AnarchyChess.Api.Game.Services;

@@ -1,4 +1,5 @@
 ﻿using AnarchyChess.Api.GameLogic.Models;
+using AnarchyChess.EngineShared;
 using AnarchyChess.Api.QuestLogic.QuestMetrics;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AwesomeAssertions;

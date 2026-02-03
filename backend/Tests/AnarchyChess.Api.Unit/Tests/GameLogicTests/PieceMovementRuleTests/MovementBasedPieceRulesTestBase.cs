@@ -1,5 +1,6 @@
 ﻿using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Models;
+using AnarchyChess.EngineShared;
 using AnarchyChess.Api.GameLogic.MovementBehaviours;
 using NSubstitute;
 

@@ -8,7 +8,8 @@ using SkiaSharp;
 
 namespace AnarchyChess.Api.Functional.Tests.ProfileControllerTests;
 
-public class ProfilePictureTests(AnarchyChessWebApplicationFactory factory) : BaseFunctionalTest(factory)
+public class ProfilePictureTests(AnarchyChessWebApplicationFactory factory)
+    : BaseFunctionalTest(factory)
 {
     [Fact]
     public async Task UploadProfilePicture_succeeds_and_can_be_retrieved()

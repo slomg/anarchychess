@@ -1,6 +1,6 @@
-﻿using AutoFixture;
+﻿using AnarchyChess.Api.TestInfrastructure.Utils;
+using AutoFixture;
 using AutoFixture.AutoNSubstitute;
-using AnarchyChess.Api.TestInfrastructure.Utils;
 using Microsoft.Extensions.Options;
 
 namespace AnarchyChess.Api.Unit;

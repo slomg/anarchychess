@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using AnarchyChess.Api.GameLogic.Extensions;
-using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Profile.Models;
+using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Api.Game.Models;
 

@@ -1,4 +1,6 @@
-﻿namespace AnarchyChess.Api.GameLogic.Models;
+﻿using AnarchyChess.EngineShared;
+
+namespace AnarchyChess.Api.GameLogic.Models;
 
 [GenerateSerializer]
 [Alias("AnarchyChess.Api.GameLogic.Models.IntermediateSquare")]
