@@ -1,23 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <IsTestProject>true</IsTestProject>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AwesomeAssertions" Version="9.3.0" />
-    <PackageReference Include="coverlet.collector" Version="6.0.4">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.2" />
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
-    <PackageReference Include="OrleansTestKit" Version="9.0.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -27,8 +19,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\AnarchyChess.Api\AnarchyChess.Api.csproj" />
+    <ProjectReference Include="..\..\AnarchyChess.EngineShared\AnarchyChess.EngineShared.csproj" />
     <ProjectReference Include="..\AnarchyChess.Api.TestInfrastructure\AnarchyChess.Api.TestInfrastructure.csproj" />
-    <ProjectReference Include="..\AnarchyChess.EngineTests.Shared\AnarchyChess.EngineTests.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

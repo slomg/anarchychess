@@ -1,9 +1,8 @@
 ﻿using AnarchyChess.Api.GameLogic.Models;
-using AnarchyChess.EngineShared;
 using AnarchyChess.Api.TestInfrastructure.Factories;
-using AnarchyChess.Api.TestInfrastructure.Utils;
+using AnarchyChess.EngineShared;
 
-namespace AnarchyChess.Api.Integration.Tests.GameLogicTests.PieceDefinitionTests;
+namespace AnarchyChess.EngineTests.Shared;
 
 public abstract class PawnLikeTestData : TheoryData<PieceTestCase>
 {

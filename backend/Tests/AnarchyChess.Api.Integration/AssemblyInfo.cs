@@ -1,6 +1,6 @@
 ﻿using AnarchyChess.Api.TestInfrastructure.Serializers;
-using AnarchyChess.Api.TestInfrastructure.Utils;
 using AnarchyChess.EngineShared;
+using AnarchyChess.EngineTests.Shared;
 using Xunit.Sdk;
 
 [assembly: RegisterXunitSerializer(

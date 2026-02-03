@@ -1,6 +1,6 @@
 ﻿using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.TestInfrastructure;
-using AnarchyChess.Api.TestInfrastructure.Utils;
+using AnarchyChess.EngineTests.Shared;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 
