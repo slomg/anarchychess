@@ -1,4 +1,4 @@
-﻿namespace AnarchyBot;
+﻿namespace AnarchyChess.Ai;
 
 [Flags]
 public enum BitMoveFlag : byte

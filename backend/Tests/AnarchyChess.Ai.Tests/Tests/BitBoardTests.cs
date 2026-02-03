@@ -1,4 +1,4 @@
-﻿namespace AnarchyBot.Tests.Tests
+﻿namespace AnarchyChess.Ai.Tests.Tests
 {
     internal class BitBoardTests { }
 }

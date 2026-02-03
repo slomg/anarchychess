@@ -1,4 +1,4 @@
-﻿namespace AnarchyBot;
+﻿namespace AnarchyChess.Ai;
 
 public struct BitMove
 {

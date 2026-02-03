@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\EntropyBot\AnarchyBot.csproj" />
+    <ProjectReference Include="..\..\AnarchyChess.Ai\AnarchyChess.Ai.csproj" />
   </ItemGroup>
 
   <ItemGroup>
