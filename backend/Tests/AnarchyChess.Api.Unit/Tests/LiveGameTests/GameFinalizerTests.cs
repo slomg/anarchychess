@@ -1,7 +1,6 @@
 ﻿using AnarchyChess.Api.ArchivedGames.Services;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
-using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.Profile.Entities;
@@ -10,6 +9,7 @@ using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AnarchyChess.Api.TestInfrastructure.Utils;
 using AnarchyChess.Api.UserRating.Models;
 using AnarchyChess.Api.UserRating.Services;
+using AnarchyChess.EngineShared;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;

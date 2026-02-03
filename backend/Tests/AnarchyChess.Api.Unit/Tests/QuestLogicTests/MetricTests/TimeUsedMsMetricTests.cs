@@ -1,8 +1,8 @@
-﻿using AnarchyChess.Api.GameLogic.Models;
-using AnarchyChess.Api.GameSnapshot.Models;
+﻿using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.QuestLogic.Models;
 using AnarchyChess.Api.QuestLogic.QuestMetrics;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
+using AnarchyChess.EngineShared;
 using AwesomeAssertions;
 
 namespace AnarchyChess.Api.Unit.Tests.QuestLogicTests.MetricTests;

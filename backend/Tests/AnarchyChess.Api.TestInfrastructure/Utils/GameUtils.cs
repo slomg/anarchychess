@@ -3,6 +3,7 @@ using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Models;
+using AnarchyChess.EngineShared;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Infrastructure;
 using AnarchyChess.Api.Matchmaking.Models;

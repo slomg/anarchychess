@@ -1,11 +1,11 @@
 ﻿using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.Game.SignalR;
-using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Shared.Models;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
+using AnarchyChess.EngineShared;
 using AwesomeAssertions;
 using Microsoft.AspNetCore.SignalR;
 using NSubstitute;

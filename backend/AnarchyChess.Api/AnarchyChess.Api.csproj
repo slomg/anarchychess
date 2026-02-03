@@ -51,6 +51,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AnarchyChess.EngineShared\AnarchyChess.EngineShared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Data\adjectives.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

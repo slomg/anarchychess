@@ -2,6 +2,7 @@
 using AnarchyChess.Api.Game.SanNotation.Notators;
 using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.GameLogic.Models;
+using AnarchyChess.EngineShared;
 using AnarchyChess.Api.TestInfrastructure;
 using AnarchyChess.Api.TestInfrastructure.Factories;
 using AwesomeAssertions;

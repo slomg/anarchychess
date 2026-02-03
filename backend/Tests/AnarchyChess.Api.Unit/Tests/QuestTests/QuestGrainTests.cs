@@ -1,6 +1,7 @@
 ﻿using AnarchyChess.Api.Game.Grains;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.GameLogic.Models;
+using AnarchyChess.EngineShared;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Profile.Entities;
 using AnarchyChess.Api.QuestLogic;

@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\AnarchyChess.Api\AnarchyChess.Api.csproj" />
+    <ProjectReference Include="..\..\AnarchyChess.EngineShared\AnarchyChess.EngineShared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

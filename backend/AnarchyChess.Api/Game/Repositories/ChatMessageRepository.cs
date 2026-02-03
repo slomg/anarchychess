@@ -1,5 +1,5 @@
-﻿using AnarchyChess.Api.Infrastructure;
-using AnarchyChess.Api.Game.Entities;
+﻿using AnarchyChess.Api.Game.Entities;
+using AnarchyChess.Api.Infrastructure;
 
 namespace AnarchyChess.Api.Game.Repositories;
 

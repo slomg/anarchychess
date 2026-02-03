@@ -1,5 +1,5 @@
-﻿using Bogus;
-using AnarchyChess.Api.ArchivedGames.Entities;
+﻿using AnarchyChess.Api.ArchivedGames.Entities;
+using Bogus;
 
 namespace AnarchyChess.Api.TestInfrastructure.Fakes;
 

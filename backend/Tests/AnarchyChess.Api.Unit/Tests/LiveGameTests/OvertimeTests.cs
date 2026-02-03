@@ -2,6 +2,7 @@
 using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Models;
+using AnarchyChess.EngineShared;
 using AnarchyChess.Api.Shared.Models;
 using AnarchyChess.Api.Shared.Services;
 using AnarchyChess.Api.TestInfrastructure.Factories;

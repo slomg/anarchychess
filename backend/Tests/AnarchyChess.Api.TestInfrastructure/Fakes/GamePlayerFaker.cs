@@ -1,6 +1,6 @@
-﻿using AnarchyChess.Api.GameLogic.Models;
-using AnarchyChess.Api.GameSnapshot.Models;
+﻿using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Profile.Entities;
+using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Api.TestInfrastructure.Fakes;
 

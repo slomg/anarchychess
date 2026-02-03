@@ -1,9 +1,10 @@
 ﻿using System.Text.Json.Serialization;
+using Orleans;
 
-namespace AnarchyChess.Api.GameLogic.Models;
+namespace AnarchyChess.EngineShared;
 
 [GenerateSerializer]
-[Alias("AnarchyChess.Api.GameLogic.Models.AlgebraicPoint")]
+[Alias("AnarchyChess.EngineShared.AlgebraicPoint")]
 [method: JsonConstructor]
 public readonly record struct AlgebraicPoint(int X, int Y)
 {
@@ -42,7 +43,7 @@ public readonly record struct AlgebraicPoint(int X, int Y)
     public static AlgebraicPoint operator -(AlgebraicPoint left, Offset right) =>
         new(left.X - right.X, left.Y - right.Y);
 
-    public AlgebraicString AsAlgebraic()
+    public string AsAlgebraic()
     {
         var rank = (char)('a' + X);
         return $"{rank}{Y + 1}";

@@ -1,11 +1,11 @@
 ﻿using AnarchyChess.Api.Game.GameHandlers;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
-using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Shared.Models;
 using AnarchyChess.Api.TestInfrastructure;
 using AnarchyChess.Api.TestInfrastructure.Utils;
+using AnarchyChess.EngineShared;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;

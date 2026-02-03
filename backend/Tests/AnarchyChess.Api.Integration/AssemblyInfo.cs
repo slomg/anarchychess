@@ -1,6 +1,6 @@
-﻿using AnarchyChess.Api.GameLogic.Models;
-using AnarchyChess.Api.TestInfrastructure.Serializers;
+﻿using AnarchyChess.Api.TestInfrastructure.Serializers;
 using AnarchyChess.Api.TestInfrastructure.Utils;
+using AnarchyChess.EngineShared;
 using Xunit.Sdk;
 
 [assembly: RegisterXunitSerializer(

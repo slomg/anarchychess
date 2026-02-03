@@ -1,6 +1,6 @@
-﻿using AnarchyChess.Api.GameLogic.Models;
-using AnarchyChess.Api.Game.Errors;
+﻿using AnarchyChess.Api.Game.Errors;
 using AnarchyChess.Api.Game.Services;
+using AnarchyChess.EngineShared;
 using AwesomeAssertions;
 
 namespace AnarchyChess.Api.Unit.Tests.LiveGameTests;

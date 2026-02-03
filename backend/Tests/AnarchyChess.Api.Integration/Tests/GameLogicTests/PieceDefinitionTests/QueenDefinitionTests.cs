@@ -2,6 +2,7 @@
 using AnarchyChess.Api.TestInfrastructure;
 using AnarchyChess.Api.TestInfrastructure.Factories;
 using AnarchyChess.Api.TestInfrastructure.Utils;
+using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Api.Integration.Tests.GameLogicTests.PieceDefinitionTests;
 

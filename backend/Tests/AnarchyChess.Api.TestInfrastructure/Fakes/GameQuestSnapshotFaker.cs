@@ -1,5 +1,6 @@
 ﻿using AnarchyChess.Api.GameLogic.Extensions;
 using AnarchyChess.Api.GameLogic.Models;
+using AnarchyChess.EngineShared;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.QuestLogic.Models;
 using Bogus;

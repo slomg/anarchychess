@@ -2,6 +2,7 @@
 using AnarchyChess.Api.Game.SanNotation;
 using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.GameLogic.Models;
+using AnarchyChess.EngineShared;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AnarchyChess.Api.TestInfrastructure.NSubtituteExtenstion;

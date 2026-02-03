@@ -1,8 +1,8 @@
 ﻿using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
-using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
+using AnarchyChess.EngineShared;
 using AwesomeAssertions;
 
 namespace AnarchyChess.Api.Unit.Tests.LiveGameTests;

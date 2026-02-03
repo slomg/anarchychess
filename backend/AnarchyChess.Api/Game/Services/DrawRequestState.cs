@@ -1,6 +1,6 @@
-﻿using AnarchyChess.Api.GameLogic.Models;
+﻿using AnarchyChess.Api.Game.Errors;
 using AnarchyChess.Api.GameSnapshot.Models;
-using AnarchyChess.Api.Game.Errors;
+using AnarchyChess.EngineShared;
 using ErrorOr;
 
 namespace AnarchyChess.Api.Game.Services;

@@ -1,7 +1,7 @@
-﻿using Bogus;
-using AnarchyChess.Api.Profile.Entities;
+﻿using AnarchyChess.Api.Profile.Entities;
 using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Social.Entities;
+using Bogus;
 
 namespace AnarchyChess.Api.TestInfrastructure.Fakes;
 

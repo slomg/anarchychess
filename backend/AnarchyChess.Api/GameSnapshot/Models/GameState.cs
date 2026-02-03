@@ -1,6 +1,6 @@
 ﻿using AnarchyChess.Api.Game.Models;
-using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.Matchmaking.Models;
+using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Api.GameSnapshot.Models;
 

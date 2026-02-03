@@ -23,6 +23,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.Props = Directory.Build.Props
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnarchyChess.EngineShared", "AnarchyChess.EngineShared\AnarchyChess.EngineShared.csproj", "{77E24A61-405B-4464-8A90-1051A33DDE2B}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnarchyChess.Ai", "AnarchyChess.Ai\AnarchyChess.Ai.csproj", "{8BA5E92C-AD51-885E-E662-4CB493BBB5BF}"
 EndProject
 Global
@@ -55,6 +57,10 @@ Global
 		{0F165322-E47B-4FAD-9B5B-AC8A6B4EF0BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0F165322-E47B-4FAD-9B5B-AC8A6B4EF0BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0F165322-E47B-4FAD-9B5B-AC8A6B4EF0BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77E24A61-405B-4464-8A90-1051A33DDE2B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77E24A61-405B-4464-8A90-1051A33DDE2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77E24A61-405B-4464-8A90-1051A33DDE2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77E24A61-405B-4464-8A90-1051A33DDE2B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8BA5E92C-AD51-885E-E662-4CB493BBB5BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8BA5E92C-AD51-885E-E662-4CB493BBB5BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8BA5E92C-AD51-885E-E662-4CB493BBB5BF}.Release|Any CPU.ActiveCfg = Release|Any CPU

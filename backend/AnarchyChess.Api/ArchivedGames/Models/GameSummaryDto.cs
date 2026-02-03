@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
-using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Game.Models;
+using AnarchyChess.Api.GameSnapshot.Models;
 
 namespace AnarchyChess.Api.ArchivedGames.Models;
 

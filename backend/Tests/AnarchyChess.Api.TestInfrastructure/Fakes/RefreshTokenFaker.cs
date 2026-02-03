@@ -1,6 +1,6 @@
-﻿using Bogus;
-using AnarchyChess.Api.Auth.Entities;
+﻿using AnarchyChess.Api.Auth.Entities;
 using AnarchyChess.Api.Profile.Entities;
+using Bogus;
 
 namespace AnarchyChess.Api.TestInfrastructure.Fakes;
 

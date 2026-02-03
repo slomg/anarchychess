@@ -1,10 +1,10 @@
 ﻿using AnarchyChess.Api.Game.Errors;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
-using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Shared.Models;
+using AnarchyChess.EngineShared;
 using ErrorOr;
 using Microsoft.Extensions.Options;
 

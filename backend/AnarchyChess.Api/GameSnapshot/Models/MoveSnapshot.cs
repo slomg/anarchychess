@@ -1,4 +1,4 @@
-﻿using AnarchyChess.Api.GameLogic.Models;
+﻿using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Api.GameSnapshot.Models;
 

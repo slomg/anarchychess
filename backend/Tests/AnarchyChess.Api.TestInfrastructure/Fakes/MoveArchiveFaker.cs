@@ -1,6 +1,6 @@
 ﻿using AnarchyChess.Api.ArchivedGames.Entities;
-using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.TestInfrastructure.TestData;
+using AnarchyChess.EngineShared;
 using Bogus;
 
 namespace AnarchyChess.Api.TestInfrastructure.Fakes;

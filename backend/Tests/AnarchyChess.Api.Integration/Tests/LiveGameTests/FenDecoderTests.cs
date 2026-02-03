@@ -3,6 +3,7 @@ using AnarchyChess.Api.Game.Errors;
 using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Models;
+using AnarchyChess.EngineShared;
 using AnarchyChess.Api.TestInfrastructure;
 using AnarchyChess.Api.TestInfrastructure.TestData;
 using AwesomeAssertions;
