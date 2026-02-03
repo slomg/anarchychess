@@ -1,4 +1,4 @@
-﻿using AnarchyChess.Api.GameLogic.Models;
+﻿using AnarchyChess.Api.TestInfrastructure.Utils;
 using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.EngineTests.Shared;

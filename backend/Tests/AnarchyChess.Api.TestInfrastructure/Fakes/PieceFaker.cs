@@ -1,5 +1,4 @@
-﻿using AnarchyChess.Api.GameLogic.Models;
-using AnarchyChess.EngineShared;
+﻿using AnarchyChess.EngineShared;
 using Bogus;
 
 namespace AnarchyChess.Api.TestInfrastructure.Fakes;
