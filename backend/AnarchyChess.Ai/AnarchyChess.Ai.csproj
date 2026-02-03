@@ -5,4 +5,7 @@
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AnarchyChess.EngineShared\AnarchyChess.EngineShared.csproj" />
+  </ItemGroup>
 </Project>

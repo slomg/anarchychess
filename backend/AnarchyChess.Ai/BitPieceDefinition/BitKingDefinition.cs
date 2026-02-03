@@ -1,4 +1,4 @@
-﻿using AnarchyChess.Ai.Helpers;
+﻿using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai.BitPieceDefinition;
 
@@ -17,55 +17,59 @@ public sealed class BitKingDefinition : IBitPieceDefinition
     public BitPiece PieceType => BitPiece.King;
 
     // all castling masks don't include king and rook destinations, because we can capture our own bishop, so it's checked seperately
-    private static readonly UInt128 WhiteKingSideBetweenMask = UInt128.One << 8; // i1
-    private static readonly UInt128 BlackKingSideBetweenMask = UInt128.One << 98; // i10
+    private static readonly UInt128 WhiteKingSideBetweenMask =
+        UInt128.One << new AlgebraicPoint("i1").AsIdx();
+    private static readonly UInt128 BlackKingSideBetweenMask =
+        UInt128.One << new AlgebraicPoint("i10").AsIdx();
 
     private static readonly UInt128 WhiteQueenSideBetweenMask =
-        (UInt128.One << 1) | (UInt128.One << 2); // b1, c1;
+        (UInt128.One << new AlgebraicPoint("b1").AsIdx())
+        | (UInt128.One << new AlgebraicPoint("c1").AsIdx());
     private static readonly UInt128 BlackQueenSideBetweenMask =
-        (UInt128.One << 91) | (UInt128.One << 92); // b10, c10;
+        (UInt128.One << new AlgebraicPoint("b10").AsIdx())
+        | (UInt128.One << new AlgebraicPoint("c10").AsIdx());
 
     private static readonly UInt128 WhiteVerticalBetweenMask =
-        (UInt128.One << 35)
-        | (UInt128.One << 45)
-        | (UInt128.One << 55)
-        | (UInt128.One << 65)
-        | (UInt128.One << 75)
-        | (UInt128.One << 85); // f4 - f9
+        (UInt128.One << new AlgebraicPoint("f4").AsIdx())
+        | (UInt128.One << new AlgebraicPoint("f5").AsIdx())
+        | (UInt128.One << new AlgebraicPoint("f6").AsIdx())
+        | (UInt128.One << new AlgebraicPoint("f7").AsIdx())
+        | (UInt128.One << new AlgebraicPoint("f8").AsIdx())
+        | (UInt128.One << new AlgebraicPoint("f9").AsIdx());
     private static readonly UInt128 BlackVerticalBetweenMask =
-        (UInt128.One << 65)
-        | (UInt128.One << 55)
-        | (UInt128.One << 45)
-        | (UInt128.One << 35)
-        | (UInt128.One << 25)
-        | (UInt128.One << 15); // f7 - f2
+        (UInt128.One << new AlgebraicPoint("f7").AsIdx())
+        | (UInt128.One << new AlgebraicPoint("f6").AsIdx())
+        | (UInt128.One << new AlgebraicPoint("f5").AsIdx())
+        | (UInt128.One << new AlgebraicPoint("f4").AsIdx())
+        | (UInt128.One << new AlgebraicPoint("f3").AsIdx())
+        | (UInt128.One << new AlgebraicPoint("f2").AsIdx());
 
     private static readonly CastleInfo[] WhiteCastles =
     [
         new CastleInfo
         {
-            KingStart = 5, // f1
-            RookStart = 9, // j1
-            KingDest = 7, // h1
-            RookDest = 6, // g1
+            KingStart = new AlgebraicPoint("f1").AsIdx(),
+            RookStart = new AlgebraicPoint("j1").AsIdx(),
+            KingDest = new AlgebraicPoint("h1").AsIdx(),
+            RookDest = new AlgebraicPoint("g1").AsIdx(),
             BetweenMask = WhiteKingSideBetweenMask,
             Flag = BitMoveFlag.KingSideCastling,
         },
         new CastleInfo
         {
-            KingStart = 5, // f1
-            RookStart = 0, // a1
-            KingDest = 3, // d1
-            RookDest = 4, // e1
+            KingStart = new AlgebraicPoint("f1").AsIdx(),
+            RookStart = new AlgebraicPoint("a1").AsIdx(),
+            KingDest = new AlgebraicPoint("d1").AsIdx(),
+            RookDest = new AlgebraicPoint("e1").AsIdx(),
             BetweenMask = WhiteQueenSideBetweenMask,
             Flag = BitMoveFlag.QueenSideCastling,
         },
         new CastleInfo
         {
-            KingStart = 5, // f1
-            RookStart = 95, // f10
-            KingDest = 25, // f3
-            RookDest = 15, // f2
+            KingStart = new AlgebraicPoint("f1").AsIdx(),
+            RookStart = new AlgebraicPoint("f10").AsIdx(),
+            KingDest = new AlgebraicPoint("f3").AsIdx(),
+            RookDest = new AlgebraicPoint("f2").AsIdx(),
             BetweenMask = WhiteVerticalBetweenMask,
             Flag = BitMoveFlag.VerticalCastling,
         },
@@ -75,28 +79,28 @@ public sealed class BitKingDefinition : IBitPieceDefinition
     [
         new CastleInfo
         {
-            KingStart = 95, // f10
-            RookStart = 99, // j10
-            KingDest = 97, // h10
-            RookDest = 96, // g10
+            KingStart = new AlgebraicPoint("f10").AsIdx(),
+            RookStart = new AlgebraicPoint("j10").AsIdx(),
+            KingDest = new AlgebraicPoint("h10").AsIdx(),
+            RookDest = new AlgebraicPoint("g10").AsIdx(),
             BetweenMask = BlackKingSideBetweenMask,
             Flag = BitMoveFlag.KingSideCastling,
         },
         new CastleInfo
         {
-            KingStart = 95, // f10
-            RookStart = 90, // a10
-            KingDest = 93, // d10
-            RookDest = 94, // e10
+            KingStart = new AlgebraicPoint("f10").AsIdx(),
+            RookStart = new AlgebraicPoint("a10").AsIdx(),
+            KingDest = new AlgebraicPoint("d10").AsIdx(),
+            RookDest = new AlgebraicPoint("e10").AsIdx(),
             BetweenMask = BlackQueenSideBetweenMask,
             Flag = BitMoveFlag.QueenSideCastling,
         },
         new CastleInfo
         {
-            KingStart = 95, // f10
-            RookStart = 5, // f1
-            KingDest = 75, // f8
-            RookDest = 85, // f9
+            KingStart = new AlgebraicPoint("f10").AsIdx(),
+            RookStart = new AlgebraicPoint("f1").AsIdx(),
+            KingDest = new AlgebraicPoint("f8").AsIdx(),
+            RookDest = new AlgebraicPoint("f9").AsIdx(),
             BetweenMask = BlackVerticalBetweenMask,
             Flag = BitMoveFlag.VerticalCastling,
         },
