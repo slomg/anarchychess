@@ -1,4 +1,4 @@
-﻿namespace AnarchyChess.Api.GameLogic.Models;
+﻿namespace AnarchyChess.EngineShared;
 
 public enum SpecialMoveType
 {

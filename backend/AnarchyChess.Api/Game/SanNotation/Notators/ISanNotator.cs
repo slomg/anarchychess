@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using AnarchyChess.Api.GameLogic.Models;
+using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Api.Game.SanNotation.Notators;
 

@@ -1,5 +1,4 @@
 ﻿using AnarchyChess.Api.Game.Models;
-using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.TestInfrastructure.TestData;
 using AnarchyChess.EngineShared;

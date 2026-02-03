@@ -11,5 +11,5 @@ public struct BitMove
     public UInt128 Captures;
     public BitPieceType? PromotesTo;
     public ForcedMovePriority ForcedMovePriority;
-    public BitMoveFlag Flags;
+    public SpecialMoveType SpecialMoveType;
 }
