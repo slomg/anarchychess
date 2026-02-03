@@ -107,29 +107,35 @@ public sealed class BitKingDefinition : IBitPieceDefinition
 
     public void GenerateMoves(
         BitBoard board,
-        GameColor color,
+        GameColor? color,
         byte position,
         Span<BitMove> moves,
         ref int moveCount
     )
     {
-        UInt128 ownPieces = board.BitboardForFriendOf(color);
-        UInt128 enemyPieces = board.BitboardForEnemyOf(color);
+        if (color is null)
+        {
+            return;
+        }
 
+        UInt128 ownPieces = board.BitboardForFriendOf(color.Value);
+        UInt128 enemyPieces = board.BitboardForEnemyOf(color.Value);
+
+        UInt128 kingBit = UInt128.One << position;
         UInt128 targets = 0;
 
-        targets |= (position & ~BitboardConstants.RightEdgeMask) << 1; // right
-        targets |= (position & ~BitboardConstants.LeftEdgeMask) >> 1; // left
-        targets |= (position & ~BitboardConstants.TopEdgeMask) << 10; // up
-        targets |= (position & ~BitboardConstants.BottomEdgeMask) >> 10; // down
+        targets |= (kingBit & ~BitboardConstants.RightEdgeMask) << 1; // right
+        targets |= (kingBit & ~BitboardConstants.LeftEdgeMask) >> 1; // left
+        targets |= (kingBit & ~BitboardConstants.TopEdgeMask) << 10; // up
+        targets |= (kingBit & ~BitboardConstants.BottomEdgeMask) >> 10; // down
         targets |=
-            (position & ~(BitboardConstants.TopEdgeMask | BitboardConstants.RightEdgeMask)) << 11; // up right
+            (kingBit & ~(BitboardConstants.TopEdgeMask | BitboardConstants.RightEdgeMask)) << 11; // up right
         targets |=
-            (position & ~(BitboardConstants.TopEdgeMask | BitboardConstants.LeftEdgeMask)) << 9; // up left
+            (kingBit & ~(BitboardConstants.TopEdgeMask | BitboardConstants.LeftEdgeMask)) << 9; // up left
         targets |=
-            (position & ~(BitboardConstants.BottomEdgeMask | BitboardConstants.RightEdgeMask)) >> 9; // bottom right
+            (kingBit & ~(BitboardConstants.BottomEdgeMask | BitboardConstants.RightEdgeMask)) >> 9; // bottom right
         targets |=
-            (position & ~(BitboardConstants.BottomEdgeMask | BitboardConstants.LeftEdgeMask)) >> 11; // bottom left
+            (kingBit & ~(BitboardConstants.BottomEdgeMask | BitboardConstants.LeftEdgeMask)) >> 11; // bottom left
 
         targets &= ~ownPieces;
 
@@ -147,7 +153,7 @@ public sealed class BitKingDefinition : IBitPieceDefinition
             };
         }
 
-        GenerateCastleMovesForColor(board, color, position, moves, ref moveCount);
+        GenerateCastleMovesForColor(board, color.Value, position, moves, ref moveCount);
     }
 
     private static void GenerateCastleMovesForColor(

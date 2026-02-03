@@ -6,7 +6,7 @@ public interface IBitPieceDefinition
 {
     void GenerateMoves(
         BitBoard board,
-        GameColor color,
+        GameColor? color,
         byte position,
         Span<BitMove> moves,
         ref int moveCount
