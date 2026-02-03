@@ -108,7 +108,7 @@ public sealed class BitKingDefinition : IBitPieceDefinition
 
     public void GenerateMoves(
         BitBoard board,
-        BitColor color,
+        GameColor color,
         byte position,
         Span<BitMove> moves,
         ref int moveCount
@@ -153,13 +153,13 @@ public sealed class BitKingDefinition : IBitPieceDefinition
 
     private static void GenerateCastleMovesForColor(
         BitBoard board,
-        BitColor color,
+        GameColor color,
         byte position,
         Span<BitMove> moves,
         ref int moveCount
     )
     {
-        CastleInfo[] castles = color is BitColor.White ? WhiteCastles : BlackCastles;
+        CastleInfo[] castles = color is GameColor.White ? WhiteCastles : BlackCastles;
         foreach (var castle in castles)
         {
             GenerateCastleMoves(board, color, position, castle, moves, ref moveCount);
@@ -168,7 +168,7 @@ public sealed class BitKingDefinition : IBitPieceDefinition
 
     private static void GenerateCastleMoves(
         BitBoard board,
-        BitColor color,
+        GameColor color,
         byte position,
         CastleInfo castleInfo,
         Span<BitMove> moves,

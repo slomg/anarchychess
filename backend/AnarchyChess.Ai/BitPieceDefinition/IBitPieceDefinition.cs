@@ -1,4 +1,6 @@
-﻿namespace AnarchyChess.Ai.BitPieceDefinition;
+﻿using AnarchyChess.EngineShared;
+
+namespace AnarchyChess.Ai.BitPieceDefinition;
 
 public interface IBitPieceDefinition
 {
@@ -6,7 +8,7 @@ public interface IBitPieceDefinition
 
     void GenerateMoves(
         BitBoard board,
-        BitColor color,
+        GameColor color,
         byte position,
         Span<BitMove> moves,
         ref int moveCount
