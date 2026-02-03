@@ -1,5 +1,4 @@
-﻿using AnarchyChess.Api.GameLogic.Models;
-using AnarchyChess.Api.TestInfrastructure.Factories;
+﻿using AnarchyChess.Api.TestInfrastructure.Factories;
 using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.EngineTests.Shared;
@@ -8,11 +7,12 @@ public class KingTestData : TheoryData<PieceTestCase>
 {
     public KingTestData()
     {
-        var king = PieceFactory.White(PieceType.King);
+        var whiteKing = PieceFactory.White(PieceType.King);
+        var blackKing = PieceFactory.Black(PieceType.King);
 
         Add(
             PieceTestCase
-                .From("d4", king)
+                .From("d4", whiteKing)
                 .GoesTo("d5") // up
                 .GoesTo("e5") // up-right
                 .GoesTo("e4") // right
@@ -26,7 +26,7 @@ public class KingTestData : TheoryData<PieceTestCase>
 
         Add(
             PieceTestCase
-                .From("d4", king)
+                .From("d4", whiteKing)
                 .WithFriendlyPieceAt("d5")
                 .WithFriendlyPieceAt("e5")
                 .WithFriendlyPieceAt("e4")
@@ -40,7 +40,7 @@ public class KingTestData : TheoryData<PieceTestCase>
 
         Add(
             PieceTestCase
-                .From("d4", king)
+                .From("d4", whiteKing)
                 .WithEnemyPieceAt("d5")
                 .WithEnemyPieceAt("e5")
                 .WithEnemyPieceAt("e4")
@@ -62,7 +62,7 @@ public class KingTestData : TheoryData<PieceTestCase>
 
         Add(
             PieceTestCase
-                .From("a1", king)
+                .From("a1", whiteKing)
                 .GoesTo("a2") // up
                 .GoesTo("b2") // up-right
                 .GoesTo("b1") // right
@@ -71,7 +71,7 @@ public class KingTestData : TheoryData<PieceTestCase>
 
         Add(
             PieceTestCase
-                .From("j10", king)
+                .From("j10", whiteKing)
                 .GoesTo("i10") // left
                 .GoesTo("i9") // down-left
                 .GoesTo("j9") // down
@@ -80,7 +80,7 @@ public class KingTestData : TheoryData<PieceTestCase>
 
         Add(
             PieceTestCase
-                .From("h1", king)
+                .From("h1", whiteKing)
                 .WithFriendlyPieceAt("i2")
                 .WithEnemyPieceAt("g2")
                 .GoesTo("h2") // up
@@ -91,33 +91,113 @@ public class KingTestData : TheoryData<PieceTestCase>
                 .WithDescription("King on h1, friend at i2, enemy at g2")
         );
 
-        var rook = PieceFactory.White(PieceType.Rook, hasMoved: false);
-        MoveSideEffect rookKingsideCastle = new(new("j1"), new("g1"), rook);
-        MoveSideEffect rookQueensideCastle = new(new("a1"), new("e1"), rook);
+        var whiteRook = PieceFactory.White(PieceType.Rook, hasMoved: false);
+        var blackRook = PieceFactory.Black(PieceType.Rook, hasMoved: false);
+        string[] whitef1Moves = ["e1", "e2", "f2", "g2", "g1"];
         Add(
             PieceTestCase
-                .From("f1", king with { HasMoved = false })
-                .WithPieceAt("j1", rook) // Kingside rook
-                .WithPieceAt("a1", rook) // Queenside rook
+                .From("f1", whiteKing with { HasMoved = false })
+                .WithPieceAt("j1", whiteRook) // Kingside rook
+                .WithPieceAt("a1", whiteRook) // Queenside rook
+                .WithPieceAt("f10", whiteRook) // Vertical rook
                 .GoesTo(
                     "h1",
                     trigger: ["i1"],
-                    sideEffects: [rookKingsideCastle],
+                    sideEffects: [new(From: new("j1"), To: new("g1"), whiteRook)],
                     specialMoveType: SpecialMoveType.KingsideCastle
                 )
                 .GoesTo(
                     "d1",
                     trigger: ["c1", "b1"],
-                    sideEffects: [rookQueensideCastle],
+                    sideEffects: [new(From: new("a1"), To: new("e1"), whiteRook)],
                     specialMoveType: SpecialMoveType.QueensideCastle
                 )
+                .GoesTo(
+                    "f3",
+                    trigger: ["f2", "f4", "f5", "f6", "f7", "f8", "f9"],
+                    sideEffects: [new(From: new("f10"), To: new("f2"), whiteRook)],
+                    specialMoveType: SpecialMoveType.VerticalCastle
+                )
+                .GoesTo(whitef1Moves)
+                .WithDescription("White king on f1 with rooks in castling position")
+        );
+
+        Add(
+            PieceTestCase
+                .From("f10", blackKing with { HasMoved = false })
+                .WithPieceAt("j10", blackRook) // Kingside rook
+                .WithPieceAt("a10", blackRook) // Queenside rook
+                .WithPieceAt("f1", blackRook) // Vertical rook
+                .GoesTo(
+                    "h10",
+                    trigger: ["i10"],
+                    sideEffects: [new(From: new("j10"), To: new("g10"), whiteRook)],
+                    specialMoveType: SpecialMoveType.KingsideCastle
+                )
+                .GoesTo(
+                    "d10",
+                    trigger: ["c10", "b10"],
+                    sideEffects: [new(From: new("a10"), To: new("e10"), whiteRook)],
+                    specialMoveType: SpecialMoveType.QueensideCastle
+                )
+                .GoesTo(
+                    "f8",
+                    trigger: ["f2", "f4", "f5", "f6", "f7", "f8", "f9"],
+                    sideEffects: [new(From: new("f1"), To: new("f9"), whiteRook)],
+                    specialMoveType: SpecialMoveType.VerticalCastle
+                )
                 // regular moves
-                .GoesTo("e1")
-                .GoesTo("e2")
-                .GoesTo("f2")
-                .GoesTo("g2")
-                .GoesTo("g1")
-                .WithDescription("King on f1 with rooks in castling position")
+                .GoesTo("e10")
+                .GoesTo("e9")
+                .GoesTo("f9")
+                .GoesTo("g9")
+                .GoesTo("g10")
+                .WithDescription("Black king on f10 with rooks in castling position")
+        );
+
+        Add(
+            PieceTestCase
+                .From("f1", whiteKing with { HasMoved = true })
+                .WithPieceAt("j1", whiteRook)
+                .GoesTo(whitef1Moves)
+                .WithDescription("King on castling position, but has moved")
+        );
+
+        Add(
+            PieceTestCase
+                .From("f1", whiteKing with { HasMoved = false })
+                .WithPieceAt("j1", whiteRook with { HasMoved = true })
+                .GoesTo(whitef1Moves)
+                .WithDescription("King on castling position, but rook has moved")
+        );
+
+        Add(
+            PieceTestCase
+                .From("f1", whiteKing with { HasMoved = false })
+                .WithPieceAt("j1", whiteRook)
+                .WithPieceAt("h1", PieceFactory.White(PieceType.Bishop))
+                .GoesTo(
+                    "h1",
+                    trigger: ["i1"],
+                    sideEffects: [new(From: new("j1"), To: new("g1"), whiteRook)],
+                    specialMoveType: SpecialMoveType.KingsideCastle,
+                    captures: ["h1"]
+                )
+                .GoesTo(whitef1Moves)
+                .WithDescription("Self bishop capture while castling")
+        );
+
+        Add(
+            PieceTestCase
+                .From("f1", whiteKing with { HasMoved = false })
+                .WithPieceAt("j1", whiteRook)
+                .WithPieceAt("a1", whiteRook)
+                .WithPieceAt("f10", whiteRook)
+                .WithPieceAt("h1", PieceFactory.Black(PieceType.Bishop))
+                .WithPieceAt("f3", PieceFactory.Black(PieceType.Bishop))
+                .WithPieceAt("d1", PieceFactory.Black(PieceType.Bishop))
+                .GoesTo(whitef1Moves)
+                .WithDescription("Opponent bishop blocking castling")
         );
     }
 }
