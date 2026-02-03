@@ -5,7 +5,7 @@ namespace AnarchyChess.Api.TestInfrastructure.TestData;
 public static class GameTestData
 {
     public const string InitialFen =
-        "rhnbqkbcar/pppdppdppp/10/10/9+/+9/10/10/PPPDPPDPPP/RHNBQKBCAR";
+        "rhnbqkbcar/pppdppdppp/10/+9/10/+9/9+/10/PPPDPPDPPP/RHNBQKBCAR";
 
     public static readonly string[] SanMoves =
     [
