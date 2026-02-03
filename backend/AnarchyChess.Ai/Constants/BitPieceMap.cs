@@ -4,27 +4,38 @@ namespace AnarchyChess.Ai.Constants;
 
 public static class BitPieceMap
 {
-    public static readonly IReadOnlyDictionary<PieceType, BitPieceType> Colored = new Dictionary<
-        PieceType,
+    public static readonly IReadOnlyDictionary<
+        (PieceType, GameColor?),
         BitPieceType
-    >
+    > PieceTypeToBitPieceType = new Dictionary<(PieceType, GameColor?), BitPieceType>
     {
-        [PieceType.King] = BitPieceType.King,
-        [PieceType.Queen] = BitPieceType.Queen,
-        [PieceType.Pawn] = BitPieceType.Pawn,
-        [PieceType.Rook] = BitPieceType.Rook,
-        [PieceType.Bishop] = BitPieceType.Bishop,
-        [PieceType.Horsey] = BitPieceType.Horsey,
-        [PieceType.Knook] = BitPieceType.Knook,
-        [PieceType.Antiqueen] = BitPieceType.Antiqueen,
-        [PieceType.UnderagePawn] = BitPieceType.UnderagePawn,
-        [PieceType.SterilePawn] = BitPieceType.SterilePawn,
-        [PieceType.Checker] = BitPieceType.Checker,
+        [(PieceType.King, GameColor.White)] = BitPieceType.WhiteKing,
+        [(PieceType.Queen, GameColor.White)] = BitPieceType.WhiteQueen,
+        [(PieceType.Pawn, GameColor.White)] = BitPieceType.WhitePawn,
+        [(PieceType.Rook, GameColor.White)] = BitPieceType.WhiteRook,
+        [(PieceType.Bishop, GameColor.White)] = BitPieceType.WhiteBishop,
+        [(PieceType.Horsey, GameColor.White)] = BitPieceType.WhiteHorsey,
+        [(PieceType.Knook, GameColor.White)] = BitPieceType.WhiteKnook,
+        [(PieceType.Antiqueen, GameColor.White)] = BitPieceType.WhiteAntiqueen,
+        [(PieceType.UnderagePawn, GameColor.White)] = BitPieceType.WhiteUnderagePawn,
+        [(PieceType.SterilePawn, GameColor.White)] = BitPieceType.WhiteSterilePawn,
+        [(PieceType.Checker, GameColor.White)] = BitPieceType.WhiteChecker,
+
+        [(PieceType.King, GameColor.Black)] = BitPieceType.BlackKing,
+        [(PieceType.Queen, GameColor.Black)] = BitPieceType.BlackQueen,
+        [(PieceType.Pawn, GameColor.Black)] = BitPieceType.BlackPawn,
+        [(PieceType.Rook, GameColor.Black)] = BitPieceType.BlackRook,
+        [(PieceType.Bishop, GameColor.Black)] = BitPieceType.BlackBishop,
+        [(PieceType.Horsey, GameColor.Black)] = BitPieceType.BlackHorsey,
+        [(PieceType.Knook, GameColor.Black)] = BitPieceType.BlackKnook,
+        [(PieceType.Antiqueen, GameColor.Black)] = BitPieceType.BlackAntiqueen,
+        [(PieceType.UnderagePawn, GameColor.Black)] = BitPieceType.BlackUnderagePawn,
+        [(PieceType.SterilePawn, GameColor.Black)] = BitPieceType.BlackSterilePawn,
+        [(PieceType.Checker, GameColor.Black)] = BitPieceType.BlackChecker,
+
+        [(PieceType.TraitorRook, null)] = BitPieceType.TraitorRook,
     };
 
-    public static readonly IReadOnlyDictionary<PieceType, NeutralBitPieceType> Neutral =
-        new Dictionary<PieceType, NeutralBitPieceType>
-        {
-            [PieceType.TraitorRook] = NeutralBitPieceType.TraitorRook,
-        };
+    public static BitPieceType FromPiece(PieceType pieceType, GameColor? color) =>
+        PieceTypeToBitPieceType[(pieceType, color)];
 }

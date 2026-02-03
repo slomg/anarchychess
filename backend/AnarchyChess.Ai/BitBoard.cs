@@ -1,12 +1,12 @@
 ﻿using AnarchyChess.Ai.Constants;
+using AnarchyChess.Ai.Extensions;
 using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai;
 
 public struct BitBoard
 {
-    public UInt128[,] Bitboards;
-    public UInt128[] NeutralBitboards;
+    public UInt128[] Bitboards;
 
     public UInt128 WhitePieces;
     public UInt128 BlackPieces;
@@ -15,31 +15,26 @@ public struct BitBoard
 
     public UInt128 HasMoved;
 
-    public BitBoard(
-        UInt128[,]? bitboards = null,
-        UInt128[]? neutralBitboards = null,
-        UInt128? hasMoved = null
-    )
+    public BitBoard(UInt128[]? bitboards = null, UInt128? hasMoved = null)
     {
-        Bitboards =
-            bitboards
-            ?? new UInt128[
-                Enum.GetValues<GameColor>().Length,
-                Enum.GetValues<BitPieceType>().Length
-            ];
-        NeutralBitboards =
-            neutralBitboards ?? new UInt128[Enum.GetValues<NeutralBitPieceType>().Length];
+        Bitboards = bitboards ?? new UInt128[Enum.GetValues<BitPieceType>().Length];
         HasMoved = hasMoved ?? 0;
 
         for (int i = 0; i < Enum.GetValues<BitPieceType>().Length; i++)
         {
-            WhitePieces |= Bitboards[(int)GameColor.White, i];
-            BlackPieces |= Bitboards[(int)GameColor.Black, i];
-        }
-
-        for (int i = 0; i < NeutralBitboards.Length; i++)
-        {
-            NeutralPieces |= NeutralBitboards[i];
+            BitPieceType pieceType = (BitPieceType)i;
+            if (pieceType.IsWhite())
+            {
+                WhitePieces |= Bitboards[i];
+            }
+            else if (pieceType.IsBlack())
+            {
+                BlackPieces |= Bitboards[i];
+            }
+            else
+            {
+                NeutralPieces |= Bitboards[i];
+            }
         }
 
         Occupancy = WhitePieces | BlackPieces | NeutralPieces;
@@ -47,25 +42,13 @@ public struct BitBoard
 
     public static BitBoard FromPieces(Dictionary<AlgebraicPoint, Piece> pieces)
     {
-        UInt128[,] bitboards = new UInt128[
-            Enum.GetValues<GameColor>().Length,
-            Enum.GetValues<BitPieceType>().Length
-        ];
-        UInt128[] neutralBitboards = new UInt128[Enum.GetValues<NeutralBitPieceType>().Length];
+        UInt128[] bitboards = new UInt128[Enum.GetValues<BitPieceType>().Length];
         UInt128 hasMoved = 0;
 
         foreach (var (point, piece) in pieces)
         {
-            if (piece.Color is null)
-            {
-                NeutralBitPieceType type = BitPieceMap.Neutral[piece.Type];
-                neutralBitboards[(int)type] |= UInt128.One << point.AsIdx();
-            }
-            else
-            {
-                BitPieceType type = BitPieceMap.Colored[piece.Type];
-                bitboards[(int)piece.Color.Value, (int)type] |= UInt128.One << point.AsIdx();
-            }
+            BitPieceType type = BitPieceMap.FromPiece(piece.Type, piece.Color);
+            bitboards[(int)type] |= UInt128.One << point.AsIdx();
 
             if (piece.HasMoved)
             {
@@ -73,14 +56,11 @@ public struct BitBoard
             }
         }
 
-        return new BitBoard(bitboards, neutralBitboards, hasMoved);
+        return new BitBoard(bitboards, hasMoved);
     }
 
-    public readonly ref UInt128 BitboardFor(BitPieceType pieceType, GameColor color) =>
-        ref Bitboards[(int)color, (int)pieceType];
-
-    public readonly ref UInt128 BitboardFor(NeutralBitPieceType pieceType) =>
-        ref NeutralBitboards[(int)pieceType];
+    public readonly ref UInt128 BitboardFor(BitPieceType pieceType) =>
+        ref Bitboards[(int)pieceType];
 
     public readonly bool HasPieceMoved(byte position) =>
         (HasMoved & (UInt128.One << position)) != 0;

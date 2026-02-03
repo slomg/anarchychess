@@ -1,12 +1,10 @@
-﻿using AnarchyChess.EngineShared;
-
-namespace AnarchyChess.Ai.BitPieceDefinition;
+﻿namespace AnarchyChess.Ai.BitPieceDefinition;
 
 public interface IBitPieceDefinition
 {
     void GenerateMoves(
         BitBoard board,
-        GameColor? color,
+        BitPieceType pieceType,
         byte position,
         Span<BitMove> moves,
         ref int moveCount

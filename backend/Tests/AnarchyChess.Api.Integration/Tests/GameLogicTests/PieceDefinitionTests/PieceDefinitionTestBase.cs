@@ -18,7 +18,7 @@ public abstract class PieceDefinitionTestBase : BaseIntegrationTest
 
     protected void TestMoves(PieceTestCase testCase)
     {
-        var board = new ChessBoard(moves: testCase.PriorMoves, sideToMove: testCase.MovingPlayer);
+        ChessBoard board = new(moves: testCase.PriorMoves, sideToMove: testCase.MovingPlayer);
         board.PlacePiece(testCase.Origin, testCase.Piece);
 
         foreach (var (point, piece) in testCase.BlockedBy)

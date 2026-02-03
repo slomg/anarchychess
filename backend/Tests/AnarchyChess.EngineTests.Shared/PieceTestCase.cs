@@ -140,7 +140,10 @@ public class PieceTestCase
         WithPieceAt(
             position,
             new PieceFaker(color: Piece.Color)
-                .RuleFor(x => x.Type, f => f.PickRandomWithout(excludePieces))
+                .RuleFor(
+                    x => x.Type,
+                    f => f.PickRandomWithout([.. excludePieces, PieceType.TraitorRook])
+                )
                 .Generate()
         );
 
@@ -148,7 +151,10 @@ public class PieceTestCase
         WithPieceAt(
             position,
             new PieceFaker(color: Piece.Color?.Invert())
-                .RuleFor(x => x.Type, f => f.PickRandomWithout(excludePieces))
+                .RuleFor(
+                    x => x.Type,
+                    f => f.PickRandomWithout([.. excludePieces, PieceType.TraitorRook])
+                )
                 .Generate()
         );
 

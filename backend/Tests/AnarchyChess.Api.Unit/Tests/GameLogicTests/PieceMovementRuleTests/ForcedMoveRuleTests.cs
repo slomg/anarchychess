@@ -1,6 +1,6 @@
 ﻿using AnarchyChess.Api.GameLogic.Models;
-using AnarchyChess.EngineShared;
 using AnarchyChess.Api.GameLogic.PieceMovementRules;
+using AnarchyChess.EngineShared;
 using AwesomeAssertions;
 using NSubstitute;
 

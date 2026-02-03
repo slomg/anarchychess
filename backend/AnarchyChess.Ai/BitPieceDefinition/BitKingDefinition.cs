@@ -1,4 +1,5 @@
 ﻿using AnarchyChess.Ai.Constants;
+using AnarchyChess.Ai.Extensions;
 using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai.BitPieceDefinition;
@@ -107,12 +108,13 @@ public sealed class BitKingDefinition : IBitPieceDefinition
 
     public void GenerateMoves(
         BitBoard board,
-        GameColor? color,
+        BitPieceType pieceType,
         byte position,
         Span<BitMove> moves,
         ref int moveCount
     )
     {
+        GameColor? color = pieceType.Color();
         if (color is null)
         {
             return;
@@ -148,31 +150,33 @@ public sealed class BitKingDefinition : IBitPieceDefinition
             {
                 From = position,
                 To = (byte)toSquare,
-                Piece = BitPieceType.King,
+                Piece = pieceType,
                 Captures = isCapture ? (UInt128.One << toSquare) : 0,
             };
         }
 
-        GenerateCastleMovesForColor(board, color.Value, position, moves, ref moveCount);
+        GenerateCastleMovesForColor(board, pieceType, color.Value, position, moves, ref moveCount);
     }
 
     private static void GenerateCastleMovesForColor(
         BitBoard board,
+        BitPieceType pieceType,
         GameColor color,
         byte position,
         Span<BitMove> moves,
         ref int moveCount
     )
     {
-        CastleInfo[] castles = color is GameColor.White ? WhiteCastles : BlackCastles;
+        CastleInfo[] castles = pieceType.IsWhite() ? WhiteCastles : BlackCastles;
         foreach (var castle in castles)
         {
-            GenerateCastleMoves(board, color, position, castle, moves, ref moveCount);
+            GenerateCastleMoves(board, pieceType, color, position, castle, moves, ref moveCount);
         }
     }
 
     private static void GenerateCastleMoves(
         BitBoard board,
+        BitPieceType pieceType,
         GameColor color,
         byte position,
         CastleInfo castleInfo,
@@ -189,8 +193,8 @@ public sealed class BitKingDefinition : IBitPieceDefinition
         UInt128 rookStartMask = UInt128.One << castleInfo.RookStart;
 
         if (
-            (board.BitboardFor(BitPieceType.King, color) & kingStartMask) == 0
-            || (board.BitboardFor(BitPieceType.Rook, color) & rookStartMask) == 0
+            (board.BitboardFor(pieceType) & kingStartMask) == 0
+            || (board.BitboardFor(pieceType) & rookStartMask) == 0
         )
         {
             return;
@@ -210,11 +214,12 @@ public sealed class BitKingDefinition : IBitPieceDefinition
         UInt128 rookDestMask = UInt128.One << castleInfo.RookDest;
 
         UInt128 captureMask = 0;
-        if ((board.BitboardFor(BitPieceType.Bishop, color) & kingDestMask) != 0)
+        UInt128 bishopBitboard = board.BitboardFor(BitPieceMap.FromPiece(PieceType.Bishop, color));
+        if ((bishopBitboard & kingDestMask) != 0)
         {
             captureMask = UInt128.One << castleInfo.KingDest;
         }
-        else if ((board.BitboardFor(BitPieceType.Bishop, color) & rookDestMask) != 0)
+        else if ((bishopBitboard & rookDestMask) != 0)
         {
             captureMask = UInt128.One << castleInfo.RookDest;
         }
@@ -227,6 +232,7 @@ public sealed class BitKingDefinition : IBitPieceDefinition
         {
             From = position,
             To = castleInfo.KingDest,
+            Piece = pieceType,
             Captures = captureMask,
             Flags = castleInfo.Flag,
         };
