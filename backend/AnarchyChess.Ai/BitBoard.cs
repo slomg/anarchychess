@@ -15,8 +15,10 @@ public struct BitBoard
 
     public UInt128 HasMoved;
 
-    public BitBoard()
+    public BitBoard(UInt128[,] bitboards)
     {
+        Bitboards = bitboards;
+
         for (int i = 0; i < Enum.GetValues<BitPiece>().Length; i++)
         {
             WhitePieces |= Bitboards[(int)BitColor.White, i];
