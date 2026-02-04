@@ -118,26 +118,26 @@ public sealed class BitKingDefinition : IBitPieceDefinition
         UInt128 enemyPieces = board.BitboardForEnemyOf(color);
 
         UInt128 kingBit = UInt128.One << position;
-        UInt128 targets = 0;
+        UInt128 attacks = 0;
 
-        targets |= (kingBit & ~BitboardConstants.RightEdgeMask) << 1; // right
-        targets |= (kingBit & ~BitboardConstants.LeftEdgeMask) >> 1; // left
-        targets |= (kingBit & ~BitboardConstants.TopEdgeMask) << 10; // up
-        targets |= (kingBit & ~BitboardConstants.BottomEdgeMask) >> 10; // down
-        targets |=
+        attacks |= (kingBit & ~BitboardConstants.RightEdgeMask) << 1; // right
+        attacks |= (kingBit & ~BitboardConstants.LeftEdgeMask) >> 1; // left
+        attacks |= (kingBit & ~BitboardConstants.TopEdgeMask) << 10; // up
+        attacks |= (kingBit & ~BitboardConstants.BottomEdgeMask) >> 10; // down
+        attacks |=
             (kingBit & ~(BitboardConstants.TopEdgeMask | BitboardConstants.RightEdgeMask)) << 11; // up right
-        targets |=
+        attacks |=
             (kingBit & ~(BitboardConstants.TopEdgeMask | BitboardConstants.LeftEdgeMask)) << 9; // up left
-        targets |=
+        attacks |=
             (kingBit & ~(BitboardConstants.BottomEdgeMask | BitboardConstants.RightEdgeMask)) >> 9; // bottom right
-        targets |=
+        attacks |=
             (kingBit & ~(BitboardConstants.BottomEdgeMask | BitboardConstants.LeftEdgeMask)) >> 11; // bottom left
 
-        targets &= ~ownPieces;
+        attacks &= ~ownPieces;
 
-        while (targets != 0)
+        while (attacks != 0)
         {
-            int toSquare = BitboardHelpers.BitScanForward(ref targets);
+            int toSquare = BitboardHelpers.BitScanForward(ref attacks);
             bool isCapture = (enemyPieces & (UInt128.One << toSquare)) != 0;
 
             moves[moveCount++] = new BitMove()
