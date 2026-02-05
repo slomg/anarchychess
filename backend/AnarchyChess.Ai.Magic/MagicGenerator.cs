@@ -48,8 +48,12 @@ public static class MagicGenerator
             }
         }
 
+        var fileName = $"{magicPiece.Name}Magic.msgpack";
         byte[] tableBytes = MessagePackSerializer.Serialize(table);
-        File.WriteAllBytes("RookMagic.msgpack", tableBytes);
+        File.WriteAllBytes(fileName, tableBytes);
+        Console.WriteLine(
+            $"Finished generating magic table for {magicPiece.Name}, saved to {fileName}"
+        );
     }
 
     private static UInt128[] GenerateBlockerSubsets(UInt128 mask)

@@ -2,6 +2,8 @@
 
 public sealed class RookMagic : IMagicPiece
 {
+    public string Name => "Rook";
+
     public UInt128 GenerateMask(int x, int y)
     {
         UInt128 mask = 0;
