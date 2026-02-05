@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using AnarchyChess.Ai.BitPieceDefinition;
+using AnarchyChess.Ai.Helpers;
 using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai;

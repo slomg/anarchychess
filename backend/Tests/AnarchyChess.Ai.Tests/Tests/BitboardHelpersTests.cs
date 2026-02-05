@@ -1,4 +1,5 @@
-﻿using AwesomeAssertions;
+﻿using AnarchyChess.Ai.Helpers;
+using AwesomeAssertions;
 
 namespace AnarchyChess.Ai.Tests.Tests;
 

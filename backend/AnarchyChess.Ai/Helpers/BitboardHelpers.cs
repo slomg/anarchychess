@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace AnarchyChess.Ai;
+namespace AnarchyChess.Ai.Helpers;
 
 public static class BitboardHelpers
 {
