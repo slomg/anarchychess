@@ -1,23 +1,29 @@
-﻿namespace AnarchyChess.Ai;
+﻿using System.Numerics;
 
-public class BitboardHelpers
+namespace AnarchyChess.Ai;
+
+public static class BitboardHelpers
 {
     public static int BitScanForward(ref UInt128 bitboard)
     {
-        UInt128 leastSignificantBit = bitboard & (~bitboard + 1);
-        int index = PopCount(leastSignificantBit - 1);
-        bitboard &= bitboard - 1;
-        return index;
-    }
-
-    public static int PopCount(UInt128 bitboard)
-    {
-        int count = 0;
-        while (bitboard != 0)
+        if (bitboard == 0)
         {
-            bitboard &= bitboard - 1;
-            count++;
+            throw new InvalidOperationException("Cannot scan forward on an empty bitboard");
         }
-        return count;
+
+        ulong low = (ulong)bitboard;
+        if (low != 0)
+        {
+            int index = BitOperations.TrailingZeroCount(low);
+            bitboard &= bitboard - 1;
+            return index;
+        }
+        else
+        {
+            ulong high = (ulong)(bitboard >> 64);
+            int index = 64 + BitOperations.TrailingZeroCount(high);
+            bitboard &= bitboard - 1;
+            return index;
+        }
     }
 }
