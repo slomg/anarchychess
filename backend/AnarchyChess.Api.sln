@@ -31,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnarchyChess.EngineTests.Sh
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnarchyChess.Ai.Tests", "Tests\AnarchyChess.Ai.Tests\AnarchyChess.Ai.Tests.csproj", "{28762CFE-3489-4154-BF6F-7A7EF340F380}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnarchyChess.Ai.Magic", "AnarchyChess.Ai.Magic\AnarchyChess.Ai.Magic.csproj", "{BBDD2B95-01ED-4765-9671-434D5BB87173}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,6 +79,10 @@ Global
 		{28762CFE-3489-4154-BF6F-7A7EF340F380}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{28762CFE-3489-4154-BF6F-7A7EF340F380}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{28762CFE-3489-4154-BF6F-7A7EF340F380}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BBDD2B95-01ED-4765-9671-434D5BB87173}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BBDD2B95-01ED-4765-9671-434D5BB87173}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BBDD2B95-01ED-4765-9671-434D5BB87173}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BBDD2B95-01ED-4765-9671-434D5BB87173}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
