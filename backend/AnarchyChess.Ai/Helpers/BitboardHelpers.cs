@@ -64,7 +64,7 @@ public static class BitboardHelpers
 
         while (quiets != 0)
         {
-            byte toSquare = (byte)BitboardHelpers.BitScanForward(ref quiets);
+            byte toSquare = (byte)BitScanForward(ref quiets);
             moves[moveCount++] = new BitMove
             {
                 From = from,
@@ -75,7 +75,7 @@ public static class BitboardHelpers
 
         while (captures != 0)
         {
-            byte toSquare = (byte)BitboardHelpers.BitScanForward(ref captures);
+            byte toSquare = (byte)BitScanForward(ref captures);
             if (board.TryGetPieceAt(toSquare, out var capturePiece))
             {
                 BitMove move = new()

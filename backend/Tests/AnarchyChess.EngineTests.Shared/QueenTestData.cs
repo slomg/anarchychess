@@ -79,6 +79,10 @@ public class QueenTestData : TheoryData<PieceTestCase>
         Add(
             PieceTestCase
                 .From("j5", queen)
+                // up
+                .GoesTo("j6", "j7", "j8", "j9", "j10")
+                // down
+                .GoesTo("j4", "j3", "j2", "j1")
                 // left
                 .GoesTo("i5", "h5", "g5", "f5", "e5", "d5", "c5", "b5", "a5")
                 // up left
