@@ -8,28 +8,60 @@ public class QueenTestData : TheoryData<PieceTestCase>
 {
     public QueenTestData()
     {
-        var queen = PieceFactory.White(PieceType.Queen);
-        Console.WriteLine(queen.HasMoved);
+        var whiteQueen = PieceFactory.White(PieceType.Queen);
+        var blackQueen = PieceFactory.Black(PieceType.Queen);
+
+        string[] e5Moves =
+        [
+            // up
+            "e6",
+            "e7",
+            "e8",
+            "e9",
+            "e10",
+            // down
+            "e4",
+            "e3",
+            "e2",
+            "e1",
+            // left
+            "d5",
+            "c5",
+            "b5",
+            "a5",
+            // right
+            "f5",
+            "g5",
+            "h5",
+            "i5",
+            "j5",
+            // up left
+            "d6",
+            "c7",
+            "b8",
+            "a9",
+            // up right
+            "f6",
+            "g7",
+            "h8",
+            "i9",
+            "j10",
+            // down left
+            "d4",
+            "c3",
+            "b2",
+            "a1",
+            // down right
+            "f4",
+            "g3",
+            "h2",
+            "i1",
+        ];
 
         Add(
             PieceTestCase
-                .From("e5", queen)
-                // vertical up
-                .GoesTo("e6", "e7", "e8", "e9", "e10")
-                // vertical down
-                .GoesTo("e4", "e3", "e2", "e1")
-                // horizontal left
-                .GoesTo("d5", "c5", "b5", "a5")
-                // horizontal right
-                .GoesTo("f5", "g5", "h5", "i5", "j5")
-                // diagonal up-left
-                .GoesTo("d6", "c7", "b8", "a9")
-                // diagonal up-right
-                .GoesTo("f6", "g7", "h8", "i9", "j10")
-                // diagonal down-left
-                .GoesTo("d4", "c3", "b2", "a1")
-                // diagonal down-right
-                .GoesTo("f4", "g3", "h2", "i1")
+                .From("e5", whiteQueen)
+                .GoesTo(e5Moves)
                 // radioactive beta decay
                 .GoesTo(
                     "e5",
@@ -42,12 +74,31 @@ public class QueenTestData : TheoryData<PieceTestCase>
                     captures: ["e5"],
                     specialMoveType: SpecialMoveType.RadioactiveBetaDecay
                 )
-                .WithDescription("Open board from e5 with beta decay")
+                .WithDescription("White queen on open board from e5 with beta decay")
         );
 
         Add(
             PieceTestCase
-                .From("a1", queen)
+                .From("e5", blackQueen)
+                .GoesTo(e5Moves)
+                // radioactive beta decay
+                .GoesTo(
+                    "e5",
+                    spawns:
+                    [
+                        new PieceSpawn(PieceType.Rook, GameColor.White, new("d5")),
+                        new PieceSpawn(PieceType.SterilePawn, GameColor.White, new("e4")),
+                        new PieceSpawn(PieceType.Horsey, GameColor.White, new("f5")),
+                    ],
+                    captures: ["e5"],
+                    specialMoveType: SpecialMoveType.RadioactiveBetaDecay
+                )
+                .WithDescription("Black queen on open board from e5 with beta decay")
+        );
+
+        Add(
+            PieceTestCase
+                .From("a1", whiteQueen)
                 // vertical up
                 .GoesTo("a2", "a3", "a4", "a5", "a6", "a7", "a8", "a9", "a10")
                 // horizontal right
@@ -59,7 +110,7 @@ public class QueenTestData : TheoryData<PieceTestCase>
 
         Add(
             PieceTestCase
-                .From("a5", queen)
+                .From("a5", whiteQueen)
                 .WithFriendlyPieceAt("a7") // friendly above, blocks beyond a6 vertical up
                 .WithEnemyPieceAt("c5") // enemy right side, can capture at c5 but no further right
                 // vertical up
@@ -78,7 +129,7 @@ public class QueenTestData : TheoryData<PieceTestCase>
 
         Add(
             PieceTestCase
-                .From("j5", queen)
+                .From("j5", whiteQueen)
                 // up
                 .GoesTo("j6", "j7", "j8", "j9", "j10")
                 // down
@@ -94,7 +145,7 @@ public class QueenTestData : TheoryData<PieceTestCase>
 
         Add(
             PieceTestCase
-                .From("e5", queen)
+                .From("e5", whiteQueen)
                 .WithFriendlyPieceAt("e6")
                 .WithFriendlyPieceAt("e4")
                 .WithFriendlyPieceAt("d5")
@@ -108,7 +159,7 @@ public class QueenTestData : TheoryData<PieceTestCase>
 
         Add(
             PieceTestCase
-                .From("e5", queen)
+                .From("e5", whiteQueen)
                 .WithEnemyPieceAt("e6")
                 .WithEnemyPieceAt("e4")
                 .WithEnemyPieceAt("d5")
