@@ -8,6 +8,8 @@ public static class MagicGenerator
 {
     public static void Generate(IMagicPiece magicPiece)
     {
+        Console.WriteLine($"Started genearting magic table for {magicPiece.Name}");
+
         MagicPieceTable table = new()
         {
             Masks = new UInt128[Constants.SquareCount],
