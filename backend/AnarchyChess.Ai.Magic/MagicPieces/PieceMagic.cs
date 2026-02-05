@@ -2,7 +2,7 @@
 
 namespace AnarchyChess.Ai.Magic.MagicPieces;
 
-public abstract class MagicPiece : IMagicPiece
+public abstract class PieceMagic : IMagicPiece
 {
     public abstract string Name { get; }
 

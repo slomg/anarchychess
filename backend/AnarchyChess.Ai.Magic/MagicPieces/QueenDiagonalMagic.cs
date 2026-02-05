@@ -2,7 +2,7 @@
 
 namespace AnarchyChess.Ai.Magic.MagicPieces;
 
-public sealed class QueenDiagonalMagic : MagicPiece
+public sealed class QueenDiagonalMagic : PieceMagic
 {
     public override string Name => "QueenDiagonal";
 
