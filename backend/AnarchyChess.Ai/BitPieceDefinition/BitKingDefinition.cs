@@ -1,4 +1,5 @@
-﻿using AnarchyChess.EngineShared;
+﻿using AnarchyChess.Ai.Helpers;
+using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai.BitPieceDefinition;
 
@@ -113,45 +114,21 @@ public sealed class BitKingDefinition : IBitPieceDefinition
         ref int moveCount
     )
     {
-        UInt128 ownPieces = board.BitboardForFriendOf(color);
-        UInt128 enemyPieces = board.BitboardForEnemyOf(color);
+        UInt128 friendlyPieces = board.BitboardForFriendOf(color);
 
-        UInt128 kingBit = UInt128.One << position;
         UInt128 attacks = 0;
+        attacks = BitboardHelpers.MaskAdjacent(position, attacks);
+        attacks &= ~friendlyPieces;
 
-        attacks |= (kingBit & ~BitboardConstants.RightEdgeMask) << 1; // right
-        attacks |= (kingBit & ~BitboardConstants.LeftEdgeMask) >> 1; // left
-        attacks |= (kingBit & ~BitboardConstants.TopEdgeMask) << 10; // up
-        attacks |= (kingBit & ~BitboardConstants.BottomEdgeMask) >> 10; // down
-        attacks |=
-            (kingBit & ~(BitboardConstants.TopEdgeMask | BitboardConstants.RightEdgeMask)) << 11; // up right
-        attacks |=
-            (kingBit & ~(BitboardConstants.TopEdgeMask | BitboardConstants.LeftEdgeMask)) << 9; // up left
-        attacks |=
-            (kingBit & ~(BitboardConstants.BottomEdgeMask | BitboardConstants.RightEdgeMask)) >> 9; // bottom right
-        attacks |=
-            (kingBit & ~(BitboardConstants.BottomEdgeMask | BitboardConstants.LeftEdgeMask)) >> 11; // bottom left
-
-        attacks &= ~ownPieces;
-
-        while (attacks != 0)
-        {
-            byte toSquare = (byte)BitboardHelpers.BitScanForward(ref attacks);
-            bool isCapture = (enemyPieces & (UInt128.One << toSquare)) != 0;
-
-            BitMove move = new()
-            {
-                From = position,
-                To = toSquare,
-                Piece = pieceType,
-            };
-            if (isCapture && board.TryGetPieceAt(toSquare, out var capturePiece))
-            {
-                move.AddCapture(toSquare, capturePiece.Value.PieceType, capturePiece.Value.Color);
-            }
-            moves[moveCount++] = move;
-        }
-
+        BitboardHelpers.CreateMoveFromAttacks(
+            position,
+            pieceType,
+            board,
+            attacks,
+            board.Occupancy,
+            moves,
+            ref moveCount
+        );
         GenerateCastleMovesForColor(board, pieceType, color, position, moves, ref moveCount);
     }
 

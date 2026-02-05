@@ -1,0 +1,66 @@
+﻿using AnarchyChess.Ai.Helpers;
+using AnarchyChess.Ai.MagicTables;
+using AnarchyChess.EngineShared;
+
+namespace AnarchyChess.Ai.BitPieceDefinition;
+
+public sealed class BitRookDefinition : IBitPieceDefinition
+{
+    public void GenerateMoves(
+        BitBoard board,
+        PieceType pieceType,
+        BitPieceColor color,
+        byte position,
+        Span<BitMove> moves,
+        ref int moveCount
+    )
+    {
+        UInt128 friendlyPieces = board.BitboardForFriendOf(color);
+
+        UInt128 attacks = MagicLibrary.GetAttacks(
+            MagicLibrary.RookTable,
+            position,
+            board.Occupancy
+        );
+
+        UInt128 friendlyHorsey = board.BitboardFor(PieceType.Horsey, color);
+        UInt128 horseyAttacks = attacks & friendlyHorsey;
+
+        while (horseyAttacks != 0)
+        {
+            byte toSquare = (byte)BitboardHelpers.BitScanForward(ref horseyAttacks);
+            BitMove move = new()
+            {
+                From = position,
+                To = toSquare,
+                Piece = pieceType,
+                SpecialMoveType = SpecialMoveType.KnooklearFusion,
+            };
+            move.AddCapture(toSquare, PieceType.Horsey, color);
+
+            UInt128 captures = 0;
+            captures = BitboardHelpers.MaskAdjacent(toSquare, captures);
+            captures &= board.Occupancy;
+
+            while (captures != 0)
+            {
+                byte capturedSquare = (byte)BitboardHelpers.BitScanForward(ref captures);
+                if (board.TryGetPieceAt(capturedSquare, out var piece))
+                {
+                    move.AddCapture(capturedSquare, piece.Value.PieceType, piece.Value.Color);
+                }
+            }
+
+            moves[moveCount++] = move;
+        }
+        BitboardHelpers.CreateMoveFromAttacks(
+            position,
+            pieceType,
+            board,
+            attacks & ~friendlyPieces,
+            board.Occupancy,
+            moves,
+            ref moveCount
+        );
+    }
+}

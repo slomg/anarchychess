@@ -23,6 +23,7 @@ public sealed class BitMovesGenerator : IBitMovesGenerator
     private readonly Dictionary<PieceType, IBitPieceDefinition> _pieceDefinitions = new()
     {
         [PieceType.King] = new BitKingDefinition(),
+        [PieceType.Rook] = new BitRookDefinition(),
     };
 
     public void Generate(BitBoard board, Span<BitMove> moves, ref int moveCount)

@@ -37,12 +37,12 @@ public class BitMoveTests
             Piece = PieceType.Rook,
         };
 
-        move.AddCapture(0, PieceType.Pawn, BitPieceColor.White);
+        move.AddCapture(2, PieceType.Pawn, BitPieceColor.White);
         move.AddCapture(63, PieceType.King, BitPieceColor.Black);
 
         (byte Position, PieceType PieceType, BitPieceColor Color)[] expected =
         [
-            (Position: 0, PieceType: PieceType.Pawn, Color: BitPieceColor.White),
+            (Position: 2, PieceType: PieceType.Pawn, Color: BitPieceColor.White),
             (Position: 63, PieceType: PieceType.King, Color: BitPieceColor.Black),
         ];
 
@@ -51,7 +51,7 @@ public class BitMoveTests
             move.GetCapture(i).Should().BeEquivalentTo(expected[i]);
         }
 
-        move.CapturesMask.Should().Be((UInt128.One << 0) | (UInt128.One << 63));
+        move.CapturesMask.Should().Be((UInt128.One << 2) | (UInt128.One << 63));
     }
 
     [Fact]

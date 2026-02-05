@@ -179,7 +179,7 @@ public class RookTestData : TheoryData<PieceTestCase>
                     specialMoveType: SpecialMoveType.KnooklearFusion
                 )
                 .GoesTo("b1", "c1", "d1", "e1", "f1", "g1", "h1", "i1", "j1")
-                .WithDescription("Fuses with horset and explodes surrounding pieces")
+                .WithDescription("Fuses with horsey and explodes surrounding pieces")
         );
     }
 }

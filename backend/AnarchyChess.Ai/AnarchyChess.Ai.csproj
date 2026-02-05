@@ -10,10 +10,10 @@
     <ProjectReference Include="..\AnarchyChess.EngineShared\AnarchyChess.EngineShared.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="MagicTables\" />
-  </ItemGroup>
-  <ItemGroup>
     <None Update="MagicTables\BishopMagic.msgpack">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="MagicTables\QueenDiagonal.msgpack">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="MagicTables\RookMagic.msgpack">
