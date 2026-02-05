@@ -177,4 +177,60 @@ public class BitBoardTests
             .Be(board.WhitePieces | board.NeutralPieces);
         board.BitboardForEnemyOf(BitPieceColor.Neutral).Should().Be(0);
     }
+
+    [Fact]
+    public void TryGetPieceAt_returns_true_and_correct_piece_for_occupied_square()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new AlgebraicPoint("e1")] = PieceFactory.White(PieceType.King),
+            [new AlgebraicPoint("a10")] = PieceFactory.Black(PieceType.Rook),
+        };
+
+        var board = BitBoard.FromPieces(pieces);
+
+        bool resultE1 = board.TryGetPieceAt(new AlgebraicPoint("e1").AsIdx(), out var pieceE1);
+        resultE1.Should().BeTrue();
+        pieceE1.Should().NotBeNull();
+        pieceE1.Value.PieceType.Should().Be(PieceType.King);
+        pieceE1.Value.Color.Should().Be(BitPieceColor.White);
+
+        bool resultA10 = board.TryGetPieceAt(new AlgebraicPoint("a10").AsIdx(), out var pieceA10);
+        resultA10.Should().BeTrue();
+        pieceA10.Should().NotBeNull();
+        pieceA10.Value.PieceType.Should().Be(PieceType.Rook);
+        pieceA10.Value.Color.Should().Be(BitPieceColor.Black);
+    }
+
+    [Fact]
+    public void TryGetPieceAt_returns_false_for_empty_square()
+    {
+        var pieces = new Dictionary<AlgebraicPoint, Piece>
+        {
+            [new AlgebraicPoint("e1")] = PieceFactory.White(PieceType.King),
+        };
+
+        var board = BitBoard.FromPieces(pieces);
+
+        bool result = board.TryGetPieceAt(new AlgebraicPoint("a1").AsIdx(), out var piece);
+        result.Should().BeFalse();
+        piece.Should().BeNull();
+    }
+
+    [Fact]
+    public void TryGetPieceAt_works_for_neutral_piece()
+    {
+        var pieces = new Dictionary<AlgebraicPoint, Piece>
+        {
+            [new AlgebraicPoint("f4")] = PieceFactory.Neutral(PieceType.TraitorRook),
+        };
+
+        var board = BitBoard.FromPieces(pieces);
+
+        bool result = board.TryGetPieceAt(new AlgebraicPoint("f4").AsIdx(), out var piece);
+        result.Should().BeTrue();
+        piece.Should().NotBeNull();
+        piece.Value.PieceType.Should().Be(PieceType.TraitorRook);
+        piece.Value.Color.Should().Be(BitPieceColor.Neutral);
+    }
 }

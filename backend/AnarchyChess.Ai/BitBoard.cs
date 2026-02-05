@@ -1,11 +1,13 @@
-﻿using AnarchyChess.EngineShared;
+﻿using System.Diagnostics.CodeAnalysis;
+using AnarchyChess.EngineShared;
 using AnarchyChess.EngineShared.Extensions;
 
 namespace AnarchyChess.Ai;
 
 public class BitBoard
 {
-    public UInt128[,] Bitboards { get; private set; }
+    public UInt128[,] Bitboards { get; }
+    public BitPiece?[] PieceAt { get; }
 
     public UInt128 WhitePieces { get; private set; }
     public UInt128 BlackPieces { get; private set; }
@@ -17,7 +19,11 @@ public class BitBoard
     public UInt128 WhiteEnemy { get; private set; }
     public UInt128 BlackEnemy { get; private set; }
 
-    public BitBoard(UInt128[,]? bitboards = null, UInt128? hasMoved = null)
+    public BitBoard(
+        UInt128[,]? bitboards = null,
+        UInt128? hasMoved = null,
+        BitPiece?[]? pieceAt = null
+    )
     {
         Bitboards =
             bitboards
@@ -25,6 +31,7 @@ public class BitBoard
                 Enum.GetValues<BitPieceColor>().Length,
                 Enum.GetValues<PieceType>().Length
             ];
+        PieceAt = pieceAt ?? new BitPiece?[10 * 10];
         HasMoved = hasMoved ?? 0;
 
         for (int i = 0; i < Enum.GetValues<PieceType>().Length; i++)
@@ -46,6 +53,8 @@ public class BitBoard
             Enum.GetValues<BitPieceColor>().Length,
             Enum.GetValues<PieceType>().Length
         ];
+        BitPiece?[] pieceAt = new BitPiece?[10 * 10];
+
         UInt128 hasMoved = 0;
 
         foreach (var (point, piece) in pieces)
@@ -55,15 +64,17 @@ public class BitBoard
                 whenBlack: BitPieceColor.Black,
                 whenNeutral: BitPieceColor.Neutral
             );
-            bitboards[(int)color, (int)piece.Type] |= UInt128.One << point.AsIdx();
+            byte idx = point.AsIdx();
+            bitboards[(int)color, (int)piece.Type] |= UInt128.One << idx;
+            pieceAt[idx] = new BitPiece() { PieceType = piece.Type, Color = color };
 
             if (piece.HasMoved)
             {
-                hasMoved |= UInt128.One << point.AsIdx();
+                hasMoved |= UInt128.One << idx;
             }
         }
 
-        return new BitBoard(bitboards, hasMoved);
+        return new BitBoard(bitboards, hasMoved, pieceAt);
     }
 
     public ref UInt128 BitboardFor(PieceType pieceType, BitPieceColor color) =>
@@ -88,4 +99,10 @@ public class BitBoard
             BitPieceColor.Black => BlackEnemy,
             _ => 0,
         };
+
+    public bool TryGetPieceAt(byte position, [NotNullWhen(true)] out BitPiece? piece)
+    {
+        piece = PieceAt[position];
+        return piece is not null;
+    }
 }
