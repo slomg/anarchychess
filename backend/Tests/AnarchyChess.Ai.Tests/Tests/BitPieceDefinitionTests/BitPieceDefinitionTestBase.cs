@@ -33,22 +33,28 @@ public class BitPieceDefinitionTestBase
         List<BitMove> expectedMoves = [];
         foreach (var move in testCase.ExpectedMoves)
         {
-            UInt128 captures = 0;
+            BitMove bitMove = new()
+            {
+                From = move.From.AsIdx(),
+                To = move.To.AsIdx(),
+                Piece = testCase.Piece.Type,
+                SpecialMoveType = move.SpecialMoveType,
+            };
             foreach (var capture in move.Captures)
             {
-                captures |= UInt128.One << capture.Position.AsIdx();
+                BitPieceColor capturedColor = capture.CapturedPiece.Color.Match(
+                    whenWhite: BitPieceColor.White,
+                    whenBlack: BitPieceColor.Black,
+                    whenNeutral: BitPieceColor.Neutral
+                );
+                bitMove.AddCapture(
+                    capture.Position.AsIdx(),
+                    capture.CapturedPiece.Type,
+                    capturedColor
+                );
             }
 
-            expectedMoves.Add(
-                new BitMove()
-                {
-                    From = move.From.AsIdx(),
-                    To = move.To.AsIdx(),
-                    Piece = testCase.Piece.Type,
-                    Captures = captures,
-                    SpecialMoveType = move.SpecialMoveType,
-                }
-            );
+            expectedMoves.Add(bitMove);
         }
 
         List<BitMove> result = [.. moves[..movesCount]];

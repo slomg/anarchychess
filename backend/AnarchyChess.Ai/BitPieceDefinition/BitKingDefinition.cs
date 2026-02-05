@@ -137,16 +137,20 @@ public sealed class BitKingDefinition : IBitPieceDefinition
 
         while (attacks != 0)
         {
-            int toSquare = BitboardHelpers.BitScanForward(ref attacks);
+            byte toSquare = (byte)BitboardHelpers.BitScanForward(ref attacks);
             bool isCapture = (enemyPieces & (UInt128.One << toSquare)) != 0;
 
-            moves[moveCount++] = new BitMove()
+            BitMove move = new()
             {
                 From = position,
-                To = (byte)toSquare,
+                To = toSquare,
                 Piece = pieceType,
-                Captures = isCapture ? (UInt128.One << toSquare) : 0,
             };
+            if (isCapture && board.TryGetPieceAt(toSquare, out var capturePiece))
+            {
+                move.AddCapture(toSquare, capturePiece.Value.PieceType, capturePiece.Value.Color);
+            }
+            moves[moveCount++] = move;
         }
 
         GenerateCastleMovesForColor(board, pieceType, color, position, moves, ref moveCount);
@@ -207,28 +211,35 @@ public sealed class BitKingDefinition : IBitPieceDefinition
         UInt128 kingDestMask = UInt128.One << castleInfo.KingDest;
         UInt128 rookDestMask = UInt128.One << castleInfo.RookDest;
 
-        UInt128 captureMask = 0;
+        bool isCapture = false;
+        byte capturePosition = 0;
         UInt128 bishopBitboard = board.BitboardFor(PieceType.Bishop, color);
         if ((bishopBitboard & kingDestMask) != 0)
         {
-            captureMask = UInt128.One << castleInfo.KingDest;
+            isCapture = true;
+            capturePosition = castleInfo.KingDest;
         }
         else if ((bishopBitboard & rookDestMask) != 0)
         {
-            captureMask = UInt128.One << castleInfo.RookDest;
+            isCapture = true;
+            capturePosition = castleInfo.RookDest;
         }
         else if ((board.Occupancy & kingDestMask) != 0 || (board.Occupancy & rookDestMask) != 0)
         {
             return;
         }
 
-        moves[moveCount++] = new BitMove()
+        BitMove move = new()
         {
             From = position,
             To = castleInfo.KingDest,
             Piece = pieceType,
-            Captures = captureMask,
             SpecialMoveType = castleInfo.MoveType,
         };
+        if (isCapture)
+        {
+            move.AddCapture(capturePosition, PieceType.Bishop, color);
+        }
+        moves[moveCount++] = move;
     }
 }

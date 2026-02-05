@@ -2,14 +2,58 @@
 
 namespace AnarchyChess.Ai;
 
-public struct BitMove
+public unsafe struct BitMove
 {
+    private const int SquareBits = 7; // 0-99
+    private const int PieceBits = 6; // up to 63 pieces
+    private const int ColorBits = 2;
+
+    private const int PieceShift = SquareBits;
+    private const int ColorShift = SquareBits + PieceBits;
+
+    private const ushort SquareMask = (1 << SquareBits) - 1;
+    private const ushort PieceMask = (1 << PieceBits) - 1;
+
+    private const int MaxCaptures = 16;
+
     public required byte From;
     public required byte To;
     public required PieceType Piece;
 
-    public UInt128 Captures;
+    public UInt128 CapturesMask;
+    private fixed ushort _capturesPacked[MaxCaptures];
+    public byte CaptureCount;
+
     public PieceType? PromotesTo;
     public ForcedMovePriority ForcedMovePriority;
     public SpecialMoveType SpecialMoveType;
+
+    public void AddCapture(byte square, PieceType piece, BitPieceColor color)
+    {
+        if (CaptureCount >= MaxCaptures)
+        {
+            throw new InvalidOperationException("Too many captures");
+        }
+
+        // [color bits][piece bits][square bits]
+        ushort data = (ushort)(((byte)color << ColorShift) | ((byte)piece << PieceShift) | square);
+        _capturesPacked[CaptureCount++] = data;
+
+        CapturesMask |= UInt128.One << square;
+    }
+
+    public readonly (byte Position, PieceType PieceType, BitPieceColor Color) GetCapture(int index)
+    {
+        if (index >= CaptureCount)
+        {
+            throw new IndexOutOfRangeException();
+        }
+
+        ushort data = _capturesPacked[index];
+        byte square = (byte)(data & SquareMask);
+        PieceType piece = (PieceType)((data >> PieceShift) & PieceMask);
+        BitPieceColor color = (BitPieceColor)(data >> ColorShift);
+
+        return (Position: square, PieceType: piece, Color: color);
+    }
 }
