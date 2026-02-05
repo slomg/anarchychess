@@ -181,5 +181,16 @@ public class RookTestData : TheoryData<PieceTestCase>
                 .GoesTo("b1", "c1", "d1", "e1", "f1", "g1", "h1", "i1", "j1")
                 .WithDescription("Fuses with horsey and explodes surrounding pieces")
         );
+
+        Add(
+            PieceTestCase
+                .From("a1", rook)
+                .WithBlackPieceAt("a3", PieceType.Horsey)
+                .WithEnemyPieceAt("a4")
+                .WithFriendlyPieceAt("b4")
+                .WithEnemyPieceAt("b3")
+                .GoesTo("a2", "a3", "b1", "c1", "d1", "e1", "f1", "g1", "h1", "i1", "j1")
+                .WithDescription("Doesn't fuse with enemy horsey")
+        );
     }
 }

@@ -58,7 +58,7 @@ public class BitPieceDefinitionTestBase
         }
 
         List<BitMove> result = [.. moves[..moveCount]];
-        result.Should().BeEquivalentTo(expectedMoves);
+        result.Should().BeEquivalentTo(expectedMoves, options => options.WithoutStrictOrdering());
         moveCount.Should().Be(expectedMoves.Count);
     }
 }

@@ -1,10 +1,9 @@
 ﻿using AnarchyChess.Ai.Helpers;
-using AnarchyChess.Ai.MagicTables;
 using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai.BitPieceDefinition;
 
-public sealed class BitRookDefinition : IBitPieceDefinition
+public sealed class BitHorseyDefinition : IBitPieceDefinition
 {
     public void GenerateMoves(
         BitBoard board,
@@ -15,16 +14,12 @@ public sealed class BitRookDefinition : IBitPieceDefinition
         ref int moveCount
     )
     {
-        UInt128 attacks = MagicLibrary.GetAttacks(
-            MagicLibrary.RookTable,
-            position,
-            board.Occupancy
-        );
+        UInt128 attacks = BitboardConstants.HorseyMasks[position];
 
-        UInt128 horseyAttacks = attacks & board.BitboardFor(PieceType.Horsey, color);
-        while (horseyAttacks != 0)
+        UInt128 rookAttacks = attacks & board.BitboardFor(PieceType.Rook, color);
+        while (rookAttacks != 0)
         {
-            byte toSquare = (byte)BitboardHelpers.BitScanForward(ref horseyAttacks);
+            byte toSquare = (byte)BitboardHelpers.BitScanForward(ref rookAttacks);
             BitMove move = new()
             {
                 From = position,
@@ -32,7 +27,7 @@ public sealed class BitRookDefinition : IBitPieceDefinition
                 Piece = pieceType,
                 SpecialMoveType = SpecialMoveType.KnooklearFusion,
             };
-            move.AddCapture(toSquare, PieceType.Horsey, color);
+            move.AddCapture(toSquare, PieceType.Rook, color);
 
             UInt128 captures = 0;
             captures = BitboardHelpers.MaskAdjacent(toSquare, captures);
