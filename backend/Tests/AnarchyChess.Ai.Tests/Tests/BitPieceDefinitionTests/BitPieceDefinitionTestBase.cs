@@ -14,7 +14,7 @@ public class BitPieceDefinitionTestBase
         BitBoard board = BitBoard.FromPieces(testCase.BlockedBy);
 
         Span<BitMove> moves = stackalloc BitMove[256];
-        int movesCount = 0;
+        int moveCount = 0;
 
         BitPieceColor color = testCase.Piece.Color.Match(
             whenWhite: BitPieceColor.White,
@@ -27,7 +27,7 @@ public class BitPieceDefinitionTestBase
             testCase.Piece.Type,
             color,
             moves,
-            ref movesCount
+            ref moveCount
         );
 
         List<BitMove> expectedMoves = [];
@@ -57,8 +57,8 @@ public class BitPieceDefinitionTestBase
             expectedMoves.Add(bitMove);
         }
 
-        List<BitMove> result = [.. moves[..movesCount]];
+        List<BitMove> result = [.. moves[..moveCount]];
         result.Should().BeEquivalentTo(expectedMoves);
-        movesCount.Should().Be(expectedMoves.Count);
+        moveCount.Should().Be(expectedMoves.Count);
     }
 }

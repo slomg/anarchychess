@@ -7,14 +7,14 @@ namespace AnarchyChess.Ai;
 
 public interface IBitMovesGenerator
 {
-    void Generate(BitBoard board, Span<BitMove> moves, ref int movesCount);
+    void Generate(BitBoard board, Span<BitMove> moves, ref int moveCount);
     void GenerateForPiece(
         BitBoard board,
         byte position,
         PieceType pieceType,
         BitPieceColor color,
         Span<BitMove> moves,
-        ref int movesCount
+        ref int moveCount
     );
 }
 
@@ -25,7 +25,7 @@ public sealed class BitMovesGenerator : IBitMovesGenerator
         [PieceType.King] = new BitKingDefinition(),
     };
 
-    public void Generate(BitBoard board, Span<BitMove> moves, ref int movesCount)
+    public void Generate(BitBoard board, Span<BitMove> moves, ref int moveCount)
     {
         for (int colorIdx = 0; colorIdx < board.Bitboards.GetLength(0); colorIdx++)
         {
@@ -45,7 +45,7 @@ public sealed class BitMovesGenerator : IBitMovesGenerator
                         pieceType,
                         color,
                         moves,
-                        ref movesCount
+                        ref moveCount
                     );
                 }
             }
@@ -58,7 +58,7 @@ public sealed class BitMovesGenerator : IBitMovesGenerator
         PieceType pieceType,
         BitPieceColor color,
         Span<BitMove> moves,
-        ref int movesCount
+        ref int moveCount
     )
     {
         UInt128 bitboard = board.BitboardFor(pieceType, color);
@@ -67,7 +67,7 @@ public sealed class BitMovesGenerator : IBitMovesGenerator
             && (bitboard & (UInt128.One << position)) != 0
         )
         {
-            definition.GenerateMoves(board, pieceType, color, position, moves, ref movesCount);
+            definition.GenerateMoves(board, pieceType, color, position, moves, ref moveCount);
         }
     }
 
@@ -79,7 +79,7 @@ public sealed class BitMovesGenerator : IBitMovesGenerator
         PieceType pieceType,
         BitPieceColor color,
         Span<BitMove> moves,
-        ref int movesCount
+        ref int moveCount
     )
     {
         while (bitboard != 0)
@@ -87,7 +87,7 @@ public sealed class BitMovesGenerator : IBitMovesGenerator
             int squareIndex = BitboardHelpers.BitScanForward(ref bitboard);
             byte position = (byte)squareIndex;
 
-            definition.GenerateMoves(board, pieceType, color, position, moves, ref movesCount);
+            definition.GenerateMoves(board, pieceType, color, position, moves, ref moveCount);
         }
     }
 }
