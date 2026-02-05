@@ -84,7 +84,7 @@ public class QueenTestData : TheoryData<PieceTestCase>
                 // up left
                 .GoesTo("i6", "h7", "g8", "f9", "e10")
                 // down left
-                .GoesTo("i3", "h2", "g1")
+                .GoesTo("i4", "h3", "g2", "f1")
                 .WithDescription("Queen on edge j5, no beta decay")
         );
 
