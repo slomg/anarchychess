@@ -42,7 +42,7 @@ public class QueenTestData : TheoryData<PieceTestCase>
                     captures: ["e5"],
                     specialMoveType: SpecialMoveType.RadioactiveBetaDecay
                 )
-                .WithDescription("Open board from e5")
+                .WithDescription("Open board from e5 with beta decay")
         );
 
         Add(
@@ -54,7 +54,7 @@ public class QueenTestData : TheoryData<PieceTestCase>
                 .GoesTo("b1", "c1", "d1", "e1", "f1", "g1", "h1", "i1", "j1")
                 // diagonal up-right
                 .GoesTo("b2", "c3", "d4", "e5", "f6", "g7", "h8", "i9", "j10")
-                .WithDescription("Queen in corner a1")
+                .WithDescription("Queen in corner a1, no beta decay")
         );
 
         Add(
@@ -73,7 +73,19 @@ public class QueenTestData : TheoryData<PieceTestCase>
                 .GoesTo("b6", "c7", "d8", "e9", "f10")
                 // diagonal down-right
                 .GoesTo("b4", "c3", "d2", "e1")
-                .WithDescription("Queen on edge a5 with blockers")
+                .WithDescription("Queen on edge a5 with blockers, no beta decay")
+        );
+
+        Add(
+            PieceTestCase
+                .From("j5", queen)
+                // left
+                .GoesTo("i5", "h5", "g5", "f5", "e5", "d5", "c5", "b5", "a5")
+                // up left
+                .GoesTo("i6", "h7", "g8", "f9", "e10")
+                // down left
+                .GoesTo("i3", "h2", "g1")
+                .WithDescription("Queen on edge j5, no beta decay")
         );
 
         Add(

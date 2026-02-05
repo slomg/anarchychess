@@ -15,8 +15,6 @@ public sealed class BitRookDefinition : IBitPieceDefinition
         ref int moveCount
     )
     {
-        UInt128 friendlyPieces = board.BitboardForFriendOf(color);
-
         UInt128 attacks = MagicLibrary.GetAttacks(
             MagicLibrary.RookTable,
             position,
@@ -25,7 +23,6 @@ public sealed class BitRookDefinition : IBitPieceDefinition
 
         UInt128 friendlyHorsey = board.BitboardFor(PieceType.Horsey, color);
         UInt128 horseyAttacks = attacks & friendlyHorsey;
-
         while (horseyAttacks != 0)
         {
             byte toSquare = (byte)BitboardHelpers.BitScanForward(ref horseyAttacks);
@@ -53,11 +50,12 @@ public sealed class BitRookDefinition : IBitPieceDefinition
 
             moves[moveCount++] = move;
         }
+
         BitboardHelpers.CreateMoveFromAttacks(
             position,
             pieceType,
             board,
-            attacks & ~friendlyPieces,
+            attacks & ~board.BitboardForFriendOf(color),
             board.Occupancy,
             moves,
             ref moveCount
