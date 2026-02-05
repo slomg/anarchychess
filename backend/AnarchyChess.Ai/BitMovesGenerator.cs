@@ -26,6 +26,8 @@ public sealed class BitMovesGenerator : IBitMovesGenerator
         [PieceType.Queen] = new BitQueenDefinition(),
         [PieceType.Rook] = new BitRookDefinition(),
         [PieceType.Horsey] = new BitHorseyDefinition(),
+
+        [PieceType.Antiqueen] = new AntiqueenBitDefinition(),
     };
 
     public void Generate(BitBoard board, Span<BitMove> moves, ref int moveCount)
