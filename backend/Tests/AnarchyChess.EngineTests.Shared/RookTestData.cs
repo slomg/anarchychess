@@ -171,14 +171,13 @@ public class RookTestData : TheoryData<PieceTestCase>
                 .WithEnemyPieceAt("a4")
                 .WithFriendlyPieceAt("b4")
                 .WithEnemyPieceAt("b3")
-                .GoesTo("a2")
                 .GoesTo(
                     "a3",
                     captures: ["a3", "a4", "b4", "b3"],
                     promotesTo: PieceType.Knook,
                     specialMoveType: SpecialMoveType.KnooklearFusion
                 )
-                .GoesTo("b1", "c1", "d1", "e1", "f1", "g1", "h1", "i1", "j1")
+                .GoesTo("a2", "b1", "c1", "d1", "e1", "f1", "g1", "h1", "i1", "j1")
                 .WithDescription("Fuses with horsey and explodes surrounding pieces")
         );
 
@@ -189,7 +188,8 @@ public class RookTestData : TheoryData<PieceTestCase>
                 .WithEnemyPieceAt("a4")
                 .WithFriendlyPieceAt("b4")
                 .WithEnemyPieceAt("b3")
-                .GoesTo("a2", "a3", "b1", "c1", "d1", "e1", "f1", "g1", "h1", "i1", "j1")
+                .GoesTo("a3", captures: ["a3"])
+                .GoesTo("a2", "b1", "c1", "d1", "e1", "f1", "g1", "h1", "i1", "j1")
                 .WithDescription("Doesn't fuse with enemy horsey")
         );
     }

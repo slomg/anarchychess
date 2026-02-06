@@ -86,9 +86,9 @@ public class QueenTestData : TheoryData<PieceTestCase>
                     "e5",
                     spawns:
                     [
-                        new PieceSpawn(PieceType.Rook, GameColor.White, new("d5")),
-                        new PieceSpawn(PieceType.SterilePawn, GameColor.White, new("e4")),
-                        new PieceSpawn(PieceType.Horsey, GameColor.White, new("f5")),
+                        new PieceSpawn(PieceType.Rook, GameColor.Black, new("d5")),
+                        new PieceSpawn(PieceType.SterilePawn, GameColor.Black, new("e4")),
+                        new PieceSpawn(PieceType.Horsey, GameColor.Black, new("f5")),
                     ],
                     captures: ["e5"],
                     specialMoveType: SpecialMoveType.RadioactiveBetaDecay

@@ -114,7 +114,7 @@ public class KingTestData : TheoryData<PieceTestCase>
                 )
                 .GoesTo(
                     "f3",
-                    trigger: ["f2", "f4", "f5", "f6", "f7", "f8", "f9"],
+                    trigger: ["f4", "f5", "f6", "f7", "f8", "f9"],
                     sideEffects: [new(From: new("f10"), To: new("f2"), whiteRook)],
                     specialMoveType: SpecialMoveType.VerticalCastle
                 )
@@ -131,19 +131,19 @@ public class KingTestData : TheoryData<PieceTestCase>
                 .GoesTo(
                     "h10",
                     trigger: ["i10"],
-                    sideEffects: [new(From: new("j10"), To: new("g10"), whiteRook)],
+                    sideEffects: [new(From: new("j10"), To: new("g10"), blackRook)],
                     specialMoveType: SpecialMoveType.KingsideCastle
                 )
                 .GoesTo(
                     "d10",
                     trigger: ["c10", "b10"],
-                    sideEffects: [new(From: new("a10"), To: new("e10"), whiteRook)],
+                    sideEffects: [new(From: new("a10"), To: new("e10"), blackRook)],
                     specialMoveType: SpecialMoveType.QueensideCastle
                 )
                 .GoesTo(
                     "f8",
-                    trigger: ["f2", "f4", "f5", "f6", "f7", "f8", "f9"],
-                    sideEffects: [new(From: new("f1"), To: new("f9"), whiteRook)],
+                    trigger: ["f2", "f3", "f4", "f5", "f6", "f7"],
+                    sideEffects: [new(From: new("f1"), To: new("f9"), blackRook)],
                     specialMoveType: SpecialMoveType.VerticalCastle
                 )
                 // regular moves

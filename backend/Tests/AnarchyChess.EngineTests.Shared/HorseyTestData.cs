@@ -24,7 +24,7 @@ public class HorseyTestData : KnightLikeTestData
                 .WithFriendlyPieceAt("e6")
                 .GoesTo(
                     "d7",
-                    captures: ["c6", "d6", "e6", "c7", "d7", "e7", "c8", "d8", "e8"],
+                    captures: ["d7", "c6", "d6", "e6", "c7", "e7", "c8", "d8", "e8"],
                     promotesTo: PieceType.Knook,
                     specialMoveType: SpecialMoveType.KnooklearFusion
                 )
@@ -44,7 +44,8 @@ public class HorseyTestData : KnightLikeTestData
                 .WithFriendlyPieceAt("c6")
                 .WithEnemyPieceAt("d6")
                 .WithFriendlyPieceAt("e6")
-                .GoesTo("f7", "g6", "c4", "g4", "d3", "f3", "d7")
+                .GoesTo("d7", captures: ["d7"])
+                .GoesTo("f7", "g6", "c4", "g4", "d3", "f3")
                 .WithDescription("Doesn't fuses with enemy rook")
         );
     }
