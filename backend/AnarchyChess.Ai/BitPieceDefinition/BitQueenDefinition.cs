@@ -51,26 +51,18 @@ public sealed class BitQueenDefinition : IBitPieceDefinition
         bool isWhite = color is BitPieceColor.White;
 
         UInt128 positionBit = UInt128.One << position;
+        UInt128 right = (positionBit & ~BitboardConstants.RightEdgeMask) << 1;
+        UInt128 left = (positionBit & ~BitboardConstants.LeftEdgeMask) >> 1;
+        UInt128 vertical = isWhite
+            ? (positionBit & ~BitboardConstants.TopEdgeMask) << 10
+            : (positionBit & ~BitboardConstants.BottomEdgeMask) >> 10;
 
-        UInt128 requiredMask = ~(
-            BitboardConstants.LeftEdgeMask
-            | BitboardConstants.RightEdgeMask
-            | (isWhite ? BitboardConstants.TopEdgeMask : BitboardConstants.BottomEdgeMask)
-        );
-        UInt128 betaDecayTargets =
-            ((positionBit & requiredMask) << 1) // right
-            | ((positionBit & requiredMask) >> 1) // left
-            | (
-                isWhite
-                    ? ((positionBit & requiredMask) << 10) // up
-                    : ((positionBit & requiredMask) >> 10) // down
-            );
-        if (betaDecayTargets == 0)
+        if (right == 0 || left == 0 || vertical == 0)
         {
             return;
         }
 
-        betaDecayTargets &= ~board.Occupancy;
+        UInt128 betaDecayTargets = (right | left | vertical) & ~board.Occupancy;
         if (betaDecayTargets == 0)
         {
             return;

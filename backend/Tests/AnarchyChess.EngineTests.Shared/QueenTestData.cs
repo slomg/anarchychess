@@ -178,5 +178,123 @@ public class QueenTestData : TheoryData<PieceTestCase>
                 .GoesTo("f4", captures: ["f4"])
                 .WithDescription("Queen surrounded by enemy pieces - all moves are captures")
         );
+
+        string[] f1Moves =
+        [
+            // up left
+            "e2",
+            "d3",
+            "c4",
+            "b5",
+            "a6",
+            // up right
+            "g2",
+            "h3",
+            "i4",
+            "j5",
+            // up
+            "f2",
+            "f3",
+            "f4",
+            "f5",
+            "f6",
+            "f7",
+            "f8",
+            "f9",
+            "f10",
+            // left
+            "e1",
+            "d1",
+            "c1",
+            "b1",
+            "a1",
+            // right
+            "g1",
+            "h1",
+            "i1",
+            "j1",
+        ];
+        Add(
+            PieceTestCase
+                .From("f1", whiteQueen)
+                .GoesTo(f1Moves)
+                .GoesTo(
+                    "f1",
+                    spawns:
+                    [
+                        new PieceSpawn(PieceType.Rook, GameColor.White, new("e1")),
+                        new PieceSpawn(PieceType.SterilePawn, GameColor.White, new("f2")),
+                        new PieceSpawn(PieceType.Horsey, GameColor.White, new("g1")),
+                    ],
+                    captures: ["f1"],
+                    specialMoveType: SpecialMoveType.RadioactiveBetaDecay
+                )
+                .WithDescription("White queen on f1 can beta decay")
+        );
+        Add(
+            PieceTestCase
+                .From("f1", blackQueen)
+                .GoesTo(f1Moves)
+                .WithDescription("Black queen on f1 can't beta decay")
+        );
+
+        string[] f10Moves =
+        [
+            // down left
+            "e9",
+            "d8",
+            "c7",
+            "b6",
+            "a5",
+            // down right
+            "g9",
+            "h8",
+            "i7",
+            "j6",
+            //down
+            "f9",
+            "f8",
+            "f7",
+            "f6",
+            "f5",
+            "f4",
+            "f3",
+            "f2",
+            "f1",
+            // left
+            "e10",
+            "d10",
+            "c10",
+            "b10",
+            "a10",
+            // right
+            "g10",
+            "h10",
+            "i10",
+            "j10",
+        ];
+        Add(
+            PieceTestCase
+                .From("f10", blackQueen)
+                .GoesTo(f10Moves)
+                .GoesTo(
+                    "f10",
+                    spawns:
+                    [
+                        new PieceSpawn(PieceType.Rook, GameColor.Black, new("e10")),
+                        new PieceSpawn(PieceType.SterilePawn, GameColor.Black, new("f9")),
+                        new PieceSpawn(PieceType.Horsey, GameColor.Black, new("g10")),
+                    ],
+                    captures: ["f10"],
+                    specialMoveType: SpecialMoveType.RadioactiveBetaDecay
+                )
+                .WithDescription("Black queen on f10 can beta decay")
+        );
+        Add(
+            PieceTestCase
+                .From("f10", whiteQueen)
+                .GoesTo(f10Moves)
+                .WithDescription("White queen on f10 can't beta decay")
+        );
     }
 }
