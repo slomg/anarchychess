@@ -1,5 +1,4 @@
-﻿using System.Collections.Immutable;
-using AnarchyChess.Api.GameLogic.Models;
+﻿using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.EngineShared.Extensions;
 using AnarchyChess.EngineTests.Shared;
 using AwesomeAssertions;
@@ -38,27 +37,14 @@ public class BitPieceDefinitionTestBase
         // for better assertion logs
         var expectedMoveSorted = expectedMoves.OrderBy(x => x.To);
         var resultSorted = result.OrderBy(x => x.To);
-        AssertionConfiguration.Current.Formatting.MaxLines = 100000;
         resultSorted.Should().BeEquivalentTo(expectedMoveSorted);
         moveCount.Should().Be(expectedMoves.Count);
     }
 
     private static List<BitMove> ConvertUiMovesToBitMoves(List<Move> uiMoves)
     {
-        var deduped = uiMoves.DistinctBy(x =>
-            (
-                x.From,
-                x.To,
-                x.Piece,
-                x.Captures.ToImmutableArray(),
-                x.SpecialMoveType,
-                x.ForcedPriority,
-                x.PromotesTo
-            )
-        );
-
         List<BitMove> bitMoves = [];
-        foreach (var move in deduped)
+        foreach (var move in uiMoves)
         {
             BitMove bitMove = new()
             {
@@ -86,6 +72,6 @@ public class BitPieceDefinitionTestBase
             bitMoves.Add(bitMove);
         }
 
-        return bitMoves;
+        return [.. bitMoves.Distinct()];
     }
 }

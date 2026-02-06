@@ -131,7 +131,11 @@ public class BishopTestData : TheoryData<PieceTestCase>
                 .GoesTo("d6", "c7", "b8")
                 .GoesTo(openE5UpRight)
                 .GoesTo(openE5DownLeft)
-                .GoesTo(openE5DownRight.Where(x => x.To != "a9").ToArray())
+                .GoesTo(
+                    openE5DownRight
+                        .Where(x => x.To != "a9" && x.To != "d6" && x.To != "c7" && x.To != "b8")
+                        .ToArray()
+                )
                 .WithDescription("Friendly piece blocking bounce")
         );
 
@@ -143,8 +147,13 @@ public class BishopTestData : TheoryData<PieceTestCase>
                 .GoesTo("a9", captures: ["a9"])
                 .GoesTo(openE5UpRight)
                 .GoesTo(openE5DownLeft)
-                .GoesTo(openE5DownRight.Where(x => x.To != "a9").ToArray())
-                .WithDescription("Friendly piece blocking bounce")
+                .GoesTo(
+                    openE5DownRight
+                        .Where(x => x.To != "a9" && x.To != "d6" && x.To != "c7" && x.To != "b8")
+                        .ToArray()
+                )
+                .GoesTo("a9", captures: ["a9"], intermediates: diagonalDownRightIntermediate3)
+                .WithDescription("Enemy piece blocking bounce")
         );
 
         Add(

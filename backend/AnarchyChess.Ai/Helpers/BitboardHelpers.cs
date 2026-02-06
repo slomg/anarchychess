@@ -13,19 +13,20 @@ public static class BitboardHelpers
         }
 
         ulong low = (ulong)bitboard;
+        int index;
+
         if (low != 0)
         {
-            int index = BitOperations.TrailingZeroCount(low);
-            bitboard &= bitboard - 1;
-            return index;
+            index = BitOperations.TrailingZeroCount(low);
         }
         else
         {
             ulong high = (ulong)(bitboard >> 64);
-            int index = 64 + BitOperations.TrailingZeroCount(high);
-            bitboard &= bitboard - 1;
-            return index;
+            index = 64 + BitOperations.TrailingZeroCount(high);
         }
+
+        bitboard &= bitboard - 1;
+        return index;
     }
 
     public static UInt128 MaskAdjacent(byte position, UInt128 mask)
