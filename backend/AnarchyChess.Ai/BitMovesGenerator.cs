@@ -29,7 +29,7 @@ public sealed class BitMovesGenerator : IBitMovesGenerator
         [PieceType.Horsey] = new BitHorseyDefinition(),
 
         [PieceType.Knook] = new BitKnookDefinition(),
-        [PieceType.Antiqueen] = new AntiqueenBitDefinition(),
+        [PieceType.Antiqueen] = new BitAntiqueenDefinition(),
         [PieceType.TraitorRook] = new BitTraitorRookDefinition(),
     };
 

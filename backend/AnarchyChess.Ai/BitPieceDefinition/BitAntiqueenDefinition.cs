@@ -3,7 +3,7 @@ using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai.BitPieceDefinition;
 
-public sealed class AntiqueenBitDefinition : IBitPieceDefinition
+public sealed class BitAntiqueenDefinition : IBitPieceDefinition
 {
     public void GenerateMoves(
         BitBoard board,
