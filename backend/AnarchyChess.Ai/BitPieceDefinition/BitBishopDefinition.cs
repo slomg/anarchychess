@@ -21,7 +21,7 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
             pieceType,
             color,
             origin: position,
-            jumpFrom: position,
+            bounceFrom: position,
             ref visitedMask,
             moves,
             ref moveCount
@@ -33,7 +33,7 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
         PieceType pieceType,
         BitPieceColor color,
         byte origin,
-        byte jumpFrom,
+        byte bounceFrom,
         ref UInt128 visitedMask,
         Span<BitMove> moves,
         ref int moveCount
@@ -41,7 +41,7 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
     {
         UInt128 attacks = MagicLibrary.GetAttacks(
             MagicLibrary.BishopTable,
-            jumpFrom,
+            bounceFrom,
             board.Occupancy
         );
         attacks &= ~board.BitboardForFriendOf(color);
@@ -73,7 +73,7 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
                 pieceType,
                 color,
                 origin: origin,
-                jumpFrom: edgeSquare,
+                bounceFrom: edgeSquare,
                 ref visitedMask,
                 moves,
                 ref moveCount
