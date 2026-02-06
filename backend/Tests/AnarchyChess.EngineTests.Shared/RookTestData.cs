@@ -169,7 +169,7 @@ public class RookTestData : TheoryData<PieceTestCase>
                 .From("a1", rook)
                 .WithWhitePieceAt("a3", PieceType.Horsey)
                 .WithEnemyPieceAt("a4")
-                .WithFriendlyPieceAt("b4")
+                .WithFriendlyPieceAt("b4", excludePieces: PieceType.Horsey)
                 .WithEnemyPieceAt("b3")
                 .GoesTo(
                     "a3",
@@ -186,7 +186,7 @@ public class RookTestData : TheoryData<PieceTestCase>
                 .From("a1", rook)
                 .WithBlackPieceAt("a3", PieceType.Horsey)
                 .WithEnemyPieceAt("a4")
-                .WithFriendlyPieceAt("b4")
+                .WithFriendlyPieceAt("b4", excludePieces: PieceType.Horsey)
                 .WithEnemyPieceAt("b3")
                 .GoesTo("a3", captures: ["a3"])
                 .GoesTo("a2", "b1", "c1", "d1", "e1", "f1", "g1", "h1", "i1", "j1")
