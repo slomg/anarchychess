@@ -50,9 +50,8 @@ public class BitboardHelpersTests
     [Fact]
     public void MaskAdjacent_sets_correct_adjacent_bits_in_middle()
     {
-        UInt128 mask = 0;
         byte position = 21; // somewhere in the middle of the board
-        UInt128 result = BitboardHelpers.MaskAdjacent(position, mask);
+        UInt128 result = BitboardHelpers.MaskAdjacent(position);
 
         UInt128 expected =
             (UInt128.One << 20)
@@ -77,9 +76,8 @@ public class BitboardHelpersTests
     [Fact]
     public void MaskAdjacent_does_not_wrap_around_edges()
     {
-        UInt128 mask = 0;
         byte position = 0;
-        UInt128 result = BitboardHelpers.MaskAdjacent(position, mask);
+        UInt128 result = BitboardHelpers.MaskAdjacent(position);
 
         UInt128 expected =
             (UInt128.One << 1)

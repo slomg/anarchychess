@@ -29,9 +29,10 @@ public static class BitboardHelpers
         return index;
     }
 
-    public static UInt128 MaskAdjacent(byte position, UInt128 mask)
+    public static UInt128 MaskAdjacent(byte position)
     {
         UInt128 targetBit = UInt128.One << position;
+        UInt128 mask = 0;
 
         mask |= (targetBit & ~BitboardConstants.RightEdgeMask) << 1; // right
         mask |= (targetBit & ~BitboardConstants.LeftEdgeMask) >> 1; // left

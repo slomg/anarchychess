@@ -29,8 +29,7 @@ public sealed class BitHorseyDefinition : IBitPieceDefinition
             };
             move.AddCapture(toSquare, PieceType.Rook, color);
 
-            UInt128 captures = 0;
-            captures = BitboardHelpers.MaskAdjacent(toSquare, captures);
+            UInt128 captures = BitboardHelpers.MaskAdjacent(toSquare);
             captures &= board.Occupancy;
 
             while (captures != 0)
