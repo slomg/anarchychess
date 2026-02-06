@@ -19,10 +19,13 @@ public class BitBoard
     public UInt128 WhiteEnemy { get; private set; }
     public UInt128 BlackEnemy { get; private set; }
 
+    public bool IsWhiteToMove { get; private set; }
+
     public BitBoard(
         UInt128[,]? bitboards = null,
         UInt128? hasMoved = null,
-        BitPiece?[]? pieceAt = null
+        BitPiece?[]? pieceAt = null,
+        bool isWhiteToMove = true
     )
     {
         Bitboards =
@@ -33,6 +36,7 @@ public class BitBoard
             ];
         PieceAt = pieceAt ?? new BitPiece?[10 * 10];
         HasMoved = hasMoved ?? 0;
+        IsWhiteToMove = isWhiteToMove;
 
         for (int i = 0; i < Enum.GetValues<PieceType>().Length; i++)
         {
@@ -47,7 +51,10 @@ public class BitBoard
         BlackEnemy = WhitePieces | NeutralPieces;
     }
 
-    public static BitBoard FromPieces(Dictionary<AlgebraicPoint, Piece> pieces)
+    public static BitBoard FromPieces(
+        Dictionary<AlgebraicPoint, Piece> pieces,
+        bool isWhiteToMove = true
+    )
     {
         UInt128[,] bitboards = new UInt128[
             Enum.GetValues<BitPieceColor>().Length,
@@ -74,7 +81,7 @@ public class BitBoard
             }
         }
 
-        return new BitBoard(bitboards, hasMoved, pieceAt);
+        return new BitBoard(bitboards, hasMoved, pieceAt, isWhiteToMove: isWhiteToMove);
     }
 
     public ref UInt128 BitboardFor(PieceType pieceType, BitPieceColor color) =>

@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Runtime.CompilerServices;
 using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai.Helpers;
@@ -28,6 +29,10 @@ public static class BitboardHelpers
         bitboard &= bitboard - 1;
         return index;
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static int CountBits(UInt128 mask) =>
+        BitOperations.PopCount((ulong)mask) + BitOperations.PopCount((ulong)(mask >> 64));
 
     public static UInt128 MaskAdjacent(byte position)
     {

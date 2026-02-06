@@ -47,6 +47,19 @@ public class BitboardHelpersTests
         act.Should().Throw<InvalidOperationException>();
     }
 
+    [Theory]
+    [InlineData(0UL, 0UL, 0)] // empty
+    [InlineData(1UL << 3, 0UL, 1)] // low half only
+    [InlineData(0UL, 1UL << 5, 1)] // high half only
+    [InlineData(1UL << 1, 1UL << 1, 2)] // both halves
+    [InlineData(1UL << 63, 1UL << 0, 2)] // boundary correctness
+    public void CountBits_adds_low_and_high_halves_correctly(ulong low, ulong high, int expected)
+    {
+        UInt128 mask = ((UInt128)high << 64) | low;
+
+        BitboardHelpers.CountBits(mask).Should().Be(expected);
+    }
+
     [Fact]
     public void MaskAdjacent_sets_correct_adjacent_bits_in_middle()
     {

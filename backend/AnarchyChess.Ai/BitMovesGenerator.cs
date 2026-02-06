@@ -30,6 +30,7 @@ public sealed class BitMovesGenerator : IBitMovesGenerator
 
         [PieceType.Knook] = new BitKnookDefinition(),
         [PieceType.Antiqueen] = new AntiqueenBitDefinition(),
+        [PieceType.TraitorRook] = new BitTraitorRookDefinition(),
     };
 
     public void Generate(BitBoard board, Span<BitMove> moves, ref int moveCount)

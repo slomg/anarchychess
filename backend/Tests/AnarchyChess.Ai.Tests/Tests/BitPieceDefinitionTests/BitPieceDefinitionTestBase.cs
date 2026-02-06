@@ -1,4 +1,5 @@
 ﻿using AnarchyChess.Api.GameLogic.Models;
+using AnarchyChess.EngineShared;
 using AnarchyChess.EngineShared.Extensions;
 using AnarchyChess.EngineTests.Shared;
 using AwesomeAssertions;
@@ -12,7 +13,10 @@ public class BitPieceDefinitionTestBase
     protected void TestMoves(PieceTestCase testCase)
     {
         testCase.BlockedBy.Add(testCase.Origin, testCase.Piece);
-        BitBoard board = BitBoard.FromPieces(testCase.BlockedBy);
+        BitBoard board = BitBoard.FromPieces(
+            testCase.BlockedBy,
+            isWhiteToMove: testCase.MovingPlayer is GameColor.White
+        );
 
         Span<BitMove> moves = stackalloc BitMove[256];
         int moveCount = 0;

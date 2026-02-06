@@ -113,6 +113,16 @@ public class BitBoardTests
         board.HasPieceMoved(new AlgebraicPoint("a10").AsIdx()).Should().BeFalse();
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void FromPieces_sets_IsWhiteToMove(bool isWhiteToMove)
+    {
+        BitBoard board = BitBoard.FromPieces([], isWhiteToMove: isWhiteToMove);
+
+        board.IsWhiteToMove.Should().Be(isWhiteToMove);
+    }
+
     [Fact]
     public void HasPieceMoved_returns_true_for_moved_position_and_false_for_unmoved()
     {
