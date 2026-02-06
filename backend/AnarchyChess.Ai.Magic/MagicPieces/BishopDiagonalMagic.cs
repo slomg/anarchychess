@@ -2,9 +2,9 @@
 
 namespace AnarchyChess.Ai.Magic.MagicPieces;
 
-public sealed class QueenDiagonalMagic : PieceMagic
+public sealed class BishopDiagonalMagic : PieceMagic
 {
-    public override string Name => "QueenDiagonal";
+    public override string Name => "Bishop";
 
     public override UInt128 GenerateMask(int x, int y) =>
         SlideMask(x, y, new Offset(X: 1, Y: 1))

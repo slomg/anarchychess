@@ -6,7 +6,7 @@ namespace AnarchyChess.Ai.MagicTables;
 public static class MagicLibrary
 {
     public static MagicPieceTable RookTable { get; }
-    public static MagicPieceTable QueenDiagonalTable { get; }
+    public static MagicPieceTable BishopTable { get; }
 
     private static readonly string _magicBasePath = Path.Combine(
         AppContext.BaseDirectory,
@@ -16,7 +16,7 @@ public static class MagicLibrary
     static MagicLibrary()
     {
         RookTable = LoadTable("RookMagic.msgpack");
-        QueenDiagonalTable = LoadTable("QueenDiagonal.msgpack");
+        BishopTable = LoadTable("BishopMagic.msgpack");
     }
 
     private static MagicPieceTable LoadTable(string fileName)

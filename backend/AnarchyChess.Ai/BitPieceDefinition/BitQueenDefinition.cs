@@ -21,7 +21,7 @@ public sealed class BitQueenDefinition : IBitPieceDefinition
             board.Occupancy
         );
         UInt128 diagonalAttacks = MagicLibrary.GetAttacks(
-            MagicLibrary.QueenDiagonalTable,
+            MagicLibrary.BishopTable,
             position,
             board.Occupancy
         );

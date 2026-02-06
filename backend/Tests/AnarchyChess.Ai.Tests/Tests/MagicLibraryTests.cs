@@ -79,6 +79,6 @@ public class MagicLibraryTests
     public void Static_constructor_loads_tables()
     {
         MagicLibrary.RookTable.Should().NotBeNull();
-        MagicLibrary.QueenDiagonalTable.Should().NotBeNull();
+        MagicLibrary.BishopTable.Should().NotBeNull();
     }
 }
