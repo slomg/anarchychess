@@ -51,6 +51,7 @@ public class BitPieceDefinitionTestBase
                 From = move.From.AsIdx(),
                 To = move.To.AsIdx(),
                 Piece = move.Piece.Type,
+                ForcedMovePriority = move.ForcedPriority,
                 SpecialMoveType = move.SpecialMoveType,
             };
 
