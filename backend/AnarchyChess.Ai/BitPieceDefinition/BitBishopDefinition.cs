@@ -21,7 +21,7 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
             board.BitboardFor(PieceType.UnderagePawn, BitPieceColor.White)
             | board.BitboardFor(PieceType.UnderagePawn, BitPieceColor.Black);
 
-        ComputeBounces(
+        GenerateBounces(
             board,
             pieceType,
             color,
@@ -34,7 +34,7 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
         );
     }
 
-    private static void ComputeBounces(
+    private static void GenerateBounces(
         BitBoard board,
         PieceType pieceType,
         BitPieceColor color,
@@ -84,7 +84,7 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
         while (edges != 0)
         {
             byte edgeSquare = (byte)BitboardHelpers.BitScanForward(ref edges);
-            ComputeBounces(
+            GenerateBounces(
                 board,
                 pieceType,
                 color,
@@ -97,6 +97,8 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
             );
         }
     }
+
+    private static void GenerateIlVaticanoMoves(BitBoard board) { }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void AddUnderagePawnCapture(

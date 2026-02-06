@@ -1,6 +1,6 @@
-﻿namespace AnarchyChess.Ai.Magic.MagicPieces;
+﻿namespace AnarchyChess.Ai.Magic.PiecesMagic;
 
-public interface IMagicPiece
+public interface IPieceMagic
 {
     string Name { get; }
 

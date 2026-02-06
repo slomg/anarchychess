@@ -1,4 +1,4 @@
-﻿using AnarchyChess.Ai.Magic.MagicPieces;
+﻿using AnarchyChess.Ai.Magic.PiecesMagic;
 using AnarchyChess.EngineShared;
 using MessagePack;
 
@@ -6,7 +6,7 @@ namespace AnarchyChess.Ai.Magic;
 
 public static class MagicGenerator
 {
-    public static void Generate(IMagicPiece magicPiece)
+    public static void Generate(IPieceMagic magicPiece)
     {
         Console.WriteLine($"Started genearting magic table for {magicPiece.Name}");
 

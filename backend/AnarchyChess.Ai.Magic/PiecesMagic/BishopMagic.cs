@@ -1,6 +1,6 @@
 ﻿using AnarchyChess.EngineShared;
 
-namespace AnarchyChess.Ai.Magic.MagicPieces;
+namespace AnarchyChess.Ai.Magic.PiecesMagic;
 
 public sealed class BishopMagic : PieceMagic
 {
