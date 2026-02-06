@@ -7,6 +7,9 @@ public static class BitboardConstants
     public static readonly UInt128 BottomEdgeMask = MakeRankMask(0);
     public static readonly UInt128 TopEdgeMask = MakeRankMask(9);
 
+    public static readonly UInt128 EdgeMasks =
+        LeftEdgeMask | RightEdgeMask | BottomEdgeMask | TopEdgeMask;
+
     public static readonly UInt128[] HorseyMasks = MakeHorseyMasks();
 
     private static UInt128 MakeFileMask(int file)

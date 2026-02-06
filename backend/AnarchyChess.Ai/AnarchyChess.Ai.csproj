@@ -13,7 +13,7 @@
     <None Update="MagicTables\BishopMagic.msgpack">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="MagicTables\QueenDiagonal.msgpack">
+    <None Update="MagicTables\BishopMagic.msgpack">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="MagicTables\RookMagic.msgpack">

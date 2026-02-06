@@ -1,4 +1,5 @@
-﻿using AnarchyChess.EngineShared.Extensions;
+﻿using AnarchyChess.Api.GameLogic.Models;
+using AnarchyChess.EngineShared.Extensions;
 using AnarchyChess.EngineTests.Shared;
 using AwesomeAssertions;
 
@@ -30,16 +31,39 @@ public class BitPieceDefinitionTestBase
             ref moveCount
         );
 
-        List<BitMove> expectedMoves = [];
-        foreach (var move in testCase.ExpectedMoves)
+        List<BitMove> expectedMoves = ConvertUiMovesToBitMoves(testCase.ExpectedMoves);
+        List<BitMove> result = [.. moves[..moveCount]];
+
+        // for better assertion logs
+        var expectedMoveSorted = expectedMoves.OrderBy(x => x.To);
+        var resultSorted = result.OrderBy(x => x.To);
+        resultSorted.Should().BeEquivalentTo(expectedMoveSorted);
+        moveCount.Should().Be(expectedMoves.Count);
+    }
+
+    private static List<BitMove> ConvertUiMovesToBitMoves(List<Move> uiMoves)
+    {
+        var deduped = uiMoves.GroupBy(move =>
         {
+            var capturesKey = move
+                .Captures.Select(c => (c.Position, c.CapturedPiece.Type, c.CapturedPiece.Color))
+                .Order()
+                .ToArray();
+            return (move.To.AsIdx(), capturesKey);
+        });
+
+        List<BitMove> bitMoves = [];
+        foreach (var group in deduped)
+        {
+            var move = group.First();
             BitMove bitMove = new()
             {
                 From = move.From.AsIdx(),
                 To = move.To.AsIdx(),
-                Piece = testCase.Piece.Type,
+                Piece = move.Piece.Type,
                 SpecialMoveType = move.SpecialMoveType,
             };
+
             foreach (var capture in move.Captures)
             {
                 BitPieceColor capturedColor = capture.CapturedPiece.Color.Match(
@@ -47,6 +71,7 @@ public class BitPieceDefinitionTestBase
                     whenBlack: BitPieceColor.Black,
                     whenNeutral: BitPieceColor.Neutral
                 );
+
                 bitMove.AddCapture(
                     capture.Position.AsIdx(),
                     capture.CapturedPiece.Type,
@@ -54,11 +79,9 @@ public class BitPieceDefinitionTestBase
                 );
             }
 
-            expectedMoves.Add(bitMove);
+            bitMoves.Add(bitMove);
         }
 
-        List<BitMove> result = [.. moves[..moveCount]];
-        result.Should().BeEquivalentTo(expectedMoves);
-        moveCount.Should().Be(expectedMoves.Count);
+        return bitMoves;
     }
 }
