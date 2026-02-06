@@ -2,7 +2,7 @@
 
 namespace AnarchyChess.Ai.Magic.MagicPieces;
 
-public sealed class BishopDiagonalMagic : PieceMagic
+public sealed class BishopMagic : PieceMagic
 {
     public override string Name => "Bishop";
 
