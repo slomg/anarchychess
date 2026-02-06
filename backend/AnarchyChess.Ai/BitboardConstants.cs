@@ -34,16 +34,16 @@ public static class BitboardConstants
 
     private static UInt128[] MakeHorseyMasks()
     {
-        UInt128[] knightMasks = new UInt128[10 * 10];
+        UInt128[] horseyMasks = new UInt128[10 * 10];
         for (int rank = 0; rank < 10; rank++)
         {
             for (int file = 0; file < 10; file++)
             {
                 int squareIdx = rank * 10 + file;
-                knightMasks[squareIdx] = MakeHorseyMaskForSquare(rank, file);
+                horseyMasks[squareIdx] = MakeHorseyMaskForSquare(rank, file);
             }
         }
-        return knightMasks;
+        return horseyMasks;
     }
 
     private static UInt128 MakeHorseyMaskForSquare(int rank, int file)

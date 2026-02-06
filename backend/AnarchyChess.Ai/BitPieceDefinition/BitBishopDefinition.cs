@@ -7,6 +7,75 @@ namespace AnarchyChess.Ai.BitPieceDefinition;
 
 public sealed class BitBishopDefinition : IBitPieceDefinition
 {
+    private static readonly UInt128[,] IlVaticanoTargetBishopMaskByDir =
+        MakeIlVaticanoTargetBishopMasks();
+    private static readonly UInt128[,] IlVaticanoBetweenMasksByDir = MakeIlVaticanoBetweenMasks();
+
+    private static UInt128[,] MakeIlVaticanoTargetBishopMasks()
+    {
+        int[] deltaIlVaticanoRanks = [-3, 3, 0, 0];
+        int[] deltaIlVaticanoFiles = [0, 0, -3, 3];
+
+        UInt128[,] ilVaticanoMasks = new UInt128[10 * 10, 4];
+        for (int rank = 0; rank < 10; rank++)
+        {
+            for (int file = 0; file < 10; file++)
+            {
+                int squareIdx = rank * 10 + file;
+
+                for (int direction = 0; direction < 4; direction++)
+                {
+                    int deltaRank = rank + deltaIlVaticanoRanks[direction];
+                    int deltaFile = file + deltaIlVaticanoFiles[direction];
+                    if (deltaRank >= 0 && deltaRank < 10 && deltaFile >= 0 && deltaFile < 10)
+                    {
+                        ilVaticanoMasks[squareIdx, direction] =
+                            UInt128.One << (byte)(deltaRank * 10 + deltaFile);
+                    }
+                }
+            }
+        }
+
+        return ilVaticanoMasks;
+    }
+
+    private static UInt128[,] MakeIlVaticanoBetweenMasks()
+    {
+        int[] deltaIlVaticanoRanks = [-3, 3, 0, 0];
+        int[] deltaIlVaticanoFiles = [0, 0, -3, 3];
+
+        UInt128[,] betweenMasks = new UInt128[10 * 10, 4];
+        for (int rank = 0; rank < 10; rank++)
+        {
+            for (int file = 0; file < 10; file++)
+            {
+                int squareIdx = rank * 10 + file;
+
+                for (int direction = 0; direction < 4; direction++)
+                {
+                    int stepRank = Math.Sign(deltaIlVaticanoRanks[direction]);
+                    int stepFile = Math.Sign(deltaIlVaticanoFiles[direction]);
+
+                    UInt128 mask = 0;
+
+                    for (int step = 1; step <= 2; step++)
+                    {
+                        int r = stepRank * step + rank;
+                        int f = stepFile * step + file;
+                        if (r >= 0 && r < 10 && f >= 0 && f < 10)
+                        {
+                            mask |= UInt128.One << (r * 10 + f);
+                        }
+                    }
+
+                    betweenMasks[squareIdx, direction] = mask;
+                }
+            }
+        }
+
+        return betweenMasks;
+    }
+
     public void GenerateMoves(
         BitBoard board,
         PieceType pieceType,
@@ -29,6 +98,15 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
             bounceFrom: position,
             underagePawnsBitboard: underagePawnsBitboard,
             ref visitedMask,
+            moves,
+            ref moveCount
+        );
+        GenerateIlVaticanoMoves(
+            board,
+            pieceType,
+            color,
+            position,
+            underagePawnsBitboard: underagePawnsBitboard,
             moves,
             ref moveCount
         );
@@ -98,12 +176,72 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
         }
     }
 
-    private static void GenerateIlVaticanoMoves(BitBoard board) { }
+    private static void GenerateIlVaticanoMoves(
+        BitBoard board,
+        PieceType pieceType,
+        BitPieceColor color,
+        byte position,
+        UInt128 underagePawnsBitboard,
+        Span<BitMove> moves,
+        ref int moveCount
+    )
+    {
+        UInt128 friendlyBishops = board.BitboardFor(PieceType.Bishop, color);
+        if (friendlyBishops == 0)
+        {
+            return;
+        }
+
+        UInt128 enemyPieces = board.BitboardForEnemyOf(color);
+
+        for (int dir = 0; dir < 4; dir++)
+        {
+            UInt128 targetBishopMask = IlVaticanoTargetBishopMaskByDir[position, dir];
+            if ((friendlyBishops & targetBishopMask) == 0)
+            {
+                continue;
+            }
+
+            UInt128 attacks = IlVaticanoBetweenMasksByDir[position, dir];
+            if ((attacks & enemyPieces) != attacks)
+            {
+                continue;
+            }
+
+            ForcedMovePriority forcedMovePriority =
+                (underagePawnsBitboard & attacks) != 0
+                    ? ForcedMovePriority.UnderagePawn
+                    : ForcedMovePriority.None;
+
+            byte targetBishopSquare = (byte)BitboardHelpers.BitScanForward(ref targetBishopMask);
+            BitMove move = new()
+            {
+                From = position,
+                To = targetBishopSquare,
+                Piece = pieceType,
+                SpecialMoveType = SpecialMoveType.IlVaticano,
+                ForcedMovePriority = forcedMovePriority,
+            };
+            while (attacks != 0)
+            {
+                byte attackSquare = (byte)BitboardHelpers.BitScanForward(ref attacks);
+                if (board.TryGetPieceAt(attackSquare, out var capturePiece))
+                {
+                    move.AddCapture(
+                        attackSquare,
+                        capturePiece.Value.PieceType,
+                        capturePiece.Value.Color
+                    );
+                }
+            }
+            moves[moveCount++] = move;
+        }
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void AddUnderagePawnCapture(
         BitBoard board,
-        byte origin,
+        byte position,
         PieceType pieceType,
         ref UInt128 attacks,
         UInt128 underagePawnsBitboard,
@@ -120,7 +258,7 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
             {
                 BitMove move = new()
                 {
-                    From = origin,
+                    From = position,
                     To = toSquare,
                     Piece = pieceType,
                     ForcedMovePriority = ForcedMovePriority.UnderagePawn,

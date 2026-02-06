@@ -19,5 +19,8 @@
     <None Update="MagicTables\RookMagic.msgpack">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="MagicTables\TwoStraightSquaresMagic.msgpack">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

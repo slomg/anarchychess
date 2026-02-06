@@ -352,8 +352,8 @@ public class BishopTestData : TheoryData<PieceTestCase>
                 .GoesTo(openE5Moves)
                 .GoesTo(
                     "e2",
-                    trigger: ["e4", "e3"],
-                    captures: ["e4", "e3"],
+                    trigger: ["e3", "e4"],
+                    captures: ["e3", "e4"],
                     sideEffects:
                     [
                         new MoveSideEffect(From: new("e2"), To: new("e5"), partnerIlVaticano),
