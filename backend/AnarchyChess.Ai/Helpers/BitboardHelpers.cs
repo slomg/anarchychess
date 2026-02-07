@@ -39,20 +39,14 @@ public static class BitboardHelpers
         UInt128 targetBit = UInt128.One << position;
         UInt128 mask = 0;
 
-        mask |= (targetBit & ~BitboardConstants.RightEdgeMask) << 1; // right
-        mask |= (targetBit & ~BitboardConstants.LeftEdgeMask) >> 1; // left
-        mask |= (targetBit & ~BitboardConstants.TopEdgeMask) << 10; // up
-        mask |= (targetBit & ~BitboardConstants.BottomEdgeMask) >> 10; // down
-        mask |=
-            (targetBit & ~(BitboardConstants.TopEdgeMask | BitboardConstants.RightEdgeMask)) << 11; // up right
-        mask |=
-            (targetBit & ~(BitboardConstants.TopEdgeMask | BitboardConstants.LeftEdgeMask)) << 9; // up left
-        mask |=
-            (targetBit & ~(BitboardConstants.BottomEdgeMask | BitboardConstants.RightEdgeMask))
-            >> 9; // bottom right
-        mask |=
-            (targetBit & ~(BitboardConstants.BottomEdgeMask | BitboardConstants.LeftEdgeMask))
-            >> 11; // bottom left
+        mask |= (targetBit & BitboardConstants.RightEdgeExcludeMask) << 1; // right
+        mask |= (targetBit & BitboardConstants.LeftEdgeExcludeMask) >> 1; // left
+        mask |= (targetBit & BitboardConstants.TopEdgeExcludeMask) << 10; // up
+        mask |= (targetBit & BitboardConstants.BottomEdgeExcludeMask) >> 10; // down
+        mask |= (targetBit & BitboardConstants.TopRightEdgeExcludeMask) << 11; // up right
+        mask |= (targetBit & BitboardConstants.TopLeftEdgeExcludeMask) << 9; // up left
+        mask |= (targetBit & BitboardConstants.BottomRightEdgeExcludeMask) >> 9; // bottom right
+        mask |= (targetBit & BitboardConstants.BottomLeftEdgeExcludeMask) >> 11; // bottom left
         return mask;
     }
 
