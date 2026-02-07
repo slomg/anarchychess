@@ -213,7 +213,65 @@ public abstract class PawnLikeTestData : TheoryData<PieceTestCase>
                     forcedPriority: ForcedMovePriority.EnPassant,
                     specialMoveType: SpecialMoveType.EnPassant
                 )
-                .WithDescription("white pawn can capture long passant")
+                .WithDescription("white pawn can capture long passant left")
+        );
+
+        Add(
+            PieceTestCase
+                .From("e6", movedWhitePawn)
+                .WithPieceAt("f6", blackPawn)
+                .WithEnemyPieceAt("g7")
+                .WithEnemyPieceAt("h8")
+                .WithPriorMove(from: "f9", to: "f6")
+                .GoesTo("e7")
+                .GoesTo(
+                    "f7",
+                    captures: ["f6"],
+                    forcedPriority: ForcedMovePriority.EnPassant,
+                    specialMoveType: SpecialMoveType.EnPassant
+                )
+                .GoesTo(
+                    "g8",
+                    captures: ["f6", "g7"],
+                    forcedPriority: ForcedMovePriority.EnPassant,
+                    specialMoveType: SpecialMoveType.EnPassant
+                )
+                .GoesTo(
+                    "h9",
+                    captures: ["f6", "g7", "h8"],
+                    forcedPriority: ForcedMovePriority.EnPassant,
+                    specialMoveType: SpecialMoveType.EnPassant
+                )
+                .WithDescription("white pawn can capture long passant right")
+        );
+
+        Add(
+            PieceTestCase
+                .From("e5", movedBlackPawn)
+                .WithPieceAt("d5", whitePawn)
+                .WithEnemyPieceAt("c4")
+                .WithEnemyPieceAt("b3")
+                .WithPriorMove(from: "d2", to: "d5")
+                .GoesTo("e4")
+                .GoesTo(
+                    "d4",
+                    captures: ["d5"],
+                    forcedPriority: ForcedMovePriority.EnPassant,
+                    specialMoveType: SpecialMoveType.EnPassant
+                )
+                .GoesTo(
+                    "c3",
+                    captures: ["d5", "c4"],
+                    forcedPriority: ForcedMovePriority.EnPassant,
+                    specialMoveType: SpecialMoveType.EnPassant
+                )
+                .GoesTo(
+                    "b2",
+                    captures: ["d5", "c4", "b3"],
+                    forcedPriority: ForcedMovePriority.EnPassant,
+                    specialMoveType: SpecialMoveType.EnPassant
+                )
+                .WithDescription("black pawn can capture long passant left")
         );
 
         Add(
@@ -242,8 +300,81 @@ public abstract class PawnLikeTestData : TheoryData<PieceTestCase>
                     forcedPriority: ForcedMovePriority.EnPassant,
                     specialMoveType: SpecialMoveType.EnPassant
                 )
-                .WithDescription("black pawn can capture long passant")
+                .WithDescription("black pawn can capture long passant right")
         );
+
+        Add(
+            PieceTestCase
+                .From("e5", movedWhitePawn)
+                .WithPieceAt("d5", blackPawn)
+                .WithEnemyPieceAt("c6")
+                .WithEnemyPieceAt("b7")
+                .WithFriendlyPieceAt("b8")
+                .WithEnemyPieceAt("a9")
+                .WithPriorMove(from: "d8", to: "d5")
+                .GoesTo("e6")
+                .GoesTo(
+                    "d6",
+                    captures: ["d5"],
+                    forcedPriority: ForcedMovePriority.EnPassant,
+                    specialMoveType: SpecialMoveType.EnPassant
+                )
+                .GoesTo(
+                    "c7",
+                    captures: ["d5", "c6"],
+                    forcedPriority: ForcedMovePriority.EnPassant,
+                    specialMoveType: SpecialMoveType.EnPassant
+                )
+                .GoesTo(
+                    "b8",
+                    captures: ["d5", "c6", "b7"],
+                    forcedPriority: ForcedMovePriority.EnPassant,
+                    specialMoveType: SpecialMoveType.EnPassant
+                )
+                .WithDescription("long passant stops when a friendly piece blocks")
+        );
+
+        Add(
+            PieceTestCase
+                .From("e6", movedWhitePawn)
+                .WithPieceAt("d6", blackPawn)
+                .WithEnemyPieceAt("c7")
+                .WithEnemyPieceAt("b8")
+                .WithEnemyPieceAt("a9")
+                .WithPriorMove(from: "d9", to: "d6")
+                .GoesTo("e7")
+                .GoesTo(
+                    "d7",
+                    captures: ["d6"],
+                    forcedPriority: ForcedMovePriority.EnPassant,
+                    specialMoveType: SpecialMoveType.EnPassant
+                )
+                .GoesTo(
+                    "c8",
+                    captures: ["d6", "c7"],
+                    forcedPriority: ForcedMovePriority.EnPassant,
+                    specialMoveType: SpecialMoveType.EnPassant
+                )
+                .GoesTo(
+                    "b9",
+                    captures: ["d6", "c7", "b8"],
+                    forcedPriority: ForcedMovePriority.EnPassant,
+                    specialMoveType: SpecialMoveType.EnPassant
+                )
+                .ForEach(
+                    promotesTo,
+                    (promoteType, testCase) =>
+                        testCase.GoesTo(
+                            "a10",
+                            captures: ["d6", "c7", "b8", "a9"],
+                            forcedPriority: ForcedMovePriority.EnPassant,
+                            specialMoveType: SpecialMoveType.EnPassant,
+                            promotesTo: promoteType
+                        )
+                )
+                .WithDescription("long passant allows promotion")
+        );
+
         #endregion
 
         #region promotion
