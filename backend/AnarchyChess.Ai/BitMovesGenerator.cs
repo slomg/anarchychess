@@ -31,6 +31,8 @@ public sealed class BitMovesGenerator : IBitMovesGenerator
 
         [PieceType.Knook] = new BitKnookDefinition(),
         [PieceType.Antiqueen] = new BitAntiqueenDefinition(),
+        [PieceType.UnderagePawn] = new BitUnderagePawnDefinition(),
+        [PieceType.SterilePawn] = new BitSterilePawnDefinition(),
         [PieceType.TraitorRook] = new BitTraitorRookDefinition(),
     };
 

@@ -2,11 +2,11 @@
 
 namespace AnarchyChess.Ai.BitPieceDefinition;
 
-public sealed class BitPawnDefinition : IBitPieceDefinition
+public sealed class BitSterilePawnDefinition : IBitPieceDefinition
 {
     private static readonly BitPawnLikeDefinition PawnLikeDefinition = new(
-        promotesTo: [.. GameLogicConstants.PromotablePieces],
-        maxInitialSteps: 3
+        promotesTo: [.. GameLogicConstants.PromotablePieces.Where(x => x is not PieceType.Queen)],
+        maxInitialSteps: 1
     );
 
     public void GenerateMoves(

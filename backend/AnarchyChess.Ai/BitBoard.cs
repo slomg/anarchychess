@@ -133,7 +133,7 @@ public class BitBoard
 
     private void ProcessMoveEffects(BitMove move)
     {
-        if (move.Piece is PieceType.Pawn)
+        if (GameLogicConstants.PawnLikePieces.Contains(move.Piece))
         {
             int fromRank = move.From / 10;
             int toRank = move.To / 10;
