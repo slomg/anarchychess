@@ -39,6 +39,7 @@ public abstract class PieceMagic : IPieceMagic
         int y,
         Offset offset,
         UInt128 blocker,
+        Offset attackOffset = default,
         int limit = int.MaxValue
     )
     {
@@ -49,7 +50,7 @@ public abstract class PieceMagic : IPieceMagic
         int i = 0;
         while (x < Constants.BoardSize && y < Constants.BoardSize && x >= 0 && y >= 0 && i < limit)
         {
-            int squareIdx = y * Constants.BoardSize + x;
+            int squareIdx = (y + attackOffset.Y) * Constants.BoardSize + (x + attackOffset.X);
             attacks |= UInt128.One << squareIdx;
             if ((blocker & (UInt128.One << squareIdx)) != 0)
             {

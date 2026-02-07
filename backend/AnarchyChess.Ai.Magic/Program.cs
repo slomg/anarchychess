@@ -1,4 +1,4 @@
 ﻿using AnarchyChess.Ai.Magic;
 using AnarchyChess.Ai.Magic.PiecesMagic;
 
-MagicGenerator.Generate(new TwoStraightSquares());
+MagicGenerator.Generate(new BlackEnPassantMagic());
