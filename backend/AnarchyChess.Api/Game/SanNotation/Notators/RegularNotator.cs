@@ -1,6 +1,5 @@
 ﻿using System.Text;
 using AnarchyChess.Api.Game.Services;
-using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.EngineShared;
 

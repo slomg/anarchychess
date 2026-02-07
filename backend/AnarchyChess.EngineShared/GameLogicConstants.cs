@@ -1,6 +1,4 @@
-﻿using AnarchyChess.EngineShared;
-
-namespace AnarchyChess.Api.GameLogic;
+﻿namespace AnarchyChess.EngineShared;
 
 public static class GameLogicConstants
 {

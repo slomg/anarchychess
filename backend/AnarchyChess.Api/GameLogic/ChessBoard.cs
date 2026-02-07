@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using AnarchyChess.EngineShared.Extensions;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.EngineShared;
+using AnarchyChess.EngineShared.Extensions;
 
 namespace AnarchyChess.Api.GameLogic;
 
