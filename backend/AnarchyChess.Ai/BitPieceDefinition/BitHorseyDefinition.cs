@@ -25,6 +25,7 @@ public sealed class BitHorseyDefinition : IBitPieceDefinition
                 From = position,
                 To = toSquare,
                 Piece = pieceType,
+                PromotesTo = PieceType.Knook,
                 SpecialMoveType = SpecialMoveType.KnooklearFusion,
             };
             move.AddCapture(toSquare, PieceType.Rook, color);

@@ -30,6 +30,7 @@ public sealed class BitRookDefinition : IBitPieceDefinition
                 From = position,
                 To = toSquare,
                 Piece = pieceType,
+                PromotesTo = PieceType.Knook,
                 SpecialMoveType = SpecialMoveType.KnooklearFusion,
             };
             move.AddCapture(toSquare, PieceType.Horsey, color);

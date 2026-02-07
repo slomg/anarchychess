@@ -269,6 +269,40 @@ public abstract class PawnLikeTestData : TheoryData<PieceTestCase>
 
         Add(
             PieceTestCase
+                .From("f9", movedWhitePawn)
+                .WithEnemyPieceAt("e10")
+                .WithEnemyPieceAt("g10")
+                .ForEach(
+                    promotesTo,
+                    (promoteType, testCase) =>
+                    {
+                        testCase.GoesTo("e10", promotesTo: promoteType, captures: ["e10"]);
+                        testCase.GoesTo("f10", promotesTo: promoteType);
+                        testCase.GoesTo("g10", promotesTo: promoteType, captures: ["g10"]);
+                    }
+                )
+                .WithDescription("white pawn can promote and capture at the same time")
+        );
+
+        Add(
+            PieceTestCase
+                .From("f2", movedBlackPawn)
+                .WithEnemyPieceAt("e1")
+                .WithEnemyPieceAt("g1")
+                .ForEach(
+                    promotesTo,
+                    (promoteType, testCase) =>
+                    {
+                        testCase.GoesTo("e1", promotesTo: promoteType, captures: ["e1"]);
+                        testCase.GoesTo("f1", promotesTo: promoteType);
+                        testCase.GoesTo("g1", promotesTo: promoteType, captures: ["g1"]);
+                    }
+                )
+                .WithDescription("black pawn can promote and capture at the same time")
+        );
+
+        Add(
+            PieceTestCase
                 .From("f10", movedWhitePawn)
                 .ForEach(
                     promotesTo,

@@ -5,6 +5,17 @@ namespace AnarchyChess.Ai.BitPieceDefinition;
 
 public sealed class BitPawnDefinition : IBitPieceDefinition
 {
+    private static readonly PieceType[] PromoteTo =
+    [
+        PieceType.Queen,
+        PieceType.Rook,
+        PieceType.Bishop,
+        PieceType.Horsey,
+        PieceType.Knook,
+        PieceType.Antiqueen,
+        PieceType.Checker,
+    ];
+
     public void GenerateMoves(
         BitBoard board,
         PieceType pieceType,
@@ -21,8 +32,10 @@ public sealed class BitPawnDefinition : IBitPieceDefinition
         UInt128 positionBit = UInt128.One << position;
         UInt128 steps = 0;
         UInt128 captures = 0;
+        UInt128 promotionEdgeMask;
         if (color is BitPieceColor.White)
         {
+            promotionEdgeMask = BitboardConstants.TopEdgeMask;
             MaskWhitePawnMoves(
                 positionBit,
                 empty: board.Empty,
@@ -34,6 +47,7 @@ public sealed class BitPawnDefinition : IBitPieceDefinition
         }
         else
         {
+            promotionEdgeMask = BitboardConstants.BottomEdgeMask;
             MaskBlackPawnMoves(
                 positionBit,
                 empty: board.Empty,
@@ -43,6 +57,18 @@ public sealed class BitPawnDefinition : IBitPieceDefinition
                 captures: ref captures
             );
         }
+
+        GeneratePromotionMoves(
+            pieceType,
+            position,
+            steps: ref steps,
+            captures: ref captures,
+            board,
+            promotionEdgeMask: promotionEdgeMask,
+            positionBit: positionBit,
+            moves,
+            ref moveCount
+        );
 
         BitboardHelpers.CreateMoveFromQuiets(position, pieceType, steps, moves, ref moveCount);
         BitboardHelpers.CreateMoveFromCaptures(
@@ -106,5 +132,63 @@ public sealed class BitPawnDefinition : IBitPieceDefinition
         steps |= stepPositionBit;
         stepPositionBit = (stepPositionBit & BitboardConstants.BottomEdgeExcludeMask) >> 10 & empty;
         steps |= stepPositionBit;
+    }
+
+    private static void GeneratePromotionMoves(
+        PieceType pieceType,
+        byte position,
+        ref UInt128 steps,
+        ref UInt128 captures,
+        BitBoard board,
+        UInt128 promotionEdgeMask,
+        UInt128 positionBit,
+        Span<BitMove> moves,
+        ref int moveCount
+    )
+    {
+        UInt128 stepPromotions = steps & promotionEdgeMask;
+        stepPromotions |= promotionEdgeMask & positionBit;
+        steps &= ~promotionEdgeMask;
+
+        while (stepPromotions != 0)
+        {
+            byte toSquare = (byte)BitboardHelpers.BitScanForward(ref stepPromotions);
+
+            foreach (PieceType piece in PromoteTo)
+            {
+                moves[moveCount++] = new BitMove()
+                {
+                    From = position,
+                    To = toSquare,
+                    Piece = pieceType,
+                    PromotesTo = piece,
+                };
+            }
+        }
+
+        UInt128 capturePromotions = captures & promotionEdgeMask;
+        captures &= ~promotionEdgeMask;
+
+        while (capturePromotions != 0)
+        {
+            byte toSquare = (byte)BitboardHelpers.BitScanForward(ref capturePromotions);
+            if (!board.TryGetPieceAt(toSquare, out var capturePiece))
+            {
+                continue;
+            }
+
+            foreach (PieceType piece in PromoteTo)
+            {
+                BitMove move = new()
+                {
+                    From = position,
+                    To = toSquare,
+                    Piece = pieceType,
+                    PromotesTo = piece,
+                };
+                move.AddCapture(toSquare, capturePiece.Value.PieceType, capturePiece.Value.Color);
+                moves[moveCount++] = move;
+            }
+        }
     }
 }
