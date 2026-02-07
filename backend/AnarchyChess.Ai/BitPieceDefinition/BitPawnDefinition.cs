@@ -79,6 +79,7 @@ public sealed class BitPawnDefinition : IBitPieceDefinition
             positionBit: positionBit,
             board,
             enemyPieces: enemyPieces,
+            promotionEdgeMask: promotionEdgeMask,
             moves,
             ref moveCount
         );
@@ -154,6 +155,7 @@ public sealed class BitPawnDefinition : IBitPieceDefinition
         UInt128 positionBit,
         BitBoard board,
         UInt128 enemyPieces,
+        UInt128 promotionEdgeMask,
         Span<BitMove> moves,
         ref int moveCount
     )
@@ -212,13 +214,23 @@ public sealed class BitPawnDefinition : IBitPieceDefinition
                 var capturePiece = board.GetPieceAt(captureSquare);
                 move.AddCapture(captureSquare, capturePiece.PieceType, capturePiece.Color);
 
-                BitMove currentMove = move;
-                currentMove.From = position;
-                currentMove.To = toSquare;
-                currentMove.Piece = pieceType;
-                currentMove.SpecialMoveType = SpecialMoveType.EnPassant;
-                currentMove.ForcedMovePriority = ForcedMovePriority.EnPassant;
-                moves[moveCount++] = currentMove;
+                move.From = position;
+                move.To = toSquare;
+                move.Piece = pieceType;
+                move.SpecialMoveType = SpecialMoveType.EnPassant;
+                move.ForcedMovePriority = ForcedMovePriority.EnPassant;
+                if ((UInt128.One << toSquare & promotionEdgeMask) != 0)
+                {
+                    foreach (PieceType promotePiece in PromoteTo)
+                    {
+                        move.PromotesTo = promotePiece;
+                        moves[moveCount++] = move;
+                    }
+                }
+                else
+                {
+                    moves[moveCount++] = move;
+                }
             }
         }
     }
@@ -263,16 +275,16 @@ public sealed class BitPawnDefinition : IBitPieceDefinition
             byte toSquare = (byte)BitboardHelpers.BitScanForward(ref capturePromotions);
 
             var capturePiece = board.GetPieceAt(toSquare);
+            BitMove move = new()
+            {
+                From = position,
+                To = toSquare,
+                Piece = pieceType,
+            };
+            move.AddCapture(toSquare, capturePiece.PieceType, capturePiece.Color);
             foreach (PieceType piece in PromoteTo)
             {
-                BitMove move = new()
-                {
-                    From = position,
-                    To = toSquare,
-                    Piece = pieceType,
-                    PromotesTo = piece,
-                };
-                move.AddCapture(toSquare, capturePiece.PieceType, capturePiece.Color);
+                move.PromotesTo = piece;
                 moves[moveCount++] = move;
             }
         }
