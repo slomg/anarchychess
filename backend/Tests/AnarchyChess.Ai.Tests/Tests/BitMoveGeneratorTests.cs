@@ -11,14 +11,13 @@ public class BitMoveGeneratorTests
     [Fact]
     public void Generate_returns_expected_moves_for_white()
     {
-        var whiteKing = PieceFactory.White(PieceType.King);
-        var whitePawn = PieceFactory.White(PieceType.Pawn, hasMoved: false);
-
         var board = BitBoard.FromPieces(
             new Dictionary<AlgebraicPoint, Piece>
             {
-                [new AlgebraicPoint("f5")] = whiteKing,
-                [new AlgebraicPoint("d2")] = whitePawn,
+                [new AlgebraicPoint("f5")] = PieceFactory.White(PieceType.King),
+                [new AlgebraicPoint("d2")] = PieceFactory.White(PieceType.Pawn, hasMoved: false),
+                [new AlgebraicPoint("c2")] = new Piece(PieceType.TraitorRook, Color: null),
+
                 [new AlgebraicPoint("b4")] = PieceFactory.Black(PieceType.King),
             },
             isWhiteToMove: true
@@ -46,6 +45,18 @@ public class BitMoveGeneratorTests
                 new("d3"),
                 new("d4"),
                 new("d5"),
+                // traitor rook
+                new("c1"),
+                new("c3"),
+                new("c4"),
+                new("c5"),
+                new("c6"),
+                new("c7"),
+                new("c8"),
+                new("c9"),
+                new("c10"),
+                new("b2"),
+                new("a2"),
             }.Select(p => p.AsIdx()),
         ];
 
@@ -59,12 +70,12 @@ public class BitMoveGeneratorTests
     [Fact]
     public void Generate_returns_expected_moves_for_black()
     {
-        var blackPawn = PieceFactory.Black(PieceType.Pawn, hasMoved: false);
-
         var board = BitBoard.FromPieces(
             new Dictionary<AlgebraicPoint, Piece>
             {
-                [new AlgebraicPoint("d9")] = blackPawn,
+                [new AlgebraicPoint("d9")] = PieceFactory.Black(PieceType.Pawn, hasMoved: false),
+                [new AlgebraicPoint("c9")] = new Piece(PieceType.TraitorRook, Color: null),
+
                 [new AlgebraicPoint("f2")] = PieceFactory.White(PieceType.King),
             },
             isWhiteToMove: false
@@ -77,7 +88,25 @@ public class BitMoveGeneratorTests
 
         HashSet<byte> expectedDestinations =
         [
-            .. new AlgebraicPoint[] { new("d8"), new("d7"), new("d6") }.Select(p => p.AsIdx()),
+            .. new AlgebraicPoint[]
+            {
+                // pawn
+                new("d8"),
+                new("d7"),
+                new("d6"),
+                // traitor rook
+                new("c10"),
+                new("c8"),
+                new("c7"),
+                new("c6"),
+                new("c5"),
+                new("c4"),
+                new("c3"),
+                new("c2"),
+                new("c1"),
+                new("b9"),
+                new("a9"),
+            }.Select(p => p.AsIdx()),
         ];
 
         moveCount.Should().Be(expectedDestinations.Count);

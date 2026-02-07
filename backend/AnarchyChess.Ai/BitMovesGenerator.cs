@@ -41,20 +41,32 @@ public sealed class BitMovesGenerator : IBitMovesGenerator
         for (int pieceTypeIdx = 0; pieceTypeIdx < board.Bitboards.GetLength(1); pieceTypeIdx++)
         {
             PieceType pieceType = (PieceType)pieceTypeIdx;
-            UInt128 bitboard = board.BitboardFor(pieceType, color);
-
-            if (_pieceDefinitions.TryGetValue(pieceType, out var definition))
+            if (!_pieceDefinitions.TryGetValue(pieceType, out var definition))
             {
-                GenerateForPieces(
-                    board,
-                    bitboard,
-                    definition,
-                    pieceType,
-                    color,
-                    moves,
-                    ref moveCount
-                );
+                continue;
             }
+
+            UInt128 colorBitboard = board.BitboardFor(pieceType, color);
+            GenerateForPieces(
+                board,
+                colorBitboard,
+                definition,
+                pieceType,
+                color,
+                moves,
+                ref moveCount
+            );
+
+            UInt128 neutralBitboard = board.BitboardFor(pieceType, BitPieceColor.Neutral);
+            GenerateForPieces(
+                board,
+                neutralBitboard,
+                definition,
+                pieceType,
+                color,
+                moves,
+                ref moveCount
+            );
         }
     }
 
