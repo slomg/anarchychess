@@ -8,8 +8,11 @@ public static class MagicLibrary
     public static MagicPieceTable RookTable { get; }
     public static MagicPieceTable BishopTable { get; }
     public static MagicPieceTable TwoStraightSquaresTable { get; }
-    public static MagicPieceTable WhiteEnPassantTable { get; }
-    public static MagicPieceTable BlackEnPassantTable { get; }
+
+    public static MagicPieceTable LeftWhiteEnPassantTable { get; }
+    public static MagicPieceTable LeftBlackEnPassantTable { get; }
+    public static MagicPieceTable RightWhiteEnPassantTable { get; }
+    public static MagicPieceTable RightBlackEnPassantTable { get; }
 
     private static readonly string _magicBasePath = Path.Combine(
         AppContext.BaseDirectory,
@@ -21,8 +24,11 @@ public static class MagicLibrary
         RookTable = LoadTable("RookMagic.msgpack");
         BishopTable = LoadTable("BishopMagic.msgpack");
         TwoStraightSquaresTable = LoadTable("TwoStraightSquaresMagic.msgpack");
-        WhiteEnPassantTable = LoadTable("WhiteEnPassantMagic.msgpack");
-        BlackEnPassantTable = LoadTable("BlackEnPassantMagic.msgpack");
+
+        LeftWhiteEnPassantTable = LoadTable("LeftWhiteEnPassantMagic.msgpack");
+        LeftBlackEnPassantTable = LoadTable("LeftBlackEnPassantMagic.msgpack");
+        RightWhiteEnPassantTable = LoadTable("RightWhiteEnPassantMagic.msgpack");
+        RightBlackEnPassantTable = LoadTable("RightBlackEnPassantMagic.msgpack");
     }
 
     private static MagicPieceTable LoadTable(string fileName)

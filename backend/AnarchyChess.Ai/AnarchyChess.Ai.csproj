@@ -16,17 +16,23 @@
     <None Update="MagicTables\BishopMagic.msgpack">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="MagicTables\BlackEnPassantMagic.msgpack">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="MagicTables\RookMagic.msgpack">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="MagicTables\TwoStraightSquaresMagic.msgpack">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="MagicTables\WhiteEnPassantMagic.msgpack">
+    <None Update="MagicTables\LeftWhiteEnPassantMagic.msgpack">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="MagicTables\LeftBlackEnPassantMagic.msgpack">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="MagicTables\RightWhiteEnPassantMagic.msgpack">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="MagicTables\RightBlackEnPassantMagic.msgpack">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 </Project>

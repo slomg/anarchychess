@@ -21,12 +21,14 @@ public class BitBoard
     public UInt128 BlackEnemy { get; private set; }
 
     public bool IsWhiteToMove { get; private set; }
+    public UInt128 EnPassantSquares { get; private set; }
 
     public BitBoard(
         UInt128[,]? bitboards = null,
         UInt128? hasMoved = null,
         BitPiece?[]? pieceAt = null,
-        bool isWhiteToMove = true
+        bool isWhiteToMove = true,
+        BitMove? prevMove = null
     )
     {
         Bitboards =
@@ -51,11 +53,17 @@ public class BitBoard
 
         WhiteEnemy = BlackPieces | NeutralPieces;
         BlackEnemy = WhitePieces | NeutralPieces;
+
+        if (prevMove is not null)
+        {
+            ProcessMoveEffects(prevMove.Value);
+        }
     }
 
     public static BitBoard FromPieces(
         Dictionary<AlgebraicPoint, Piece> pieces,
-        bool isWhiteToMove = true
+        bool isWhiteToMove = true,
+        BitMove? prevMove = null
     )
     {
         UInt128[,] bitboards = new UInt128[
@@ -83,7 +91,13 @@ public class BitBoard
             }
         }
 
-        return new BitBoard(bitboards, hasMoved, pieceAt, isWhiteToMove: isWhiteToMove);
+        return new BitBoard(
+            bitboards,
+            hasMoved,
+            pieceAt,
+            isWhiteToMove: isWhiteToMove,
+            prevMove: prevMove
+        );
     }
 
     public ref UInt128 BitboardFor(PieceType pieceType, BitPieceColor color) =>
@@ -113,5 +127,23 @@ public class BitBoard
     {
         piece = PieceAt[position];
         return piece is not null;
+    }
+
+    public BitPiece GetPieceAt(byte position) => PieceAt[position]!.Value;
+
+    private void ProcessMoveEffects(BitMove move)
+    {
+        if (move.Piece is PieceType.Pawn)
+        {
+            int fromRank = move.From / 10;
+            int toRank = move.To / 10;
+            int file = move.From % 10;
+
+            int step = (toRank > fromRank) ? 1 : -1;
+            for (int rank = fromRank + step; rank != toRank; rank += step)
+            {
+                EnPassantSquares |= UInt128.One << (rank * 10 + file);
+            }
+        }
     }
 }

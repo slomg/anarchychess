@@ -81,7 +81,7 @@ public class MagicLibraryTests
         MagicLibrary.RookTable.Should().NotBeNull();
         MagicLibrary.BishopTable.Should().NotBeNull();
         MagicLibrary.TwoStraightSquaresTable.Should().NotBeNull();
-        MagicLibrary.WhiteEnPassantTable.Should().NotBeNull();
-        MagicLibrary.BlackEnPassantTable.Should().NotBeNull();
+        MagicLibrary.LeftWhiteEnPassantTable.Should().NotBeNull();
+        MagicLibrary.LeftBlackEnPassantTable.Should().NotBeNull();
     }
 }

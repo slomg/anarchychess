@@ -47,6 +47,46 @@ public class BitboardHelpersTests
         act.Should().Throw<InvalidOperationException>();
     }
 
+    [Fact]
+    public void BitScanBackward_returns_the_index_of_the_most_significant_bit()
+    {
+        UInt128 bitboard = 0b10010;
+        int index = BitboardHelpers.BitScanBackward(ref bitboard);
+
+        index.Should().Be(4);
+        bitboard.Should().Be(0b10);
+    }
+
+    [Fact]
+    public void BitScanBackward_handles_a_single_bit_set()
+    {
+        UInt128 bitboard = 0b10000000;
+        int index = BitboardHelpers.BitScanBackward(ref bitboard);
+
+        index.Should().Be(7);
+        bitboard.Should().Be(0);
+    }
+
+    [Fact]
+    public void BitScanBackward_handles_high_bit_set()
+    {
+        UInt128 bitboard = UInt128.One << 67;
+        int index = BitboardHelpers.BitScanBackward(ref bitboard);
+
+        index.Should().Be(67);
+        bitboard.Should().Be(0);
+    }
+
+    [Fact]
+    public void BitScanBackward_throws_for_an_empty_bitboard()
+    {
+        UInt128 bitboard = 0;
+
+        Action act = () => BitboardHelpers.BitScanBackward(ref bitboard);
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
     [Theory]
     [InlineData(0UL, 0UL, 0)] // empty
     [InlineData(1UL << 3, 0UL, 1)] // low half only
@@ -225,24 +265,5 @@ public class BitboardHelpersTests
         List<BitMove> result = [.. moves[..moveCount]];
 
         result.Should().BeEquivalentTo(expectedMoves);
-    }
-
-    [Fact]
-    public void CreateMoveFromCaptures_does_nothing_when_no_captures()
-    {
-        BitBoard board = new();
-        Span<BitMove> moves = new BitMove[10];
-        int moveCount = 0;
-
-        BitboardHelpers.CreateMoveFromCaptures(
-            0,
-            PieceType.Rook,
-            board,
-            captures: UInt128.One << 10,
-            moves,
-            ref moveCount
-        );
-
-        moveCount.Should().Be(0);
     }
 }

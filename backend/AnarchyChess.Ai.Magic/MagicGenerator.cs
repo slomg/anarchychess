@@ -50,11 +50,14 @@ public static class MagicGenerator
             }
         }
 
-        var fileName = $"{magicPiece.Name}Magic.msgpack";
+        string folderPath = "MagicTables";
+        string filePath = Path.Combine(folderPath, $"{magicPiece.Name}Magic.msgpack");
+        Directory.CreateDirectory(folderPath);
+
         byte[] tableBytes = MessagePackSerializer.Serialize(table);
-        File.WriteAllBytes(fileName, tableBytes);
+        File.WriteAllBytes(filePath, tableBytes);
         Console.WriteLine(
-            $"Finished generating magic table for {magicPiece.Name}, saved to {fileName}"
+            $"Finished generating magic table for {magicPiece.Name}, saved to {filePath}"
         );
     }
 

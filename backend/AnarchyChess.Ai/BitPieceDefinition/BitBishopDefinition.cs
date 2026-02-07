@@ -225,14 +225,8 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
             while (attacks != 0)
             {
                 byte attackSquare = (byte)BitboardHelpers.BitScanForward(ref attacks);
-                if (board.TryGetPieceAt(attackSquare, out var capturePiece))
-                {
-                    move.AddCapture(
-                        attackSquare,
-                        capturePiece.Value.PieceType,
-                        capturePiece.Value.Color
-                    );
-                }
+                var capturePiece = board.GetPieceAt(attackSquare);
+                move.AddCapture(attackSquare, capturePiece.PieceType, capturePiece.Color);
             }
             moves[moveCount++] = move;
         }
@@ -254,18 +248,17 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
         while (underagePawnCapture != 0)
         {
             byte toSquare = (byte)BitboardHelpers.BitScanForward(ref underagePawnCapture);
-            if (board.TryGetPieceAt(toSquare, out var capturePiece))
+            var capturePiece = board.GetPieceAt(toSquare);
+
+            BitMove move = new()
             {
-                BitMove move = new()
-                {
-                    From = position,
-                    To = toSquare,
-                    Piece = pieceType,
-                    ForcedMovePriority = ForcedMovePriority.UnderagePawn,
-                };
-                move.AddCapture(toSquare, capturePiece.Value.PieceType, capturePiece.Value.Color);
-                moves[moveCount++] = move;
-            }
+                From = position,
+                To = toSquare,
+                Piece = pieceType,
+                ForcedMovePriority = ForcedMovePriority.UnderagePawn,
+            };
+            move.AddCapture(toSquare, capturePiece.PieceType, capturePiece.Color);
+            moves[moveCount++] = move;
         }
     }
 }

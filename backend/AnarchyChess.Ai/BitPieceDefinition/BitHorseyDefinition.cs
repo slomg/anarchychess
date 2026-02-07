@@ -36,10 +36,8 @@ public sealed class BitHorseyDefinition : IBitPieceDefinition
             while (captures != 0)
             {
                 byte capturedSquare = (byte)BitboardHelpers.BitScanForward(ref captures);
-                if (board.TryGetPieceAt(capturedSquare, out var piece))
-                {
-                    move.AddCapture(capturedSquare, piece.Value.PieceType, piece.Value.Color);
-                }
+                var piece = board.GetPieceAt(capturedSquare);
+                move.AddCapture(capturedSquare, piece.PieceType, piece.Color);
             }
 
             moves[moveCount++] = move;

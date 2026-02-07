@@ -39,7 +39,6 @@ public abstract class PieceMagic : IPieceMagic
         int y,
         Offset offset,
         UInt128 blocker,
-        Offset attackOffset = default,
         int limit = int.MaxValue
     )
     {
@@ -50,7 +49,7 @@ public abstract class PieceMagic : IPieceMagic
         int i = 0;
         while (x < Constants.BoardSize && y < Constants.BoardSize && x >= 0 && y >= 0 && i < limit)
         {
-            int squareIdx = (y + attackOffset.Y) * Constants.BoardSize + (x + attackOffset.X);
+            int squareIdx = y * Constants.BoardSize + x;
             attacks |= UInt128.One << squareIdx;
             if ((blocker & (UInt128.One << squareIdx)) != 0)
             {
@@ -61,6 +60,34 @@ public abstract class PieceMagic : IPieceMagic
             y += offset.Y;
 
             i++;
+        }
+
+        return attacks;
+    }
+
+    protected static UInt128 BlockedSlideAttack(
+        int x,
+        int y,
+        Offset offset,
+        UInt128 blocker,
+        Offset attackOffset = default
+    )
+    {
+        UInt128 attacks = 0;
+
+        x += offset.X;
+        y += offset.Y;
+        while (x < Constants.BoardSize && y < Constants.BoardSize && x >= 0 && y >= 0)
+        {
+            int squareIdx = (y + attackOffset.Y) * Constants.BoardSize + x + attackOffset.X;
+            attacks |= UInt128.One << squareIdx;
+            if ((blocker & (UInt128.One << squareIdx)) == 0)
+            {
+                break;
+            }
+
+            x += offset.X;
+            y += offset.Y;
         }
 
         return attacks;

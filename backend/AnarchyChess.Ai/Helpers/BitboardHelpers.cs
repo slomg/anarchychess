@@ -30,6 +30,30 @@ public static class BitboardHelpers
         return index;
     }
 
+    public static int BitScanBackward(ref UInt128 bitboard)
+    {
+        if (bitboard == 0)
+        {
+            throw new InvalidOperationException("Cannot scan backward on an empty bitboard");
+        }
+
+        ulong high = (ulong)(bitboard >> 64);
+        int index;
+
+        if (high != 0)
+        {
+            index = 64 + BitOperations.Log2(high);
+        }
+        else
+        {
+            ulong low = (ulong)bitboard;
+            index = BitOperations.Log2(low);
+        }
+
+        bitboard &= ~(UInt128.One << index);
+        return index;
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int CountBits(UInt128 mask) =>
         BitOperations.PopCount((ulong)mask) + BitOperations.PopCount((ulong)(mask >> 64));
@@ -99,17 +123,16 @@ public static class BitboardHelpers
         while (captures != 0)
         {
             byte toSquare = (byte)BitScanForward(ref captures);
-            if (board.TryGetPieceAt(toSquare, out var capturePiece))
+
+            var capturePiece = board.GetPieceAt(toSquare);
+            BitMove move = new()
             {
-                BitMove move = new()
-                {
-                    From = from,
-                    To = toSquare,
-                    Piece = pieceType,
-                };
-                move.AddCapture(toSquare, capturePiece.Value.PieceType, capturePiece.Value.Color);
-                moves[moveCount++] = move;
-            }
+                From = from,
+                To = toSquare,
+                Piece = pieceType,
+            };
+            move.AddCapture(toSquare, capturePiece.PieceType, capturePiece.Color);
+            moves[moveCount++] = move;
         }
     }
 }

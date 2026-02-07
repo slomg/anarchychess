@@ -13,9 +13,11 @@ public class BitPieceDefinitionTestBase
     protected void TestMoves(PieceTestCase testCase)
     {
         testCase.BlockedBy.Add(testCase.Origin, testCase.Piece);
+        Move? lastMove = testCase.PriorMoves.LastOrDefault();
         BitBoard board = BitBoard.FromPieces(
             testCase.BlockedBy,
-            isWhiteToMove: testCase.MovingPlayer is GameColor.White
+            isWhiteToMove: testCase.MovingPlayer is GameColor.White,
+            prevMove: lastMove is not null ? UiMoveToBitMove(lastMove) : null
         );
 
         Span<BitMove> moves = stackalloc BitMove[256];
@@ -50,34 +52,34 @@ public class BitPieceDefinitionTestBase
         List<BitMove> bitMoves = [];
         foreach (var move in uiMoves)
         {
-            BitMove bitMove = new()
-            {
-                From = move.From.AsIdx(),
-                To = move.To.AsIdx(),
-                Piece = move.Piece.Type,
-                ForcedMovePriority = move.ForcedPriority,
-                SpecialMoveType = move.SpecialMoveType,
-                PromotesTo = move.PromotesTo,
-            };
-
-            foreach (var capture in move.Captures)
-            {
-                BitPieceColor capturedColor = capture.CapturedPiece.Color.Match(
-                    whenWhite: BitPieceColor.White,
-                    whenBlack: BitPieceColor.Black,
-                    whenNeutral: BitPieceColor.Neutral
-                );
-
-                bitMove.AddCapture(
-                    capture.Position.AsIdx(),
-                    capture.CapturedPiece.Type,
-                    capturedColor
-                );
-            }
-
-            bitMoves.Add(bitMove);
+            bitMoves.Add(UiMoveToBitMove(move));
         }
 
         return [.. bitMoves.Distinct()];
+    }
+
+    private static BitMove UiMoveToBitMove(Move uiMove)
+    {
+        BitMove bitMove = new()
+        {
+            From = uiMove.From.AsIdx(),
+            To = uiMove.To.AsIdx(),
+            Piece = uiMove.Piece.Type,
+            ForcedMovePriority = uiMove.ForcedPriority,
+            SpecialMoveType = uiMove.SpecialMoveType,
+            PromotesTo = uiMove.PromotesTo,
+        };
+
+        foreach (var capture in uiMove.Captures)
+        {
+            BitPieceColor capturedColor = capture.CapturedPiece.Color.Match(
+                whenWhite: BitPieceColor.White,
+                whenBlack: BitPieceColor.Black,
+                whenNeutral: BitPieceColor.Neutral
+            );
+
+            bitMove.AddCapture(capture.Position.AsIdx(), capture.CapturedPiece.Type, capturedColor);
+        }
+        return bitMove;
     }
 }
