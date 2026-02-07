@@ -123,6 +123,62 @@ public class BitBoardTests
         board.IsWhiteToMove.Should().Be(isWhiteToMove);
     }
 
+    [Theory]
+    [InlineData(PieceType.Pawn)]
+    [InlineData(PieceType.UnderagePawn)]
+    [InlineData(PieceType.SterilePawn)]
+    public void FromPieces_sets_EnPassantSquares_correctly_for_pawn_moves(PieceType pawnType)
+    {
+        var from = new AlgebraicPoint("b2").AsIdx();
+        var to = new AlgebraicPoint("b5").AsIdx();
+
+        BitMove move = new()
+        {
+            Piece = pawnType,
+            From = from,
+            To = to,
+        };
+
+        var board = BitBoard.FromPieces(
+            new() { [new AlgebraicPoint("b2")] = PieceFactory.White(pawnType) },
+            isWhiteToMove: true,
+            prevMove: move
+        );
+
+        var expectedEnPassantSquare =
+            (UInt128.One << new AlgebraicPoint("b3").AsIdx())
+            | (UInt128.One << new AlgebraicPoint("b4").AsIdx());
+        board.EnPassantSquares.Should().Be(expectedEnPassantSquare);
+    }
+
+    [Theory]
+    [InlineData(PieceType.Pawn)]
+    [InlineData(PieceType.UnderagePawn)]
+    [InlineData(PieceType.SterilePawn)]
+    public void FromPieces_sets_EnPassantSquares_correctly_for_black_pawn(PieceType pawnType)
+    {
+        var from = new AlgebraicPoint("c9").AsIdx();
+        var to = new AlgebraicPoint("c6").AsIdx();
+
+        BitMove move = new()
+        {
+            Piece = pawnType,
+            From = from,
+            To = to,
+        };
+
+        var board = BitBoard.FromPieces(
+            new() { [new AlgebraicPoint("c9")] = PieceFactory.Black(pawnType) },
+            isWhiteToMove: false,
+            prevMove: move
+        );
+
+        var expectedEnPassantSquare =
+            (UInt128.One << new AlgebraicPoint("c8").AsIdx())
+            | (UInt128.One << new AlgebraicPoint("c7").AsIdx());
+        board.EnPassantSquares.Should().Be(expectedEnPassantSquare);
+    }
+
     [Fact]
     public void HasPieceMoved_returns_true_for_moved_position_and_false_for_unmoved()
     {
