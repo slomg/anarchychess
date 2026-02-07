@@ -13,6 +13,7 @@ public class BitBoard
     public UInt128 BlackPieces { get; private set; }
     public UInt128 NeutralPieces { get; private set; }
     public UInt128 Occupancy { get; private set; }
+    public UInt128 Empty { get; private set; }
 
     public UInt128 HasMoved { get; private set; }
 
@@ -46,6 +47,7 @@ public class BitBoard
         }
 
         Occupancy = WhitePieces | BlackPieces | NeutralPieces;
+        Empty = ~Occupancy;
 
         WhiteEnemy = BlackPieces | NeutralPieces;
         BlackEnemy = WhitePieces | NeutralPieces;

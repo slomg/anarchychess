@@ -63,6 +63,18 @@ public static class BitboardHelpers
         UInt128 captures = attacks & occupancy;
         UInt128 quiets = attacks & ~occupancy;
 
+        CreateMoveFromQuiets(from, pieceType, quiets, moves, ref moveCount);
+        CreateMoveFromCaptures(from, pieceType, board, captures, moves, ref moveCount);
+    }
+
+    public static void CreateMoveFromQuiets(
+        byte from,
+        PieceType pieceType,
+        UInt128 quiets,
+        Span<BitMove> moves,
+        ref int moveCount
+    )
+    {
         while (quiets != 0)
         {
             byte toSquare = (byte)BitScanForward(ref quiets);
@@ -73,7 +85,17 @@ public static class BitboardHelpers
                 Piece = pieceType,
             };
         }
+    }
 
+    public static void CreateMoveFromCaptures(
+        byte from,
+        PieceType pieceType,
+        BitBoard board,
+        UInt128 captures,
+        Span<BitMove> moves,
+        ref int moveCount
+    )
+    {
         while (captures != 0)
         {
             byte toSquare = (byte)BitScanForward(ref captures);

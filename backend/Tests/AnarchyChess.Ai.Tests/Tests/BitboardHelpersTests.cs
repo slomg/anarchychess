@@ -144,4 +144,105 @@ public class BitboardHelpersTests
 
         result.Should().BeEquivalentTo(expectedMoves);
     }
+
+    [Fact]
+    public void CreateMoveFromQuiets_creates_moves_for_each_quiet_square()
+    {
+        Span<BitMove> moves = new BitMove[10];
+        int moveCount = 0;
+
+        byte from = 0;
+        PieceType piece = PieceType.Rook;
+        UInt128 quiets = (UInt128.One << 2) | (UInt128.One << 5);
+
+        BitboardHelpers.CreateMoveFromQuiets(from, piece, quiets, moves, ref moveCount);
+
+        BitMove[] expectedMoves =
+        [
+            new BitMove
+            {
+                From = 0,
+                To = 2,
+                Piece = piece,
+            },
+            new BitMove
+            {
+                From = 0,
+                To = 5,
+                Piece = piece,
+            },
+        ];
+
+        List<BitMove> result = [.. moves[..moveCount]];
+        result.Should().BeEquivalentTo(expectedMoves);
+    }
+
+    [Fact]
+    public void CreateMoveFromCaptures_creates_moves_for_each_capture()
+    {
+        var capturedPiece1 = PieceFactory.White(PieceType.Pawn);
+        AlgebraicPoint capturedPiece1Position = new("b1");
+        byte capturedPiece1Idx = capturedPiece1Position.AsIdx();
+
+        var capturedPiece2 = PieceFactory.Black(PieceType.Horsey);
+        AlgebraicPoint capturedPiece2Position = new("c2");
+        byte capturedPiece2Idx = capturedPiece2Position.AsIdx();
+
+        BitBoard board = BitBoard.FromPieces(
+            new()
+            {
+                [capturedPiece1Position] = capturedPiece1,
+                [capturedPiece2Position] = capturedPiece2,
+            }
+        );
+
+        Span<BitMove> moves = new BitMove[10];
+        int moveCount = 0;
+
+        byte from = 0;
+        PieceType piece = PieceType.Rook;
+        UInt128 captures = (UInt128.One << capturedPiece1Idx) | (UInt128.One << capturedPiece2Idx);
+
+        BitboardHelpers.CreateMoveFromCaptures(from, piece, board, captures, moves, ref moveCount);
+
+        BitMove expectedMove1 = new()
+        {
+            From = from,
+            To = capturedPiece1Idx,
+            Piece = piece,
+        };
+        expectedMove1.AddCapture(capturedPiece1Idx, capturedPiece1.Type, BitPieceColor.White);
+
+        BitMove expectedMove2 = new()
+        {
+            From = from,
+            To = capturedPiece2Idx,
+            Piece = piece,
+        };
+        expectedMove2.AddCapture(capturedPiece2Idx, capturedPiece2.Type, BitPieceColor.Black);
+
+        List<BitMove> expectedMoves = [expectedMove1, expectedMove2];
+        List<BitMove> result = [.. moves[..moveCount]];
+
+        result.Should().BeEquivalentTo(expectedMoves);
+    }
+
+    [Fact]
+    public void CreateMoveFromCaptures_does_nothing_when_no_captures()
+    {
+        BitBoard board = new();
+        Span<BitMove> moves = new BitMove[10];
+        int moveCount = 0;
+
+        BitboardHelpers.CreateMoveFromCaptures(
+            0,
+            PieceType.Rook,
+            board,
+            captures: UInt128.One << 10,
+            moves,
+            ref moveCount
+        );
+
+        moveCount.Should().Be(0);
+    }
 }

@@ -57,6 +57,7 @@ public class BitPieceDefinitionTestBase
                 Piece = move.Piece.Type,
                 ForcedMovePriority = move.ForcedPriority,
                 SpecialMoveType = move.SpecialMoveType,
+                PromotesTo = move.PromotesTo,
             };
 
             foreach (var capture in move.Captures)
