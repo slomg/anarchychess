@@ -308,6 +308,32 @@ public abstract class PawnLikeTestData : TheoryData<PieceTestCase>
                 .From("e5", movedWhitePawn)
                 .WithPieceAt("d5", blackPawn)
                 .WithEnemyPieceAt("c6")
+                .WithFriendlyPieceAt("b7")
+                .WithEnemyPieceAt("a8")
+                .WithPriorMove(from: "d8", to: "d5")
+                .GoesTo("e6")
+                .GoesTo(
+                    "d6",
+                    captures: ["d5"],
+                    forcedPriority: ForcedMovePriority.EnPassant,
+                    specialMoveType: SpecialMoveType.EnPassant
+                )
+                .GoesTo(
+                    "c7",
+                    captures: ["d5", "c6"],
+                    forcedPriority: ForcedMovePriority.EnPassant,
+                    specialMoveType: SpecialMoveType.EnPassant
+                )
+                .WithDescription(
+                    "long passant stops when a friendly piece is part of capturing pieces"
+                )
+        );
+
+        Add(
+            PieceTestCase
+                .From("e5", movedWhitePawn)
+                .WithPieceAt("d5", blackPawn)
+                .WithEnemyPieceAt("c6")
                 .WithEnemyPieceAt("b7")
                 .WithFriendlyPieceAt("b8")
                 .WithEnemyPieceAt("a9")
@@ -325,13 +351,7 @@ public abstract class PawnLikeTestData : TheoryData<PieceTestCase>
                     forcedPriority: ForcedMovePriority.EnPassant,
                     specialMoveType: SpecialMoveType.EnPassant
                 )
-                .GoesTo(
-                    "b8",
-                    captures: ["d5", "c6", "b7"],
-                    forcedPriority: ForcedMovePriority.EnPassant,
-                    specialMoveType: SpecialMoveType.EnPassant
-                )
-                .WithDescription("long passant stops when a friendly piece blocks")
+                .WithDescription("long passant stops when a friendly piece blocks path")
         );
 
         Add(

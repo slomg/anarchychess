@@ -34,6 +34,22 @@ public abstract class PieceMagic : IPieceMagic
         return mask;
     }
 
+    protected static UInt128 SlideMaskToEnd(int x, int y, Offset offset)
+    {
+        UInt128 mask = 0;
+
+        x += offset.X;
+        y += offset.Y;
+        while (x < Constants.BoardSize && y < Constants.BoardSize && x >= 0 && y >= 0)
+        {
+            mask |= UInt128.One << (y * Constants.BoardSize + x);
+            x += offset.X;
+            y += offset.Y;
+        }
+
+        return mask;
+    }
+
     protected static UInt128 SlideAttack(
         int x,
         int y,
@@ -60,34 +76,6 @@ public abstract class PieceMagic : IPieceMagic
             y += offset.Y;
 
             i++;
-        }
-
-        return attacks;
-    }
-
-    protected static UInt128 BlockedSlideAttack(
-        int x,
-        int y,
-        Offset offset,
-        UInt128 blocker,
-        Offset attackOffset = default
-    )
-    {
-        UInt128 attacks = 0;
-
-        x += offset.X;
-        y += offset.Y;
-        while (x < Constants.BoardSize && y < Constants.BoardSize && x >= 0 && y >= 0)
-        {
-            int squareIdx = (y + attackOffset.Y) * Constants.BoardSize + x + attackOffset.X;
-            attacks |= UInt128.One << squareIdx;
-            if ((blocker & (UInt128.One << squareIdx)) == 0)
-            {
-                break;
-            }
-
-            x += offset.X;
-            y += offset.Y;
         }
 
         return attacks;

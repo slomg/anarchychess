@@ -153,80 +153,135 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
         ref int moveCount
     )
     {
+        if (board.EnPassantSquares == 0)
+        {
+            return;
+        }
+
         MagicPieceTable magicTable;
-        UInt128 enPassantSquares;
+        byte enPassantSquare;
         int stepOffset;
 
         if (isWhite)
         {
-            enPassantSquares = board.EnPassantSquares & positionBit << 11;
-            magicTable =
-                enPassantSquares == 0
-                    ? MagicLibrary.LeftWhiteEnPassantTable
-                    : MagicLibrary.RightWhiteEnPassantTable;
-            enPassantSquares |= board.EnPassantSquares & positionBit << 9;
-            stepOffset = 10;
+            (magicTable, enPassantSquare, stepOffset) = GetWhiteEnPassant(
+                board,
+                positionBit,
+                position
+            );
         }
         else
         {
-            enPassantSquares = board.EnPassantSquares & positionBit >> 9;
-            magicTable =
-                enPassantSquares == 0
-                    ? MagicLibrary.LeftBlackEnPassantTable
-                    : MagicLibrary.RightBlackEnPassantTable;
-            enPassantSquares |= board.EnPassantSquares & positionBit >> 11;
-            stepOffset = -10;
+            (magicTable, enPassantSquare, stepOffset) = GetBlackEnPassant(
+                board,
+                positionBit,
+                position
+            );
         }
 
-        while (enPassantSquares != 0)
+        BitMove move = new()
         {
-            byte enPassantSquare = (byte)BitboardHelpers.BitScanForward(ref enPassantSquares);
+            From = position,
+            To = enPassantSquare,
+            Piece = pieceType,
 
-            UInt128 enPassantCaptures = MagicLibrary.GetAttacks(
-                magicTable,
-                enPassantSquare,
-                occupancy: enemyPieces
-            );
-            enPassantCaptures &= enemyPieces;
+            CapturesMask = UInt128.One << board.EnPassantPawnSquare,
+            SpecialMoveType = SpecialMoveType.EnPassant,
+            ForcedMovePriority = ForcedMovePriority.EnPassant,
+        };
+        moves[moveCount++] = move;
 
-            BitMove move = new()
+        UInt128 longPassantCaptures = MagicLibrary.GetAttacks(
+            magicTable,
+            enPassantSquare,
+            occupancy: enemyPieces
+        );
+        // make sure no friendly pieces block the path
+        UInt128 reachableLongPassantSquares = MagicLibrary.GetAttacks(
+            magicTable,
+            enPassantSquare,
+            occupancy: board.Occupancy
+        );
+        longPassantCaptures &= enemyPieces;
+
+        while (longPassantCaptures != 0)
+        {
+            // scan forward / backwards to make sure captures are right
+            byte captureSquare = isWhite
+                ? (byte)BitboardHelpers.BitScanForward(ref longPassantCaptures)
+                : (byte)BitboardHelpers.BitScanBackward(ref longPassantCaptures);
+
+            if ((reachableLongPassantSquares & (UInt128.One << captureSquare)) == 0)
             {
-                From = position,
-                To = default,
-                Piece = pieceType,
+                break;
+            }
 
-                SpecialMoveType = SpecialMoveType.EnPassant,
-                ForcedMovePriority = ForcedMovePriority.EnPassant,
-            };
-            while (enPassantCaptures != 0)
+            byte toSquare = (byte)(captureSquare + stepOffset);
+
+            move.To = toSquare;
+            move.CapturesMask |= UInt128.One << captureSquare;
+            if ((UInt128.One << toSquare & promotionEdgeMask) != 0)
             {
-                byte toSquare;
-                byte captureSquare;
-                if (isWhite)
+                foreach (PieceType promotePiece in _promoteTo)
                 {
-                    captureSquare = (byte)BitboardHelpers.BitScanForward(ref enPassantCaptures);
-                }
-                else
-                {
-                    captureSquare = (byte)BitboardHelpers.BitScanBackward(ref enPassantCaptures);
-                }
-                toSquare = (byte)(captureSquare + stepOffset);
-
-                move.To = toSquare;
-                move.CapturesMask |= UInt128.One << captureSquare;
-                if ((UInt128.One << toSquare & promotionEdgeMask) != 0)
-                {
-                    foreach (PieceType promotePiece in _promoteTo)
-                    {
-                        move.PromotesTo = promotePiece;
-                        moves[moveCount++] = move;
-                    }
-                }
-                else
-                {
+                    move.PromotesTo = promotePiece;
                     moves[moveCount++] = move;
                 }
             }
+            else
+            {
+                moves[moveCount++] = move;
+            }
+        }
+    }
+
+    private static (
+        MagicPieceTable enPassantTable,
+        byte enPassantSquare,
+        int stepOffset
+    ) GetWhiteEnPassant(BitBoard board, UInt128 positionBit, byte position)
+    {
+        UInt128 rightEnPassant = board.EnPassantSquares & positionBit << 11;
+        if (rightEnPassant != 0)
+        {
+            return (
+                enPassantTable: MagicLibrary.WhiteRightEnPassantTable,
+                enPassantSquare: (byte)(position + 11),
+                stepOffset: 10
+            );
+        }
+        else
+        {
+            return (
+                enPassantTable: MagicLibrary.WhiteLeftEnPassantTable,
+                enPassantSquare: (byte)(position + 9),
+                stepOffset: 10
+            );
+        }
+    }
+
+    private static (
+        MagicPieceTable enPassantTable,
+        byte enPassantSquare,
+        int stepOffset
+    ) GetBlackEnPassant(BitBoard board, UInt128 positionBit, byte position)
+    {
+        UInt128 rightEnPassant = board.EnPassantSquares & positionBit >> 9;
+        if (rightEnPassant != 0)
+        {
+            return (
+                enPassantTable: MagicLibrary.BlackRightEnPassantTable,
+                enPassantSquare: (byte)(position - 9),
+                stepOffset: -10
+            );
+        }
+        else
+        {
+            return (
+                enPassantTable: MagicLibrary.BlackLeftEnPassantTable,
+                enPassantSquare: (byte)(position - 11),
+                stepOffset: -10
+            );
         }
     }
 

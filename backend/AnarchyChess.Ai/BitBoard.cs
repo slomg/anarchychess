@@ -21,7 +21,9 @@ public class BitBoard
     public UInt128 BlackEnemy { get; private set; }
 
     public bool IsWhiteToMove { get; private set; }
+
     public UInt128 EnPassantSquares { get; private set; }
+    public byte EnPassantPawnSquare { get; private set; }
 
     public BitBoard(
         UInt128[,]? bitboards = null,
@@ -142,6 +144,8 @@ public class BitBoard
             {
                 EnPassantSquares |= UInt128.One << (rank * 10 + file);
             }
+
+            EnPassantPawnSquare = move.To;
         }
     }
 }

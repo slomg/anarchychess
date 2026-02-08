@@ -22,16 +22,16 @@
     <None Update="MagicTables\TwoStraightSquaresMagic.msgpack">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="MagicTables\LeftWhiteEnPassantMagic.msgpack">
+    <None Update="MagicTables\WhiteLeftEnPassantMagic.msgpack">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="MagicTables\LeftBlackEnPassantMagic.msgpack">
+    <None Update="MagicTables\BlackLeftEnPassantMagic.msgpack">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="MagicTables\RightWhiteEnPassantMagic.msgpack">
+    <None Update="MagicTables\WhiteRightEnPassantMagic.msgpack">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="MagicTables\RightBlackEnPassantMagic.msgpack">
+    <None Update="MagicTables\BlackRightEnPassantMagic.msgpack">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
