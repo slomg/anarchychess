@@ -178,6 +178,7 @@ public class BitBoardTests
             (UInt128.One << new AlgebraicPoint("c8").AsIdx())
             | (UInt128.One << new AlgebraicPoint("c7").AsIdx());
         board.EnPassantSquares.Should().Be(expectedEnPassantSquare);
+        board.EnPassantPawnSquare.Should().Be(move.To);
     }
 
     [Fact]
