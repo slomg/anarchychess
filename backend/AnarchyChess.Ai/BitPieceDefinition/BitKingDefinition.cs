@@ -122,7 +122,6 @@ public sealed class BitKingDefinition : IBitPieceDefinition
         BitboardHelpers.CreateMoveFromAttacks(
             position,
             pieceType,
-            board,
             attacks,
             board.Occupancy,
             moves,
@@ -186,18 +185,15 @@ public sealed class BitKingDefinition : IBitPieceDefinition
         UInt128 kingDestMask = UInt128.One << castleInfo.KingDest;
         UInt128 rookDestMask = UInt128.One << castleInfo.RookDest;
 
-        bool isCapture = false;
-        byte capturePosition = 0;
+        UInt128 bishopCaptureMask = 0;
         UInt128 bishopBitboard = board.BitboardFor(PieceType.Bishop, color);
         if ((bishopBitboard & kingDestMask) != 0)
         {
-            isCapture = true;
-            capturePosition = castleInfo.KingDest;
+            bishopCaptureMask = UInt128.One << castleInfo.KingDest;
         }
         else if ((bishopBitboard & rookDestMask) != 0)
         {
-            isCapture = true;
-            capturePosition = castleInfo.RookDest;
+            bishopCaptureMask = UInt128.One << castleInfo.RookDest;
         }
         else if ((board.Occupancy & kingDestMask) != 0 || (board.Occupancy & rookDestMask) != 0)
         {
@@ -209,12 +205,9 @@ public sealed class BitKingDefinition : IBitPieceDefinition
             From = position,
             To = castleInfo.KingDest,
             Piece = pieceType,
+            CapturesMask = bishopCaptureMask,
             SpecialMoveType = castleInfo.MoveType,
         };
-        if (isCapture)
-        {
-            move.AddCapture(capturePosition, PieceType.Bishop, color);
-        }
         moves[moveCount++] = move;
     }
 }

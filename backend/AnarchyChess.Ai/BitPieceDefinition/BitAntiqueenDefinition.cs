@@ -18,7 +18,6 @@ public sealed class BitAntiqueenDefinition : IBitPieceDefinition
         BitboardHelpers.CreateMoveFromAttacks(
             position,
             pieceType,
-            board,
             attacks & ~board.BitboardForFriendOf(color),
             board.Occupancy,
             moves,

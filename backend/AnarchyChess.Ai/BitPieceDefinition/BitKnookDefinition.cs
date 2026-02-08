@@ -25,7 +25,6 @@ public sealed class BitKnookDefinition : IBitPieceDefinition
         BitboardHelpers.CreateMoveFromAttacks(
             position,
             pieceType,
-            board,
             (horseyAttacks | rookAttacks) & ~board.BitboardForFriendOf(color),
             board.Occupancy,
             moves,

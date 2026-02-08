@@ -30,7 +30,6 @@ public sealed class BitQueenDefinition : IBitPieceDefinition
         BitboardHelpers.CreateMoveFromAttacks(
             position,
             pieceType,
-            board,
             attacks & ~board.BitboardForFriendOf(color),
             board.Occupancy,
             moves,
@@ -73,9 +72,9 @@ public sealed class BitQueenDefinition : IBitPieceDefinition
             From = position,
             To = position,
             Piece = pieceType,
+            CapturesMask = UInt128.One << position,
             SpecialMoveType = SpecialMoveType.RadioactiveBetaDecay,
         };
-        move.AddCapture(position, pieceType, color);
         moves[moveCount++] = move;
     }
 }

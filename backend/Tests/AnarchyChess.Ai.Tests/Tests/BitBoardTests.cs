@@ -299,21 +299,4 @@ public class BitBoardTests
         piece.Value.PieceType.Should().Be(PieceType.TraitorRook);
         piece.Value.Color.Should().Be(BitPieceColor.Neutral);
     }
-
-    [Fact]
-    public void GetPieceAt_returns_correct_piece()
-    {
-        Dictionary<AlgebraicPoint, Piece> pieces = new()
-        {
-            [new AlgebraicPoint("e1")] = PieceFactory.White(PieceType.King),
-            [new AlgebraicPoint("a10")] = PieceFactory.Black(PieceType.Rook),
-        };
-
-        var board = BitBoard.FromPieces(pieces);
-
-        var result = board.GetPieceAt(new AlgebraicPoint("e1").AsIdx());
-
-        result.PieceType.Should().Be(PieceType.King);
-        result.Color.Should().Be(BitPieceColor.White);
-    }
 }

@@ -60,26 +60,23 @@ public class BitPieceDefinitionTestBase
 
     private static BitMove UiMoveToBitMove(Move uiMove)
     {
+        UInt128 captureMask = 0;
+        foreach (var capture in uiMove.Captures)
+        {
+            captureMask |= UInt128.One << capture.Position.AsIdx();
+        }
+
         BitMove bitMove = new()
         {
             From = uiMove.From.AsIdx(),
             To = uiMove.To.AsIdx(),
             Piece = uiMove.Piece.Type,
+            CapturesMask = captureMask,
             ForcedMovePriority = uiMove.ForcedPriority,
             SpecialMoveType = uiMove.SpecialMoveType,
             PromotesTo = uiMove.PromotesTo,
         };
 
-        foreach (var capture in uiMove.Captures)
-        {
-            BitPieceColor capturedColor = capture.CapturedPiece.Color.Match(
-                whenWhite: BitPieceColor.White,
-                whenBlack: BitPieceColor.Black,
-                whenNeutral: BitPieceColor.Neutral
-            );
-
-            bitMove.AddCapture(capture.Position.AsIdx(), capture.CapturedPiece.Type, capturedColor);
-        }
         return bitMove;
     }
 }

@@ -58,7 +58,6 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
             position,
             steps: ref steps,
             captures: ref captures,
-            board,
             promotionEdgeMask: promotionEdgeMask,
             positionBit: positionBit,
             moves,
@@ -78,14 +77,7 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
         );
 
         BitboardHelpers.CreateMoveFromQuiets(position, pieceType, steps, moves, ref moveCount);
-        BitboardHelpers.CreateMoveFromCaptures(
-            position,
-            pieceType,
-            board,
-            captures,
-            moves,
-            ref moveCount
-        );
+        BitboardHelpers.CreateMoveFromCaptures(position, pieceType, captures, moves, ref moveCount);
     }
 
     private void MaskWhitePawnMoves(
@@ -197,7 +189,15 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
             );
             enPassantCaptures &= enemyPieces;
 
-            BitMove move = default;
+            BitMove move = new()
+            {
+                From = position,
+                To = default,
+                Piece = pieceType,
+
+                SpecialMoveType = SpecialMoveType.EnPassant,
+                ForcedMovePriority = ForcedMovePriority.EnPassant,
+            };
             while (enPassantCaptures != 0)
             {
                 byte toSquare;
@@ -212,14 +212,8 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
                 }
                 toSquare = (byte)(captureSquare + stepOffset);
 
-                var capturePiece = board.GetPieceAt(captureSquare);
-                move.AddCapture(captureSquare, capturePiece.PieceType, capturePiece.Color);
-
-                move.From = position;
                 move.To = toSquare;
-                move.Piece = pieceType;
-                move.SpecialMoveType = SpecialMoveType.EnPassant;
-                move.ForcedMovePriority = ForcedMovePriority.EnPassant;
+                move.CapturesMask |= UInt128.One << captureSquare;
                 if ((UInt128.One << toSquare & promotionEdgeMask) != 0)
                 {
                     foreach (PieceType promotePiece in _promoteTo)
@@ -241,7 +235,6 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
         byte position,
         ref UInt128 steps,
         ref UInt128 captures,
-        BitBoard board,
         UInt128 promotionEdgeMask,
         UInt128 positionBit,
         Span<BitMove> moves,
@@ -275,14 +268,13 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
         {
             byte toSquare = (byte)BitboardHelpers.BitScanForward(ref capturePromotions);
 
-            var capturePiece = board.GetPieceAt(toSquare);
             BitMove move = new()
             {
                 From = position,
                 To = toSquare,
                 Piece = pieceType,
+                CapturesMask = UInt128.One << toSquare,
             };
-            move.AddCapture(toSquare, capturePiece.PieceType, capturePiece.Color);
             foreach (PieceType piece in _promoteTo)
             {
                 move.PromotesTo = piece;

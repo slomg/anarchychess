@@ -129,8 +129,6 @@ public class BitBoard
         return piece is not null;
     }
 
-    public BitPiece GetPieceAt(byte position) => PieceAt[position]!.Value;
-
     private void ProcessMoveEffects(BitMove move)
     {
         if (GameLogicConstants.PawnLikePieces.Contains(move.Piece))

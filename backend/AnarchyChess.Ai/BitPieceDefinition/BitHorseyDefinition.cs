@@ -20,33 +20,25 @@ public sealed class BitHorseyDefinition : IBitPieceDefinition
         while (rookAttacks != 0)
         {
             byte toSquare = (byte)BitboardHelpers.BitScanForward(ref rookAttacks);
-            BitMove move = new()
+
+            UInt128 captures = BitboardHelpers.MaskAdjacent(toSquare);
+            captures &= board.Occupancy;
+            captures |= UInt128.One << toSquare;
+
+            moves[moveCount++] = new BitMove()
             {
                 From = position,
                 To = toSquare,
                 Piece = pieceType,
+                CapturesMask = captures,
                 PromotesTo = PieceType.Knook,
                 SpecialMoveType = SpecialMoveType.KnooklearFusion,
             };
-            move.AddCapture(toSquare, PieceType.Rook, color);
-
-            UInt128 captures = BitboardHelpers.MaskAdjacent(toSquare);
-            captures &= board.Occupancy;
-
-            while (captures != 0)
-            {
-                byte capturedSquare = (byte)BitboardHelpers.BitScanForward(ref captures);
-                var piece = board.GetPieceAt(capturedSquare);
-                move.AddCapture(capturedSquare, piece.PieceType, piece.Color);
-            }
-
-            moves[moveCount++] = move;
         }
 
         BitboardHelpers.CreateMoveFromAttacks(
             position,
             pieceType,
-            board,
             attacks & ~board.BitboardForFriendOf(color),
             board.Occupancy,
             moves,

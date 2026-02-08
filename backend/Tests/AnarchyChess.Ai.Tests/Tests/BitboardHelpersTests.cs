@@ -1,5 +1,4 @@
 ﻿using AnarchyChess.Ai.Helpers;
-using AnarchyChess.Api.TestInfrastructure.Factories;
 using AnarchyChess.EngineShared;
 using AwesomeAssertions;
 
@@ -145,22 +144,19 @@ public class BitboardHelpersTests
     [Fact]
     public void CreateMoveFromAttacks_handles_mixed_quiet_and_capture()
     {
-        var capturedPiece = PieceFactory.White();
-        BitBoard board = BitBoard.FromPieces(new() { [new("c1")] = capturedPiece });
-
         Span<BitMove> moves = new BitMove[10];
         int moveCount = 0;
 
         byte from = 0;
         PieceType piece = PieceType.Rook;
         UInt128 attacks = (UInt128.One << 1) | (UInt128.One << 2);
+        UInt128 occupancy = UInt128.One | (UInt128.One << 2);
 
         BitboardHelpers.CreateMoveFromAttacks(
             from,
             piece,
-            board,
-            attacks,
-            board.Occupancy,
+            attacks: attacks,
+            occupancy: occupancy,
             moves,
             ref moveCount
         );
@@ -176,8 +172,8 @@ public class BitboardHelpersTests
             From = 0,
             To = 2,
             Piece = piece,
+            CapturesMask = UInt128.One << 2,
         };
-        captureMove.AddCapture(square: 2, piece: capturedPiece.Type, color: BitPieceColor.White);
 
         List<BitMove> expectedMoves = [quietMove, captureMove];
         List<BitMove> result = [.. moves[..moveCount]];
@@ -220,21 +216,8 @@ public class BitboardHelpersTests
     [Fact]
     public void CreateMoveFromCaptures_creates_moves_for_each_capture()
     {
-        var capturedPiece1 = PieceFactory.White(PieceType.Pawn);
-        AlgebraicPoint capturedPiece1Position = new("b1");
-        byte capturedPiece1Idx = capturedPiece1Position.AsIdx();
-
-        var capturedPiece2 = PieceFactory.Black(PieceType.Horsey);
-        AlgebraicPoint capturedPiece2Position = new("c2");
-        byte capturedPiece2Idx = capturedPiece2Position.AsIdx();
-
-        BitBoard board = BitBoard.FromPieces(
-            new()
-            {
-                [capturedPiece1Position] = capturedPiece1,
-                [capturedPiece2Position] = capturedPiece2,
-            }
-        );
+        byte capturedPiece1Idx = 1;
+        byte capturedPiece2Idx = 2;
 
         Span<BitMove> moves = new BitMove[10];
         int moveCount = 0;
@@ -243,23 +226,23 @@ public class BitboardHelpersTests
         PieceType piece = PieceType.Rook;
         UInt128 captures = (UInt128.One << capturedPiece1Idx) | (UInt128.One << capturedPiece2Idx);
 
-        BitboardHelpers.CreateMoveFromCaptures(from, piece, board, captures, moves, ref moveCount);
+        BitboardHelpers.CreateMoveFromCaptures(from, piece, captures, moves, ref moveCount);
 
         BitMove expectedMove1 = new()
         {
             From = from,
             To = capturedPiece1Idx,
             Piece = piece,
+            CapturesMask = UInt128.One << capturedPiece1Idx,
         };
-        expectedMove1.AddCapture(capturedPiece1Idx, capturedPiece1.Type, BitPieceColor.White);
 
         BitMove expectedMove2 = new()
         {
             From = from,
             To = capturedPiece2Idx,
             Piece = piece,
+            CapturesMask = UInt128.One << capturedPiece2Idx,
         };
-        expectedMove2.AddCapture(capturedPiece2Idx, capturedPiece2.Type, BitPieceColor.Black);
 
         List<BitMove> expectedMoves = [expectedMove1, expectedMove2];
         List<BitMove> result = [.. moves[..moveCount]];

@@ -131,7 +131,6 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
         );
         attacks &= ~visitedMask;
         AddUnderagePawnCapture(
-            board,
             origin,
             pieceType,
             attacks: ref attacks,
@@ -152,7 +151,6 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
         BitboardHelpers.CreateMoveFromAttacks(
             origin,
             pieceType,
-            board,
             attacks,
             board.Occupancy,
             moves,
@@ -202,14 +200,14 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
                 continue;
             }
 
-            UInt128 attacks = IlVaticanoBetweenMasksByDir[position, dir];
-            if ((attacks & enemyPieces) != attacks)
+            UInt128 captures = IlVaticanoBetweenMasksByDir[position, dir];
+            if ((captures & enemyPieces) != captures)
             {
                 continue;
             }
 
             ForcedMovePriority forcedMovePriority =
-                (underagePawnsBitboard & attacks) != 0
+                (underagePawnsBitboard & captures) != 0
                     ? ForcedMovePriority.UnderagePawn
                     : ForcedMovePriority.None;
 
@@ -219,22 +217,16 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
                 From = position,
                 To = targetBishopSquare,
                 Piece = pieceType,
+                CapturesMask = captures,
                 SpecialMoveType = SpecialMoveType.IlVaticano,
                 ForcedMovePriority = forcedMovePriority,
             };
-            while (attacks != 0)
-            {
-                byte attackSquare = (byte)BitboardHelpers.BitScanForward(ref attacks);
-                var capturePiece = board.GetPieceAt(attackSquare);
-                move.AddCapture(attackSquare, capturePiece.PieceType, capturePiece.Color);
-            }
             moves[moveCount++] = move;
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void AddUnderagePawnCapture(
-        BitBoard board,
         byte position,
         PieceType pieceType,
         ref UInt128 attacks,
@@ -248,16 +240,15 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
         while (underagePawnCapture != 0)
         {
             byte toSquare = (byte)BitboardHelpers.BitScanForward(ref underagePawnCapture);
-            var capturePiece = board.GetPieceAt(toSquare);
 
             BitMove move = new()
             {
                 From = position,
                 To = toSquare,
                 Piece = pieceType,
+                CapturesMask = UInt128.One << toSquare,
                 ForcedMovePriority = ForcedMovePriority.UnderagePawn,
             };
-            move.AddCapture(toSquare, capturePiece.PieceType, capturePiece.Color);
             moves[moveCount++] = move;
         }
     }

@@ -57,7 +57,6 @@ public sealed class BitTraitorRookDefinition : IBitPieceDefinition
         BitboardHelpers.CreateMoveFromAttacks(
             position,
             pieceType,
-            board,
             attacks,
             board.Occupancy,
             moves,
