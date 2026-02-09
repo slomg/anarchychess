@@ -7,8 +7,7 @@ public sealed class BitHorseyDefinition : IBitPieceDefinition
 {
     public void GenerateMoves(
         BitBoard board,
-        PieceType pieceType,
-        BitPieceColor color,
+        BitPiece piece,
         byte position,
         Span<BitMove> moves,
         ref int moveCount
@@ -16,7 +15,7 @@ public sealed class BitHorseyDefinition : IBitPieceDefinition
     {
         UInt128 attacks = BitboardConstants.HorseyMasks[position];
 
-        UInt128 rookAttacks = attacks & board.BitboardFor(PieceType.Rook, color);
+        UInt128 rookAttacks = attacks & board.BitboardFor(PieceType.Rook, piece.Color);
         while (rookAttacks != 0)
         {
             byte toSquare = (byte)BitboardHelpers.BitScanForward(ref rookAttacks);
@@ -29,7 +28,7 @@ public sealed class BitHorseyDefinition : IBitPieceDefinition
             {
                 From = position,
                 To = toSquare,
-                Piece = pieceType,
+                Piece = piece,
                 CapturesMask = captures,
                 PromotesTo = PieceType.Knook,
                 SpecialMoveType = SpecialMoveType.KnooklearFusion,
@@ -38,8 +37,8 @@ public sealed class BitHorseyDefinition : IBitPieceDefinition
 
         BitboardHelpers.CreateMoveFromAttacks(
             position,
-            pieceType,
-            attacks & ~board.BitboardForFriendOf(color),
+            piece,
+            attacks & ~board.BitboardForFriendOf(piece.Color),
             board.Occupancy,
             moves,
             ref moveCount

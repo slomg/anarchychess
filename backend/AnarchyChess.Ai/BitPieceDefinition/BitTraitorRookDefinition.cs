@@ -1,6 +1,5 @@
 ﻿using AnarchyChess.Ai.Helpers;
 using AnarchyChess.Ai.MagicTables;
-using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai.BitPieceDefinition;
 
@@ -8,8 +7,7 @@ public sealed class BitTraitorRookDefinition : IBitPieceDefinition
 {
     public void GenerateMoves(
         BitBoard board,
-        PieceType pieceType,
-        BitPieceColor color,
+        BitPiece piece,
         byte position,
         Span<BitMove> moves,
         ref int moveCount
@@ -56,7 +54,7 @@ public sealed class BitTraitorRookDefinition : IBitPieceDefinition
 
         BitboardHelpers.CreateMoveFromAttacks(
             position,
-            pieceType,
+            piece,
             attacks,
             board.Occupancy,
             moves,

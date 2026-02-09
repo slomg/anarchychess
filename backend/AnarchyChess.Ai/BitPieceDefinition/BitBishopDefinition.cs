@@ -78,8 +78,7 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
 
     public void GenerateMoves(
         BitBoard board,
-        PieceType pieceType,
-        BitPieceColor color,
+        BitPiece piece,
         byte position,
         Span<BitMove> moves,
         ref int moveCount
@@ -92,8 +91,7 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
 
         GenerateBounces(
             board,
-            pieceType,
-            color,
+            piece,
             origin: position,
             bounceFrom: position,
             underagePawnsBitboard: underagePawnsBitboard,
@@ -103,8 +101,7 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
         );
         GenerateIlVaticanoMoves(
             board,
-            pieceType,
-            color,
+            piece,
             position,
             underagePawnsBitboard: underagePawnsBitboard,
             moves,
@@ -114,8 +111,7 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
 
     private static void GenerateBounces(
         BitBoard board,
-        PieceType pieceType,
-        BitPieceColor color,
+        BitPiece piece,
         byte origin,
         byte bounceFrom,
         UInt128 underagePawnsBitboard,
@@ -132,14 +128,14 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
         attacks &= ~visitedMask;
         AddUnderagePawnCapture(
             origin,
-            pieceType,
+            piece,
             attacks: ref attacks,
             underagePawnsBitboard: underagePawnsBitboard,
             moves,
             ref moveCount
         );
 
-        attacks &= ~board.BitboardForFriendOf(color);
+        attacks &= ~board.BitboardForFriendOf(piece.Color);
         if (attacks == 0)
         {
             return;
@@ -150,7 +146,7 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
 
         BitboardHelpers.CreateMoveFromAttacks(
             origin,
-            pieceType,
+            piece,
             attacks,
             board.Occupancy,
             moves,
@@ -162,8 +158,7 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
             byte edgeSquare = (byte)BitboardHelpers.BitScanForward(ref edges);
             GenerateBounces(
                 board,
-                pieceType,
-                color,
+                piece,
                 origin: origin,
                 bounceFrom: edgeSquare,
                 underagePawnsBitboard: underagePawnsBitboard,
@@ -176,21 +171,20 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
 
     private static void GenerateIlVaticanoMoves(
         BitBoard board,
-        PieceType pieceType,
-        BitPieceColor color,
+        BitPiece piece,
         byte position,
         UInt128 underagePawnsBitboard,
         Span<BitMove> moves,
         ref int moveCount
     )
     {
-        UInt128 friendlyBishops = board.BitboardFor(PieceType.Bishop, color);
+        UInt128 friendlyBishops = board.BitboardFor(PieceType.Bishop, piece.Color);
         if (friendlyBishops == 0)
         {
             return;
         }
 
-        UInt128 enemyPieces = board.BitboardForEnemyOf(color);
+        UInt128 enemyPieces = board.BitboardForEnemyOf(piece.Color);
 
         for (int dir = 0; dir < 4; dir++)
         {
@@ -216,7 +210,7 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
             {
                 From = position,
                 To = targetBishopSquare,
-                Piece = pieceType,
+                Piece = piece,
                 CapturesMask = captures,
                 SpecialMoveType = SpecialMoveType.IlVaticano,
                 ForcedMovePriority = forcedMovePriority,
@@ -228,7 +222,7 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void AddUnderagePawnCapture(
         byte position,
-        PieceType pieceType,
+        BitPiece piece,
         ref UInt128 attacks,
         UInt128 underagePawnsBitboard,
         Span<BitMove> moves,
@@ -245,7 +239,7 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
             {
                 From = position,
                 To = toSquare,
-                Piece = pieceType,
+                Piece = piece,
                 CapturesMask = UInt128.One << toSquare,
                 ForcedMovePriority = ForcedMovePriority.UnderagePawn,
             };

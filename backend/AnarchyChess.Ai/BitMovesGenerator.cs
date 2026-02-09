@@ -11,8 +11,7 @@ public interface IBitMovesGenerator
     void GenerateForPiece(
         BitBoard board,
         byte position,
-        PieceType pieceType,
-        BitPieceColor color,
+        BitPiece piece,
         Span<BitMove> moves,
         ref int moveCount
     );
@@ -49,13 +48,14 @@ public sealed class BitMovesGenerator : IBitMovesGenerator
                 continue;
             }
 
+            BitPiece piece = new() { Type = pieceType, Color = color };
+
             UInt128 colorBitboard = board.BitboardFor(pieceType, color);
             GenerateForPieces(
                 board,
                 colorBitboard,
                 definition,
-                pieceType,
-                color,
+                piece: new BitPiece() { Type = pieceType, Color = color },
                 moves,
                 ref moveCount
             );
@@ -65,8 +65,7 @@ public sealed class BitMovesGenerator : IBitMovesGenerator
                 board,
                 neutralBitboard,
                 definition,
-                pieceType,
-                color,
+                piece: new BitPiece() { Type = pieceType, Color = BitPieceColor.Neutral },
                 moves,
                 ref moveCount
             );
@@ -76,19 +75,18 @@ public sealed class BitMovesGenerator : IBitMovesGenerator
     public void GenerateForPiece(
         BitBoard board,
         byte position,
-        PieceType pieceType,
-        BitPieceColor color,
+        BitPiece piece,
         Span<BitMove> moves,
         ref int moveCount
     )
     {
-        UInt128 bitboard = board.BitboardFor(pieceType, color);
+        UInt128 bitboard = board.BitboardFor(piece.Type, piece.Color);
         if (
-            _pieceDefinitions.TryGetValue(pieceType, out var definition)
+            _pieceDefinitions.TryGetValue(piece.Type, out var definition)
             && (bitboard & (UInt128.One << position)) != 0
         )
         {
-            definition.GenerateMoves(board, pieceType, color, position, moves, ref moveCount);
+            definition.GenerateMoves(board, piece, position, moves, ref moveCount);
         }
     }
 
@@ -97,8 +95,7 @@ public sealed class BitMovesGenerator : IBitMovesGenerator
         BitBoard board,
         UInt128 bitboard,
         IBitPieceDefinition definition,
-        PieceType pieceType,
-        BitPieceColor color,
+        BitPiece piece,
         Span<BitMove> moves,
         ref int moveCount
     )
@@ -108,7 +105,7 @@ public sealed class BitMovesGenerator : IBitMovesGenerator
             int squareIndex = BitboardHelpers.BitScanForward(ref bitboard);
             byte position = (byte)squareIndex;
 
-            definition.GenerateMoves(board, pieceType, color, position, moves, ref moveCount);
+            definition.GenerateMoves(board, piece, position, moves, ref moveCount);
         }
     }
 }

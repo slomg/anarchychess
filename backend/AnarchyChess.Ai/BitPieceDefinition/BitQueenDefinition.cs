@@ -8,8 +8,7 @@ public sealed class BitQueenDefinition : IBitPieceDefinition
 {
     public void GenerateMoves(
         BitBoard board,
-        PieceType pieceType,
-        BitPieceColor color,
+        BitPiece piece,
         byte position,
         Span<BitMove> moves,
         ref int moveCount
@@ -29,25 +28,24 @@ public sealed class BitQueenDefinition : IBitPieceDefinition
 
         BitboardHelpers.CreateMoveFromAttacks(
             position,
-            pieceType,
-            attacks & ~board.BitboardForFriendOf(color),
+            piece,
+            attacks & ~board.BitboardForFriendOf(piece.Color),
             board.Occupancy,
             moves,
             ref moveCount
         );
-        GenerateBetaDecayMove(board, pieceType, color, position, moves, ref moveCount);
+        GenerateBetaDecayMove(board, piece, position, moves, ref moveCount);
     }
 
     private static void GenerateBetaDecayMove(
         BitBoard board,
-        PieceType pieceType,
-        BitPieceColor color,
+        BitPiece piece,
         byte position,
         Span<BitMove> moves,
         ref int moveCount
     )
     {
-        bool isWhite = color is BitPieceColor.White;
+        bool isWhite = piece.Color is BitPieceColor.White;
 
         UInt128 positionBit = UInt128.One << position;
         UInt128 right = (positionBit & BitboardConstants.RightEdgeExcludeMask) << 1;
@@ -71,7 +69,7 @@ public sealed class BitQueenDefinition : IBitPieceDefinition
         {
             From = position,
             To = position,
-            Piece = pieceType,
+            Piece = piece,
             CapturesMask = UInt128.One << position,
             SpecialMoveType = SpecialMoveType.RadioactiveBetaDecay,
         };

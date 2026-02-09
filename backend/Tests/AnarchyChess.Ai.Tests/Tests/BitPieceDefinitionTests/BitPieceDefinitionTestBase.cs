@@ -33,14 +33,8 @@ public class BitPieceDefinitionTestBase
             whenBlack: BitPieceColor.Black,
             whenNeutral: BitPieceColor.Neutral
         );
-        _generator.GenerateForPiece(
-            board,
-            testCase.Origin.AsIdx(),
-            testCase.Piece.Type,
-            color,
-            moves,
-            ref moveCount
-        );
+        BitPiece piece = new() { Type = testCase.Piece.Type, Color = color };
+        _generator.GenerateForPiece(board, testCase.Origin.AsIdx(), piece, moves, ref moveCount);
 
         List<BitMove> expectedMoves = ConvertUiMovesToBitMoves(testCase.ExpectedMoves);
         List<BitMove> result = [.. moves[..moveCount]];
@@ -72,11 +66,16 @@ public class BitPieceDefinitionTestBase
             captureMask |= UInt128.One << capture.Position.AsIdx();
         }
 
+        BitPieceColor color = uiMove.Piece.Color.Match(
+            whenWhite: BitPieceColor.White,
+            whenBlack: BitPieceColor.Black,
+            whenNeutral: BitPieceColor.Neutral
+        );
         BitMove bitMove = new()
         {
             From = uiMove.From.AsIdx(),
             To = uiMove.To.AsIdx(),
-            Piece = uiMove.Piece.Type,
+            Piece = new BitPiece() { Type = uiMove.Piece.Type, Color = color },
             CapturesMask = captureMask,
             ForcedMovePriority = uiMove.ForcedPriority,
             SpecialMoveType = uiMove.SpecialMoveType,

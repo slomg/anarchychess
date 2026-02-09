@@ -11,10 +11,9 @@ public sealed class BitSterilePawnDefinition : IBitPieceDefinition
 
     public void GenerateMoves(
         BitBoard board,
-        PieceType pieceType,
-        BitPieceColor color,
+        BitPiece piece,
         byte position,
         Span<BitMove> moves,
         ref int moveCount
-    ) => PawnLikeDefinition.GenerateMoves(board, pieceType, color, position, moves, ref moveCount);
+    ) => PawnLikeDefinition.GenerateMoves(board, piece, position, moves, ref moveCount);
 }

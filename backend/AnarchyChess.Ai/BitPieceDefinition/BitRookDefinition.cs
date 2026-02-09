@@ -8,8 +8,7 @@ public sealed class BitRookDefinition : IBitPieceDefinition
 {
     public void GenerateMoves(
         BitBoard board,
-        PieceType pieceType,
-        BitPieceColor color,
+        BitPiece piece,
         byte position,
         Span<BitMove> moves,
         ref int moveCount
@@ -21,7 +20,7 @@ public sealed class BitRookDefinition : IBitPieceDefinition
             board.Occupancy
         );
 
-        UInt128 horseyAttacks = attacks & board.BitboardFor(PieceType.Horsey, color);
+        UInt128 horseyAttacks = attacks & board.BitboardFor(PieceType.Horsey, piece.Color);
         while (horseyAttacks != 0)
         {
             byte toSquare = (byte)BitboardHelpers.BitScanForward(ref horseyAttacks);
@@ -34,7 +33,7 @@ public sealed class BitRookDefinition : IBitPieceDefinition
             {
                 From = position,
                 To = toSquare,
-                Piece = pieceType,
+                Piece = piece,
                 CapturesMask = captures,
                 PromotesTo = PieceType.Knook,
                 SpecialMoveType = SpecialMoveType.KnooklearFusion,
@@ -43,8 +42,8 @@ public sealed class BitRookDefinition : IBitPieceDefinition
 
         BitboardHelpers.CreateMoveFromAttacks(
             position,
-            pieceType,
-            attacks & ~board.BitboardForFriendOf(color),
+            piece,
+            attacks & ~board.BitboardForFriendOf(piece.Color),
             board.Occupancy,
             moves,
             ref moveCount

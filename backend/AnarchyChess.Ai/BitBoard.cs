@@ -85,7 +85,7 @@ public class BitBoard
             );
             byte idx = point.AsIdx();
             bitboards[(int)color, (int)piece.Type] |= UInt128.One << idx;
-            pieceAt[idx] = new BitPiece() { PieceType = piece.Type, Color = color };
+            pieceAt[idx] = new BitPiece() { Type = piece.Type, Color = color };
 
             if (piece.HasMoved)
             {
@@ -133,7 +133,7 @@ public class BitBoard
 
     private void ProcessMoveEffects(BitMove move)
     {
-        if (GameLogicConstants.PawnLikePieces.Contains(move.Piece))
+        if (GameLogicConstants.PawnLikePieces.Contains(move.Piece.Type))
         {
             int fromRank = move.From / 10;
             int toRank = move.To / 10;

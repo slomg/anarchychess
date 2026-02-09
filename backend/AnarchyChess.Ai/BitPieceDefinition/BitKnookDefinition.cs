@@ -1,6 +1,5 @@
 ﻿using AnarchyChess.Ai.Helpers;
 using AnarchyChess.Ai.MagicTables;
-using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai.BitPieceDefinition;
 
@@ -8,8 +7,7 @@ public sealed class BitKnookDefinition : IBitPieceDefinition
 {
     public void GenerateMoves(
         BitBoard board,
-        PieceType pieceType,
-        BitPieceColor color,
+        BitPiece piece,
         byte position,
         Span<BitMove> moves,
         ref int moveCount
@@ -24,8 +22,8 @@ public sealed class BitKnookDefinition : IBitPieceDefinition
 
         BitboardHelpers.CreateMoveFromAttacks(
             position,
-            pieceType,
-            (horseyAttacks | rookAttacks) & ~board.BitboardForFriendOf(color),
+            piece,
+            (horseyAttacks | rookAttacks) & ~board.BitboardForFriendOf(piece.Color),
             board.Occupancy,
             moves,
             ref moveCount

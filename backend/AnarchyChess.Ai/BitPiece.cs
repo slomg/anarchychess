@@ -4,6 +4,6 @@ namespace AnarchyChess.Ai;
 
 public struct BitPiece
 {
-    public PieceType PieceType;
+    public PieceType Type;
     public BitPieceColor Color;
 }

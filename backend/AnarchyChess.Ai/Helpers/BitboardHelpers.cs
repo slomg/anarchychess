@@ -1,6 +1,5 @@
 ﻿using System.Numerics;
 using System.Runtime.CompilerServices;
-using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai.Helpers;
 
@@ -76,7 +75,7 @@ public static class BitboardHelpers
 
     public static void CreateMoveFromAttacks(
         byte from,
-        PieceType pieceType,
+        BitPiece piece,
         UInt128 attacks,
         UInt128 occupancy,
         Span<BitMove> moves,
@@ -86,13 +85,13 @@ public static class BitboardHelpers
         UInt128 captures = attacks & occupancy;
         UInt128 quiets = attacks & ~occupancy;
 
-        CreateMoveFromQuiets(from, pieceType, quiets, moves, ref moveCount);
-        CreateMoveFromCaptures(from, pieceType, captures, moves, ref moveCount);
+        CreateMoveFromQuiets(from, piece, quiets, moves, ref moveCount);
+        CreateMoveFromCaptures(from, piece, captures, moves, ref moveCount);
     }
 
     public static void CreateMoveFromQuiets(
         byte from,
-        PieceType pieceType,
+        BitPiece piece,
         UInt128 quiets,
         Span<BitMove> moves,
         ref int moveCount
@@ -105,14 +104,14 @@ public static class BitboardHelpers
             {
                 From = from,
                 To = toSquare,
-                Piece = pieceType,
+                Piece = piece,
             };
         }
     }
 
     public static void CreateMoveFromCaptures(
         byte from,
-        PieceType pieceType,
+        BitPiece piece,
         UInt128 captures,
         Span<BitMove> moves,
         ref int moveCount
@@ -126,7 +125,7 @@ public static class BitboardHelpers
             {
                 From = from,
                 To = toSquare,
-                Piece = pieceType,
+                Piece = piece,
                 CapturesMask = UInt128.One << toSquare,
             };
             moves[moveCount++] = move;

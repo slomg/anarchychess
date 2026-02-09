@@ -1,5 +1,4 @@
 ﻿using AnarchyChess.Ai.Helpers;
-using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai.BitPieceDefinition;
 
@@ -7,8 +6,7 @@ public sealed class BitAntiqueenDefinition : IBitPieceDefinition
 {
     public void GenerateMoves(
         BitBoard board,
-        PieceType pieceType,
-        BitPieceColor color,
+        BitPiece piece,
         byte position,
         Span<BitMove> moves,
         ref int moveCount
@@ -17,8 +15,8 @@ public sealed class BitAntiqueenDefinition : IBitPieceDefinition
         UInt128 attacks = BitboardConstants.HorseyMasks[position];
         BitboardHelpers.CreateMoveFromAttacks(
             position,
-            pieceType,
-            attacks & ~board.BitboardForFriendOf(color),
+            piece,
+            attacks & ~board.BitboardForFriendOf(piece.Color),
             board.Occupancy,
             moves,
             ref moveCount

@@ -148,7 +148,7 @@ public class BitboardHelpersTests
         int moveCount = 0;
 
         byte from = 0;
-        PieceType piece = PieceType.Rook;
+        BitPiece piece = new() { Type = PieceType.Rook, Color = BitPieceColor.White };
         UInt128 attacks = (UInt128.One << 1) | (UInt128.One << 2);
         UInt128 occupancy = UInt128.One | (UInt128.One << 2);
 
@@ -188,7 +188,7 @@ public class BitboardHelpersTests
         int moveCount = 0;
 
         byte from = 0;
-        PieceType piece = PieceType.Rook;
+        BitPiece piece = new() { Type = PieceType.Rook, Color = BitPieceColor.White };
         UInt128 quiets = (UInt128.One << 2) | (UInt128.One << 5);
 
         BitboardHelpers.CreateMoveFromQuiets(from, piece, quiets, moves, ref moveCount);
@@ -223,7 +223,7 @@ public class BitboardHelpersTests
         int moveCount = 0;
 
         byte from = 0;
-        PieceType piece = PieceType.Rook;
+        BitPiece piece = new() { Type = PieceType.Rook, Color = BitPieceColor.White };
         UInt128 captures = (UInt128.One << capturedPiece1Idx) | (UInt128.One << capturedPiece2Idx);
 
         BitboardHelpers.CreateMoveFromCaptures(from, piece, captures, moves, ref moveCount);

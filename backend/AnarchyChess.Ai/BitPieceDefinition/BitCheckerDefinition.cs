@@ -15,15 +15,14 @@ public sealed class BitCheckerDefinition : IBitPieceDefinition
 {
     public void GenerateMoves(
         BitBoard board,
-        PieceType pieceType,
-        BitPieceColor color,
+        BitPiece piece,
         byte position,
         Span<BitMove> moves,
         ref int moveCount
     )
     {
         UInt128 promotionMask =
-            color is BitPieceColor.White
+            piece.Color is BitPieceColor.White
                 ? BitboardConstants.TopEdgeMask
                 : BitboardConstants.BottomEdgeMask;
 
@@ -31,8 +30,7 @@ public sealed class BitCheckerDefinition : IBitPieceDefinition
             board,
             origin: position,
             position: position,
-            pieceType,
-            color,
+            piece,
             captures: 0,
             visited: UInt128.One << position,
             promotionMask: promotionMask,
@@ -46,8 +44,7 @@ public sealed class BitCheckerDefinition : IBitPieceDefinition
         BitBoard board,
         byte origin,
         byte position,
-        PieceType pieceType,
-        BitPieceColor color,
+        BitPiece piece,
         UInt128 captures,
         UInt128 visited,
         UInt128 promotionMask,
@@ -60,8 +57,7 @@ public sealed class BitCheckerDefinition : IBitPieceDefinition
 
         RecurseToDirection(
             board,
-            pieceType,
-            color,
+            piece,
             origin: origin,
             captures: captures,
             visited: visited,
@@ -73,8 +69,7 @@ public sealed class BitCheckerDefinition : IBitPieceDefinition
         );
         RecurseToDirection(
             board,
-            pieceType,
-            color,
+            piece,
             origin: origin,
             captures: captures,
             visited: visited,
@@ -86,8 +81,7 @@ public sealed class BitCheckerDefinition : IBitPieceDefinition
         );
         RecurseToDirection(
             board,
-            pieceType,
-            color,
+            piece,
             origin: origin,
             captures: captures,
             visited: visited,
@@ -99,8 +93,7 @@ public sealed class BitCheckerDefinition : IBitPieceDefinition
         );
         RecurseToDirection(
             board,
-            pieceType,
-            color,
+            piece,
             origin: origin,
             captures: captures,
             visited: visited,
@@ -182,8 +175,7 @@ public sealed class BitCheckerDefinition : IBitPieceDefinition
 
     private static void RecurseToDirection(
         BitBoard board,
-        PieceType pieceType,
-        BitPieceColor color,
+        BitPiece piece,
         byte origin,
         UInt128 captures,
         UInt128 visited,
@@ -207,7 +199,7 @@ public sealed class BitCheckerDefinition : IBitPieceDefinition
             {
                 From = origin,
                 To = hop.FirstHopPosition,
-                Piece = pieceType,
+                Piece = piece,
                 CapturesMask = captures,
                 PromotesTo = GetPromotionPiece(hop.FirstHop, promotionMask),
             };
@@ -224,7 +216,7 @@ public sealed class BitCheckerDefinition : IBitPieceDefinition
             {
                 From = origin,
                 To = hop.SecondHopPosition,
-                Piece = pieceType,
+                Piece = piece,
                 CapturesMask = captures,
                 PromotesTo = GetPromotionPiece(hop.SecondHop, promotionMask),
             };
@@ -232,13 +224,13 @@ public sealed class BitCheckerDefinition : IBitPieceDefinition
 
         if (!isFirstHopEmpty && isSecondHopEmpty)
         {
-            captures |= hop.FirstHop & board.BitboardForEnemyOf(color);
+            captures |= hop.FirstHop & board.BitboardForEnemyOf(piece.Color);
 
             moves[moveCount++] = new BitMove()
             {
                 From = origin,
                 To = hop.SecondHopPosition,
-                Piece = pieceType,
+                Piece = piece,
                 CapturesMask = captures,
                 PromotesTo = GetPromotionPiece(hop.SecondHop, promotionMask),
             };
@@ -249,8 +241,7 @@ public sealed class BitCheckerDefinition : IBitPieceDefinition
                 board,
                 origin: origin,
                 position: hop.SecondHopPosition,
-                pieceType,
-                color,
+                piece,
                 captures: captures,
                 visited: visited,
                 promotionMask: promotionMask,

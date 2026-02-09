@@ -6,7 +6,7 @@ public struct BitMove
 {
     public required byte From;
     public required byte To;
-    public required PieceType Piece;
+    public required BitPiece Piece;
 
     public UInt128 CapturesMask;
     public PieceType? PromotesTo;

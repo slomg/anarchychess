@@ -12,23 +12,21 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
 
     public void GenerateMoves(
         BitBoard board,
-        PieceType pieceType,
-        BitPieceColor color,
+        BitPiece piece,
         byte position,
         Span<BitMove> moves,
         ref int moveCount
     )
     {
         bool hasMoved = (board.HasMoved & (UInt128.One << position)) != 0;
-        bool isWhite = color is BitPieceColor.White;
 
-        UInt128 enemyPieces = board.BitboardForEnemyOf(color);
+        UInt128 enemyPieces = board.BitboardForEnemyOf(piece.Color);
 
         UInt128 positionBit = UInt128.One << position;
         UInt128 steps = 0;
         UInt128 captures = 0;
         UInt128 promotionEdgeMask;
-        if (isWhite)
+        if (piece.Color is BitPieceColor.White)
         {
             promotionEdgeMask = BitboardConstants.TopEdgeMask;
             MaskWhitePawnMoves(
@@ -54,7 +52,7 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
         }
 
         GenerateRegularPromotionMoves(
-            pieceType,
+            piece,
             position,
             steps: ref steps,
             captures: ref captures,
@@ -65,8 +63,7 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
         );
 
         GenerateEnPassantMoves(
-            pieceType,
-            isWhite: isWhite,
+            piece,
             position,
             positionBit: positionBit,
             board,
@@ -76,8 +73,8 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
             ref moveCount
         );
 
-        BitboardHelpers.CreateMoveFromQuiets(position, pieceType, steps, moves, ref moveCount);
-        BitboardHelpers.CreateMoveFromCaptures(position, pieceType, captures, moves, ref moveCount);
+        BitboardHelpers.CreateMoveFromQuiets(position, piece, steps, moves, ref moveCount);
+        BitboardHelpers.CreateMoveFromCaptures(position, piece, captures, moves, ref moveCount);
     }
 
     private void MaskWhitePawnMoves(
@@ -142,8 +139,7 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
     }
 
     private void GenerateEnPassantMoves(
-        PieceType pieceType,
-        bool isWhite,
+        BitPiece piece,
         byte position,
         UInt128 positionBit,
         BitBoard board,
@@ -158,6 +154,7 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
             return;
         }
 
+        bool isWhite = piece.Color is BitPieceColor.White;
         MagicPieceTable magicTable;
         byte enPassantSquare;
         int stepOffset;
@@ -183,7 +180,7 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
         {
             From = position,
             To = enPassantSquare,
-            Piece = pieceType,
+            Piece = piece,
 
             CapturesMask = UInt128.One << board.EnPassantPawnSquare,
             SpecialMoveType = SpecialMoveType.EnPassant,
@@ -222,9 +219,9 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
             move.CapturesMask |= UInt128.One << captureSquare;
             if ((UInt128.One << toSquare & promotionEdgeMask) != 0)
             {
-                foreach (PieceType promotePiece in _promoteTo)
+                foreach (PieceType promoteTo in _promoteTo)
                 {
-                    move.PromotesTo = promotePiece;
+                    move.PromotesTo = promoteTo;
                     moves[moveCount++] = move;
                 }
             }
@@ -286,7 +283,7 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
     }
 
     private void GenerateRegularPromotionMoves(
-        PieceType pieceType,
+        BitPiece piece,
         byte position,
         ref UInt128 steps,
         ref UInt128 captures,
@@ -304,14 +301,14 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
         {
             byte toSquare = (byte)BitboardHelpers.BitScanForward(ref stepPromotions);
 
-            foreach (PieceType piece in _promoteTo)
+            foreach (PieceType promoteTo in _promoteTo)
             {
                 moves[moveCount++] = new BitMove()
                 {
                     From = position,
                     To = toSquare,
-                    Piece = pieceType,
-                    PromotesTo = piece,
+                    Piece = piece,
+                    PromotesTo = promoteTo,
                 };
             }
         }
@@ -327,12 +324,12 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
             {
                 From = position,
                 To = toSquare,
-                Piece = pieceType,
+                Piece = piece,
                 CapturesMask = UInt128.One << toSquare,
             };
-            foreach (PieceType piece in _promoteTo)
+            foreach (PieceType promoteTo in _promoteTo)
             {
-                move.PromotesTo = piece;
+                move.PromotesTo = promoteTo;
                 moves[moveCount++] = move;
             }
         }

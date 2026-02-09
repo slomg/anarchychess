@@ -134,7 +134,7 @@ public class BitBoardTests
 
         BitMove move = new()
         {
-            Piece = pawnType,
+            Piece = new BitPiece() { Type = pawnType, Color = BitPieceColor.White },
             From = from,
             To = to,
         };
@@ -163,7 +163,7 @@ public class BitBoardTests
 
         BitMove move = new()
         {
-            Piece = pawnType,
+            Piece = new BitPiece() { Type = pawnType, Color = BitPieceColor.Black },
             From = from,
             To = to,
         };
@@ -260,13 +260,13 @@ public class BitBoardTests
         bool resultE1 = board.TryGetPieceAt(new AlgebraicPoint("e1").AsIdx(), out var pieceE1);
         resultE1.Should().BeTrue();
         pieceE1.Should().NotBeNull();
-        pieceE1.Value.PieceType.Should().Be(PieceType.King);
+        pieceE1.Value.Type.Should().Be(PieceType.King);
         pieceE1.Value.Color.Should().Be(BitPieceColor.White);
 
         bool resultA10 = board.TryGetPieceAt(new AlgebraicPoint("a10").AsIdx(), out var pieceA10);
         resultA10.Should().BeTrue();
         pieceA10.Should().NotBeNull();
-        pieceA10.Value.PieceType.Should().Be(PieceType.Rook);
+        pieceA10.Value.Type.Should().Be(PieceType.Rook);
         pieceA10.Value.Color.Should().Be(BitPieceColor.Black);
     }
 
@@ -298,7 +298,7 @@ public class BitBoardTests
         bool result = board.TryGetPieceAt(new AlgebraicPoint("f4").AsIdx(), out var piece);
         result.Should().BeTrue();
         piece.Should().NotBeNull();
-        piece.Value.PieceType.Should().Be(PieceType.TraitorRook);
+        piece.Value.Type.Should().Be(PieceType.TraitorRook);
         piece.Value.Color.Should().Be(BitPieceColor.Neutral);
     }
 }
