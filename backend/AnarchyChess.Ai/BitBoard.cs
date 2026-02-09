@@ -22,7 +22,7 @@ public class BitBoard
 
     public bool IsWhiteToMove { get; private set; }
 
-    public UInt128 EnPassantSquares { get; private set; }
+    public UInt128 EnPassantSquaresMask { get; private set; }
     public byte EnPassantPawnSquare { get; private set; }
 
     public BitBoard(

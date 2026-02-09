@@ -149,7 +149,7 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
         ref int moveCount
     )
     {
-        if (board.EnPassantSquares == 0)
+        if (board.EnPassantSquaresMask == 0)
         {
             return;
         }
@@ -234,7 +234,7 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
         int stepOffset
     )? GetWhiteEnPassant(BitBoard board, UInt128 positionBit, byte position)
     {
-        UInt128 rightEnPassant = board.EnPassantSquares & positionBit << 11;
+        UInt128 rightEnPassant = board.EnPassantSquaresMask & positionBit << 11;
         if (rightEnPassant != 0)
         {
             return (
@@ -244,7 +244,7 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
             );
         }
 
-        UInt128 leftEnPassant = board.EnPassantSquares & positionBit << 9;
+        UInt128 leftEnPassant = board.EnPassantSquaresMask & positionBit << 9;
         if (leftEnPassant != 0)
         {
             return (
@@ -263,7 +263,7 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
         int stepOffset
     )? GetBlackEnPassant(BitBoard board, UInt128 positionBit, byte position)
     {
-        UInt128 rightEnPassant = board.EnPassantSquares & positionBit >> 9;
+        UInt128 rightEnPassant = board.EnPassantSquaresMask & positionBit >> 9;
         if (rightEnPassant != 0)
         {
             return (
@@ -273,7 +273,7 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
             );
         }
 
-        UInt128 leftEnPassant = board.EnPassantSquares & positionBit >> 11;
+        UInt128 leftEnPassant = board.EnPassantSquaresMask & positionBit >> 11;
         if (leftEnPassant != 0)
         {
             return (

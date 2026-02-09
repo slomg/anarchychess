@@ -127,7 +127,7 @@ public class BitBoardTests
     [InlineData(PieceType.Pawn)]
     [InlineData(PieceType.UnderagePawn)]
     [InlineData(PieceType.SterilePawn)]
-    public void FromPieces_sets_EnPassantSquares_correctly_for_pawn_moves(PieceType pawnType)
+    public void FromPieces_sets_en_passant_state_correctly_for_pawn_moves(PieceType pawnType)
     {
         var from = new AlgebraicPoint("b2").AsIdx();
         var to = new AlgebraicPoint("b5").AsIdx();
@@ -148,7 +148,7 @@ public class BitBoardTests
         var expectedEnPassantSquare =
             (UInt128.One << new AlgebraicPoint("b3").AsIdx())
             | (UInt128.One << new AlgebraicPoint("b4").AsIdx());
-        board.EnPassantSquares.Should().Be(expectedEnPassantSquare);
+        board.EnPassantSquaresMask.Should().Be(expectedEnPassantSquare);
         board.EnPassantPawnSquare.Should().Be(move.To);
     }
 
@@ -156,7 +156,7 @@ public class BitBoardTests
     [InlineData(PieceType.Pawn)]
     [InlineData(PieceType.UnderagePawn)]
     [InlineData(PieceType.SterilePawn)]
-    public void FromPieces_sets_EnPassantSquares_correctly_for_black_pawn(PieceType pawnType)
+    public void FromPieces_sets_en_passant_state_correctly_for_black_pawn(PieceType pawnType)
     {
         var from = new AlgebraicPoint("c9").AsIdx();
         var to = new AlgebraicPoint("c6").AsIdx();
@@ -177,7 +177,7 @@ public class BitBoardTests
         var expectedEnPassantSquare =
             (UInt128.One << new AlgebraicPoint("c8").AsIdx())
             | (UInt128.One << new AlgebraicPoint("c7").AsIdx());
-        board.EnPassantSquares.Should().Be(expectedEnPassantSquare);
+        board.EnPassantSquaresMask.Should().Be(expectedEnPassantSquare);
         board.EnPassantPawnSquare.Should().Be(move.To);
     }
 
