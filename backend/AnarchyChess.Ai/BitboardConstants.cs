@@ -25,7 +25,10 @@ public static class BitboardConstants
     public static readonly UInt128 BottomRightEdgeExcludeMask = ~BottomRightEdgeMask;
     public static readonly UInt128 BottomLeftEdgeExcludeMask = ~BottomLeftEdgeMask;
 
-    public static readonly UInt128[] HorseyMasks = MakeHorseyMasks();
+    public static readonly UInt128[] HorseyMasks = MakeBoardMasksByDeltas(
+        deltaRanks: [-2, -1, 1, 2, 2, 1, -1, -2],
+        deltaFiles: [1, 2, 2, 1, -1, -2, -2, -1]
+    );
 
     private static UInt128 MakeFileMask(int file)
     {
@@ -47,31 +50,33 @@ public static class BitboardConstants
         return mask;
     }
 
-    private static UInt128[] MakeHorseyMasks()
+    private static UInt128[] MakeBoardMasksByDeltas(int[] deltaRanks, int[] deltaFiles)
     {
-        UInt128[] horseyMasks = new UInt128[10 * 10];
+        UInt128[] masks = new UInt128[10 * 10];
         for (int rank = 0; rank < 10; rank++)
         {
             for (int file = 0; file < 10; file++)
             {
                 int squareIdx = rank * 10 + file;
-                horseyMasks[squareIdx] = MakeHorseyMaskForSquare(rank, file);
+                masks[squareIdx] = MakeMaskForSquareByDeltas(rank, file, deltaRanks, deltaFiles);
             }
         }
-        return horseyMasks;
+        return masks;
     }
 
-    private static UInt128 MakeHorseyMaskForSquare(int rank, int file)
+    private static UInt128 MakeMaskForSquareByDeltas(
+        int rank,
+        int file,
+        int[] deltaRanks,
+        int[] deltaFiles
+    )
     {
         UInt128 mask = 0;
 
-        int[] deltaRanks = [-2, -1, 1, 2, 2, 1, -1, -2];
-        int[] deltaFiles = [1, 2, 2, 1, -1, -2, -2, -1];
-
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < Math.Max(deltaRanks.Length, deltaFiles.Length); i++)
         {
-            int deltaRank = rank + deltaRanks[i];
-            int deltaFile = file + deltaFiles[i];
+            int deltaRank = i < deltaRanks.Length ? rank + deltaRanks[i] : 0;
+            int deltaFile = i < deltaFiles.Length ? file + deltaFiles[i] : 0;
             if (deltaRank >= 0 && deltaRank < 10 && deltaFile >= 0 && deltaFile < 10)
             {
                 mask |= UInt128.One << (deltaRank * 10 + deltaFile);
