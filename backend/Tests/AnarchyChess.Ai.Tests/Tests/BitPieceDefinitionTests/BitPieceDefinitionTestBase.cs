@@ -19,6 +19,11 @@ public class BitPieceDefinitionTestBase
             isWhiteToMove: testCase.MovingPlayer is GameColor.White,
             prevMove: lastMove is not null ? UiMoveToBitMove(lastMove) : null
         );
+        BitBoard beforeBoard = BitBoard.FromPieces(
+            testCase.BlockedBy,
+            isWhiteToMove: testCase.MovingPlayer is GameColor.White,
+            prevMove: lastMove is not null ? UiMoveToBitMove(lastMove) : null
+        );
 
         Span<BitMove> moves = stackalloc BitMove[256];
         int moveCount = 0;
@@ -45,6 +50,7 @@ public class BitPieceDefinitionTestBase
         var resultSorted = result.OrderBy(x => x.To);
         resultSorted.Should().BeEquivalentTo(expectedMoveSorted);
         moveCount.Should().Be(expectedMoves.Count);
+        board.Should().BeEquivalentTo(beforeBoard);
     }
 
     private static List<BitMove> ConvertUiMovesToBitMoves(List<Move> uiMoves)
