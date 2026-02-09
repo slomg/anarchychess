@@ -155,26 +155,22 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
         }
 
         bool isWhite = piece.Color is BitPieceColor.White;
-        MagicPieceTable magicTable;
-        byte enPassantSquare;
-        int stepOffset;
+        (MagicPieceTable magicTable, byte enPassantSquare, int stepOffset)? enPassantResult;
 
         if (isWhite)
         {
-            (magicTable, enPassantSquare, stepOffset) = GetWhiteEnPassant(
-                board,
-                positionBit,
-                position
-            );
+            enPassantResult = GetWhiteEnPassant(board, positionBit, position);
         }
         else
         {
-            (magicTable, enPassantSquare, stepOffset) = GetBlackEnPassant(
-                board,
-                positionBit,
-                position
-            );
+            enPassantResult = GetBlackEnPassant(board, positionBit, position);
         }
+        if (enPassantResult is null)
+        {
+            return;
+        }
+
+        (MagicPieceTable magicTable, byte enPassantSquare, int stepOffset) = enPassantResult.Value;
 
         BitMove move = new()
         {
@@ -236,7 +232,7 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
         MagicPieceTable enPassantTable,
         byte enPassantSquare,
         int stepOffset
-    ) GetWhiteEnPassant(BitBoard board, UInt128 positionBit, byte position)
+    )? GetWhiteEnPassant(BitBoard board, UInt128 positionBit, byte position)
     {
         UInt128 rightEnPassant = board.EnPassantSquares & positionBit << 11;
         if (rightEnPassant != 0)
@@ -247,7 +243,9 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
                 stepOffset: 10
             );
         }
-        else
+
+        UInt128 leftEnPassant = board.EnPassantSquares & positionBit << 9;
+        if (leftEnPassant != 0)
         {
             return (
                 enPassantTable: MagicLibrary.WhiteLeftEnPassantTable,
@@ -255,13 +253,15 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
                 stepOffset: 10
             );
         }
+
+        return null;
     }
 
     private static (
         MagicPieceTable enPassantTable,
         byte enPassantSquare,
         int stepOffset
-    ) GetBlackEnPassant(BitBoard board, UInt128 positionBit, byte position)
+    )? GetBlackEnPassant(BitBoard board, UInt128 positionBit, byte position)
     {
         UInt128 rightEnPassant = board.EnPassantSquares & positionBit >> 9;
         if (rightEnPassant != 0)
@@ -272,7 +272,9 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
                 stepOffset: -10
             );
         }
-        else
+
+        UInt128 leftEnPassant = board.EnPassantSquares & positionBit >> 11;
+        if (leftEnPassant != 0)
         {
             return (
                 enPassantTable: MagicLibrary.BlackLeftEnPassantTable,
@@ -280,6 +282,8 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
                 stepOffset: -10
             );
         }
+
+        return null;
     }
 
     private void GenerateRegularPromotionMoves(

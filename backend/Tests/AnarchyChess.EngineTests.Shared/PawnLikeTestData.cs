@@ -395,6 +395,15 @@ public abstract class PawnLikeTestData : TheoryData<PieceTestCase>
                 .WithDescription("long passant allows promotion")
         );
 
+        Add(
+            PieceTestCase
+                .From("f7", movedWhitePawn)
+                .WithPieceAt("d7", blackPawn)
+                .WithPriorMove(from: "d9", to: "d7")
+                .GoesTo("f8")
+                .WithDescription("en passant is not allowed when not on the right file")
+        );
+
         #endregion
 
         #region promotion
