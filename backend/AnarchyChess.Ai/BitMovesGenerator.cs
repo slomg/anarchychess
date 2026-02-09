@@ -34,6 +34,7 @@ public sealed class BitMovesGenerator : IBitMovesGenerator
         [PieceType.UnderagePawn] = new BitUnderagePawnDefinition(),
         [PieceType.SterilePawn] = new BitSterilePawnDefinition(),
         [PieceType.TraitorRook] = new BitTraitorRookDefinition(),
+        [PieceType.Checker] = new BitCheckerDefinition(),
     };
 
     public void Generate(BitBoard board, Span<BitMove> moves, ref int moveCount)

@@ -60,6 +60,7 @@ public class CheckerTestData : TheoryData<PieceTestCase>
                 .GoesTo("g7", captures: ["f6"])
                 .GoesTo("c3", captures: ["d4"])
                 .GoesTo("g3", captures: ["f4"])
+                .WithDescription("Surrounded by enemy pieces")
         );
 
         Add(
