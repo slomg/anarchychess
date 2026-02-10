@@ -143,8 +143,8 @@ public class EvaluatorTests
 
         float score = _evaluator.EvaluateBoard(board, BitPieceColor.White);
 
-        // EvaluateKingScore for White: 10_000 / 2 + 3.5 = 5003.5 per king, total = 5003.5 * 2 = 10007
-        // EvaluateKingScore for Black: 10_000 / 1 + 3.5 = 10003.5
+        // King score for white: 10_000 / 2 + 3.5 = 5003.5 per king, total = 5003.5 * 2 = 10007
+        // King score for black: 10_000 / 1 + 3.5 = 10003.5
         // total score = 10007 - 10003.5 = 3.5
         score.Should().Be(3.5f);
     }
