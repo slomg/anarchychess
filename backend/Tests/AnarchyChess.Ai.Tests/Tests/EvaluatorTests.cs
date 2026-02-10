@@ -1,5 +1,4 @@
-﻿using AnarchyChess.Ai.Models;
-using AnarchyChess.Api.TestInfrastructure.Factories;
+﻿using AnarchyChess.Api.TestInfrastructure.Factories;
 using AnarchyChess.EngineShared;
 using AwesomeAssertions;
 
@@ -19,7 +18,7 @@ public class EvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        float score = _evaluator.EvaluateBoard(board, BitPieceColor.White);
+        float score = _evaluator.EvaluateBoard(board);
 
         float expected = 5 + 3.5f;
         score.Should().Be(expected);
@@ -35,7 +34,7 @@ public class EvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        float score = _evaluator.EvaluateBoard(board, BitPieceColor.White);
+        float score = _evaluator.EvaluateBoard(board);
 
         float expected = -(5 + 3.5f);
         score.Should().Be(expected);
@@ -52,7 +51,7 @@ public class EvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        float score = _evaluator.EvaluateBoard(board, BitPieceColor.White);
+        float score = _evaluator.EvaluateBoard(board);
 
         score.Should().Be(0f);
     }
@@ -71,7 +70,7 @@ public class EvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        float score = _evaluator.EvaluateBoard(board, BitPieceColor.White);
+        float score = _evaluator.EvaluateBoard(board);
 
         score.Should().Be(2f);
     }
@@ -87,7 +86,7 @@ public class EvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        float score = _evaluator.EvaluateBoard(board, BitPieceColor.White);
+        float score = _evaluator.EvaluateBoard(board);
 
         score.Should().Be(1f);
     }
@@ -106,7 +105,7 @@ public class EvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        float score = _evaluator.EvaluateBoard(board, BitPieceColor.White);
+        float score = _evaluator.EvaluateBoard(board);
 
         score.Should().Be(-2f);
     }
@@ -123,7 +122,7 @@ public class EvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        float score = _evaluator.EvaluateBoard(board, BitPieceColor.White);
+        float score = _evaluator.EvaluateBoard(board);
 
         // own pieces: 5 + 3.5 = 8.5
         // enemy pieces: 9 + 1.5 = 10.5
@@ -140,7 +139,7 @@ public class EvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        float score = _evaluator.EvaluateBoard(board, BitPieceColor.White);
+        float score = _evaluator.EvaluateBoard(board);
 
         score.Should().Be(10_003.5f);
     }
@@ -156,11 +155,27 @@ public class EvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        float score = _evaluator.EvaluateBoard(board, BitPieceColor.White);
+        float score = _evaluator.EvaluateBoard(board);
 
         // King score for white: 10_000 / 2 + 3.5 = 5003.5 per king, total = 5003.5 * 2 = 10007
         // King score for black: 10_000 / 1 + 3.5 = 10003.5
         // total score = 10007 - 10003.5 = 3.5
         score.Should().Be(3.5f);
+    }
+
+    [Fact]
+    public void EvaluateBoard_handles_black_to_move()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new("a1")] = PieceFactory.White(PieceType.Rook),
+            [new("b1")] = PieceFactory.White(PieceType.Rook),
+            [new("c1")] = PieceFactory.Black(PieceType.Rook),
+        };
+        BitBoard board = BitBoard.FromPieces(pieces, isWhiteToMove: false);
+
+        float score = _evaluator.EvaluateBoard(board);
+
+        score.Should().Be(-5);
     }
 }

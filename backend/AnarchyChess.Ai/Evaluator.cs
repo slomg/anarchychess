@@ -6,15 +6,16 @@ namespace AnarchyChess.Ai;
 
 public interface IEvaluator
 {
-    float EvaluateBoard(BitBoard board, BitPieceColor ourColor);
+    float EvaluateBoard(BitBoard board);
 }
 
 public class Evaluator : IEvaluator
 {
-    public float EvaluateBoard(BitBoard board, BitPieceColor ourColor)
+    public float EvaluateBoard(BitBoard board)
     {
-        float score = 0;
+        BitPieceColor ourColor = board.IsWhiteToMove ? BitPieceColor.White : BitPieceColor.Black;
 
+        float score = 0;
         for (int colorIdx = 0; colorIdx < board.Bitboards.GetLength(0); colorIdx++)
         {
             BitPieceColor pieceColor = (BitPieceColor)colorIdx;
