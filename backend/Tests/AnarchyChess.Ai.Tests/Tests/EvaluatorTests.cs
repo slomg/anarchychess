@@ -57,7 +57,7 @@ public class EvaluatorTests
     }
 
     [Fact]
-    public void EvaluateBoard_evaluates_traitor_rook_as_2_when_we_have_more_adjacent()
+    public void EvaluateBoard_evaluates_traitor_rook_as_2_when_under_our_control()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
@@ -92,7 +92,7 @@ public class EvaluatorTests
     }
 
     [Fact]
-    public void EvaluateBoard_TraitorRook_more_enemy_adjacent_returns_negative()
+    public void EvaluateBoard_evaluates_traitor_rook_as_negative_2_when_under_enemy_control()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
@@ -128,6 +128,20 @@ public class EvaluatorTests
         // enemy pieces: 9 + 1.5 = 10.5
         // total = 8.5 - 10.5 = -2
         score.Should().Be(-2);
+    }
+
+    [Fact]
+    public void EvaluateBoard_handles_a_single_king_correctly()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new("e1")] = PieceFactory.White(PieceType.King),
+        };
+        BitBoard board = BitBoard.FromPieces(pieces);
+
+        float score = _evaluator.EvaluateBoard(board, BitPieceColor.White);
+
+        score.Should().Be(10_003.5f);
     }
 
     [Fact]
