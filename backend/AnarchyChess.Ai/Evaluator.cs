@@ -14,28 +14,36 @@ public class Evaluator : IEvaluator
     {
         float score = 0;
 
-        for (byte square = 0; square < 100; square++)
+        for (int colorIdx = 0; colorIdx < board.Bitboards.GetLength(0); colorIdx++)
         {
-            if (!board.TryGetPieceAt(square, out var piece))
-            {
-                continue;
-            }
+            BitPieceColor pieceColor = (BitPieceColor)colorIdx;
 
-            float value = GetPieceValue(
-                board,
-                ourColor: ourColor,
-                piece.Value.Type,
-                pieceColor: piece.Value.Color,
-                square
-            );
+            for (int pieceTypeIdx = 0; pieceTypeIdx < board.Bitboards.GetLength(1); pieceTypeIdx++)
+            {
+                PieceType pieceType = (PieceType)pieceTypeIdx;
 
-            if (piece.Value.Color is BitPieceColor.Neutral || piece.Value.Color == ourColor)
-            {
-                score += value;
-            }
-            else
-            {
-                score -= value;
+                UInt128 bitboard = board.BitboardFor(pieceType, pieceColor);
+                while (bitboard != 0)
+                {
+                    byte squareIndex = (byte)BitboardHelpers.BitScanForward(ref bitboard);
+
+                    float value = GetPieceValue(
+                        board,
+                        ourColor: ourColor,
+                        pieceType,
+                        pieceColor: pieceColor,
+                        squareIndex
+                    );
+
+                    if (pieceColor is BitPieceColor.Neutral || pieceColor == ourColor)
+                    {
+                        score += value;
+                    }
+                    else
+                    {
+                        score -= value;
+                    }
+                }
             }
         }
 
