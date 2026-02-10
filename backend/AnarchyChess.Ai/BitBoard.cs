@@ -170,6 +170,32 @@ public partial class BitBoard
         return undoState;
     }
 
+    public void UndoMove(MoveUndoState undoState)
+    {
+        ref UInt128 movingBitboard = ref BitboardFor(
+            undoState.PromotedTo ?? undoState.Piece.Type,
+            undoState.Piece.Color
+        );
+        MovePiece(
+            ref movingBitboard,
+            from: undoState.To,
+            to: undoState.From,
+            undoState.Piece.Color,
+            promotesTo: undoState.Piece.Type
+        );
+
+        for (int i = 0; i < undoState.CaptureCount; i++)
+        {
+            (byte position, PieceType pieceType, BitPieceColor color) = undoState.GetCapture(i);
+            SpawnPiece(pieceType, color, position);
+        }
+        UndoSpecialMove(undoState);
+
+        HasMoved = undoState.PrevHasMoved;
+        EnPassantSquaresMask = undoState.PrevEnPassantSquaresMask;
+        EnPassantPawnSquare = undoState.PrevEnPassantPawnSquare;
+        ComputeAggregateBitboards();
+    }
 
     private void MovePiece(
         ref UInt128 bitboard,
@@ -187,13 +213,7 @@ public partial class BitBoard
 
         if (promotesTo is PieceType promoteToPiece)
         {
-            ref UInt128 promotionBitboard = ref BitboardFor(promoteToPiece, color);
-            promotionBitboard |= toMask;
-            HasMoved &= ~toMask;
-
-            var piece = PieceAt[from]!.Value;
-            piece.Type = promoteToPiece;
-            PieceAt[from] = piece;
+            PromotePiece(position: from, toMask, promoteToPiece, color);
         }
         else
         {
@@ -216,8 +236,32 @@ public partial class BitBoard
         (PieceAt[from], PieceAt[to]) = (null, PieceAt[from]);
     }
 
+    private void PromotePiece(
+        byte position,
+        UInt128 toMask,
+        PieceType promoteToPiece,
+        BitPieceColor color
+    )
+    {
+        ref UInt128 promotionBitboard = ref BitboardFor(promoteToPiece, color);
+        promotionBitboard |= toMask;
+        HasMoved &= ~toMask;
+
+        if (TryGetPieceAt(position, out var promotedPiece))
+        {
+            var updatedPiece = promotedPiece.Value;
+            updatedPiece.Type = promoteToPiece;
+            PieceAt[position] = updatedPiece;
+        }
+    }
+
     private void SpawnPiece(PieceType pieceType, BitPieceColor color, byte at)
     {
+        if (TryGetPieceAt(at, out var piece))
+        {
+            RemovePiece(piece.Value.Type, piece.Value.Color, at);
+        }
+
         UInt128 mask = UInt128.One << at;
         ref UInt128 bitboard = ref BitboardFor(pieceType, color);
         bitboard |= mask;
