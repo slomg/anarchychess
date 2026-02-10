@@ -117,9 +117,8 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
         ref UInt128 captures
     )
     {
-        captures |=
-            (positionBit & BitboardConstants.BottomRightEdgeExcludeMask) >> 11 & enemyPieces;
-        captures |= (positionBit & BitboardConstants.BottomLeftEdgeExcludeMask) >> 9 & enemyPieces;
+        captures |= (positionBit & BitboardConstants.BottomLeftEdgeExcludeMask) >> 11 & enemyPieces;
+        captures |= (positionBit & BitboardConstants.BottomRightEdgeExcludeMask) >> 9 & enemyPieces;
 
         UInt128 stepPositionBit =
             (positionBit & BitboardConstants.BottomEdgeExcludeMask) >> 10 & empty;
@@ -133,7 +132,7 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
         while (remainingStep > 0)
         {
             stepPositionBit =
-                (stepPositionBit & BitboardConstants.TopEdgeExcludeMask) >> 10 & empty;
+                (stepPositionBit & BitboardConstants.BottomEdgeExcludeMask) >> 10 & empty;
             steps |= stepPositionBit;
             remainingStep--;
         }
