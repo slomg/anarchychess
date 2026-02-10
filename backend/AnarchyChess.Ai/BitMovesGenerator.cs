@@ -48,8 +48,6 @@ public sealed class BitMovesGenerator : IBitMovesGenerator
                 continue;
             }
 
-            BitPiece piece = new() { Type = pieceType, Color = color };
-
             UInt128 colorBitboard = board.BitboardFor(pieceType, color);
             GenerateForPieces(
                 board,
