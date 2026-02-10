@@ -134,6 +134,13 @@ public sealed class BitKingDefinition : IBitPieceDefinition
 
         UInt128 bishopCaptureMask = 0;
         UInt128 bishopBitboard = board.BitboardFor(PieceType.Bishop, piece.Color);
+
+        UInt128 nonBishopBitboard = board.Occupancy & ~bishopBitboard;
+        if ((nonBishopBitboard & kingDestMask) != 0 || (nonBishopBitboard & rookDestMask) != 0)
+        {
+            return;
+        }
+
         if ((bishopBitboard & kingDestMask) != 0)
         {
             bishopCaptureMask = UInt128.One << castleInfo.KingDest;
@@ -141,10 +148,6 @@ public sealed class BitKingDefinition : IBitPieceDefinition
         else if ((bishopBitboard & rookDestMask) != 0)
         {
             bishopCaptureMask = UInt128.One << castleInfo.RookDest;
-        }
-        else if ((board.Occupancy & kingDestMask) != 0 || (board.Occupancy & rookDestMask) != 0)
-        {
-            return;
         }
 
         BitMove move = new()

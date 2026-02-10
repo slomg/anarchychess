@@ -199,5 +199,17 @@ public class KingTestData : TheoryData<PieceTestCase>
                 .GoesTo(whitef1Moves)
                 .WithDescription("Opponent bishop blocking castling")
         );
+
+        Add(
+            PieceTestCase
+                .From("f1", whiteKing with { HasMoved = false })
+                .WithPieceAt("j1", whiteRook)
+                .WithPieceAt("g1", PieceFactory.White(PieceType.Bishop))
+                .WithFriendlyPieceAt("h1")
+                .GoesTo("e1", "e2", "f2", "g2")
+                .WithDescription(
+                    "Bishop would be self captured if castled, but another piece is blocking"
+                )
+        );
     }
 }
