@@ -60,8 +60,8 @@ public sealed class BitQueenDefinition : IBitPieceDefinition
             return;
         }
 
-        UInt128 betaDecayTargets = (right | left | vertical) & ~board.Occupancy;
-        if (betaDecayTargets == 0)
+        UInt128 betaDecayTargets = (right | left | vertical) & board.Occupancy;
+        if (betaDecayTargets != 0)
         {
             return;
         }

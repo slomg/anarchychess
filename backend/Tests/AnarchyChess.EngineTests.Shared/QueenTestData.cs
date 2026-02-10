@@ -11,51 +11,24 @@ public class QueenTestData : TheoryData<PieceTestCase>
         var whiteQueen = PieceFactory.White(PieceType.Queen);
         var blackQueen = PieceFactory.Black(PieceType.Queen);
 
+        string[] e5MovesUp = ["e6", "e7", "e8", "e9", "e10"];
+        string[] e5MovesDown = ["e4", "e3", "e2", "e1"];
+        string[] e5MovesLeft = ["d5", "c5", "b5", "a5"];
+        string[] e5MovesRight = ["f5", "g5", "h5", "i5", "j5"];
+        string[] e5MovesUpLeft = ["d6", "c7", "b8", "a9"];
+        string[] e5MovesUpRight = ["f6", "g7", "h8", "i9", "j10"];
+        string[] e5MovesDownLeft = ["d4", "c3", "b2", "a1"];
+        string[] e5MovesDownRight = ["f4", "g3", "h2", "i1"];
         string[] e5Moves =
         [
-            // up
-            "e6",
-            "e7",
-            "e8",
-            "e9",
-            "e10",
-            // down
-            "e4",
-            "e3",
-            "e2",
-            "e1",
-            // left
-            "d5",
-            "c5",
-            "b5",
-            "a5",
-            // right
-            "f5",
-            "g5",
-            "h5",
-            "i5",
-            "j5",
-            // up left
-            "d6",
-            "c7",
-            "b8",
-            "a9",
-            // up right
-            "f6",
-            "g7",
-            "h8",
-            "i9",
-            "j10",
-            // down left
-            "d4",
-            "c3",
-            "b2",
-            "a1",
-            // down right
-            "f4",
-            "g3",
-            "h2",
-            "i1",
+            .. e5MovesUp,
+            .. e5MovesDown,
+            .. e5MovesLeft,
+            .. e5MovesRight,
+            .. e5MovesUpLeft,
+            .. e5MovesUpRight,
+            .. e5MovesDownLeft,
+            .. e5MovesDownRight,
         ];
 
         Add(
@@ -94,6 +67,20 @@ public class QueenTestData : TheoryData<PieceTestCase>
                     specialMoveType: SpecialMoveType.RadioactiveBetaDecay
                 )
                 .WithDescription("Black queen on open board from e5 with beta decay")
+        );
+
+        Add(
+            PieceTestCase
+                .From("e5", whiteQueen)
+                .WithFriendlyPieceAt("f5")
+                .GoesTo(e5MovesUp)
+                .GoesTo(e5MovesDown)
+                .GoesTo(e5MovesLeft)
+                .GoesTo(e5MovesUpLeft)
+                .GoesTo(e5MovesUpRight)
+                .GoesTo(e5MovesDownLeft)
+                .GoesTo(e5MovesDownRight)
+                .WithDescription("Can't beta decay when only one square is occupied")
         );
 
         Add(
@@ -214,6 +201,7 @@ public class QueenTestData : TheoryData<PieceTestCase>
             "i1",
             "j1",
         ];
+
         Add(
             PieceTestCase
                 .From("f1", whiteQueen)
@@ -231,6 +219,7 @@ public class QueenTestData : TheoryData<PieceTestCase>
                 )
                 .WithDescription("White queen on f1 can beta decay")
         );
+
         Add(
             PieceTestCase
                 .From("f1", blackQueen)
@@ -273,6 +262,7 @@ public class QueenTestData : TheoryData<PieceTestCase>
             "i10",
             "j10",
         ];
+
         Add(
             PieceTestCase
                 .From("f10", blackQueen)
@@ -290,6 +280,7 @@ public class QueenTestData : TheoryData<PieceTestCase>
                 )
                 .WithDescription("Black queen on f10 can beta decay")
         );
+
         Add(
             PieceTestCase
                 .From("f10", whiteQueen)
