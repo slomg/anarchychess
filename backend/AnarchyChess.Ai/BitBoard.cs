@@ -167,6 +167,7 @@ public partial class BitBoard
         ApplySpecialMove(move);
         ComputeAggregateBitboards();
         ProcessMoveEffects(move);
+        IsWhiteToMove = !IsWhiteToMove;
 
         return undoState;
     }

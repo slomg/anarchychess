@@ -34,6 +34,22 @@ public class BitBoardMakeMoveTests
 
         board.HasMoved.Should().Be(UInt128.One << move.To);
         board.WhitePieces.Should().Be(UInt128.One << move.To);
+
+        board.IsWhiteToMove.Should().BeFalse();
+    }
+
+    [Fact]
+    public void MakeMove_flips_IsWhiteToMove()
+    {
+        BitBoard board = new();
+
+        board.IsWhiteToMove.Should().BeTrue();
+        board.MakeMove(default);
+
+        board.IsWhiteToMove.Should().BeFalse();
+        board.MakeMove(default);
+
+        board.IsWhiteToMove.Should().BeTrue();
     }
 
     [Fact]
