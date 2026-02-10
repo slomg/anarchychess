@@ -30,6 +30,8 @@ public unsafe struct MoveUndoState
     public required UInt128 PrevEnPassantSquaresMask;
     public required byte PrevEnPassantPawnSquare;
 
+    public required bool PrevIsWhiteToMove;
+
     public void AddCapture(byte square, PieceType piece, BitPieceColor color)
     {
         if (CaptureCount >= MaxCaptures)

@@ -139,9 +139,13 @@ public partial class BitBoard
             Piece = move.Piece,
             PromotedTo = move.PromotesTo,
             SpecialMoveType = move.SpecialMoveType,
+
             PrevHasMoved = HasMoved,
+
             PrevEnPassantSquaresMask = EnPassantSquaresMask,
             PrevEnPassantPawnSquare = EnPassantPawnSquare,
+
+            PrevIsWhiteToMove = IsWhiteToMove,
         };
 
         UInt128 captureMask = move.CapturesMask;
@@ -193,6 +197,7 @@ public partial class BitBoard
         }
         UndoSpecialMove(undoState);
 
+        IsWhiteToMove = undoState.PrevIsWhiteToMove;
         HasMoved = undoState.PrevHasMoved;
         EnPassantSquaresMask = undoState.PrevEnPassantSquaresMask;
         EnPassantPawnSquare = undoState.PrevEnPassantPawnSquare;

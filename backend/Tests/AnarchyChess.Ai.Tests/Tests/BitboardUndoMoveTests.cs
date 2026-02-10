@@ -301,6 +301,20 @@ public class BitboardUndoMoveTests
         board.Should().BeEquivalentTo(original);
     }
 
+    [Fact]
+    public void UndoMove_restores_IsWhiteToMove()
+    {
+        BitBoard board = new();
+
+        MoveUndoState undo = board.MakeMove(default);
+
+        board.IsWhiteToMove.Should().BeFalse();
+
+        board.UndoMove(undo);
+
+        board.IsWhiteToMove.Should().BeTrue();
+    }
+
     private static void AssertMoveUndo(BitBoard board, BitBoard original, BitMove move)
     {
         MoveUndoState undo = board.MakeMove(move);

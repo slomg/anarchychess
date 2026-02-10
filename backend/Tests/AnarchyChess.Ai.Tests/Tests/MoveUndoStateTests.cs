@@ -17,6 +17,7 @@ public class MoveUndoStateTests
             PrevHasMoved = 0,
             PrevEnPassantSquaresMask = 0,
             PrevEnPassantPawnSquare = 0,
+            PrevIsWhiteToMove = true,
         };
 
     [Fact]
