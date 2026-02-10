@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using AnarchyChess.Ai.Helpers;
+using AnarchyChess.Ai.Models;
 using AnarchyChess.EngineShared;
 using AnarchyChess.EngineShared.Extensions;
 

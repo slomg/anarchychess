@@ -1,4 +1,4 @@
-﻿namespace AnarchyChess.Ai;
+﻿namespace AnarchyChess.Ai.Models;
 
 public enum CastleType : byte
 {

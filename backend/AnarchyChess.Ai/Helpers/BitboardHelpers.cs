@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using System.Runtime.CompilerServices;
+using AnarchyChess.Ai.Models;
 
 namespace AnarchyChess.Ai.Helpers;
 

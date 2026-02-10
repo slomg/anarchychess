@@ -1,6 +1,6 @@
 ﻿using AnarchyChess.EngineShared;
 
-namespace AnarchyChess.Ai;
+namespace AnarchyChess.Ai.Models;
 
 public struct BitMove
 {

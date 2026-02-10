@@ -1,4 +1,6 @@
-﻿namespace AnarchyChess.Ai.BitPieceDefinition;
+﻿using AnarchyChess.Ai.Models;
+
+namespace AnarchyChess.Ai.BitPieceDefinition;
 
 public interface IBitPieceDefinition
 {

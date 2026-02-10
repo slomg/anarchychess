@@ -1,4 +1,5 @@
-﻿using AnarchyChess.Api.TestInfrastructure.Factories;
+﻿using AnarchyChess.Ai.Models;
+using AnarchyChess.Api.TestInfrastructure.Factories;
 using AnarchyChess.EngineShared;
 using AwesomeAssertions;
 

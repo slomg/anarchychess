@@ -1,4 +1,5 @@
 ﻿using AnarchyChess.Ai.Helpers;
+using AnarchyChess.Ai.Models;
 
 namespace AnarchyChess.Ai.BitPieceDefinition;
 

@@ -1,4 +1,5 @@
-﻿using AnarchyChess.Api.GameLogic.Models;
+﻿using AnarchyChess.Ai.Models;
+using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.EngineShared;
 using AnarchyChess.EngineShared.Extensions;
 using AnarchyChess.EngineTests.Shared;

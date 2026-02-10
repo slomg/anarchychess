@@ -1,4 +1,5 @@
-﻿using AnarchyChess.EngineShared;
+﻿using AnarchyChess.Ai.Models;
+using AnarchyChess.EngineShared;
 using AwesomeAssertions;
 
 namespace AnarchyChess.Ai.Tests.Tests;

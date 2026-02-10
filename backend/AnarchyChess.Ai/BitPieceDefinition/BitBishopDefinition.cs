@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using AnarchyChess.Ai.Helpers;
 using AnarchyChess.Ai.MagicTables;
+using AnarchyChess.Ai.Models;
 using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai.BitPieceDefinition;

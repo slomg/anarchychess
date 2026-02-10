@@ -1,4 +1,5 @@
 ﻿using AnarchyChess.Ai.Helpers;
+using AnarchyChess.Ai.Models;
 using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai;
@@ -102,7 +103,7 @@ public class Evaluator : IEvaluator
 
         if (ourAdjacent == 0 && enemyAdjacent == 0)
         {
-            return 0;
+            return 0f;
         }
 
         int ourAdjacentCount = BitboardHelpers.CountBits(ourAdjacent);
