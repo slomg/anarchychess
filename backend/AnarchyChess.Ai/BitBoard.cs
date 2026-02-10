@@ -1,10 +1,11 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using AnarchyChess.Ai.Helpers;
 using AnarchyChess.EngineShared;
 using AnarchyChess.EngineShared.Extensions;
 
 namespace AnarchyChess.Ai;
 
-public class BitBoard
+public partial class BitBoard
 {
     public UInt128[,] Bitboards { get; }
     public BitPiece?[] PieceAt { get; }
@@ -50,12 +51,7 @@ public class BitBoard
             NeutralPieces |= Bitboards[(int)BitPieceColor.Neutral, i];
         }
 
-        Occupancy = WhitePieces | BlackPieces | NeutralPieces;
-        Empty = ~Occupancy;
-
-        WhiteEnemy = BlackPieces | NeutralPieces;
-        BlackEnemy = WhitePieces | NeutralPieces;
-
+        ComputeAggregateBitboards();
         if (prevMove is not null)
         {
             ProcessMoveEffects(prevMove.Value);
@@ -131,9 +127,150 @@ public class BitBoard
         return piece is not null;
     }
 
+    public BitPiece? GetPieceAt(byte position) => PieceAt[position];
+
+    public MoveUndoState MakeMove(BitMove move)
+    {
+        MoveUndoState undoState = new()
+        {
+            From = move.From,
+            To = move.To,
+            Piece = move.Piece,
+            PromotedTo = move.PromotesTo,
+            SpecialMoveType = move.SpecialMoveType,
+            PrevHasMoved = HasMoved,
+            PrevEnPassantSquaresMask = EnPassantSquaresMask,
+            PrevEnPassantPawnSquare = EnPassantPawnSquare,
+        };
+
+        UInt128 captureMask = move.CapturesMask;
+        while (captureMask != 0)
+        {
+            byte captureSquare = (byte)BitboardHelpers.BitScanForward(ref captureMask);
+            if (TryGetPieceAt(captureSquare, out var piece))
+            {
+                RemovePiece(piece.Value.Type, piece.Value.Color, captureSquare);
+                undoState.AddCapture(captureSquare, piece.Value.Type, piece.Value.Color);
+            }
+        }
+
+        ref UInt128 movingBitboard = ref BitboardFor(move.Piece.Type, move.Piece.Color);
+        MovePiece(
+            ref movingBitboard,
+            move.From,
+            move.To,
+            move.Piece.Color,
+            promotesTo: move.PromotesTo
+        );
+
+        ApplySpecialMove(move);
+        ComputeAggregateBitboards();
+        ProcessMoveEffects(move);
+
+        return undoState;
+    }
+
+
+    private void MovePiece(
+        ref UInt128 bitboard,
+        byte from,
+        byte to,
+        BitPieceColor color,
+        PieceType? promotesTo = null
+    )
+    {
+        UInt128 fromMask = UInt128.One << from;
+        UInt128 toMask = UInt128.One << to;
+
+        bitboard &= ~fromMask;
+        HasMoved &= ~fromMask;
+
+        if (promotesTo is PieceType promoteToPiece)
+        {
+            ref UInt128 promotionBitboard = ref BitboardFor(promoteToPiece, color);
+            promotionBitboard |= toMask;
+            HasMoved &= ~toMask;
+
+            var piece = PieceAt[from]!.Value;
+            piece.Type = promoteToPiece;
+            PieceAt[from] = piece;
+        }
+        else
+        {
+            bitboard |= toMask;
+            HasMoved |= toMask;
+        }
+
+        switch (color)
+        {
+            case BitPieceColor.White:
+                WhitePieces = (WhitePieces & ~fromMask) | toMask;
+                break;
+            case BitPieceColor.Black:
+                BlackPieces = (BlackPieces & ~fromMask) | toMask;
+                break;
+            case BitPieceColor.Neutral:
+                NeutralPieces = (NeutralPieces & ~fromMask) | toMask;
+                break;
+        }
+        (PieceAt[from], PieceAt[to]) = (null, PieceAt[from]);
+    }
+
+    private void SpawnPiece(PieceType pieceType, BitPieceColor color, byte at)
+    {
+        UInt128 mask = UInt128.One << at;
+        ref UInt128 bitboard = ref BitboardFor(pieceType, color);
+        bitboard |= mask;
+
+        switch (color)
+        {
+            case BitPieceColor.White:
+                WhitePieces |= mask;
+                break;
+            case BitPieceColor.Black:
+                BlackPieces |= mask;
+                break;
+            case BitPieceColor.Neutral:
+                NeutralPieces |= mask;
+                break;
+        }
+        PieceAt[at] = new BitPiece() { Type = pieceType, Color = color };
+    }
+
+    private void RemovePiece(PieceType pieceType, BitPieceColor color, byte at)
+    {
+        UInt128 inverseMask = ~(UInt128.One << at);
+        ref UInt128 bitboard = ref BitboardFor(pieceType, color);
+        bitboard &= inverseMask;
+
+        switch (color)
+        {
+            case BitPieceColor.White:
+                WhitePieces &= inverseMask;
+                break;
+            case BitPieceColor.Black:
+                BlackPieces &= inverseMask;
+                break;
+            case BitPieceColor.Neutral:
+                NeutralPieces &= inverseMask;
+                break;
+        }
+        PieceAt[at] = null;
+        HasMoved &= inverseMask;
+    }
+
+    private void ComputeAggregateBitboards()
+    {
+        Occupancy = WhitePieces | BlackPieces | NeutralPieces;
+        Empty = ~Occupancy;
+
+        WhiteEnemy = BlackPieces | NeutralPieces;
+        BlackEnemy = WhitePieces | NeutralPieces;
+    }
+
     private void ProcessMoveEffects(BitMove move)
     {
-        if (GameLogicConstants.PawnLikePieces.Contains(move.Piece.Type))
+        if (GameLogicConstants.PawnLikePieces.Contains(move.Piece.Type) && move.From != move.To)
         {
             int fromRank = move.From / 10;
             int toRank = move.To / 10;
@@ -142,10 +279,15 @@ public class BitBoard
             int step = (toRank > fromRank) ? 1 : -1;
             for (int rank = fromRank + step; rank != toRank; rank += step)
             {
-                EnPassantSquares |= UInt128.One << (rank * 10 + file);
+                EnPassantSquaresMask |= UInt128.One << (rank * 10 + file);
             }
 
             EnPassantPawnSquare = move.To;
+        }
+        else
+        {
+            EnPassantSquaresMask = 0;
+            EnPassantPawnSquare = 0;
         }
     }
 }
