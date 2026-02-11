@@ -25,22 +25,21 @@ public interface IBitMovesGenerator
 
 public sealed class BitMovesGenerator : IBitMovesGenerator
 {
-    private readonly Dictionary<PieceType, IBitPieceDefinition> _pieceDefinitions = new()
-    {
-        [PieceType.King] = new BitKingDefinition(),
-        [PieceType.Queen] = new BitQueenDefinition(),
-        [PieceType.Rook] = new BitRookDefinition(),
-        [PieceType.Bishop] = new BitBishopDefinition(),
-        [PieceType.Horsey] = new BitHorseyDefinition(),
-        [PieceType.Pawn] = new BitPawnDefinition(),
-
-        [PieceType.Knook] = new BitKnookDefinition(),
-        [PieceType.Antiqueen] = new BitAntiqueenDefinition(),
-        [PieceType.UnderagePawn] = new BitUnderagePawnDefinition(),
-        [PieceType.SterilePawn] = new BitSterilePawnDefinition(),
-        [PieceType.TraitorRook] = new BitTraitorRookDefinition(),
-        [PieceType.Checker] = new BitCheckerDefinition(),
-    };
+    private readonly IBitPieceDefinition[] _pieceDefinitions =
+    [
+        new BitKingDefinition(),
+        new BitQueenDefinition(),
+        new BitPawnDefinition(),
+        new BitRookDefinition(),
+        new BitBishopDefinition(),
+        new BitHorseyDefinition(),
+        new BitKnookDefinition(),
+        new BitAntiqueenDefinition(),
+        new BitUnderagePawnDefinition(),
+        new BitSterilePawnDefinition(),
+        new BitTraitorRookDefinition(),
+        new BitCheckerDefinition(),
+    ];
 
     public void Generate(
         BitBoard board,
@@ -54,10 +53,7 @@ public sealed class BitMovesGenerator : IBitMovesGenerator
         for (int pieceTypeIdx = 0; pieceTypeIdx < board.Bitboards.GetLength(1); pieceTypeIdx++)
         {
             PieceType pieceType = (PieceType)pieceTypeIdx;
-            if (!_pieceDefinitions.TryGetValue(pieceType, out var definition))
-            {
-                continue;
-            }
+            IBitPieceDefinition definition = _pieceDefinitions[pieceTypeIdx];
 
             UInt128 colorBitboard = board.BitboardFor(pieceType, color);
             GenerateForPieces(
@@ -111,10 +107,9 @@ public sealed class BitMovesGenerator : IBitMovesGenerator
     )
     {
         UInt128 bitboard = board.BitboardFor(piece.Type, piece.Color);
-        if (
-            _pieceDefinitions.TryGetValue(piece.Type, out var definition)
-            && (bitboard & (UInt128.One << position)) != 0
-        )
+
+        IBitPieceDefinition definition = _pieceDefinitions[(int)piece.Type];
+        if ((bitboard & (UInt128.One << position)) != 0)
         {
             definition.GenerateMoves(board, piece, position, moves, ref moveCount);
         }
