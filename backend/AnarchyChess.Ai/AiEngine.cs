@@ -27,15 +27,18 @@ public class AiEngine(IBitMovesGenerator? moveGenerator = null, IEvaluator? eval
         _moveGenerator.Generate(board, moves, ref moveCount, moveCountByPlace);
         OrderMove(board, moves, moveCount);
 
-        ThreadLocal<(float score, BitMove? move)> threadBest = new(
-            () => (float.NegativeInfinity, null)
-        );
+        (float score, BitMove? move)[] threadBests = new (float score, BitMove? move)[
+            Environment.ProcessorCount
+        ];
 
         Parallel.For(
             0,
             moveCount,
             i =>
             {
+                int threadId = Environment.CurrentManagedThreadId % threadBests.Length;
+                var localBest = threadBests[threadId];
+
                 BitMove move = moves[i];
                 BitBoard boardCopy = new(board);
                 boardCopy.MakeMove(move);
@@ -48,15 +51,14 @@ public class AiEngine(IBitMovesGenerator? moveGenerator = null, IEvaluator? eval
                     prevMoveCountByPiece: moveCountByPlace
                 );
 
-                var localBest = threadBest.Value;
                 if (score > localBest.score)
                 {
-                    threadBest.Value = (score, move);
+                    threadBests[threadId] = (score, moves[i]);
                 }
             }
         );
 
-        return threadBest.Values.MaxBy(x => x.score).move;
+        return threadBests.MaxBy(x => x.score).move;
     }
 
     private float Negamax(
