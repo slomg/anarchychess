@@ -20,6 +20,8 @@ public class AiEngine(IBitMovesGenerator? moveGenerator = null, IEvaluator? eval
 
     public BitMove? FindBestMove(BitBoard board, int depth)
     {
+        TTEntry[] transpositionTable = new TTEntry[1 << 23];
+
         Span<BitMove> moves = stackalloc BitMove[MaxMoves];
         int moveCount = 0;
         Span<int> moveCountByPlace = stackalloc int[PieceCount];
@@ -40,7 +42,8 @@ public class AiEngine(IBitMovesGenerator? moveGenerator = null, IEvaluator? eval
                 depth - 1,
                 alpha: float.NegativeInfinity,
                 beta: float.PositiveInfinity,
-                prevMoveCountByPiece: moveCountByPlace
+                prevMoveCountByPiece: moveCountByPlace,
+                transpositionTable: transpositionTable
             );
 
             board.UndoMove(undo);
@@ -60,15 +63,33 @@ public class AiEngine(IBitMovesGenerator? moveGenerator = null, IEvaluator? eval
         int depth,
         float alpha,
         float beta,
-        Span<int> prevMoveCountByPiece
+        Span<int> prevMoveCountByPiece,
+        TTEntry[] transpositionTable
     )
     {
+        int transpositionIndex = (int)(board.Hash & ((ulong)transpositionTable.Length - 1));
+        TTEntry entry = transpositionTable[transpositionIndex];
+        if (entry.Key == board.Hash && entry.Depth >= depth)
+        {
+            switch (entry.NodeType)
+            {
+                case TTNodeType.Exact:
+                    return entry.Score;
+                case TTNodeType.Alpha when entry.Score <= alpha:
+                    return alpha;
+                case TTNodeType.Beta when entry.Score >= beta:
+                    return beta;
+            }
+        }
+
         if (depth <= 0)
         {
             return _evaluator.EvaluateBoard(board, moveCountByPiece: prevMoveCountByPiece);
         }
 
+        float originAlpha = alpha;
         float best = float.NegativeInfinity;
+        BitMove? bestMove = null;
 
         Span<BitMove> moves = stackalloc BitMove[MaxMoves];
         int moveCount = 0;
@@ -87,19 +108,36 @@ public class AiEngine(IBitMovesGenerator? moveGenerator = null, IEvaluator? eval
                 depth - 1,
                 alpha: -beta,
                 beta: -alpha,
-                prevMoveCountByPiece: moveCountByPiece
+                prevMoveCountByPiece: moveCountByPiece,
+                transpositionTable: transpositionTable
             );
 
             board.UndoMove(undo);
 
-            best = Math.Max(best, score);
-            alpha = Math.Max(alpha, score);
+            if (score > best)
+            {
+                best = score;
+                bestMove = move;
+            }
 
+            alpha = Math.Max(alpha, score);
             if (alpha >= beta)
             {
                 break;
             }
         }
+
+        transpositionTable[transpositionIndex] = new TTEntry
+        {
+            Key = board.Hash,
+            Score = best,
+            Depth = depth,
+            NodeType =
+                (best <= originAlpha) ? TTNodeType.Alpha
+                : (best >= beta) ? TTNodeType.Beta
+                : TTNodeType.Exact,
+            BestMove = bestMove,
+        };
 
         return best;
     }
