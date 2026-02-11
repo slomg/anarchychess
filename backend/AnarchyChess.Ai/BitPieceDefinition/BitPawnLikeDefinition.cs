@@ -19,46 +19,47 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
         ref int moveCount
     )
     {
-        bool hasMoved = (board.HasMoved & (UInt128.One << position)) != 0;
-
+        UInt128 positionBit = UInt128.One << position;
+        bool hasMoved = board.HasPieceMoved(positionBit);
         UInt128 enemyPieces = board.BitboardForEnemyOf(piece.Color);
 
-        UInt128 positionBit = UInt128.One << position;
-        UInt128 steps = 0;
-        UInt128 captures = 0;
         UInt128 promotionEdgeMask;
         if (piece.Color is BitPieceColor.White)
         {
             promotionEdgeMask = BitboardConstants.TopEdgeMask;
-            MaskWhitePawnMoves(
-                positionBit,
+            GenerateRegularWhitePawnMoves(
+                position,
+                piece,
+                positionBit: positionBit,
                 empty: board.Empty,
                 enemyPieces: enemyPieces,
+                promotionEdgeMask: promotionEdgeMask,
                 hasMoved: hasMoved,
-                steps: ref steps,
-                captures: ref captures
+                moves,
+                ref moveCount
             );
         }
         else
         {
             promotionEdgeMask = BitboardConstants.BottomEdgeMask;
-            MaskBlackPawnMoves(
-                positionBit,
+            GenerateRegularBlackPawnMoves(
+                position,
+                piece,
+                positionBit: positionBit,
                 empty: board.Empty,
                 enemyPieces: enemyPieces,
+                promotionEdgeMask: promotionEdgeMask,
                 hasMoved: hasMoved,
-                steps: ref steps,
-                captures: ref captures
+                moves,
+                ref moveCount
             );
         }
 
-        GenerateRegularPromotionMoves(
+        GenerateSelfPromotionIfNeeded(
             piece,
             position,
-            steps: ref steps,
-            captures: ref captures,
-            promotionEdgeMask: promotionEdgeMask,
             positionBit: positionBit,
+            promotionEdgeMask: promotionEdgeMask,
             moves,
             ref moveCount
         );
@@ -73,26 +74,70 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
             moves,
             ref moveCount
         );
-
-        BitboardHelpers.CreateMoveFromQuiets(position, piece, steps, moves, ref moveCount);
-        BitboardHelpers.CreateMoveFromCaptures(position, piece, captures, moves, ref moveCount);
     }
 
-    private void MaskWhitePawnMoves(
+    private void GenerateRegularWhitePawnMoves(
+        byte position,
+        BitPiece piece,
         UInt128 positionBit,
         UInt128 empty,
         UInt128 enemyPieces,
+        UInt128 promotionEdgeMask,
         bool hasMoved,
-        ref UInt128 steps,
-        ref UInt128 captures
+        Span<BitMove> moves,
+        ref int moveCount
     )
     {
-        captures |= (positionBit & BitboardConstants.TopRightEdgeExcludeMask) << 11 & enemyPieces;
-        captures |= (positionBit & BitboardConstants.TopLeftEdgeExcludeMask) << 9 & enemyPieces;
+        UInt128 captureLeftMask =
+            (positionBit & BitboardConstants.TopRightEdgeExcludeMask) << 11 & enemyPieces;
+        if (captureLeftMask != 0)
+        {
+            GenerateRegularCapturePromotionMove(
+                piece,
+                from: position,
+                to: (byte)(position + 11),
+                captureMask: captureLeftMask,
+                promotionEdgeMask: promotionEdgeMask,
+                destBit: captureLeftMask,
+                moves,
+                ref moveCount
+            );
+        }
 
-        UInt128 stepPositionBit =
+        UInt128 captureRightMask =
+            (positionBit & BitboardConstants.TopLeftEdgeExcludeMask) << 9 & enemyPieces;
+        if (captureRightMask != 0)
+        {
+            GenerateRegularCapturePromotionMove(
+                piece,
+                from: position,
+                to: (byte)(position + 9),
+                captureMask: captureRightMask,
+                promotionEdgeMask: promotionEdgeMask,
+                destBit: captureRightMask,
+                moves,
+                ref moveCount
+            );
+        }
+
+        UInt128 stepPositionMask =
             (positionBit & BitboardConstants.TopEdgeExcludeMask) << 10 & empty;
-        steps |= stepPositionBit;
+        if (stepPositionMask == 0)
+        {
+            return;
+        }
+
+        byte dest = (byte)(position + 10);
+        GenerateRegularStepPromotionMove(
+            piece,
+            from: position,
+            to: dest,
+            promotionEdgeMask: promotionEdgeMask,
+            destBit: stepPositionMask,
+            moves,
+            ref moveCount
+        );
+
         if (hasMoved)
         {
             return;
@@ -101,28 +146,90 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
         int remainingStep = _maxInitialSteps - 1;
         while (remainingStep > 0)
         {
-            stepPositionBit =
-                (stepPositionBit & BitboardConstants.TopEdgeExcludeMask) << 10 & empty;
-            steps |= stepPositionBit;
+            stepPositionMask =
+                (stepPositionMask & BitboardConstants.TopEdgeExcludeMask) << 10 & empty;
+            if (stepPositionMask == 0)
+            {
+                break;
+            }
+
+            dest += 10;
+            GenerateRegularStepPromotionMove(
+                piece,
+                from: position,
+                to: dest,
+                promotionEdgeMask: promotionEdgeMask,
+                destBit: stepPositionMask,
+                moves,
+                ref moveCount
+            );
+
             remainingStep--;
         }
     }
 
-    private void MaskBlackPawnMoves(
+    private void GenerateRegularBlackPawnMoves(
+        byte position,
+        BitPiece piece,
         UInt128 positionBit,
         UInt128 empty,
         UInt128 enemyPieces,
+        UInt128 promotionEdgeMask,
         bool hasMoved,
-        ref UInt128 steps,
-        ref UInt128 captures
+        Span<BitMove> moves,
+        ref int moveCount
     )
     {
-        captures |= (positionBit & BitboardConstants.BottomLeftEdgeExcludeMask) >> 11 & enemyPieces;
-        captures |= (positionBit & BitboardConstants.BottomRightEdgeExcludeMask) >> 9 & enemyPieces;
+        UInt128 captureLeftMask =
+            (positionBit & BitboardConstants.BottomRightEdgeExcludeMask) >> 9 & enemyPieces;
+        if (captureLeftMask != 0)
+        {
+            GenerateRegularCapturePromotionMove(
+                piece,
+                from: position,
+                to: (byte)(position - 9),
+                captureMask: captureLeftMask,
+                promotionEdgeMask: promotionEdgeMask,
+                destBit: captureLeftMask,
+                moves,
+                ref moveCount
+            );
+        }
 
-        UInt128 stepPositionBit =
+        UInt128 captureRightMask =
+            (positionBit & BitboardConstants.BottomLeftEdgeExcludeMask) >> 11 & enemyPieces;
+        if (captureRightMask != 0)
+        {
+            GenerateRegularCapturePromotionMove(
+                piece,
+                from: position,
+                to: (byte)(position - 11),
+                captureMask: captureRightMask,
+                promotionEdgeMask: promotionEdgeMask,
+                destBit: captureRightMask,
+                moves,
+                ref moveCount
+            );
+        }
+
+        UInt128 stepPositionMask =
             (positionBit & BitboardConstants.BottomEdgeExcludeMask) >> 10 & empty;
-        steps |= stepPositionBit;
+        if (stepPositionMask == 0)
+        {
+            return;
+        }
+
+        byte dest = (byte)(position - 10);
+        GenerateRegularStepPromotionMove(
+            piece,
+            from: position,
+            to: dest,
+            promotionEdgeMask: promotionEdgeMask,
+            destBit: stepPositionMask,
+            moves,
+            ref moveCount
+        );
+
         if (hasMoved)
         {
             return;
@@ -131,9 +238,24 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
         int remainingStep = _maxInitialSteps - 1;
         while (remainingStep > 0)
         {
-            stepPositionBit =
-                (stepPositionBit & BitboardConstants.BottomEdgeExcludeMask) >> 10 & empty;
-            steps |= stepPositionBit;
+            stepPositionMask =
+                (stepPositionMask & BitboardConstants.BottomEdgeExcludeMask) >> 10 & empty;
+            if (stepPositionMask == 0)
+            {
+                break;
+            }
+
+            dest -= 10;
+            GenerateRegularStepPromotionMove(
+                piece,
+                from: position,
+                to: dest,
+                promotionEdgeMask: promotionEdgeMask,
+                destBit: stepPositionMask,
+                moves,
+                ref moveCount
+            );
+
             remainingStep--;
         }
     }
@@ -286,55 +408,87 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
         return null;
     }
 
-    private void GenerateRegularPromotionMoves(
+    private void GenerateRegularStepPromotionMove(
         BitPiece piece,
-        byte position,
-        ref UInt128 steps,
-        ref UInt128 captures,
+        byte from,
+        byte to,
         UInt128 promotionEdgeMask,
-        UInt128 positionBit,
+        UInt128 destBit,
         Span<BitMove> moves,
         ref int moveCount
     )
     {
-        UInt128 stepPromotions = steps & promotionEdgeMask;
-        stepPromotions |= promotionEdgeMask & positionBit;
-        steps &= ~promotionEdgeMask;
+        GenerateRegularCapturePromotionMove(
+            piece,
+            from,
+            to,
+            captureMask: 0,
+            promotionEdgeMask: promotionEdgeMask,
+            destBit: destBit,
+            moves,
+            ref moveCount
+        );
+    }
 
-        while (stepPromotions != 0)
+    private void GenerateRegularCapturePromotionMove(
+        BitPiece piece,
+        byte from,
+        byte to,
+        UInt128 captureMask,
+        UInt128 promotionEdgeMask,
+        UInt128 destBit,
+        Span<BitMove> moves,
+        ref int moveCount
+    )
+    {
+        UInt128 stepPromotions = destBit & promotionEdgeMask;
+        if (stepPromotions == 0)
         {
-            byte toSquare = (byte)BitboardHelpers.BitScanForward(ref stepPromotions);
+            moves[moveCount++] = new BitMove()
+            {
+                From = from,
+                To = to,
+                Piece = piece,
+                CapturesMask = captureMask,
+            };
+        }
+        else
+        {
+            foreach (PieceType promoteTo in _promoteTo)
+            {
+                moves[moveCount++] = new BitMove()
+                {
+                    From = from,
+                    To = to,
+                    Piece = piece,
+                    PromotesTo = promoteTo,
+                    CapturesMask = captureMask,
+                };
+            }
+        }
+    }
 
+    private void GenerateSelfPromotionIfNeeded(
+        BitPiece piece,
+        byte position,
+        UInt128 positionBit,
+        UInt128 promotionEdgeMask,
+        Span<BitMove> moves,
+        ref int moveCount
+    )
+    {
+        UInt128 stepPromotions = positionBit & promotionEdgeMask;
+        if (stepPromotions != 0)
+        {
             foreach (PieceType promoteTo in _promoteTo)
             {
                 moves[moveCount++] = new BitMove()
                 {
                     From = position,
-                    To = toSquare,
+                    To = position,
                     Piece = piece,
                     PromotesTo = promoteTo,
                 };
-            }
-        }
-
-        UInt128 capturePromotions = captures & promotionEdgeMask;
-        captures &= ~promotionEdgeMask;
-
-        while (capturePromotions != 0)
-        {
-            byte toSquare = (byte)BitboardHelpers.BitScanForward(ref capturePromotions);
-
-            BitMove move = new()
-            {
-                From = position,
-                To = toSquare,
-                Piece = piece,
-                CapturesMask = UInt128.One << toSquare,
-            };
-            foreach (PieceType promoteTo in _promoteTo)
-            {
-                move.PromotesTo = promoteTo;
-                moves[moveCount++] = move;
             }
         }
     }
