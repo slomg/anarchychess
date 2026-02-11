@@ -37,6 +37,8 @@ public unsafe struct MoveUndoState
     public required float PrevBlackMaterialCount;
     public required int PrevBlackKingCount;
 
+    public required ulong PrevHash;
+
     public void AddCapture(byte square, PieceType piece, BitPieceColor color)
     {
         if (CaptureCount >= MaxCaptures)

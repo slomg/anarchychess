@@ -3,12 +3,7 @@ using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai;
 
-public interface IBoardHasher
-{
-    UInt128 CalculateHash(BitBoard board);
-}
-
-public class BoardHasher : IBoardHasher
+public class BoardHasher
 {
     private static readonly int PieceTypeCount = Enum.GetValues<PieceType>().Length;
     private static readonly int ColorCount = Enum.GetValues<BitPieceColor>().Length;
@@ -42,9 +37,9 @@ public class BoardHasher : IBoardHasher
         return ((ulong)rng.Next() << 32) | (uint)rng.Next();
     }
 
-    public UInt128 CalculateHash(BitBoard board)
+    public static ulong CalculateHash(BitBoard board)
     {
-        UInt128 hash = 0;
+        ulong hash = 0;
         for (byte square = 0; square < SquareCount; square++)
         {
             if (board.TryGetPieceAt(square, out var piece))
@@ -61,4 +56,13 @@ public class BoardHasher : IBoardHasher
 
         return hash;
     }
+
+    public static ulong TogglePiece(
+        PieceType pieceType,
+        BitPieceColor color,
+        int square,
+        ulong hash
+    ) => hash ^ ZobristTable[(int)pieceType, (int)color, square];
+
+    public static ulong ToggleSideToMove(ulong hash) => hash ^ ZobristSideToMove;
 }
