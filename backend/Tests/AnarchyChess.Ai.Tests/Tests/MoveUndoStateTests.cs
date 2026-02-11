@@ -18,6 +18,11 @@ public class MoveUndoStateTests
             PrevEnPassantSquaresMask = 0,
             PrevEnPassantPawnSquare = 0,
             PrevIsWhiteToMove = true,
+
+            PrevWhiteMaterialCount = 0,
+            PrevWhiteKingCount = 0,
+            PrevBlackMaterialCount = 0,
+            PrevBlackKingCount = 0,
         };
 
     [Fact]

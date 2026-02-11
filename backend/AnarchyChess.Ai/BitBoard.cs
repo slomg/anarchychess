@@ -22,28 +22,21 @@ public partial class BitBoard
     public UInt128 WhiteEnemy { get; private set; }
     public UInt128 BlackEnemy { get; private set; }
 
-    public bool IsWhiteToMove { get; private set; }
+    public bool IsWhiteToMove { get; private set; } = true;
 
     public UInt128 EnPassantSquaresMask { get; private set; }
     public byte EnPassantPawnSquare { get; private set; }
 
-    public BitBoard(
-        UInt128[,]? bitboards = null,
-        UInt128? hasMoved = null,
-        BitPiece?[]? pieceAt = null,
-        bool isWhiteToMove = true,
-        BitMove? prevMove = null
-    )
+    public float WhiteMaterialCount { get; private set; }
+    public int WhiteKingCount { get; private set; }
+
+    public float BlackMaterialCount { get; private set; }
+    public int BlackKingCount { get; private set; }
+
+    private BitBoard(UInt128[,] bitboards, BitPiece?[] pieceAt, BitMove? prevMove)
     {
-        Bitboards =
-            bitboards
-            ?? new UInt128[
-                Enum.GetValues<BitPieceColor>().Length,
-                Enum.GetValues<PieceType>().Length
-            ];
-        PieceAt = pieceAt ?? new BitPiece?[10 * 10];
-        HasMoved = hasMoved ?? 0;
-        IsWhiteToMove = isWhiteToMove;
+        Bitboards = bitboards;
+        PieceAt = pieceAt;
 
         for (int i = 0; i < Enum.GetValues<PieceType>().Length; i++)
         {
@@ -59,6 +52,15 @@ public partial class BitBoard
         }
     }
 
+    public BitBoard()
+    {
+        Bitboards = new UInt128[
+            Enum.GetValues<BitPieceColor>().Length,
+            Enum.GetValues<PieceType>().Length
+        ];
+        PieceAt = new BitPiece?[10 * 10];
+    }
+
     public static BitBoard FromPieces(
         Dictionary<AlgebraicPoint, Piece> pieces,
         bool isWhiteToMove = true,
@@ -70,8 +72,12 @@ public partial class BitBoard
             Enum.GetValues<PieceType>().Length
         ];
         BitPiece?[] pieceAt = new BitPiece?[10 * 10];
-
         UInt128 hasMoved = 0;
+
+        float whiteScore = 0;
+        int whiteKingCount = 0;
+        float blackScore = 0;
+        int blackKingCount = 0;
 
         foreach (var (point, piece) in pieces)
         {
@@ -88,15 +94,37 @@ public partial class BitBoard
             {
                 hasMoved |= UInt128.One << idx;
             }
+
+            if (piece.Color is GameColor.White)
+            {
+                whiteScore += Evaluator.GetPieceValue(piece.Type);
+            }
+            else if (piece.Color is GameColor.Black)
+            {
+                blackScore += Evaluator.GetPieceValue(piece.Type);
+            }
+
+            if (piece.Color is GameColor.White && piece.Type is PieceType.King)
+            {
+                whiteKingCount++;
+            }
+            else if (piece.Color is GameColor.Black && piece.Type is PieceType.King)
+            {
+                blackKingCount++;
+            }
         }
 
-        return new BitBoard(
-            bitboards,
-            hasMoved,
-            pieceAt,
-            isWhiteToMove: isWhiteToMove,
-            prevMove: prevMove
-        );
+        return new BitBoard(bitboards, pieceAt, prevMove: prevMove)
+        {
+            HasMoved = hasMoved,
+            IsWhiteToMove = isWhiteToMove,
+
+            WhiteMaterialCount = whiteScore,
+            WhiteKingCount = whiteKingCount,
+
+            BlackMaterialCount = blackScore,
+            BlackKingCount = blackKingCount,
+        };
     }
 
     public ref UInt128 BitboardFor(PieceType pieceType, BitPieceColor color) =>
@@ -144,8 +172,12 @@ public partial class BitBoard
 
             PrevEnPassantSquaresMask = EnPassantSquaresMask,
             PrevEnPassantPawnSquare = EnPassantPawnSquare,
-
             PrevIsWhiteToMove = IsWhiteToMove,
+
+            PrevWhiteMaterialCount = WhiteMaterialCount,
+            PrevWhiteKingCount = WhiteKingCount,
+            PrevBlackMaterialCount = BlackMaterialCount,
+            PrevBlackKingCount = BlackKingCount,
         };
 
         UInt128 captureMask = move.CapturesMask;
@@ -159,14 +191,16 @@ public partial class BitBoard
             }
         }
 
-        ref UInt128 movingBitboard = ref BitboardFor(move.Piece.Type, move.Piece.Color);
-        MovePiece(
-            ref movingBitboard,
-            move.From,
-            move.To,
-            move.Piece.Color,
-            promotesTo: move.PromotesTo
-        );
+        if (move.To != move.From || move.PromotesTo is not null)
+        {
+            MovePiece(
+                move.Piece.Type,
+                move.Piece.Color,
+                move.From,
+                move.To,
+                promotesTo: move.PromotesTo
+            );
+        }
 
         ApplySpecialMove(move);
         ComputeAggregateBitboards();
@@ -178,15 +212,12 @@ public partial class BitBoard
 
     public void UndoMove(MoveUndoState undoState)
     {
-        ref UInt128 movingBitboard = ref BitboardFor(
-            undoState.PromotedTo ?? undoState.Piece.Type,
-            undoState.Piece.Color
-        );
+        UndoSpecialMove(undoState);
         MovePiece(
-            ref movingBitboard,
+            undoState.PromotedTo ?? undoState.Piece.Type,
+            undoState.Piece.Color,
             from: undoState.To,
             to: undoState.From,
-            undoState.Piece.Color,
             promotesTo: undoState.Piece.Type
         );
 
@@ -195,7 +226,11 @@ public partial class BitBoard
             (byte position, PieceType pieceType, BitPieceColor color) = undoState.GetCapture(i);
             SpawnPiece(pieceType, color, position);
         }
-        UndoSpecialMove(undoState);
+
+        WhiteMaterialCount = undoState.PrevWhiteMaterialCount;
+        WhiteKingCount = undoState.PrevWhiteKingCount;
+        BlackMaterialCount = undoState.PrevBlackMaterialCount;
+        BlackKingCount = undoState.PrevBlackKingCount;
 
         IsWhiteToMove = undoState.PrevIsWhiteToMove;
         HasMoved = undoState.PrevHasMoved;
@@ -205,28 +240,29 @@ public partial class BitBoard
     }
 
     private void MovePiece(
-        ref UInt128 bitboard,
+        PieceType pieceType,
+        BitPieceColor color,
         byte from,
         byte to,
-        BitPieceColor color,
         PieceType? promotesTo = null
     )
     {
+        if (promotesTo is PieceType promoteToPiece)
+        {
+            RemovePiece(pieceType, color, at: from);
+            SpawnPiece(promoteToPiece, color, at: to);
+            return;
+        }
+
+        ref UInt128 bitboard = ref BitboardFor(pieceType, color);
+
         UInt128 fromMask = UInt128.One << from;
         UInt128 toMask = UInt128.One << to;
 
         bitboard &= ~fromMask;
         HasMoved &= ~fromMask;
-
-        if (promotesTo is PieceType promoteToPiece)
-        {
-            PromotePiece(position: from, toMask, promoteToPiece, color);
-        }
-        else
-        {
-            bitboard |= toMask;
-            HasMoved |= toMask;
-        }
+        bitboard |= toMask;
+        HasMoved |= toMask;
 
         switch (color)
         {
@@ -241,25 +277,6 @@ public partial class BitBoard
                 break;
         }
         (PieceAt[from], PieceAt[to]) = (null, PieceAt[from]);
-    }
-
-    private void PromotePiece(
-        byte position,
-        UInt128 toMask,
-        PieceType promoteToPiece,
-        BitPieceColor color
-    )
-    {
-        ref UInt128 promotionBitboard = ref BitboardFor(promoteToPiece, color);
-        promotionBitboard |= toMask;
-        HasMoved &= ~toMask;
-
-        if (TryGetPieceAt(position, out var promotedPiece))
-        {
-            var updatedPiece = promotedPiece.Value;
-            updatedPiece.Type = promoteToPiece;
-            PieceAt[position] = updatedPiece;
-        }
     }
 
     private void SpawnPiece(PieceType pieceType, BitPieceColor color, byte at)
@@ -277,9 +294,21 @@ public partial class BitBoard
         {
             case BitPieceColor.White:
                 WhitePieces |= mask;
+
+                WhiteMaterialCount += Evaluator.GetPieceValue(pieceType);
+                if (pieceType is PieceType.King)
+                {
+                    WhiteKingCount++;
+                }
                 break;
             case BitPieceColor.Black:
                 BlackPieces |= mask;
+
+                BlackMaterialCount += Evaluator.GetPieceValue(pieceType);
+                if (pieceType is PieceType.King)
+                {
+                    BlackKingCount++;
+                }
                 break;
             case BitPieceColor.Neutral:
                 NeutralPieces |= mask;
@@ -298,9 +327,21 @@ public partial class BitBoard
         {
             case BitPieceColor.White:
                 WhitePieces &= inverseMask;
+
+                WhiteMaterialCount -= Evaluator.GetPieceValue(pieceType);
+                if (pieceType is PieceType.King)
+                {
+                    WhiteKingCount--;
+                }
                 break;
             case BitPieceColor.Black:
                 BlackPieces &= inverseMask;
+                BlackMaterialCount -= Evaluator.GetPieceValue(pieceType);
+
+                if (pieceType is PieceType.King)
+                {
+                    BlackKingCount--;
+                }
                 break;
             case BitPieceColor.Neutral:
                 NeutralPieces &= inverseMask;
@@ -321,6 +362,8 @@ public partial class BitBoard
 
     private void ProcessMoveEffects(BitMove move)
     {
+        EnPassantSquaresMask = 0;
+        EnPassantPawnSquare = 0;
         if (GameLogicConstants.PawnLikePieces.Contains(move.Piece.Type) && move.From != move.To)
         {
             int fromRank = move.From / 10;
@@ -334,11 +377,6 @@ public partial class BitBoard
             }
 
             EnPassantPawnSquare = move.To;
-        }
-        else
-        {
-            EnPassantSquaresMask = 0;
-            EnPassantPawnSquare = 0;
         }
     }
 }

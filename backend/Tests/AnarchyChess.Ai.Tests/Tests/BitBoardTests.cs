@@ -185,25 +185,45 @@ public class BitBoardTests
     [Fact]
     public void HasPieceMoved_returns_true_for_moved_position_and_false_for_unmoved()
     {
-        var board = new BitBoard(hasMoved: (UInt128.One << 5) | (UInt128.One << 10));
+        AlgebraicPoint moved1 = new("a5");
+        AlgebraicPoint moved2 = new("d7");
+        AlgebraicPoint notMoved = new("g8");
+        var board = BitBoard.FromPieces(
+            new()
+            {
+                [moved1] = PieceFactory.White(hasMoved: true),
+                [moved2] = PieceFactory.Black(hasMoved: true),
+                [notMoved] = PieceFactory.White(hasMoved: false),
+            }
+        );
 
-        board.HasPieceMoved(5).Should().BeTrue();
-        board.HasPieceMoved(10).Should().BeTrue();
-        board.HasPieceMoved(3).Should().BeFalse();
+        board.HasPieceMoved(moved1.AsIdx()).Should().BeTrue();
+        board.HasPieceMoved(moved2.AsIdx()).Should().BeTrue();
+        board.HasPieceMoved(notMoved.AsIdx()).Should().BeFalse();
     }
 
     [Fact]
     public void HasPieceMoved_returns_true_for_masked_bits()
     {
-        var board = new BitBoard(hasMoved: (UInt128.One << 3) | (UInt128.One << 7));
+        AlgebraicPoint moved1 = new("a5");
+        AlgebraicPoint moved2 = new("d7");
+        AlgebraicPoint notMoved = new("g8");
+        var board = BitBoard.FromPieces(
+            new()
+            {
+                [moved1] = PieceFactory.White(hasMoved: true),
+                [moved2] = PieceFactory.Black(hasMoved: true),
+                [notMoved] = PieceFactory.White(hasMoved: false),
+            }
+        );
 
-        board.HasPieceMoved(UInt128.One << 3).Should().BeTrue();
-        board.HasPieceMoved(UInt128.One << 5).Should().BeFalse();
+        board.HasPieceMoved(UInt128.One << moved1.AsIdx()).Should().BeTrue();
+        board.HasPieceMoved(UInt128.One << notMoved.AsIdx()).Should().BeFalse();
 
-        UInt128 mask = (UInt128.One << 3) | (UInt128.One << 7);
+        UInt128 mask = (UInt128.One << moved1.AsIdx()) | (UInt128.One << moved2.AsIdx());
         board.HasPieceMoved(mask).Should().BeTrue();
 
-        UInt128 partialMask = (UInt128.One << 3) | (UInt128.One << 5);
+        UInt128 partialMask = (UInt128.One << moved1.AsIdx()) | (UInt128.One << notMoved.AsIdx());
         board.HasPieceMoved(partialMask).Should().BeTrue();
     }
 
