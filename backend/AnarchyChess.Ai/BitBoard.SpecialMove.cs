@@ -10,65 +10,49 @@ public partial class BitBoard
         switch (move.SpecialMoveType)
         {
             case SpecialMoveType.KingsideCastle:
-                ref UInt128 rookKingsideBitboard = ref BitboardFor(
-                    PieceType.Rook,
-                    move.Piece.Color
-                );
                 CastleInfo kingsideCastleInfo = BitboardConstants.CastlesByColor[
                     (int)move.Piece.Color,
                     (int)CastleType.Kingside
                 ];
 
                 MovePiece(
-                    ref rookKingsideBitboard,
+                    PieceType.Rook,
+                    move.Piece.Color,
                     from: kingsideCastleInfo.RookStart,
-                    to: kingsideCastleInfo.RookDest,
-                    move.Piece.Color
+                    to: kingsideCastleInfo.RookDest
                 );
                 break;
 
             case SpecialMoveType.QueensideCastle:
-                ref UInt128 rookQueensideBitboard = ref BitboardFor(
-                    PieceType.Rook,
-                    move.Piece.Color
-                );
                 CastleInfo queensideCastleInfo = BitboardConstants.CastlesByColor[
                     (int)move.Piece.Color,
                     (int)CastleType.Queenside
                 ];
 
                 MovePiece(
-                    ref rookQueensideBitboard,
+                    PieceType.Rook,
+                    move.Piece.Color,
                     from: queensideCastleInfo.RookStart,
-                    to: queensideCastleInfo.RookDest,
-                    move.Piece.Color
+                    to: queensideCastleInfo.RookDest
                 );
                 break;
 
             case SpecialMoveType.VerticalCastle:
-                ref UInt128 rookVerticalBitboard = ref BitboardFor(
-                    PieceType.Rook,
-                    move.Piece.Color
-                );
                 CastleInfo verticalCastleInfo = BitboardConstants.CastlesByColor[
                     (int)move.Piece.Color,
                     (int)CastleType.Vertical
                 ];
 
                 MovePiece(
-                    ref rookVerticalBitboard,
+                    PieceType.Rook,
+                    move.Piece.Color,
                     from: verticalCastleInfo.RookStart,
-                    to: verticalCastleInfo.RookDest,
-                    move.Piece.Color
+                    to: verticalCastleInfo.RookDest
                 );
                 break;
 
             case SpecialMoveType.IlVaticano:
-                ref UInt128 targetBishopBitboard = ref BitboardFor(
-                    PieceType.Bishop,
-                    move.Piece.Color
-                );
-                MovePiece(ref targetBishopBitboard, from: move.To, to: move.From, move.Piece.Color);
+                MovePiece(PieceType.Bishop, move.Piece.Color, from: move.To, to: move.From);
                 break;
 
             case SpecialMoveType.RadioactiveBetaDecay:
@@ -93,69 +77,53 @@ public partial class BitBoard
         switch (undoState.SpecialMoveType)
         {
             case SpecialMoveType.KingsideCastle:
-                ref UInt128 rookKingsideBitboard = ref BitboardFor(
-                    PieceType.Rook,
-                    undoState.Piece.Color
-                );
                 CastleInfo kingsideCastleInfo = BitboardConstants.CastlesByColor[
                     (int)undoState.Piece.Color,
                     (int)CastleType.Kingside
                 ];
 
                 MovePiece(
-                    ref rookKingsideBitboard,
+                    PieceType.Rook,
+                    undoState.Piece.Color,
                     from: kingsideCastleInfo.RookDest,
-                    to: kingsideCastleInfo.RookStart,
-                    undoState.Piece.Color
+                    to: kingsideCastleInfo.RookStart
                 );
                 break;
 
             case SpecialMoveType.QueensideCastle:
-                ref UInt128 rookQueensideBitboard = ref BitboardFor(
-                    PieceType.Rook,
-                    undoState.Piece.Color
-                );
                 CastleInfo queensideCastleInfo = BitboardConstants.CastlesByColor[
                     (int)undoState.Piece.Color,
                     (int)CastleType.Queenside
                 ];
 
                 MovePiece(
-                    ref rookQueensideBitboard,
+                    PieceType.Rook,
+                    undoState.Piece.Color,
                     from: queensideCastleInfo.RookDest,
-                    to: queensideCastleInfo.RookStart,
-                    undoState.Piece.Color
+                    to: queensideCastleInfo.RookStart
                 );
                 break;
 
             case SpecialMoveType.VerticalCastle:
-                ref UInt128 rookVerticalBitboard = ref BitboardFor(
-                    PieceType.Rook,
-                    undoState.Piece.Color
-                );
                 CastleInfo verticalCastleInfo = BitboardConstants.CastlesByColor[
                     (int)undoState.Piece.Color,
                     (int)CastleType.Vertical
                 ];
 
                 MovePiece(
-                    ref rookVerticalBitboard,
+                    PieceType.Rook,
+                    undoState.Piece.Color,
                     from: verticalCastleInfo.RookDest,
-                    to: verticalCastleInfo.RookStart,
-                    undoState.Piece.Color
+                    to: verticalCastleInfo.RookStart
                 );
                 break;
 
             case SpecialMoveType.IlVaticano:
-                ref UInt128 targetBishopBitboard = ref BitboardFor(
-                    PieceType.Bishop,
-                    undoState.Piece.Color
-                );
                 MovePiece(
-                    ref targetBishopBitboard,
+                    PieceType.Bishop,
+                    undoState.Piece.Color,
                     from: undoState.From,
-                    to: undoState.To,
-                    undoState.Piece.Color
+                    to: undoState.To
                 );
                 break;
 
