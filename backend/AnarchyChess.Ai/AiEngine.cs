@@ -20,42 +20,43 @@ public class AiEngine(IBitMovesGenerator? moveGenerator = null, IEvaluator? eval
 
     public BitMove? FindBestMove(BitBoard board, int depth)
     {
-        TTEntry[] transpositionTable = new TTEntry[1 << 23];
-
-        Span<BitMove> moves = stackalloc BitMove[MaxMoves];
+        BitMove[] moves = new BitMove[MaxMoves];
         int moveCount = 0;
-        Span<int> moveCountByPlace = stackalloc int[PieceCount];
+        int[] moveCountByPlace = new int[PieceCount];
 
         _moveGenerator.Generate(board, moves, ref moveCount, moveCountByPlace);
         OrderMove(board, moves, moveCount);
 
-        BitMove? bestMove = null;
-        float bestScore = float.NegativeInfinity;
+        ThreadLocal<(float score, BitMove? move)> threadBest = new(
+            () => (float.NegativeInfinity, null)
+        );
 
-        for (int i = 0; i < moveCount; i++)
-        {
-            BitMove move = moves[i];
-            MoveUndoState undo = board.MakeMove(move);
-
-            float score = -Negamax(
-                board,
-                depth - 1,
-                alpha: float.NegativeInfinity,
-                beta: float.PositiveInfinity,
-                prevMoveCountByPiece: moveCountByPlace,
-                transpositionTable: transpositionTable
-            );
-
-            board.UndoMove(undo);
-
-            if (score > bestScore)
+        Parallel.For(
+            0,
+            moveCount,
+            i =>
             {
-                bestScore = score;
-                bestMove = move;
-            }
-        }
+                BitMove move = moves[i];
+                BitBoard boardCopy = new(board);
+                boardCopy.MakeMove(move);
 
-        return bestMove;
+                float score = -Negamax(
+                    boardCopy,
+                    depth - 1,
+                    alpha: float.NegativeInfinity,
+                    beta: float.PositiveInfinity,
+                    prevMoveCountByPiece: moveCountByPlace
+                );
+
+                var localBest = threadBest.Value;
+                if (score > localBest.score)
+                {
+                    threadBest.Value = (score, move);
+                }
+            }
+        );
+
+        return threadBest.Values.MaxBy(x => x.score).move;
     }
 
     private float Negamax(
@@ -63,25 +64,9 @@ public class AiEngine(IBitMovesGenerator? moveGenerator = null, IEvaluator? eval
         int depth,
         float alpha,
         float beta,
-        Span<int> prevMoveCountByPiece,
-        TTEntry[] transpositionTable
+        Span<int> prevMoveCountByPiece
     )
     {
-        int transpositionIndex = (int)(board.Hash & ((ulong)transpositionTable.Length - 1));
-        TTEntry entry = transpositionTable[transpositionIndex];
-        if (entry.Key == board.Hash && entry.Depth >= depth)
-        {
-            switch (entry.NodeType)
-            {
-                case TTNodeType.Exact:
-                    return entry.Score;
-                case TTNodeType.Alpha when entry.Score <= alpha:
-                    return alpha;
-                case TTNodeType.Beta when entry.Score >= beta:
-                    return beta;
-            }
-        }
-
         if (depth <= 0)
         {
             return _evaluator.EvaluateBoard(board, moveCountByPiece: prevMoveCountByPiece);
@@ -108,8 +93,7 @@ public class AiEngine(IBitMovesGenerator? moveGenerator = null, IEvaluator? eval
                 depth - 1,
                 alpha: -beta,
                 beta: -alpha,
-                prevMoveCountByPiece: moveCountByPiece,
-                transpositionTable: transpositionTable
+                prevMoveCountByPiece: moveCountByPiece
             );
 
             board.UndoMove(undo);
@@ -126,19 +110,6 @@ public class AiEngine(IBitMovesGenerator? moveGenerator = null, IEvaluator? eval
                 break;
             }
         }
-
-        transpositionTable[transpositionIndex] = new TTEntry
-        {
-            Key = board.Hash,
-            Score = best,
-            Depth = depth,
-            NodeType =
-                (best <= originAlpha) ? TTNodeType.Alpha
-                : (best >= beta) ? TTNodeType.Beta
-                : TTNodeType.Exact,
-            BestMove = bestMove,
-        };
-
         return best;
     }
 

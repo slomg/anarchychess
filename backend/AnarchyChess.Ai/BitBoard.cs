@@ -33,8 +33,6 @@ public partial class BitBoard
     public float BlackMaterialCount { get; private set; }
     public int BlackKingCount { get; private set; }
 
-    public ulong Hash { get; private set; }
-
     private BitBoard(UInt128[,] bitboards, BitPiece?[] pieceAt, BitMove? prevMove)
     {
         Bitboards = bitboards;
@@ -61,6 +59,42 @@ public partial class BitBoard
             Enum.GetValues<PieceType>().Length
         ];
         PieceAt = new BitPiece?[10 * 10];
+    }
+
+    public BitBoard(BitBoard other)
+    {
+        // Deep copy bitboards
+        int colors = other.Bitboards.GetLength(0);
+        int types = other.Bitboards.GetLength(1);
+        Bitboards = new UInt128[colors, types];
+        for (int c = 0; c < colors; c++)
+        {
+            for (int t = 0; t < types; t++)
+            {
+                Bitboards[c, t] = other.Bitboards[c, t];
+            }
+        }
+
+        // Deep copy piece array
+        PieceAt = new BitPiece?[other.PieceAt.Length];
+        Array.Copy(other.PieceAt, PieceAt, other.PieceAt.Length);
+
+        // Copy scalar fields
+        WhitePieces = other.WhitePieces;
+        BlackPieces = other.BlackPieces;
+        NeutralPieces = other.NeutralPieces;
+        Occupancy = other.Occupancy;
+        Empty = other.Empty;
+        HasMoved = other.HasMoved;
+        WhiteEnemy = other.WhiteEnemy;
+        BlackEnemy = other.BlackEnemy;
+        IsWhiteToMove = other.IsWhiteToMove;
+        EnPassantSquaresMask = other.EnPassantSquaresMask;
+        EnPassantPawnSquare = other.EnPassantPawnSquare;
+        WhiteMaterialCount = other.WhiteMaterialCount;
+        WhiteKingCount = other.WhiteKingCount;
+        BlackMaterialCount = other.BlackMaterialCount;
+        BlackKingCount = other.BlackKingCount;
     }
 
     public static BitBoard FromPieces(
@@ -116,7 +150,7 @@ public partial class BitBoard
             }
         }
 
-        BitBoard board = new(bitboards, pieceAt, prevMove: prevMove)
+        return new BitBoard(bitboards, pieceAt, prevMove: prevMove)
         {
             HasMoved = hasMoved,
             IsWhiteToMove = isWhiteToMove,
@@ -127,11 +161,6 @@ public partial class BitBoard
             BlackMaterialCount = blackScore,
             BlackKingCount = blackKingCount,
         };
-
-        ulong hash = BoardHasher.CalculateHash(board);
-        board.Hash = hash;
-
-        return board;
     }
 
     public ref UInt128 BitboardFor(PieceType pieceType, BitPieceColor color) =>
@@ -185,8 +214,6 @@ public partial class BitBoard
             PrevWhiteKingCount = WhiteKingCount,
             PrevBlackMaterialCount = BlackMaterialCount,
             PrevBlackKingCount = BlackKingCount,
-
-            PrevHash = Hash,
         };
 
         UInt128 captureMask = move.CapturesMask;
@@ -215,8 +242,6 @@ public partial class BitBoard
         ComputeAggregateBitboards();
         ProcessMoveEffects(move);
         IsWhiteToMove = !IsWhiteToMove;
-
-        Hash = BoardHasher.ToggleSideToMove(Hash);
 
         return undoState;
     }
@@ -248,7 +273,6 @@ public partial class BitBoard
         EnPassantSquaresMask = undoState.PrevEnPassantSquaresMask;
         EnPassantPawnSquare = undoState.PrevEnPassantPawnSquare;
 
-        Hash = undoState.PrevHash;
         ComputeAggregateBitboards();
     }
 
@@ -290,9 +314,6 @@ public partial class BitBoard
                 break;
         }
         (PieceAt[from], PieceAt[to]) = (null, PieceAt[from]);
-
-        Hash = BoardHasher.TogglePiece(pieceType, color, from, Hash);
-        Hash = BoardHasher.TogglePiece(pieceType, color, to, Hash);
     }
 
     private void SpawnPiece(PieceType pieceType, BitPieceColor color, byte at)
@@ -331,7 +352,6 @@ public partial class BitBoard
                 break;
         }
         PieceAt[at] = new BitPiece() { Type = pieceType, Color = color };
-        Hash = BoardHasher.TogglePiece(pieceType, color, at, Hash);
     }
 
     private void AddExistingPiece(PieceType pieceType, BitPieceColor color, byte at)
@@ -354,7 +374,6 @@ public partial class BitBoard
                 break;
         }
         PieceAt[at] = new BitPiece() { Type = pieceType, Color = color };
-        Hash = BoardHasher.TogglePiece(pieceType, color, at, Hash);
     }
 
     private void RemovePiece(PieceType pieceType, BitPieceColor color, byte at)
@@ -389,7 +408,6 @@ public partial class BitBoard
         }
         PieceAt[at] = null;
         HasMoved &= inverseMask;
-        Hash = BoardHasher.TogglePiece(pieceType, color, at, Hash);
     }
 
     private void ComputeAggregateBitboards()
