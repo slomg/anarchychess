@@ -13,50 +13,45 @@ public class BoardHasher : IBoardHasher
     private static readonly int PieceTypeCount = Enum.GetValues<PieceType>().Length;
     private static readonly int ColorCount = Enum.GetValues<BitPieceColor>().Length;
 
-    private static readonly UInt128[,,] ZobristTable;
-    private static readonly UInt128 ZobristSideToMove;
+    private static readonly ulong[,,] ZobristTable;
+    private static readonly ulong ZobristSideToMove;
 
-    private const int BitboardChunks = 2;
+    private const int SquareCount = 10 * 10;
 
     static BoardHasher()
     {
         Random rng = new(6969);
 
         ZobristSideToMove = GenerateHash(rng);
-        ZobristTable = new UInt128[PieceTypeCount, ColorCount, BitboardChunks];
+        ZobristTable = new ulong[PieceTypeCount, ColorCount, SquareCount];
 
         for (int pieceType = 0; pieceType < PieceTypeCount; pieceType++)
         {
             for (int color = 0; color < ColorCount; color++)
             {
-                for (int chunk = 0; chunk < BitboardChunks; chunk++)
+                for (int square = 0; square < SquareCount; square++)
                 {
-                    ZobristTable[pieceType, color, chunk] = GenerateHash(rng);
+                    ZobristTable[pieceType, color, square] = GenerateHash(rng);
                 }
             }
         }
     }
 
-    private static UInt128 GenerateHash(Random rng)
+    private static ulong GenerateHash(Random rng)
     {
-        ulong low = (uint)rng.Next() | ((ulong)rng.Next() << 32);
-        ulong high = (uint)rng.Next() | ((ulong)rng.Next() << 32);
-        return new UInt128(low, high);
+        return ((ulong)rng.Next() << 32) | (uint)rng.Next();
     }
 
     public UInt128 CalculateHash(BitBoard board)
     {
         UInt128 hash = 0;
-        for (int pieceType = 0; pieceType < PieceTypeCount; pieceType++)
+        for (byte square = 0; square < SquareCount; square++)
         {
-            for (int color = 0; color < ColorCount; color++)
+            if (board.TryGetPieceAt(square, out var piece))
             {
-                UInt128 bitboard = board.BitboardFor((PieceType)pieceType, (BitPieceColor)color);
-                ulong low = (ulong)bitboard;
-                ulong high = (ulong)(bitboard >> 64);
-
-                hash ^= ZobristTable[pieceType, color, 0] * low;
-                hash ^= ZobristTable[pieceType, color, 1] * high;
+                int pieceTypeIdx = (int)piece.Value.Type;
+                int colorIdx = (int)piece.Value.Color;
+                hash ^= ZobristTable[pieceTypeIdx, colorIdx, square];
             }
         }
         if (board.IsWhiteToMove)
