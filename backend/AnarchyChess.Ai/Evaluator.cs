@@ -6,59 +6,49 @@ namespace AnarchyChess.Ai;
 
 public interface IEvaluator
 {
-    float EvaluateBoard(BitBoard board);
+    float EvaluateBoard(BitBoard board, Span<int> moveCountByPiece);
 }
 
 public class Evaluator : IEvaluator
 {
-    public float EvaluateBoard(BitBoard board)
+    public float EvaluateBoard(BitBoard board, Span<int> moveCountByPiece)
     {
         BitPieceColor ourColor = board.IsWhiteToMove ? BitPieceColor.White : BitPieceColor.Black;
 
-        float score = 0;
-        for (int colorIdx = 0; colorIdx < board.Bitboards.GetLength(0); colorIdx++)
+        float score;
+        if (ourColor is BitPieceColor.White)
         {
-            BitPieceColor pieceColor = (BitPieceColor)colorIdx;
-
-            for (int pieceTypeIdx = 0; pieceTypeIdx < board.Bitboards.GetLength(1); pieceTypeIdx++)
-            {
-                PieceType pieceType = (PieceType)pieceTypeIdx;
-
-                UInt128 bitboard = board.BitboardFor(pieceType, pieceColor);
-                while (bitboard != 0)
-                {
-                    byte squareIndex = (byte)BitboardHelpers.BitScanForward(ref bitboard);
-
-                    float value = GetPieceValue(
-                        board,
-                        ourColor: ourColor,
-                        pieceType,
-                        pieceColor: pieceColor,
-                        squareIndex
-                    );
-
-                    if (pieceColor is BitPieceColor.Neutral || pieceColor == ourColor)
-                    {
-                        score += value;
-                    }
-                    else
-                    {
-                        score -= value;
-                    }
-                }
-            }
+            score = board.WhiteMaterialCount - board.BlackMaterialCount;
+            score += EvaluateKingScore(board.WhiteKingCount);
+            score -= EvaluateKingScore(board.BlackKingCount);
+        }
+        else
+        {
+            score = board.BlackMaterialCount - board.WhiteMaterialCount;
+            score += EvaluateKingScore(board.BlackKingCount);
+            score -= EvaluateKingScore(board.WhiteKingCount);
         }
 
-        return score;
+        UInt128 traitorRookBitboard = board.BitboardFor(
+            PieceType.TraitorRook,
+            BitPieceColor.Neutral
+        );
+        while (traitorRookBitboard != 0)
+        {
+            byte position = (byte)BitboardHelpers.BitScanForward(ref traitorRookBitboard);
+            score += EvaluateTraitorRookScore(board, ourColor, position);
+        }
+
+        float activityBonus = 0f;
+        for (int i = 0; i < moveCountByPiece.Length; i++)
+        {
+            activityBonus += moveCountByPiece[i] * GetPieceActivityBonus((PieceType)i);
+        }
+
+        return score + activityBonus;
     }
 
-    private static float GetPieceValue(
-        BitBoard board,
-        BitPieceColor ourColor,
-        PieceType type,
-        BitPieceColor pieceColor,
-        byte position
-    ) =>
+    public static float GetPieceValue(PieceType type) =>
         type switch
         {
             PieceType.Queen => 9f,
@@ -73,21 +63,31 @@ public class Evaluator : IEvaluator
             PieceType.SterilePawn => 0.8f,
             PieceType.Checker => 3.5f,
 
-            PieceType.King => EvaluateKingScore(board, pieceColor: pieceColor),
-            PieceType.TraitorRook => EvaluateTraitorRookScore(board, ourColor: ourColor, position),
-
             _ => 0,
         };
 
-    private static float EvaluateKingScore(BitBoard board, BitPieceColor pieceColor)
-    {
-        UInt128 kings = board.BitboardFor(PieceType.King, pieceColor);
-        int kingCount = BitboardHelpers.CountBits(kings);
+    private static float GetPieceActivityBonus(PieceType type) =>
+        type switch
+        {
+            PieceType.King => 0f,
+            PieceType.Queen => 0f,
+            PieceType.Pawn => 0.01f,
+            PieceType.Rook => 0.02f,
+            PieceType.Bishop => 0.06f,
+            PieceType.Horsey => 0.07f,
 
-        float singleKingValue = 10_000f / kingCount;
+            PieceType.Knook => 0.08f,
+            PieceType.Antiqueen => 0.06f,
+            PieceType.UnderagePawn => 0.005f,
+            PieceType.SterilePawn => 0.003f,
+            PieceType.Checker => 0.07f,
+            PieceType.TraitorRook => 0.02f,
 
-        return singleKingValue + 3.5f;
-    }
+            _ => 0f,
+        };
+
+    private static float EvaluateKingScore(int kingCount) =>
+        kingCount > 0 ? 10_000f + (kingCount * 3.5f) : 0;
 
     private static float EvaluateTraitorRookScore(
         BitBoard board,

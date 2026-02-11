@@ -8,6 +8,8 @@ public class EvaluatorTests
 {
     private readonly Evaluator _evaluator = new();
 
+    private readonly int PieceCount = Enum.GetValues<PieceType>().Length;
+
     [Fact]
     public void EvaluateBoard_returns_positive_score_when_only_our_pieces()
     {
@@ -18,10 +20,9 @@ public class EvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        float score = _evaluator.EvaluateBoard(board);
+        float score = _evaluator.EvaluateBoard(board, new int[PieceCount]);
 
-        float expected = 5 + 3.5f;
-        score.Should().Be(expected);
+        score.Should().Be(8.5f);
     }
 
     [Fact]
@@ -34,10 +35,9 @@ public class EvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        float score = _evaluator.EvaluateBoard(board);
+        float score = _evaluator.EvaluateBoard(board, new int[PieceCount]);
 
-        float expected = -(5 + 3.5f);
-        score.Should().Be(expected);
+        score.Should().Be(-8.5f);
     }
 
     [Fact]
@@ -51,7 +51,7 @@ public class EvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        float score = _evaluator.EvaluateBoard(board);
+        float score = _evaluator.EvaluateBoard(board, new int[PieceCount]);
 
         score.Should().Be(0f);
     }
@@ -65,12 +65,11 @@ public class EvaluatorTests
             [new("d5")] = PieceFactory.White(PieceType.Pawn),
             [new("e4")] = PieceFactory.White(PieceType.Pawn),
             [new("f5")] = PieceFactory.Black(PieceType.Pawn),
-
             [new("a1")] = PieceFactory.Black(PieceType.Pawn),
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        float score = _evaluator.EvaluateBoard(board);
+        float score = _evaluator.EvaluateBoard(board, new int[PieceCount]);
 
         score.Should().Be(2f);
     }
@@ -86,7 +85,7 @@ public class EvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        float score = _evaluator.EvaluateBoard(board);
+        float score = _evaluator.EvaluateBoard(board, new int[PieceCount]);
 
         score.Should().Be(1f);
     }
@@ -100,12 +99,11 @@ public class EvaluatorTests
             [new("d5")] = PieceFactory.Black(PieceType.Pawn),
             [new("e4")] = PieceFactory.Black(PieceType.Pawn),
             [new("f5")] = PieceFactory.White(PieceType.Pawn),
-
             [new("a1")] = PieceFactory.White(PieceType.Pawn),
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        float score = _evaluator.EvaluateBoard(board);
+        float score = _evaluator.EvaluateBoard(board, new int[PieceCount]);
 
         score.Should().Be(-2f);
     }
@@ -122,12 +120,9 @@ public class EvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        float score = _evaluator.EvaluateBoard(board);
+        float score = _evaluator.EvaluateBoard(board, new int[PieceCount]);
 
-        // own pieces: 5 + 3.5 = 8.5
-        // enemy pieces: 9 + 1.5 = 10.5
-        // total = 8.5 - 10.5 = -2
-        score.Should().Be(-2);
+        score.Should().Be(-2f);
     }
 
     [Fact]
@@ -139,7 +134,7 @@ public class EvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        float score = _evaluator.EvaluateBoard(board);
+        float score = _evaluator.EvaluateBoard(board, new int[PieceCount]);
 
         score.Should().Be(10_003.5f);
     }
@@ -155,7 +150,7 @@ public class EvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        float score = _evaluator.EvaluateBoard(board);
+        float score = _evaluator.EvaluateBoard(board, new int[PieceCount]);
 
         // King score for white: 10_000 / 2 + 3.5 = 5003.5 per king, total = 5003.5 * 2 = 10007
         // King score for black: 10_000 / 1 + 3.5 = 10003.5
@@ -174,8 +169,29 @@ public class EvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces, isWhiteToMove: false);
 
-        float score = _evaluator.EvaluateBoard(board);
+        float score = _evaluator.EvaluateBoard(board, new int[PieceCount]);
 
-        score.Should().Be(-5);
+        score.Should().Be(-5f);
+    }
+
+    [Fact]
+    public void EvaluateBoard_adds_activity_bonus_for_multiple_piece_types()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new("a1")] = PieceFactory.White(PieceType.Bishop),
+            [new("b1")] = PieceFactory.White(PieceType.Horsey),
+        };
+        BitBoard board = BitBoard.FromPieces(pieces);
+
+        int[] activity = new int[PieceCount];
+        activity[(int)PieceType.Bishop] = 5; // 5 * 0.06 = 0.3
+        activity[(int)PieceType.Horsey] = 4; // 4 * 0.07 = 0.28
+
+        // material: 3 + 3 = 6
+        // activity: 0.58
+        float score = _evaluator.EvaluateBoard(board, activity);
+
+        score.Should().Be(6.58f);
     }
 }

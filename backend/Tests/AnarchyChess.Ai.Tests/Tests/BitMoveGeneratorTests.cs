@@ -9,11 +9,13 @@ public class BitMoveGeneratorTests
 {
     private readonly BitMovesGenerator _generator = new();
 
+    private readonly int PieceCount = Enum.GetValues<PieceType>().Length;
+
     [Fact]
     public void Generate_returns_expected_moves_for_white()
     {
         var board = BitBoard.FromPieces(
-            new Dictionary<AlgebraicPoint, Piece>
+            new()
             {
                 [new AlgebraicPoint("f5")] = PieceFactory.White(PieceType.King),
                 [new AlgebraicPoint("d2")] = PieceFactory.White(PieceType.Pawn, hasMoved: false),
@@ -27,7 +29,7 @@ public class BitMoveGeneratorTests
         Span<BitMove> moves = stackalloc BitMove[256];
         int moveCount = 0;
 
-        _generator.Generate(board, moves, ref moveCount);
+        _generator.Generate(board, moves, ref moveCount, new int[PieceCount]);
 
         HashSet<byte> expectedDestinations =
         [
@@ -72,7 +74,7 @@ public class BitMoveGeneratorTests
     public void Generate_returns_expected_moves_for_black()
     {
         var board = BitBoard.FromPieces(
-            new Dictionary<AlgebraicPoint, Piece>
+            new()
             {
                 [new AlgebraicPoint("d9")] = PieceFactory.Black(PieceType.Pawn, hasMoved: false),
                 [new AlgebraicPoint("c9")] = new Piece(PieceType.TraitorRook, Color: null),
@@ -85,7 +87,7 @@ public class BitMoveGeneratorTests
         Span<BitMove> moves = stackalloc BitMove[256];
         int moveCount = 0;
 
-        _generator.Generate(board, moves, ref moveCount);
+        _generator.Generate(board, moves, ref moveCount, new int[PieceCount]);
 
         HashSet<byte> expectedDestinations =
         [
@@ -115,5 +117,53 @@ public class BitMoveGeneratorTests
         {
             expectedDestinations.Should().Contain(move.To);
         }
+    }
+
+    [Fact]
+    public void Generate_returns_only_highest_priority_moves()
+    {
+        var board = BitBoard.FromPieces(
+            new Dictionary<AlgebraicPoint, Piece>
+            {
+                [new("e5")] = PieceFactory.White(PieceType.Bishop),
+                [new("h2")] = PieceFactory.White(PieceType.UnderagePawn),
+            },
+            isWhiteToMove: true
+        );
+
+        Span<BitMove> moves = stackalloc BitMove[256];
+        int moveCount = 0;
+        Span<int> moveCountByPiece = stackalloc int[Enum.GetValues<PieceType>().Length];
+
+        _generator.Generate(board, moves, ref moveCount, moveCountByPiece);
+
+        foreach (var move in moves[..moveCount])
+        {
+            move.ForcedMovePriority.Should().Be(ForcedMovePriority.UnderagePawn);
+        }
+    }
+
+    [Fact]
+    public void Generate_increments_moveCountByPiece()
+    {
+        var board = BitBoard.FromPieces(
+            new()
+            {
+                [new("a1")] = PieceFactory.White(PieceType.Rook),
+                [new("c3")] = PieceFactory.White(PieceType.King),
+            },
+            isWhiteToMove: true
+        );
+
+        Span<BitMove> moves = stackalloc BitMove[256];
+        int moveCount = 0;
+        Span<int> moveCountByPiece = stackalloc int[Enum.GetValues<PieceType>().Length];
+
+        _generator.Generate(board, moves, ref moveCount, moveCountByPiece);
+
+        moveCountByPiece[(int)PieceType.Rook].Should().Be(18);
+        moveCountByPiece[(int)PieceType.King].Should().Be(8);
+
+        moveCountByPiece[(int)PieceType.Queen].Should().Be(0);
     }
 }

@@ -8,7 +8,12 @@ namespace AnarchyChess.Ai;
 
 public interface IBitMovesGenerator
 {
-    void Generate(BitBoard board, Span<BitMove> moves, ref int moveCount);
+    void Generate(
+        BitBoard board,
+        Span<BitMove> moves,
+        ref int moveCount,
+        Span<int> moveCountByPiece
+    );
     void GenerateForPiece(
         BitBoard board,
         byte position,
@@ -37,7 +42,12 @@ public sealed class BitMovesGenerator : IBitMovesGenerator
         [PieceType.Checker] = new BitCheckerDefinition(),
     };
 
-    public void Generate(BitBoard board, Span<BitMove> moves, ref int moveCount)
+    public void Generate(
+        BitBoard board,
+        Span<BitMove> moves,
+        ref int moveCount,
+        Span<int> moveCountByPiece
+    )
     {
         BitPieceColor color = board.IsWhiteToMove ? BitPieceColor.White : BitPieceColor.Black;
 
@@ -69,6 +79,27 @@ public sealed class BitMovesGenerator : IBitMovesGenerator
                 ref moveCount
             );
         }
+
+        int newMoveCount = 0;
+        ForcedMovePriority highestPriority = ForcedMovePriority.None;
+        for (int i = 0; i < moveCount; i++)
+        {
+            BitMove move = moves[i];
+            if (move.ForcedMovePriority > highestPriority)
+            {
+                highestPriority = move.ForcedMovePriority;
+                newMoveCount = 0;
+            }
+
+            if (move.ForcedMovePriority == highestPriority)
+            {
+                moves[newMoveCount++] = move;
+            }
+
+            moveCountByPiece[(int)move.Piece.Type]++;
+        }
+
+        moveCount = newMoveCount;
     }
 
     public void GenerateForPiece(
