@@ -52,7 +52,7 @@ public partial class BitBoard
                 break;
 
             case SpecialMoveType.IlVaticano:
-                MovePiece(PieceType.Bishop, move.Piece.Color, from: move.To, to: move.From);
+                AddExistingPiece(PieceType.Bishop, move.Piece.Color, at: move.From);
                 break;
 
             case SpecialMoveType.RadioactiveBetaDecay:
@@ -119,12 +119,7 @@ public partial class BitBoard
                 break;
 
             case SpecialMoveType.IlVaticano:
-                MovePiece(
-                    PieceType.Bishop,
-                    undoState.Piece.Color,
-                    from: undoState.From,
-                    to: undoState.To
-                );
+                AddExistingPiece(PieceType.Bishop, undoState.Piece.Color, at: undoState.To);
                 break;
 
             case SpecialMoveType.RadioactiveBetaDecay:

@@ -212,7 +212,6 @@ public partial class BitBoard
 
     public void UndoMove(MoveUndoState undoState)
     {
-        UndoSpecialMove(undoState);
         MovePiece(
             undoState.PromotedTo ?? undoState.Piece.Type,
             undoState.Piece.Color,
@@ -220,6 +219,7 @@ public partial class BitBoard
             to: undoState.From,
             promotesTo: undoState.Piece.Type
         );
+        UndoSpecialMove(undoState);
 
         for (int i = 0; i < undoState.CaptureCount; i++)
         {
@@ -309,6 +309,28 @@ public partial class BitBoard
                 {
                     BlackKingCount++;
                 }
+                break;
+            case BitPieceColor.Neutral:
+                NeutralPieces |= mask;
+                break;
+        }
+        PieceAt[at] = new BitPiece() { Type = pieceType, Color = color };
+    }
+
+    private void AddExistingPiece(PieceType pieceType, BitPieceColor color, byte at)
+    {
+        UInt128 mask = UInt128.One << at;
+        ref UInt128 bitboard = ref BitboardFor(pieceType, color);
+        bitboard |= mask;
+        HasMoved |= mask;
+
+        switch (color)
+        {
+            case BitPieceColor.White:
+                WhitePieces |= mask;
+                break;
+            case BitPieceColor.Black:
+                BlackPieces |= mask;
                 break;
             case BitPieceColor.Neutral:
                 NeutralPieces |= mask;

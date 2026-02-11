@@ -252,6 +252,33 @@ public class BitboardUndoMoveTests
     }
 
     [Fact]
+    public void UndoMove_restores_il_vaticano()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new AlgebraicPoint("d5")] = PieceFactory.White(PieceType.Bishop),
+            [new AlgebraicPoint("e5")] = PieceFactory.Black(),
+            [new AlgebraicPoint("f5")] = PieceFactory.Black(),
+            [new AlgebraicPoint("g5")] = PieceFactory.White(PieceType.Bishop),
+        };
+        BitBoard board = BitBoard.FromPieces(pieces);
+        BitBoard original = BitBoard.FromPieces(pieces);
+
+        BitMove move = new()
+        {
+            From = new AlgebraicPoint("d5").AsIdx(),
+            To = new AlgebraicPoint("g5").AsIdx(),
+            Piece = new() { Type = PieceType.Bishop, Color = BitPieceColor.White },
+            SpecialMoveType = SpecialMoveType.IlVaticano,
+            CapturesMask =
+                (UInt128.One << new AlgebraicPoint("e5").AsIdx())
+                | (UInt128.One << new AlgebraicPoint("f5").AsIdx()),
+        };
+
+        AssertMoveUndo(board, original, move);
+    }
+
+    [Fact]
     public void UndoMove_restores_omnipotent_pawn()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
