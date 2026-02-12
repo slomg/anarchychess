@@ -22,13 +22,17 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
     private readonly IBitMoveGenerator _moveGenerator = moveGenerator ?? new BitMoveGenerator();
     private readonly IEvaluator _evaluator = evaluator ?? new Evaluator();
 
+    private BitMove[,] _killerMoves = new BitMove[0, 0];
+
     public BitMove? FindBestMove(BitBoard board, int depth)
     {
+        _killerMoves = new BitMove[depth + 1, 2];
+
         BitMove[] moves = new BitMove[MaxMoves];
         int moveCount = 0;
 
         _moveGenerator.Generate(board, moves, ref moveCount);
-        OrderMove(board, moves, moveCount);
+        OrderMove(board, depth, moves, moveCount);
 
         if (moveCount == 0)
             return null;
@@ -65,7 +69,7 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
             }
         }
 
-        Console.WriteLine("Eval: " + alpha);
+        //Console.WriteLine($"Eval: {alpha}, node count: {_nodeCount}");
 
         return bestMove;
     }
@@ -98,7 +102,7 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
         int moveCount = 0;
 
         _moveGenerator.Generate(board, moves, ref moveCount);
-        OrderMove(board, moves, moveCount);
+        OrderMove(board, depth, moves, moveCount);
 
         for (int i = 0; i < moveCount; i++)
         {
@@ -115,18 +119,23 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
             }
             if (alpha >= beta)
             {
+                if (move.CapturesMask == 0 && move.PromotesTo is null)
+                {
+                    _killerMoves[depth, 1] = _killerMoves[depth, 0];
+                    _killerMoves[depth, 0] = move;
+                }
                 break;
             }
         }
         return alpha;
     }
 
-    private static void OrderMove(BitBoard board, Span<BitMove> moves, int moveCount)
+    private void OrderMove(BitBoard board, int depth, Span<BitMove> moves, int moveCount)
     {
         int write = 0;
         for (int i = 0; i < moveCount; i++)
         {
-            if (ScoreMove(moves[i], board) > 0)
+            if (ScoreMove(moves[i], board, depth) > 0)
             {
                 if (i != write)
                 {
@@ -137,20 +146,20 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
         }
     }
 
-    private static int ScoreMove(BitMove move, BitBoard board)
+    private int ScoreMove(BitMove move, BitBoard board, int depth)
     {
         if (move.CapturesMask != 0)
         {
             UInt128 captureMask = move.CapturesMask;
             int score = 0;
-            int attackerValue = (int)Evaluator.GetPieceValue(move.Piece.Type);
+            int attackerValue = Evaluator.GetPieceValue(move.Piece.Type);
             while (captureMask != 0)
             {
                 byte captureSquare = (byte)BitboardHelpers.BitScanForward(ref captureMask);
                 if (board.TryGetPieceAt(captureSquare, out var capturePiece))
                 {
-                    int victimValue = (int)Evaluator.GetPieceValue(capturePiece.Value.Type);
-                    score += victimValue * 100 - attackerValue;
+                    int victimValue = Evaluator.GetPieceValue(capturePiece.Value.Type);
+                    score += victimValue - attackerValue;
                 }
             }
             return 10_000 + score;
@@ -158,7 +167,20 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
 
         if (move.PromotesTo is not null)
         {
-            return 9_000 + (int)Evaluator.GetPieceValue(move.PromotesTo.Value);
+            return 9_000 + Evaluator.GetPieceValue(move.PromotesTo.Value);
+        }
+
+        if (move.SpecialMoveType is not SpecialMoveType.None)
+        {
+            return 8_000;
+        }
+
+        if (
+            (move.From == _killerMoves[depth, 0].From && move.To == _killerMoves[depth, 0].To)
+            || (move.From == _killerMoves[depth, 1].From && move.To == _killerMoves[depth, 1].To)
+        )
+        {
+            return 7_000;
         }
 
         return 0;
