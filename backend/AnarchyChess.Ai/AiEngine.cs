@@ -22,22 +22,32 @@ public class AiEngine(IBitMovesGenerator? moveGenerator = null, IEvaluator? eval
     {
         BitMove[] moves = new BitMove[MaxMoves];
         int moveCount = 0;
-        int[] moveCountByPlace = new int[PieceCount];
+        int[] moveCountByPiece = new int[PieceCount];
 
-        _moveGenerator.Generate(board, moves, ref moveCount, moveCountByPlace);
+        _moveGenerator.Generate(board, moves, ref moveCount, moveCountByPiece);
         OrderMove(board, moves, moveCount);
 
-        (float score, BitMove? move)[] threadBests = new (float score, BitMove? move)[
-            Environment.ProcessorCount
-        ];
+        if (moveCount == 0)
+            return null;
+
+        BitMove bestMove = moves[0];
+        BitBoard boardCopy = new(board);
+        boardCopy.MakeMove(bestMove);
+
+        float alpha = -Negamax(
+            boardCopy,
+            depth - 1,
+            alpha: float.NegativeInfinity,
+            beta: float.PositiveInfinity,
+            moveCountByPiece
+        );
 
         Parallel.For(
-            0,
+            1,
             moveCount,
             i =>
             {
-                int threadId = Environment.CurrentManagedThreadId % threadBests.Length;
-                var localBest = threadBests[threadId];
+                float localAlpha = alpha;
 
                 BitMove move = moves[i];
                 BitBoard boardCopy = new(board);
@@ -46,19 +56,34 @@ public class AiEngine(IBitMovesGenerator? moveGenerator = null, IEvaluator? eval
                 float score = -Negamax(
                     boardCopy,
                     depth - 1,
-                    alpha: float.NegativeInfinity,
-                    beta: float.PositiveInfinity,
-                    prevMoveCountByPiece: moveCountByPlace
+                    alpha: -localAlpha - 1,
+                    beta: -localAlpha,
+                    moveCountByPiece
                 );
 
-                if (score > localBest.score)
+                if (score > localAlpha)
                 {
-                    threadBests[threadId] = (score, moves[i]);
+                    score = -Negamax(
+                        boardCopy,
+                        depth - 1,
+                        alpha: float.NegativeInfinity,
+                        beta: float.PositiveInfinity,
+                        moveCountByPiece
+                    );
+                }
+
+                lock (this)
+                {
+                    if (score > alpha)
+                    {
+                        alpha = score;
+                        bestMove = move;
+                    }
                 }
             }
         );
 
-        return threadBests.MaxBy(x => x.score).move;
+        return bestMove;
     }
 
     private float Negamax(
@@ -73,10 +98,6 @@ public class AiEngine(IBitMovesGenerator? moveGenerator = null, IEvaluator? eval
         {
             return _evaluator.EvaluateBoard(board, moveCountByPiece: prevMoveCountByPiece);
         }
-
-        float originAlpha = alpha;
-        float best = float.NegativeInfinity;
-        BitMove? bestMove = null;
 
         Span<BitMove> moves = stackalloc BitMove[MaxMoves];
         int moveCount = 0;
@@ -100,19 +121,16 @@ public class AiEngine(IBitMovesGenerator? moveGenerator = null, IEvaluator? eval
 
             board.UndoMove(undo);
 
-            if (score > best)
+            if (score > alpha)
             {
-                best = score;
-                bestMove = move;
+                alpha = score;
             }
-
-            alpha = Math.Max(alpha, score);
             if (alpha >= beta)
             {
                 break;
             }
         }
-        return best;
+        return alpha;
     }
 
     private static void OrderMove(BitBoard board, Span<BitMove> moves, int moveCount)
@@ -137,12 +155,12 @@ public class AiEngine(IBitMovesGenerator? moveGenerator = null, IEvaluator? eval
         {
             UInt128 captureMask = move.CapturesMask;
             int score = 0;
+            int attackerValue = (int)Evaluator.GetPieceValue(move.Piece.Type);
             while (captureMask != 0)
             {
                 byte captureSquare = (byte)BitboardHelpers.BitScanForward(ref captureMask);
                 if (board.TryGetPieceAt(captureSquare, out var capturePiece))
                 {
-                    score += (int)Evaluator.GetPieceValue(capturePiece.Value.Type);
                 }
             }
             return 10_000 + score;
