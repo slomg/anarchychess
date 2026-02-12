@@ -58,22 +58,6 @@ public static class BitboardHelpers
     public static int CountBits(UInt128 mask) =>
         BitOperations.PopCount((ulong)mask) + BitOperations.PopCount((ulong)(mask >> 64));
 
-    public static UInt128 MaskAdjacent(byte position)
-    {
-        UInt128 targetBit = UInt128.One << position;
-        UInt128 mask = 0;
-
-        mask |= (targetBit & BitboardConstants.RightEdgeExcludeMask) << 1; // right
-        mask |= (targetBit & BitboardConstants.LeftEdgeExcludeMask) >> 1; // left
-        mask |= (targetBit & BitboardConstants.TopEdgeExcludeMask) << 10; // up
-        mask |= (targetBit & BitboardConstants.BottomEdgeExcludeMask) >> 10; // down
-        mask |= (targetBit & BitboardConstants.TopRightEdgeExcludeMask) << 11; // up right
-        mask |= (targetBit & BitboardConstants.TopLeftEdgeExcludeMask) << 9; // up left
-        mask |= (targetBit & BitboardConstants.BottomRightEdgeExcludeMask) >> 9; // bottom right
-        mask |= (targetBit & BitboardConstants.BottomLeftEdgeExcludeMask) >> 11; // bottom left
-        return mask;
-    }
-
     public static void CreateMoveFromAttacks(
         byte from,
         BitPiece piece,

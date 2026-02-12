@@ -14,7 +14,7 @@ public sealed class BitKnookDefinition : IBitPieceDefinition
         ref int moveCount
     )
     {
-        UInt128 horseyAttacks = BitboardConstants.HorseyMasks[position];
+        UInt128 horseyAttacks = PieceMasks.HorseyMasks[position];
         UInt128 rookAttacks = MagicLibrary.GetAttacks(
             MagicLibrary.TwoStraightSquaresTable,
             position,

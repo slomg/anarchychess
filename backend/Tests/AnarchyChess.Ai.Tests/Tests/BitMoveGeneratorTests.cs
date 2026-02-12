@@ -29,7 +29,7 @@ public class BitMoveGeneratorTests
         Span<BitMove> moves = stackalloc BitMove[256];
         int moveCount = 0;
 
-        _generator.Generate(board, moves, ref moveCount, new int[PieceCount]);
+        _generator.Generate(board, moves, ref moveCount);
 
         HashSet<byte> expectedDestinations =
         [
@@ -87,7 +87,7 @@ public class BitMoveGeneratorTests
         Span<BitMove> moves = stackalloc BitMove[256];
         int moveCount = 0;
 
-        _generator.Generate(board, moves, ref moveCount, new int[PieceCount]);
+        _generator.Generate(board, moves, ref moveCount);
 
         HashSet<byte> expectedDestinations =
         [
@@ -133,37 +133,12 @@ public class BitMoveGeneratorTests
 
         Span<BitMove> moves = stackalloc BitMove[256];
         int moveCount = 0;
-        Span<int> moveCountByPiece = stackalloc int[Enum.GetValues<PieceType>().Length];
 
-        _generator.Generate(board, moves, ref moveCount, moveCountByPiece);
+        _generator.Generate(board, moves, ref moveCount);
 
         foreach (var move in moves[..moveCount])
         {
             move.ForcedMovePriority.Should().Be(ForcedMovePriority.UnderagePawn);
         }
-    }
-
-    [Fact]
-    public void Generate_increments_moveCountByPiece()
-    {
-        var board = BitBoard.FromPieces(
-            new()
-            {
-                [new("a1")] = PieceFactory.White(PieceType.Rook),
-                [new("c3")] = PieceFactory.White(PieceType.King),
-            },
-            isWhiteToMove: true
-        );
-
-        Span<BitMove> moves = stackalloc BitMove[256];
-        int moveCount = 0;
-        Span<int> moveCountByPiece = stackalloc int[Enum.GetValues<PieceType>().Length];
-
-        _generator.Generate(board, moves, ref moveCount, moveCountByPiece);
-
-        moveCountByPiece[(int)PieceType.Rook].Should().Be(18);
-        moveCountByPiece[(int)PieceType.King].Should().Be(8);
-
-        moveCountByPiece[(int)PieceType.Queen].Should().Be(0);
     }
 }

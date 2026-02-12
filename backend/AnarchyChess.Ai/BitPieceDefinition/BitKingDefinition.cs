@@ -16,7 +16,7 @@ public sealed class BitKingDefinition : IBitPieceDefinition
     {
         UInt128 friendlyPieces = board.BitboardForFriendOf(piece.Color);
 
-        UInt128 attacks = BitboardHelpers.MaskAdjacent(position);
+        UInt128 attacks = PieceMasks.AdjacentMasks[position];
         attacks &= ~friendlyPieces;
 
         BitboardHelpers.CreateMoveFromAttacks(

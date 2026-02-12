@@ -14,14 +14,14 @@ public sealed class BitHorseyDefinition : IBitPieceDefinition
         ref int moveCount
     )
     {
-        UInt128 attacks = BitboardConstants.HorseyMasks[position];
+        UInt128 attacks = PieceMasks.HorseyMasks[position];
 
         UInt128 rookAttacks = attacks & board.BitboardFor(PieceType.Rook, piece.Color);
         while (rookAttacks != 0)
         {
             byte toSquare = (byte)BitboardHelpers.BitScanForward(ref rookAttacks);
 
-            UInt128 captures = BitboardHelpers.MaskAdjacent(toSquare);
+            UInt128 captures = PieceMasks.AdjacentMasks[toSquare];
             captures &= board.Occupancy;
             captures |= UInt128.One << toSquare;
 

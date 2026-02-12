@@ -13,7 +13,7 @@ public sealed class BitAntiqueenDefinition : IBitPieceDefinition
         ref int moveCount
     )
     {
-        UInt128 attacks = BitboardConstants.HorseyMasks[position];
+        UInt128 attacks = PieceMasks.HorseyMasks[position];
         BitboardHelpers.CreateMoveFromAttacks(
             position,
             piece,

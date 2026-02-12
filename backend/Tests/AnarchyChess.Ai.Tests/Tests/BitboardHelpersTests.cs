@@ -101,48 +101,6 @@ public class BitboardHelpersTests
     }
 
     [Fact]
-    public void MaskAdjacent_sets_correct_adjacent_bits_in_middle()
-    {
-        byte position = 21; // somewhere in the middle of the board
-        UInt128 result = BitboardHelpers.MaskAdjacent(position);
-
-        UInt128 expected =
-            (UInt128.One << 20)
-            | // left
-            (UInt128.One << 22)
-            | // right
-            (UInt128.One << 11)
-            | // up
-            (UInt128.One << 31)
-            | // down
-            (UInt128.One << 10)
-            | // up left
-            (UInt128.One << 12)
-            | // up right
-            (UInt128.One << 30)
-            | // down left
-            (UInt128.One << 32); // down right
-
-        result.Should().Be(expected);
-    }
-
-    [Fact]
-    public void MaskAdjacent_does_not_wrap_around_edges()
-    {
-        byte position = 0;
-        UInt128 result = BitboardHelpers.MaskAdjacent(position);
-
-        UInt128 expected =
-            (UInt128.One << 1)
-            | // right
-            (UInt128.One << 10)
-            | // up
-            (UInt128.One << 11); // up-right
-
-        result.Should().Be(expected);
-    }
-
-    [Fact]
     public void CreateMoveFromAttacks_handles_mixed_quiet_and_capture()
     {
         Span<BitMove> moves = new BitMove[10];
