@@ -22,7 +22,7 @@ public class EvaluatorTests
 
         float score = _evaluator.EvaluateBoard(board, new int[PieceCount]);
 
-        score.Should().Be(8.5f);
+        score.Should().Be(850);
     }
 
     [Fact]
@@ -37,7 +37,7 @@ public class EvaluatorTests
 
         float score = _evaluator.EvaluateBoard(board, new int[PieceCount]);
 
-        score.Should().Be(-8.5f);
+        score.Should().Be(-850);
     }
 
     [Fact]
@@ -53,11 +53,11 @@ public class EvaluatorTests
 
         float score = _evaluator.EvaluateBoard(board, new int[PieceCount]);
 
-        score.Should().Be(0f);
+        score.Should().Be(0);
     }
 
     [Fact]
-    public void EvaluateBoard_evaluates_traitor_rook_as_2_when_under_our_control()
+    public void EvaluateBoard_evaluates_traitor_rook_as_200_when_under_our_control()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
@@ -71,11 +71,11 @@ public class EvaluatorTests
 
         float score = _evaluator.EvaluateBoard(board, new int[PieceCount]);
 
-        score.Should().Be(2f);
+        score.Should().Be(200);
     }
 
     [Fact]
-    public void EvaluateBoard_evaluates_traitor_rook_as_1_when_adjacent_is_equal()
+    public void EvaluateBoard_evaluates_traitor_rook_as_100_when_adjacent_is_equal()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
@@ -87,11 +87,11 @@ public class EvaluatorTests
 
         float score = _evaluator.EvaluateBoard(board, new int[PieceCount]);
 
-        score.Should().Be(1f);
+        score.Should().Be(100);
     }
 
     [Fact]
-    public void EvaluateBoard_evaluates_traitor_rook_as_negative_2_when_under_enemy_control()
+    public void EvaluateBoard_evaluates_traitor_rook_as_negative_200_when_under_enemy_control()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
@@ -105,7 +105,7 @@ public class EvaluatorTests
 
         float score = _evaluator.EvaluateBoard(board, new int[PieceCount]);
 
-        score.Should().Be(-2f);
+        score.Should().Be(-200);
     }
 
     [Fact]
@@ -122,7 +122,7 @@ public class EvaluatorTests
 
         float score = _evaluator.EvaluateBoard(board, new int[PieceCount]);
 
-        score.Should().Be(-2f);
+        score.Should().Be(-200);
     }
 
     [Fact]
@@ -136,7 +136,7 @@ public class EvaluatorTests
 
         float score = _evaluator.EvaluateBoard(board, new int[PieceCount]);
 
-        score.Should().Be(10_003.5f);
+        score.Should().Be(10_350);
     }
 
     [Fact]
@@ -152,10 +152,7 @@ public class EvaluatorTests
 
         float score = _evaluator.EvaluateBoard(board, new int[PieceCount]);
 
-        // King score for white: 10_000 / 2 + 3.5 = 5003.5 per king, total = 5003.5 * 2 = 10007
-        // King score for black: 10_000 / 1 + 3.5 = 10003.5
-        // total score = 10007 - 10003.5 = 3.5
-        score.Should().Be(3.5f);
+        score.Should().Be(350);
     }
 
     [Fact]
@@ -171,7 +168,7 @@ public class EvaluatorTests
 
         float score = _evaluator.EvaluateBoard(board, new int[PieceCount]);
 
-        score.Should().Be(-5f);
+        score.Should().Be(-500);
     }
 
     [Fact]
@@ -185,13 +182,13 @@ public class EvaluatorTests
         BitBoard board = BitBoard.FromPieces(pieces);
 
         int[] activity = new int[PieceCount];
-        activity[(int)PieceType.Bishop] = 5; // 5 * 0.06 = 0.3
-        activity[(int)PieceType.Horsey] = 4; // 4 * 0.07 = 0.28
+        activity[(int)PieceType.Bishop] = 5; // 5 * 5 = 25
+        activity[(int)PieceType.Horsey] = 4; // 4 * 4 = 16
 
-        // material: 3 + 3 = 6
-        // activity: 0.58
         float score = _evaluator.EvaluateBoard(board, activity);
 
-        score.Should().Be(6.58f);
+        // material: 300 + 300 = 600
+        // activity: 41
+        score.Should().Be(641);
     }
 }

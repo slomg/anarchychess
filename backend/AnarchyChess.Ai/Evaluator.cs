@@ -6,25 +6,25 @@ namespace AnarchyChess.Ai;
 
 public interface IEvaluator
 {
-    float EvaluateBoard(BitBoard board, Span<int> moveCountByPiece);
+    int EvaluateBoard(BitBoard board, Span<int> moveCountByPiece);
 }
 
 public class Evaluator : IEvaluator
 {
-    public float EvaluateBoard(BitBoard board, Span<int> moveCountByPiece)
+    public int EvaluateBoard(BitBoard board, Span<int> moveCountByPiece)
     {
         BitPieceColor ourColor = board.IsWhiteToMove ? BitPieceColor.White : BitPieceColor.Black;
 
-        float score;
+        int score = 0;
         if (ourColor is BitPieceColor.White)
         {
-            score = board.WhiteMaterialCount - board.BlackMaterialCount;
+            score += board.WhiteMaterialCount - board.BlackMaterialCount;
             score += EvaluateKingScore(board.WhiteKingCount);
             score -= EvaluateKingScore(board.BlackKingCount);
         }
         else
         {
-            score = board.BlackMaterialCount - board.WhiteMaterialCount;
+            score += board.BlackMaterialCount - board.WhiteMaterialCount;
             score += EvaluateKingScore(board.BlackKingCount);
             score -= EvaluateKingScore(board.WhiteKingCount);
         }
@@ -39,7 +39,7 @@ public class Evaluator : IEvaluator
             score += EvaluateTraitorRookScore(board, ourColor, position);
         }
 
-        float activityBonus = 0f;
+        int activityBonus = 0;
         for (int i = 0; i < moveCountByPiece.Length; i++)
         {
             activityBonus += moveCountByPiece[i] * GetPieceActivityBonus((PieceType)i);
@@ -48,48 +48,48 @@ public class Evaluator : IEvaluator
         return score + activityBonus;
     }
 
-    public static float GetPieceValue(PieceType type) =>
+    public static int GetPieceValue(PieceType type) =>
         type switch
         {
-            PieceType.Queen => 9f,
-            PieceType.Pawn => 1f,
-            PieceType.Rook => 5f,
-            PieceType.Bishop => 2.5f,
-            PieceType.Horsey => 3f,
+            PieceType.Queen => 900,
+            PieceType.Pawn => 100,
+            PieceType.Rook => 500,
+            PieceType.Bishop => 300,
+            PieceType.Horsey => 300,
 
-            PieceType.Knook => 4f,
-            PieceType.Antiqueen => 3f,
-            PieceType.UnderagePawn => 1.5f,
-            PieceType.SterilePawn => 0.8f,
-            PieceType.Checker => 3.5f,
+            PieceType.Knook => 400,
+            PieceType.Antiqueen => 300,
+            PieceType.UnderagePawn => 150,
+            PieceType.SterilePawn => 80,
+            PieceType.Checker => 350,
 
             _ => 0,
         };
 
-    private static float GetPieceActivityBonus(PieceType type) =>
+    private static int GetPieceActivityBonus(PieceType type) =>
         type switch
         {
-            PieceType.King => 0f,
-            PieceType.Queen => 0f,
-            PieceType.Pawn => 0f,
-            PieceType.Rook => 0.02f,
-            PieceType.Bishop => 0.06f,
-            PieceType.Horsey => 0.07f,
+            PieceType.King => 0,
+            PieceType.Queen => 1,
+            PieceType.Pawn => 0,
+            PieceType.Rook => 2,
+            PieceType.Bishop => 5,
+            PieceType.Horsey => 4,
 
-            PieceType.Knook => 0.08f,
-            PieceType.Antiqueen => 0.07f,
-            PieceType.UnderagePawn => 0.005f,
-            PieceType.SterilePawn => 0f,
-            PieceType.Checker => 0.07f,
-            PieceType.TraitorRook => 0.02f,
+            PieceType.Knook => 5,
+            PieceType.Antiqueen => 4,
+            PieceType.UnderagePawn => 1,
+            PieceType.SterilePawn => 0,
+            PieceType.Checker => 6,
+            PieceType.TraitorRook => 0,
 
-            _ => 0f,
+            _ => 0,
         };
 
-    private static float EvaluateKingScore(int kingCount) =>
-        kingCount > 0 ? 10_000f + (kingCount * 3.5f) : 0;
+    private static int EvaluateKingScore(int kingCount) =>
+        kingCount > 0 ? 10_000 + (kingCount * 350) : 0;
 
-    private static float EvaluateTraitorRookScore(
+    private static int EvaluateTraitorRookScore(
         BitBoard board,
         BitPieceColor ourColor,
         byte position
@@ -104,22 +104,22 @@ public class Evaluator : IEvaluator
 
         if (ourAdjacent == 0 && enemyAdjacent == 0)
         {
-            return 0f;
+            return 0;
         }
 
         int ourAdjacentCount = BitboardHelpers.CountBits(ourAdjacent);
         int enemyAdjacentCount = BitboardHelpers.CountBits(enemyAdjacent);
         if (ourAdjacentCount > enemyAdjacentCount)
         {
-            return 2f;
+            return 200;
         }
         else if (ourAdjacentCount == enemyAdjacentCount)
         {
-            return 1f;
+            return 100;
         }
         else
         {
-            return -2f;
+            return -200;
         }
     }
 }

@@ -16,9 +16,9 @@ public class BitBoardMakeMoveTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        float initialWhiteMaterial = board.WhiteMaterialCount;
+        int initialWhiteMaterial = board.WhiteMaterialCount;
         int initialWhiteKingCount = board.WhiteKingCount;
-        float initialBlackMaterial = board.BlackMaterialCount;
+        int initialBlackMaterial = board.BlackMaterialCount;
         int initialBlackKingCount = board.BlackKingCount;
 
         BitMove move = new()
@@ -188,7 +188,7 @@ public class BitBoardMakeMoveTests
             [new AlgebraicPoint("a1")] = PieceFactory.White(hasMoved: true),
         };
         BitBoard board = BitBoard.FromPieces(pieces);
-        float initialWhiteMaterial = board.WhiteMaterialCount;
+        int initialWhiteMaterial = board.WhiteMaterialCount;
 
         BitMove move = new()
         {
@@ -221,7 +221,7 @@ public class BitBoardMakeMoveTests
             [new AlgebraicPoint("a10")] = PieceFactory.Black(),
         };
         BitBoard board = BitBoard.FromPieces(pieces, isWhiteToMove: false);
-        float initialBlackMaterial = board.BlackMaterialCount;
+        int initialBlackMaterial = board.BlackMaterialCount;
 
         BitMove move = new()
         {

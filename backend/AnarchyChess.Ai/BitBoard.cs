@@ -27,10 +27,10 @@ public partial class BitBoard
     public UInt128 EnPassantSquaresMask { get; private set; }
     public byte EnPassantPawnSquare { get; private set; }
 
-    public float WhiteMaterialCount { get; private set; }
+    public int WhiteMaterialCount { get; private set; }
     public int WhiteKingCount { get; private set; }
 
-    public float BlackMaterialCount { get; private set; }
+    public int BlackMaterialCount { get; private set; }
     public int BlackKingCount { get; private set; }
 
     private BitBoard(UInt128[,] bitboards, BitPiece?[] pieceAt, BitMove? prevMove)
@@ -107,9 +107,9 @@ public partial class BitBoard
         BitPiece?[] pieceAt = new BitPiece?[10 * 10];
         UInt128 hasMoved = 0;
 
-        float whiteScore = 0;
+        int whiteScore = 0;
         int whiteKingCount = 0;
-        float blackScore = 0;
+        int blackScore = 0;
         int blackKingCount = 0;
 
         foreach (var (point, piece) in pieces)
