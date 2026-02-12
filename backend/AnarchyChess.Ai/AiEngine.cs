@@ -42,13 +42,13 @@ public class AiEngine(IBitMovesGenerator? moveGenerator = null, IEvaluator? eval
             moveCountByPiece
         );
 
+        float[] scores = new float[moveCount];
+
         Parallel.For(
             1,
             moveCount,
             i =>
             {
-                float localAlpha = alpha;
-
                 BitMove move = moves[i];
                 BitBoard boardCopy = new(board);
                 boardCopy.MakeMove(move);
@@ -56,32 +56,23 @@ public class AiEngine(IBitMovesGenerator? moveGenerator = null, IEvaluator? eval
                 float score = -Negamax(
                     boardCopy,
                     depth - 1,
-                    alpha: -localAlpha - 1,
-                    beta: -localAlpha,
+                    alpha: alpha,
+                    beta: float.PositiveInfinity,
                     moveCountByPiece
                 );
 
-                if (score > localAlpha)
-                {
-                    score = -Negamax(
-                        boardCopy,
-                        depth - 1,
-                        alpha: float.NegativeInfinity,
-                        beta: float.PositiveInfinity,
-                        moveCountByPiece
-                    );
-                }
-
-                lock (this)
-                {
-                    if (score > alpha)
-                    {
-                        alpha = score;
-                        bestMove = move;
-                    }
-                }
+                scores[i] = score;
             }
         );
+
+        for (int i = 1; i < moveCount; i++)
+        {
+            if (scores[i] > alpha)
+            {
+                alpha = scores[i];
+                bestMove = moves[i];
+            }
+        }
 
         return bestMove;
     }

@@ -63,23 +63,20 @@ public partial class BitBoard
 
     public BitBoard(BitBoard other)
     {
-        // Deep copy bitboards
         int colors = other.Bitboards.GetLength(0);
         int types = other.Bitboards.GetLength(1);
         Bitboards = new UInt128[colors, types];
-        for (int c = 0; c < colors; c++)
+        for (int color = 0; color < colors; color++)
         {
-            for (int t = 0; t < types; t++)
+            for (int pieceType = 0; pieceType < types; pieceType++)
             {
-                Bitboards[c, t] = other.Bitboards[c, t];
+                Bitboards[color, pieceType] = other.Bitboards[color, pieceType];
             }
         }
 
-        // Deep copy piece array
         PieceAt = new BitPiece?[other.PieceAt.Length];
         Array.Copy(other.PieceAt, PieceAt, other.PieceAt.Length);
 
-        // Copy scalar fields
         WhitePieces = other.WhitePieces;
         BlackPieces = other.BlackPieces;
         NeutralPieces = other.NeutralPieces;
