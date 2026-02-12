@@ -15,37 +15,10 @@ public class Evaluator : IEvaluator
     {
         BitPieceColor ourColor = board.IsWhiteToMove ? BitPieceColor.White : BitPieceColor.Black;
 
-        int score = 0;
-        if (ourColor is BitPieceColor.White)
-        {
-            score += board.WhiteMaterialCount - board.BlackMaterialCount;
-            score += EvaluateKingScore(board.WhiteKingCount);
-            score -= EvaluateKingScore(board.BlackKingCount);
-        }
-        else
-        {
-            score += board.BlackMaterialCount - board.WhiteMaterialCount;
-            score += EvaluateKingScore(board.BlackKingCount);
-            score -= EvaluateKingScore(board.WhiteKingCount);
-        }
+        int materialScore = CalculateMaterialScore(board, ourColor: ourColor);
+        int mobilityScore = CalculateMobilityScore(moveCountByPiece);
 
-        UInt128 traitorRookBitboard = board.BitboardFor(
-            PieceType.TraitorRook,
-            BitPieceColor.Neutral
-        );
-        while (traitorRookBitboard != 0)
-        {
-            byte position = (byte)BitboardHelpers.BitScanForward(ref traitorRookBitboard);
-            score += EvaluateTraitorRookScore(board, ourColor, position);
-        }
-
-        int activityBonus = 0;
-        for (int i = 0; i < moveCountByPiece.Length; i++)
-        {
-            activityBonus += moveCountByPiece[i] * GetPieceActivityBonus((PieceType)i);
-        }
-
-        return score + activityBonus;
+        return materialScore + mobilityScore;
     }
 
     public static int GetPieceValue(PieceType type) =>
@@ -66,7 +39,46 @@ public class Evaluator : IEvaluator
             _ => 0,
         };
 
-    private static int GetPieceActivityBonus(PieceType type) =>
+    private static int CalculateMaterialScore(BitBoard board, BitPieceColor ourColor)
+    {
+        int materialScore = 0;
+        if (ourColor is BitPieceColor.White)
+        {
+            materialScore += board.WhiteMaterialCount - board.BlackMaterialCount;
+            materialScore += EvaluateKingScore(board.WhiteKingCount);
+            materialScore -= EvaluateKingScore(board.BlackKingCount);
+        }
+        else
+        {
+            materialScore += board.BlackMaterialCount - board.WhiteMaterialCount;
+            materialScore += EvaluateKingScore(board.BlackKingCount);
+            materialScore -= EvaluateKingScore(board.WhiteKingCount);
+        }
+
+        UInt128 traitorRookBitboard = board.BitboardFor(
+            PieceType.TraitorRook,
+            BitPieceColor.Neutral
+        );
+        while (traitorRookBitboard != 0)
+        {
+            byte position = (byte)BitboardHelpers.BitScanForward(ref traitorRookBitboard);
+            materialScore += EvaluateTraitorRookScore(board, ourColor, position);
+        }
+
+        return materialScore;
+    }
+
+    private static int CalculateMobilityScore(Span<int> moveCountByPiece)
+    {
+        int mobilityScore = 0;
+        for (int i = 0; i < moveCountByPiece.Length; i++)
+        {
+            mobilityScore += moveCountByPiece[i] * GetPieceMobilityBonus((PieceType)i);
+        }
+        return mobilityScore;
+    }
+
+    private static int GetPieceMobilityBonus(PieceType type) =>
         type switch
         {
             PieceType.King => 0,
