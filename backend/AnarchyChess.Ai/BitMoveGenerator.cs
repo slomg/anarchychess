@@ -6,14 +6,9 @@ using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai;
 
-public interface IBitMovesGenerator
+public interface IBitMoveGenerator
 {
-    void Generate(
-        BitBoard board,
-        Span<BitMove> moves,
-        ref int moveCount,
-        Span<int> moveCountByPiece
-    );
+    void Generate(BitBoard board, Span<BitMove> moves, ref int moveCount);
     void GenerateForPiece(
         BitBoard board,
         byte position,
@@ -23,7 +18,7 @@ public interface IBitMovesGenerator
     );
 }
 
-public sealed class BitMovesGenerator : IBitMovesGenerator
+public sealed class BitMoveGenerator : IBitMoveGenerator
 {
     private readonly IBitPieceDefinition[] _pieceDefinitions =
     [
@@ -41,12 +36,7 @@ public sealed class BitMovesGenerator : IBitMovesGenerator
         new BitCheckerDefinition(),
     ];
 
-    public void Generate(
-        BitBoard board,
-        Span<BitMove> moves,
-        ref int moveCount,
-        Span<int> moveCountByPiece
-    )
+    public void Generate(BitBoard board, Span<BitMove> moves, ref int moveCount)
     {
         BitPieceColor color = board.IsWhiteToMove ? BitPieceColor.White : BitPieceColor.Black;
 
@@ -91,8 +81,6 @@ public sealed class BitMovesGenerator : IBitMovesGenerator
             {
                 moves[newMoveCount++] = move;
             }
-
-            moveCountByPiece[(int)move.Piece.Type]++;
         }
 
         moveCount = newMoveCount;

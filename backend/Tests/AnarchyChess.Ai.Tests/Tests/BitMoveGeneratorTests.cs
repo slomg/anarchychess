@@ -7,7 +7,7 @@ namespace AnarchyChess.Ai.Tests.Tests;
 
 public class BitMoveGeneratorTests
 {
-    private readonly BitMovesGenerator _generator = new();
+    private readonly BitMoveGenerator _generator = new();
 
     private readonly int PieceCount = Enum.GetValues<PieceType>().Length;
 

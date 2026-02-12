@@ -6,19 +6,22 @@ namespace AnarchyChess.Ai;
 
 public interface IEvaluator
 {
-    int EvaluateBoard(BitBoard board, Span<int> moveCountByPiece);
+    int EvaluateBoard(BitBoard board);
 }
 
-public class Evaluator : IEvaluator
+public class Evaluator(IBitMoveGenerator movesGenerator) : IEvaluator
 {
-    public int EvaluateBoard(BitBoard board, Span<int> moveCountByPiece)
+    private readonly IBitMoveGenerator movesGenerator = movesGenerator;
+
+    public int EvaluateBoard(BitBoard board)
     {
         BitPieceColor ourColor = board.IsWhiteToMove ? BitPieceColor.White : BitPieceColor.Black;
 
         int materialScore = CalculateMaterialScore(board, ourColor: ourColor);
-        int mobilityScore = CalculateMobilityScore(moveCountByPiece);
+        //int mobilityScore = CalculateMobilityScore(moveCountByPiece);
+        //int activityScore = CalculateActivityScore();
 
-        return materialScore + mobilityScore;
+        return materialScore;
     }
 
     public static int GetPieceValue(PieceType type) =>
@@ -68,7 +71,7 @@ public class Evaluator : IEvaluator
         return materialScore;
     }
 
-    private static int CalculateMobilityScore(Span<int> moveCountByPiece)
+    private static int CalculateMobilityScore()
     {
         int mobilityScore = 0;
         for (int i = 0; i < moveCountByPiece.Length; i++)
@@ -77,6 +80,8 @@ public class Evaluator : IEvaluator
         }
         return mobilityScore;
     }
+
+    //private static int CalculateActivityScore() { }
 
     private static int GetPieceMobilityBonus(PieceType type) =>
         type switch

@@ -9,13 +9,13 @@ public interface IAiEngine
     BitMove? FindBestMove(BitBoard board, int depth);
 }
 
-public class AiEngine(IBitMovesGenerator? moveGenerator = null, IEvaluator? evaluator = null)
+public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evaluator = null)
     : IAiEngine
 {
     private const int MaxMoves = 256;
     private readonly int PieceCount = Enum.GetValues<PieceType>().Length;
 
-    private readonly IBitMovesGenerator _moveGenerator = moveGenerator ?? new BitMovesGenerator();
+    private readonly IBitMoveGenerator _moveGenerator = moveGenerator ?? new BitMoveGenerator();
     private readonly IEvaluator _evaluator = evaluator ?? new Evaluator();
 
     public BitMove? FindBestMove(BitBoard board, int depth)
@@ -24,7 +24,7 @@ public class AiEngine(IBitMovesGenerator? moveGenerator = null, IEvaluator? eval
         int moveCount = 0;
         int[] moveCountByPiece = new int[PieceCount];
 
-        _moveGenerator.Generate(board, moves, ref moveCount, moveCountByPiece);
+        _moveGenerator.Generate(board, moves, ref moveCount);
         OrderMove(board, moves, moveCount);
 
         if (moveCount == 0)

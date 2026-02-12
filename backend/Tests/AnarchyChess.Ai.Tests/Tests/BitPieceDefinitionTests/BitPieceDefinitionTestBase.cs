@@ -9,7 +9,7 @@ namespace AnarchyChess.Ai.Tests.Tests.BitPieceDefinitionTests;
 
 public class BitPieceDefinitionTestBase
 {
-    private readonly BitMovesGenerator _generator = new();
+    private readonly BitMoveGenerator _generator = new();
 
     protected void TestMoves(PieceTestCase testCase)
     {
