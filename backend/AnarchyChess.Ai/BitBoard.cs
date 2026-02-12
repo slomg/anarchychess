@@ -191,6 +191,27 @@ public partial class BitBoard
 
     public BitPiece? GetPieceAt(byte position) => PieceAt[position];
 
+    public NullMoveUndoState MakeNullMove()
+    {
+        NullMoveUndoState undo = new()
+        {
+            PrevIsWhiteToMove = IsWhiteToMove,
+            PrevEnPassantPawnSquare = EnPassantPawnSquare,
+            PrevEnPassantSquaresMask = EnPassantSquaresMask,
+        };
+        IsWhiteToMove = !IsWhiteToMove;
+        EnPassantPawnSquare = 0;
+        EnPassantSquaresMask = 0;
+        return undo;
+    }
+
+    public void UndoNullMove(NullMoveUndoState undo)
+    {
+        IsWhiteToMove = undo.PrevIsWhiteToMove;
+        EnPassantPawnSquare = undo.PrevEnPassantPawnSquare;
+        EnPassantSquaresMask = undo.PrevEnPassantSquaresMask;
+    }
+
     public MoveUndoState MakeMove(BitMove move)
     {
         MoveUndoState undoState = new()

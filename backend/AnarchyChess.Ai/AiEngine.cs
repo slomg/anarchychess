@@ -12,7 +12,11 @@ public interface IAiEngine
 public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evaluator = null)
     : IAiEngine
 {
+    private const int ALPHA_START = -10_000_000;
+    private const int BETA_START = 10_000_000;
+
     private const int MaxMoves = 256;
+    private const int NullMoveReduction = 2;
     private readonly int PieceCount = Enum.GetValues<PieceType>().Length;
 
     private readonly IBitMoveGenerator _moveGenerator = moveGenerator ?? new BitMoveGenerator();
@@ -22,7 +26,6 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
     {
         BitMove[] moves = new BitMove[MaxMoves];
         int moveCount = 0;
-        int[] moveCountByPiece = new int[PieceCount];
 
         _moveGenerator.Generate(board, moves, ref moveCount);
         OrderMove(board, moves, moveCount);
@@ -34,13 +37,7 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
         BitBoard boardCopy = new(board);
         boardCopy.MakeMove(bestMove);
 
-        float alpha = -Negamax(
-            boardCopy,
-            depth - 1,
-            alpha: float.NegativeInfinity,
-            beta: float.PositiveInfinity,
-            moveCountByPiece
-        );
+        float alpha = -Negamax(boardCopy, depth - 1, alpha: ALPHA_START, beta: BETA_START);
 
         float[] scores = new float[moveCount];
 
@@ -53,13 +50,7 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
                 BitBoard boardCopy = new(board);
                 boardCopy.MakeMove(move);
 
-                float score = -Negamax(
-                    boardCopy,
-                    depth - 1,
-                    alpha: alpha,
-                    beta: float.PositiveInfinity,
-                    moveCountByPiece
-                );
+                float score = -Negamax(boardCopy, depth - 1, alpha: alpha, beta: BETA_START);
 
                 scores[i] = score;
             }
@@ -74,27 +65,39 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
             }
         }
 
+        Console.WriteLine("Eval: " + alpha);
+
         return bestMove;
     }
 
-    private float Negamax(
-        BitBoard board,
-        int depth,
-        float alpha,
-        float beta,
-        Span<int> prevMoveCountByPiece
-    )
+    private float Negamax(BitBoard board, int depth, float alpha, float beta)
     {
         if (depth <= 0)
         {
-            return _evaluator.EvaluateBoard(board, moveCountByPiece: prevMoveCountByPiece);
+            return _evaluator.EvaluateBoard(board);
+        }
+
+        if (depth > NullMoveReduction + 1)
+        {
+            NullMoveUndoState undo = board.MakeNullMove();
+            float score = -Negamax(
+                board,
+                depth - 1 - NullMoveReduction,
+                alpha: -beta,
+                beta: -beta + 1
+            );
+            board.UndoNullMove(undo);
+
+            if (score >= beta)
+            {
+                return beta;
+            }
         }
 
         Span<BitMove> moves = stackalloc BitMove[MaxMoves];
         int moveCount = 0;
-        Span<int> moveCountByPiece = stackalloc int[PieceCount];
 
-        _moveGenerator.Generate(board, moves, ref moveCount, moveCountByPiece);
+        _moveGenerator.Generate(board, moves, ref moveCount);
         OrderMove(board, moves, moveCount);
 
         for (int i = 0; i < moveCount; i++)
@@ -102,13 +105,7 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
             BitMove move = moves[i];
             MoveUndoState undo = board.MakeMove(move);
 
-            float score = -Negamax(
-                board,
-                depth - 1,
-                alpha: -beta,
-                beta: -alpha,
-                prevMoveCountByPiece: moveCountByPiece
-            );
+            float score = -Negamax(board, depth - 1, alpha: -beta, beta: -alpha);
 
             board.UndoMove(undo);
 
