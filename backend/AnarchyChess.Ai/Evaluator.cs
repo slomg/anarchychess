@@ -54,7 +54,7 @@ public class Evaluator : IEvaluator
             PieceType.Queen => 9f,
             PieceType.Pawn => 1f,
             PieceType.Rook => 5f,
-            PieceType.Bishop => 3f,
+            PieceType.Bishop => 2.5f,
             PieceType.Horsey => 3f,
 
             PieceType.Knook => 4f,
@@ -77,7 +77,7 @@ public class Evaluator : IEvaluator
             PieceType.Horsey => 0.07f,
 
             PieceType.Knook => 0.08f,
-            PieceType.Antiqueen => 0.06f,
+            PieceType.Antiqueen => 0.07f,
             PieceType.UnderagePawn => 0.005f,
             PieceType.SterilePawn => 0f,
             PieceType.Checker => 0.07f,
