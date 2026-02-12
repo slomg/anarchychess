@@ -161,6 +161,8 @@ public class AiEngine(IBitMovesGenerator? moveGenerator = null, IEvaluator? eval
                 byte captureSquare = (byte)BitboardHelpers.BitScanForward(ref captureMask);
                 if (board.TryGetPieceAt(captureSquare, out var capturePiece))
                 {
+                    int victimValue = (int)Evaluator.GetPieceValue(capturePiece.Value.Type);
+                    score += victimValue * 100 - attackerValue;
                 }
             }
             return 10_000 + score;
