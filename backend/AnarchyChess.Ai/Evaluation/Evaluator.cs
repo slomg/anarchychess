@@ -25,7 +25,8 @@ public sealed class Evaluator : IEvaluator
             ourColor: ourColor,
             enemyColor: enemyColor
         );
+        int pawnSpaceScore = PawnSpaceEvaluator.Evaluate(board);
 
-        return materialScore + activityScore + mobilityScore;
+        return materialScore + activityScore + mobilityScore + pawnSpaceScore;
     }
 }
