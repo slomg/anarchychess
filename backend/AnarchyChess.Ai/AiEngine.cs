@@ -33,7 +33,7 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
         int moveCount = 0;
 
         _moveGenerator.Generate(board, moves, ref moveCount);
-        OrderMove(board, depth, moves, moveCount);
+        OrderMoves(board, depth, moves, moveCount);
 
         if (moveCount == 0)
             return null;
@@ -103,7 +103,7 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
         int moveCount = 0;
 
         _moveGenerator.Generate(board, moves, ref moveCount);
-        OrderMove(board, depth, moves, moveCount);
+        OrderMoves(board, depth, moves, moveCount);
 
         for (int i = 0; i < moveCount; i++)
         {
@@ -131,19 +131,68 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
         return alpha;
     }
 
-    private void OrderMove(BitBoard board, int depth, Span<BitMove> moves, int moveCount)
+    private void OrderMoves(BitBoard board, int depth, Span<BitMove> moves, int moveCount)
     {
+        Span<int> scores = stackalloc int[moveCount];
+
         int write = 0;
         for (int i = 0; i < moveCount; i++)
         {
-            if (ScoreMove(moves[i], board, depth) > 0)
+            int score = ScoreMove(moves[i], board, depth);
+            scores[i] = score;
+
+            if (score > 0 && i != write)
             {
-                if (i != write)
-                {
-                    (moves[write], moves[i]) = (moves[i], moves[write]);
-                }
-                write++;
+                (moves[write], moves[i]) = (moves[i], moves[write]);
+                write += 1;
             }
+        }
+
+        if (write > 1)
+        {
+            QuickSort(moves, scores, left: 0, right: write - 1);
+        }
+    }
+
+    private static void QuickSort(Span<BitMove> moves, Span<int> scores, int left, int right)
+    {
+        if (left >= right)
+        {
+            return;
+        }
+
+        int pivotIndex = left + (right - left) / 2;
+        int pivotValue = scores[pivotIndex];
+
+        int i = left;
+        int j = right;
+        while (i <= j)
+        {
+            while (scores[i] > pivotValue)
+            {
+                i++;
+            }
+            while (scores[j] < pivotValue)
+            {
+                j--;
+            }
+
+            if (i <= j)
+            {
+                (moves[i], moves[j]) = (moves[j], moves[i]);
+                (scores[i], scores[j]) = (scores[j], scores[i]);
+                i++;
+                j--;
+            }
+        }
+
+        if (left < j)
+        {
+            QuickSort(moves, scores, left, j);
+        }
+        if (i < right)
+        {
+            QuickSort(moves, scores, i, right);
         }
     }
 
