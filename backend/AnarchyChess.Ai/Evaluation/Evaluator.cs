@@ -26,7 +26,11 @@ public sealed class Evaluator : IEvaluator
             enemyColor: enemyColor
         );
         int pawnSpaceScore = PawnSpaceEvaluator.Evaluate(board);
+        int kingSafteyScore = KingSafetyEvaluator.Evaluate(board);
 
-        return materialScore + activityScore + mobilityScore + pawnSpaceScore;
+        return materialScore + activityScore + mobilityScore + pawnSpaceScore + kingSafteyScore;
     }
+
+    private static bool IsEndgame(BitBoard board) =>
+        board.WhiteMaterialCount + board.BlackMaterialCount <= 2400;
 }
