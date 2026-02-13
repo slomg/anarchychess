@@ -1,4 +1,5 @@
 ﻿using AnarchyChess.Ai.Models;
+using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai.Evaluation;
 
@@ -13,6 +14,7 @@ public sealed class Evaluator : IEvaluator
     {
         BitPieceColor ourColor = board.IsWhiteToMove ? BitPieceColor.White : BitPieceColor.Black;
         BitPieceColor enemyColor = board.IsWhiteToMove ? BitPieceColor.Black : BitPieceColor.White;
+        bool isEndgame = IsEndgame(board);
 
         int materialScore = MaterialEvaluator.Evaluate(board, ourColor: ourColor);
         int activityScore = ActivityEvaluator.Evaluate(
@@ -26,11 +28,13 @@ public sealed class Evaluator : IEvaluator
             enemyColor: enemyColor
         );
         int pawnSpaceScore = PawnSpaceEvaluator.Evaluate(board);
-        int kingSafteyScore = KingSafetyEvaluator.Evaluate(board);
+        int kingSafteyScore = KingSafetyEvaluator.Evaluate(board, isEndgame: isEndgame);
 
         return materialScore + activityScore + mobilityScore + pawnSpaceScore + kingSafteyScore;
     }
 
-    private static bool IsEndgame(BitBoard board) =>
-        board.WhiteMaterialCount + board.BlackMaterialCount <= 2400;
+    public static bool IsEndgame(BitBoard board) =>
+        board.BitboardFor(PieceType.Queen, BitPieceColor.White) == 0
+        && board.BitboardFor(PieceType.Queen, BitPieceColor.Black) == 0
+        && board.WhiteMaterialCount + board.BlackMaterialCount <= 2200;
 }

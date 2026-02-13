@@ -11,7 +11,7 @@ public class KingSafetyEvaluatorTests
     public void Evaluate_returns_zero_on_empty_board()
     {
         BitBoard board = BitBoard.FromPieces([]);
-        KingSafetyEvaluator.Evaluate(board).Should().Be(0);
+        KingSafetyEvaluator.Evaluate(board, isEndgame: false).Should().Be(0);
     }
 
     [Fact]
@@ -30,7 +30,7 @@ public class KingSafetyEvaluatorTests
         BitBoard board = BitBoard.FromPieces(pieces);
 
         int expectedProtection = 3 * KingSafetyEvaluator.PawnProtectionValue;
-        KingSafetyEvaluator.Evaluate(board).Should().Be(expectedProtection);
+        KingSafetyEvaluator.Evaluate(board, isEndgame: false).Should().Be(expectedProtection);
     }
 
     [Fact]
@@ -46,7 +46,7 @@ public class KingSafetyEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        KingSafetyEvaluator.Evaluate(board).Should().Be(0);
+        KingSafetyEvaluator.Evaluate(board, isEndgame: false).Should().Be(0);
     }
 
     [Fact]
@@ -62,7 +62,7 @@ public class KingSafetyEvaluatorTests
 
         int protection = 2 * KingSafetyEvaluator.PawnProtectionValue;
         int expected = protection - KingSafetyEvaluator.CenterStuckKingPenalty;
-        KingSafetyEvaluator.Evaluate(board).Should().Be(expected);
+        KingSafetyEvaluator.Evaluate(board, isEndgame: false).Should().Be(expected);
     }
 
     [Fact]
@@ -78,7 +78,7 @@ public class KingSafetyEvaluatorTests
 
         int expectedProtection =
             2 * KingSafetyEvaluator.PawnProtectionValue * KingSafetyEvaluator.EdgeAmplifier;
-        KingSafetyEvaluator.Evaluate(board).Should().Be(expectedProtection);
+        KingSafetyEvaluator.Evaluate(board, isEndgame: false).Should().Be(expectedProtection);
     }
 
     [Fact]
@@ -93,7 +93,7 @@ public class KingSafetyEvaluatorTests
         BitBoard board = BitBoard.FromPieces(pieces);
 
         KingSafetyEvaluator
-            .Evaluate(board)
+            .Evaluate(board, isEndgame: false)
             .Should()
             .Be(-KingSafetyEvaluator.CenterStuckKingPenalty);
     }
@@ -109,7 +109,10 @@ public class KingSafetyEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        KingSafetyEvaluator.Evaluate(board).Should().Be(-KingSafetyEvaluator.SemiStuckKingPenalty);
+        KingSafetyEvaluator
+            .Evaluate(board, isEndgame: false)
+            .Should()
+            .Be(-KingSafetyEvaluator.SemiStuckKingPenalty);
     }
 
     [Fact]
@@ -127,6 +130,23 @@ public class KingSafetyEvaluatorTests
         BitBoard board = BitBoard.FromPieces(pieces, isWhiteToMove: false);
 
         int blackScore = 2 * KingSafetyEvaluator.PawnProtectionValue * 1; // central file amplifier 1
-        KingSafetyEvaluator.Evaluate(board).Should().Be(blackScore);
+        KingSafetyEvaluator.Evaluate(board, isEndgame: false).Should().Be(blackScore);
+    }
+
+    [Fact]
+    public void Evaluate_returns_zero_if_in_the_endgame()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new("a1")] = PieceFactory.White(PieceType.Rook, hasMoved: false),
+            [new("f1")] = PieceFactory.White(PieceType.King, hasMoved: false),
+            [new("j1")] = PieceFactory.White(PieceType.Rook, hasMoved: false),
+            [new("e2")] = PieceFactory.White(PieceType.Pawn),
+            [new("f2")] = PieceFactory.White(PieceType.Pawn),
+            [new("g2")] = PieceFactory.White(PieceType.Pawn),
+        };
+        BitBoard board = BitBoard.FromPieces(pieces);
+
+        KingSafetyEvaluator.Evaluate(board, isEndgame: true).Should().Be(0);
     }
 }

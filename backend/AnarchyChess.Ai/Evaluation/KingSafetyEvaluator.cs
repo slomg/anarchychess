@@ -22,8 +22,13 @@ public static class KingSafetyEvaluator
     private static readonly UInt128 BlackQueensideRookMask =
         UInt128.One << BitboardConstants.BlackQueensideCastle.RookStart;
 
-    public static int Evaluate(BitBoard board)
+    public static int Evaluate(BitBoard board, bool isEndgame)
     {
+        if (isEndgame)
+        {
+            return 0;
+        }
+
         int whiteScore = EvaluateKingSpace(
             board,
             kingBitboard: board.BitboardFor(PieceType.King, BitPieceColor.White),
