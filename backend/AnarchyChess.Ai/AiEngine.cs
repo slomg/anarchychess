@@ -42,9 +42,9 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
         BitBoard boardCopy = new(board);
         boardCopy.MakeMove(bestMove);
 
-        float alpha = -Negamax(boardCopy, depth - 1, alpha: ALPHA_START, beta: BETA_START);
+        int alpha = -Negamax(boardCopy, depth - 1, alpha: ALPHA_START, beta: BETA_START);
 
-        float[] scores = new float[moveCount];
+        int[] scores = new int[moveCount];
 
         Parallel.For(
             1,
@@ -55,7 +55,7 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
                 BitBoard boardCopy = new(board);
                 boardCopy.MakeMove(move);
 
-                float score = -Negamax(boardCopy, depth - 1, alpha: alpha, beta: BETA_START);
+                int score = -Negamax(boardCopy, depth - 1, alpha: alpha, beta: BETA_START);
 
                 scores[i] = score;
             }
@@ -75,7 +75,7 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
         return bestMove;
     }
 
-    private float Negamax(BitBoard board, int depth, float alpha, float beta)
+    private int Negamax(BitBoard board, int depth, int alpha, int beta)
     {
         if (depth <= 0)
         {
@@ -89,7 +89,7 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
         if (depth > NullMoveReduction + 1 && moves[0].ForcedMovePriority == ForcedMovePriority.None)
         {
             NullMoveUndoState undo = board.MakeNullMove();
-            float score = -Negamax(
+            int score = -Negamax(
                 board,
                 depth - 1 - NullMoveReduction,
                 alpha: -beta,
@@ -110,7 +110,7 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
             BitMove move = moves[i];
             MoveUndoState undo = board.MakeMove(move);
 
-            float score = -Negamax(board, depth - 1, alpha: -beta, beta: -alpha);
+            int score = -Negamax(board, depth - 1, alpha: -beta, beta: -alpha);
 
             board.UndoMove(undo);
 
