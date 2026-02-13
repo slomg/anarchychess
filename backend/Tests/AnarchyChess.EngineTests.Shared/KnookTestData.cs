@@ -118,5 +118,30 @@ public class KnookTestData : TheoryData<PieceTestCase>
                 .GoesTo("f3", captures: ["f3"])
                 .WithDescription("Surrounded by enemy pieces in all directions")
         );
+
+        Add(
+            PieceTestCase
+                .From("e5", knook)
+                .WithEnemyPieceAt("e6")
+                .WithEnemyPieceAt("e7")
+                .GoesTo(
+                    "c5",
+                    "d5",
+                    "f5",
+                    "g5",
+                    "e4",
+                    "e3",
+                    "c6",
+                    "d7",
+                    "f7",
+                    "g6",
+                    "g4",
+                    "f3",
+                    "d3",
+                    "c4"
+                )
+                .GoesTo("e6", captures: ["e6"])
+                .WithDescription("Can't capture beyond piece")
+        );
     }
 }
