@@ -82,7 +82,11 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
             return _evaluator.Evaluate(board);
         }
 
-        if (depth > NullMoveReduction + 1)
+        Span<BitMove> moves = stackalloc BitMove[MaxMoves];
+        int moveCount = 0;
+        _moveGenerator.Generate(board, moves, ref moveCount);
+
+        if (depth > NullMoveReduction + 1 && moves[0].ForcedMovePriority == ForcedMovePriority.None)
         {
             NullMoveUndoState undo = board.MakeNullMove();
             float score = -Negamax(
@@ -99,10 +103,6 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
             }
         }
 
-        Span<BitMove> moves = stackalloc BitMove[MaxMoves];
-        int moveCount = 0;
-
-        _moveGenerator.Generate(board, moves, ref moveCount);
         OrderMoves(board, depth, moves, moveCount);
 
         for (int i = 0; i < moveCount; i++)
