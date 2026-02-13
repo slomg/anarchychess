@@ -342,6 +342,34 @@ public class BitboardUndoMoveTests
         board.IsWhiteToMove.Should().BeTrue();
     }
 
+    [Fact]
+    public void UndoMove_restores_LastCaptureMask()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new("a1")] = PieceFactory.White(PieceType.Rook),
+            [new("a2")] = PieceFactory.Black(PieceType.Pawn),
+        };
+        BitBoard board = BitBoard.FromPieces(pieces);
+        BitBoard original = BitBoard.FromPieces(pieces);
+
+        BitMove move = new()
+        {
+            From = new AlgebraicPoint("a1").AsIdx(),
+            To = new AlgebraicPoint("a2").AsIdx(),
+            Piece = new() { Type = PieceType.Rook, Color = BitPieceColor.White },
+            CapturesMask = UInt128.One << new AlgebraicPoint("a2").AsIdx(),
+        };
+
+        MoveUndoState undo = board.MakeMove(move);
+
+        board.LastCaptureMask.Should().Be(move.CapturesMask);
+
+        board.UndoMove(undo);
+
+        board.Should().BeEquivalentTo(original);
+    }
+
     private static void AssertMoveUndo(BitBoard board, BitBoard original, BitMove move)
     {
         MoveUndoState undo = board.MakeMove(move);

@@ -229,6 +229,7 @@ public partial class BitBoard
             PrevEnPassantSquaresMask = EnPassantSquaresMask,
             PrevEnPassantPawnSquare = EnPassantPawnSquare,
             PrevIsWhiteToMove = IsWhiteToMove,
+            PrevLastCaptureMask = LastCaptureMask,
 
             PrevWhiteMaterialCount = WhiteMaterialCount,
             PrevWhiteKingCount = WhiteKingCount,
@@ -292,6 +293,7 @@ public partial class BitBoard
         HasMoved = undoState.PrevHasMoved;
         EnPassantSquaresMask = undoState.PrevEnPassantSquaresMask;
         EnPassantPawnSquare = undoState.PrevEnPassantPawnSquare;
+        LastCaptureMask = undoState.PrevLastCaptureMask;
 
         ComputeAggregateBitboards();
     }
@@ -442,6 +444,7 @@ public partial class BitBoard
     private void ProcessMoveEffects(BitMove move)
     {
         ProcessEnPassant(move);
+        LastCaptureMask = move.CapturesMask;
     }
 
     private void ProcessEnPassant(BitMove move)

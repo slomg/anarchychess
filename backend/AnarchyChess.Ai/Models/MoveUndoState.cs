@@ -29,6 +29,7 @@ public unsafe struct MoveUndoState
     public required UInt128 PrevHasMoved;
     public required UInt128 PrevEnPassantSquaresMask;
     public required byte PrevEnPassantPawnSquare;
+    public required UInt128 PrevLastCaptureMask;
 
     public required bool PrevIsWhiteToMove;
 

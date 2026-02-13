@@ -18,6 +18,7 @@ public class MoveUndoStateTests
             PrevEnPassantSquaresMask = 0,
             PrevEnPassantPawnSquare = 0,
             PrevIsWhiteToMove = true,
+            PrevLastCaptureMask = 0,
 
             PrevWhiteMaterialCount = 0,
             PrevWhiteKingCount = 0,
