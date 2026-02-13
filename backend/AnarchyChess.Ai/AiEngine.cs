@@ -1,4 +1,5 @@
-﻿using AnarchyChess.Ai.Helpers;
+﻿using AnarchyChess.Ai.Evaluation;
+using AnarchyChess.Ai.Helpers;
 using AnarchyChess.Ai.Models;
 using AnarchyChess.EngineShared;
 
@@ -69,7 +70,7 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
             }
         }
 
-        //Console.WriteLine($"Eval: {alpha}, node count: {_nodeCount}");
+        Console.WriteLine($"Eval: {alpha}");
 
         return bestMove;
     }
@@ -78,7 +79,7 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
     {
         if (depth <= 0)
         {
-            return _evaluator.EvaluateBoard(board);
+            return _evaluator.Evaluate(board);
         }
 
         if (depth > NullMoveReduction + 1)
@@ -152,13 +153,13 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
         {
             UInt128 captureMask = move.CapturesMask;
             int score = 0;
-            int attackerValue = Evaluator.GetPieceValue(move.Piece.Type);
+            int attackerValue = MaterialEvaluator.GetPieceValue(move.Piece.Type);
             while (captureMask != 0)
             {
                 byte captureSquare = (byte)BitboardHelpers.BitScanForward(ref captureMask);
                 if (board.TryGetPieceAt(captureSquare, out var capturePiece))
                 {
-                    int victimValue = Evaluator.GetPieceValue(capturePiece.Value.Type);
+                    int victimValue = MaterialEvaluator.GetPieceValue(capturePiece.Value.Type);
                     score += victimValue - attackerValue;
                 }
             }
@@ -167,7 +168,7 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
 
         if (move.PromotesTo is not null)
         {
-            return 9_000 + Evaluator.GetPieceValue(move.PromotesTo.Value);
+            return 9_000 + MaterialEvaluator.GetPieceValue(move.PromotesTo.Value);
         }
 
         if (move.SpecialMoveType is not SpecialMoveType.None)

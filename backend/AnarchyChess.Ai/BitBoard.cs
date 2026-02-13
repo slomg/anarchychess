@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using AnarchyChess.Ai.Evaluation;
 using AnarchyChess.Ai.Helpers;
 using AnarchyChess.Ai.Models;
 using AnarchyChess.EngineShared;
@@ -132,11 +133,11 @@ public partial class BitBoard
 
             if (piece.Color is GameColor.White)
             {
-                whiteScore += Evaluator.GetPieceValue(piece.Type);
+                whiteScore += MaterialEvaluator.GetPieceValue(piece.Type);
             }
             else if (piece.Color is GameColor.Black)
             {
-                blackScore += Evaluator.GetPieceValue(piece.Type);
+                blackScore += MaterialEvaluator.GetPieceValue(piece.Type);
             }
 
             if (piece.Color is GameColor.White && piece.Type is PieceType.King)
@@ -354,7 +355,7 @@ public partial class BitBoard
             case BitPieceColor.White:
                 WhitePieces |= mask;
 
-                WhiteMaterialCount += Evaluator.GetPieceValue(pieceType);
+                WhiteMaterialCount += MaterialEvaluator.GetPieceValue(pieceType);
                 if (pieceType is PieceType.King)
                 {
                     WhiteKingCount++;
@@ -363,7 +364,7 @@ public partial class BitBoard
             case BitPieceColor.Black:
                 BlackPieces |= mask;
 
-                BlackMaterialCount += Evaluator.GetPieceValue(pieceType);
+                BlackMaterialCount += MaterialEvaluator.GetPieceValue(pieceType);
                 if (pieceType is PieceType.King)
                 {
                     BlackKingCount++;
@@ -409,7 +410,7 @@ public partial class BitBoard
             case BitPieceColor.White:
                 WhitePieces &= inverseMask;
 
-                WhiteMaterialCount -= Evaluator.GetPieceValue(pieceType);
+                WhiteMaterialCount -= MaterialEvaluator.GetPieceValue(pieceType);
                 if (pieceType is PieceType.King)
                 {
                     WhiteKingCount--;
@@ -417,7 +418,7 @@ public partial class BitBoard
                 break;
             case BitPieceColor.Black:
                 BlackPieces &= inverseMask;
-                BlackMaterialCount -= Evaluator.GetPieceValue(pieceType);
+                BlackMaterialCount -= MaterialEvaluator.GetPieceValue(pieceType);
 
                 if (pieceType is PieceType.King)
                 {
