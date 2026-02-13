@@ -55,7 +55,11 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
                 BitBoard boardCopy = new(board);
                 boardCopy.MakeMove(move);
 
-                int score = -Negamax(boardCopy, depth - 1, alpha: alpha, beta: BETA_START);
+                int score = -Negamax(boardCopy, depth - 1, alpha: -alpha - 1, beta: -alpha);
+                if (score > alpha)
+                {
+                    score = -Negamax(boardCopy, depth - 1, alpha: ALPHA_START, beta: BETA_START);
+                }
 
                 scores[i] = score;
             }
