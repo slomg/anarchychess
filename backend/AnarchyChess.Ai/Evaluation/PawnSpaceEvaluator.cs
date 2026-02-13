@@ -6,8 +6,8 @@ namespace AnarchyChess.Ai.Evaluation;
 
 public static class PawnSpaceEvaluator
 {
-    public const int CenterAmplifier = 2;
-    public const int PawnAdvanceValue = 5;
+    public const int CenterAmplifier = 3;
+    public const int PawnAdvanceValue = 6;
 
     public static int Evaluate(BitBoard board)
     {
