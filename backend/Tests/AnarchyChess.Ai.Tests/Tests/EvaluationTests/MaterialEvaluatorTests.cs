@@ -55,7 +55,7 @@ public class MaterialEvaluatorTests
     }
 
     [Fact]
-    public void EvaluateBoard_evaluates_traitor_rook_as_200_when_under_our_control()
+    public void EvaluateBoard_evaluates_traitor_rook_as_150_when_under_our_control()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
@@ -69,11 +69,11 @@ public class MaterialEvaluatorTests
 
         int score = MaterialEvaluator.Evaluate(board, ourColor: BitPieceColor.White);
 
-        score.Should().Be(200);
+        score.Should().Be(150);
     }
 
     [Fact]
-    public void EvaluateBoard_evaluates_traitor_rook_as_100_when_adjacent_is_equal()
+    public void EvaluateBoard_evaluates_traitor_rook_as_50_when_adjacent_is_equal()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
@@ -85,11 +85,11 @@ public class MaterialEvaluatorTests
 
         int score = MaterialEvaluator.Evaluate(board, ourColor: BitPieceColor.White);
 
-        score.Should().Be(100);
+        score.Should().Be(50);
     }
 
     [Fact]
-    public void EvaluateBoard_evaluates_traitor_rook_as_negative_200_when_under_enemy_control()
+    public void EvaluateBoard_evaluates_traitor_rook_as_negative_150_when_under_enemy_control()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
@@ -103,7 +103,7 @@ public class MaterialEvaluatorTests
 
         int score = MaterialEvaluator.Evaluate(board, ourColor: BitPieceColor.White);
 
-        score.Should().Be(-200);
+        score.Should().Be(-150);
     }
 
     [Fact]

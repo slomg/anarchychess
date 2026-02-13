@@ -78,15 +78,15 @@ public static class MaterialEvaluator
         int enemyAdjacentCount = BitboardHelpers.CountBits(enemyAdjacent);
         if (ourAdjacentCount > enemyAdjacentCount)
         {
-            return 200;
+            return 150;
         }
         else if (ourAdjacentCount == enemyAdjacentCount)
         {
-            return 100;
+            return 50;
         }
         else
         {
-            return -200;
+            return -150;
         }
     }
 }
