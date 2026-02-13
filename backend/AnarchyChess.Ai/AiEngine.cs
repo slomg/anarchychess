@@ -81,7 +81,11 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
 
     private int Negamax(BitBoard board, int depth, int alpha, int beta)
     {
-        if (depth <= 0)
+        if (
+            depth <= 0
+            || board.BitboardFor(PieceType.King, BitPieceColor.White) == 0
+            || board.BitboardFor(PieceType.King, BitPieceColor.Black) == 0
+        )
         {
             return _evaluator.Evaluate(board);
         }
