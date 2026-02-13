@@ -189,6 +189,42 @@ public abstract class PawnLikeTestData : TheoryData<PieceTestCase>
 
         Add(
             PieceTestCase
+                .From("j6", movedWhitePawn)
+                .WithPieceAt("a6", blackPawn)
+                .WithPriorMove(from: "a9", to: "a6")
+                .GoesTo("j7")
+                .WithDescription("white en passant doesn't wrap to the right")
+        );
+
+        Add(
+            PieceTestCase
+                .From("a7", movedWhitePawn)
+                .WithPieceAt("j6", blackPawn)
+                .WithPriorMove(from: "j9", to: "j6")
+                .GoesTo("a8")
+                .WithDescription("white en passant doesn't wrap to the left")
+        );
+
+        Add(
+            PieceTestCase
+                .From("j4", movedBlackPawn)
+                .WithPieceAt("a5", whitePawn)
+                .WithPriorMove(from: "a2", to: "a5")
+                .GoesTo("j3")
+                .WithDescription("black en passant doesn't wrap to the right")
+        );
+
+        Add(
+            PieceTestCase
+                .From("a5", movedBlackPawn)
+                .WithPieceAt("j5", whitePawn)
+                .WithPriorMove(from: "j2", to: "j5")
+                .GoesTo("a4")
+                .WithDescription("black en passant doesn't wrap to the left")
+        );
+
+        Add(
+            PieceTestCase
                 .From("e6", movedWhitePawn)
                 .WithPieceAt("d6", blackPawn)
                 .WithEnemyPieceAt("c7")

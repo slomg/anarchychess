@@ -180,33 +180,33 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
         ref int moveCount
     )
     {
-        UInt128 captureLeftMask =
-            (positionBit & BitboardConstants.BottomRightEdgeExcludeMask) >> 9 & enemyPieces;
-        if (captureLeftMask != 0)
-        {
-            GenerateRegularCapturePromotionMove(
-                piece,
-                from: position,
-                to: (byte)(position - 9),
-                captureMask: captureLeftMask,
-                promotionEdgeMask: promotionEdgeMask,
-                destBit: captureLeftMask,
-                moves,
-                ref moveCount
-            );
-        }
-
         UInt128 captureRightMask =
-            (positionBit & BitboardConstants.BottomLeftEdgeExcludeMask) >> 11 & enemyPieces;
+            (positionBit & BitboardConstants.BottomRightEdgeExcludeMask) >> 9 & enemyPieces;
         if (captureRightMask != 0)
         {
             GenerateRegularCapturePromotionMove(
                 piece,
                 from: position,
-                to: (byte)(position - 11),
+                to: (byte)(position - 9),
                 captureMask: captureRightMask,
                 promotionEdgeMask: promotionEdgeMask,
                 destBit: captureRightMask,
+                moves,
+                ref moveCount
+            );
+        }
+
+        UInt128 captureLeftMask =
+            (positionBit & BitboardConstants.BottomLeftEdgeExcludeMask) >> 11 & enemyPieces;
+        if (captureLeftMask != 0)
+        {
+            GenerateRegularCapturePromotionMove(
+                piece,
+                from: position,
+                to: (byte)(position - 11),
+                captureMask: captureLeftMask,
+                promotionEdgeMask: promotionEdgeMask,
+                destBit: captureLeftMask,
                 moves,
                 ref moveCount
             );
@@ -357,7 +357,7 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
     )? GetWhiteEnPassant(BitBoard board, UInt128 positionBit, byte position)
     {
         UInt128 rightEnPassant = board.EnPassantSquaresMask & positionBit << 11;
-        if (rightEnPassant != 0)
+        if (rightEnPassant != 0 && (positionBit & BitboardConstants.RightEdgeMask) == 0)
         {
             return (
                 enPassantTable: MagicLibrary.WhiteRightEnPassantTable,
@@ -367,7 +367,7 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
         }
 
         UInt128 leftEnPassant = board.EnPassantSquaresMask & positionBit << 9;
-        if (leftEnPassant != 0)
+        if (leftEnPassant != 0 && (positionBit & BitboardConstants.LeftEdgeMask) == 0)
         {
             return (
                 enPassantTable: MagicLibrary.WhiteLeftEnPassantTable,
@@ -386,7 +386,7 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
     )? GetBlackEnPassant(BitBoard board, UInt128 positionBit, byte position)
     {
         UInt128 rightEnPassant = board.EnPassantSquaresMask & positionBit >> 9;
-        if (rightEnPassant != 0)
+        if (rightEnPassant != 0 && (positionBit & BitboardConstants.RightEdgeMask) == 0)
         {
             return (
                 enPassantTable: MagicLibrary.BlackRightEnPassantTable,
@@ -396,7 +396,7 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
         }
 
         UInt128 leftEnPassant = board.EnPassantSquaresMask & positionBit >> 11;
-        if (leftEnPassant != 0)
+        if (leftEnPassant != 0 && (positionBit & BitboardConstants.LeftEdgeMask) == 0)
         {
             return (
                 enPassantTable: MagicLibrary.BlackLeftEnPassantTable,

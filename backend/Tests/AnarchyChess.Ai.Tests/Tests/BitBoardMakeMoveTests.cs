@@ -185,7 +185,7 @@ public class BitBoardMakeMoveTests
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
             [new AlgebraicPoint("b9")] = PieceFactory.White(PieceType.Pawn, hasMoved: true),
-            [new AlgebraicPoint("a1")] = PieceFactory.White(hasMoved: true),
+            [new AlgebraicPoint("a1")] = PieceFactory.White(PieceType.Rook, hasMoved: true),
         };
         BitBoard board = BitBoard.FromPieces(pieces);
         int initialWhiteMaterial = board.WhiteMaterialCount;
