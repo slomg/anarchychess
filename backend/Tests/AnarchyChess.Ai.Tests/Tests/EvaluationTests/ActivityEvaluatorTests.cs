@@ -34,7 +34,7 @@ public class ActivityEvaluatorTests
 
         int score = ActivityEvaluator.Evaluate(board, BitPieceColor.White, BitPieceColor.Black);
 
-        score.Should().Be(20);
+        score.Should().Be(ActivityEvaluator.HorseyActivityTable[new AlgebraicPoint("e5").AsIdx()]);
     }
 
     [Fact]
@@ -49,7 +49,7 @@ public class ActivityEvaluatorTests
 
         int score = ActivityEvaluator.Evaluate(board, BitPieceColor.White, BitPieceColor.Black);
 
-        score.Should().Be(-20);
+        score.Should().Be(-ActivityEvaluator.HorseyActivityTable[new AlgebraicPoint("e5").AsIdx()]);
     }
 
     [Fact]
@@ -73,16 +73,22 @@ public class ActivityEvaluatorTests
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
-            [new("e5")] = PieceFactory.White(PieceType.Horsey), // +20
-            [new("d4")] = PieceFactory.White(PieceType.Knook), // +10
-            [new("f4")] = PieceFactory.White(PieceType.Antiqueen), // +15
+            [new("e5")] = PieceFactory.White(PieceType.Horsey),
+            [new("d4")] = PieceFactory.White(PieceType.Knook),
+            [new("f4")] = PieceFactory.White(PieceType.Antiqueen),
         };
 
         BitBoard board = BitBoard.FromPieces(pieces);
 
         int score = ActivityEvaluator.Evaluate(board, BitPieceColor.White, BitPieceColor.Black);
 
-        score.Should().Be(45);
+        score
+            .Should()
+            .Be(
+                ActivityEvaluator.HorseyActivityTable[new AlgebraicPoint("e5").AsIdx()]
+                    + ActivityEvaluator.HorseyActivityTable[new AlgebraicPoint("d4").AsIdx()]
+                    + ActivityEvaluator.HorseyActivityTable[new AlgebraicPoint("f4").AsIdx()]
+            );
     }
 
     [Fact]
@@ -90,15 +96,20 @@ public class ActivityEvaluatorTests
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
-            [new("e5")] = PieceFactory.White(PieceType.Horsey), // +20
-            [new("c6")] = PieceFactory.White(PieceType.Bishop), // +10
+            [new("e5")] = PieceFactory.White(PieceType.Horsey),
+            [new("c6")] = PieceFactory.White(PieceType.Bishop),
         };
 
         BitBoard board = BitBoard.FromPieces(pieces);
 
         int score = ActivityEvaluator.Evaluate(board, BitPieceColor.White, BitPieceColor.Black);
 
-        score.Should().Be(30);
+        score
+            .Should()
+            .Be(
+                ActivityEvaluator.HorseyActivityTable[new AlgebraicPoint("e5").AsIdx()]
+                    + ActivityEvaluator.BishopActivityTable[new AlgebraicPoint("c6").AsIdx()]
+            );
     }
 
     [Fact]
@@ -106,15 +117,20 @@ public class ActivityEvaluatorTests
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
-            [new("e5")] = PieceFactory.White(PieceType.Horsey), // +20
-            [new("a1")] = PieceFactory.Black(PieceType.Checker), // +50
+            [new("e5")] = PieceFactory.White(PieceType.Horsey),
+            [new("a1")] = PieceFactory.Black(PieceType.Checker),
         };
 
         BitBoard board = BitBoard.FromPieces(pieces);
 
         int score = ActivityEvaluator.Evaluate(board, BitPieceColor.White, BitPieceColor.Black);
 
-        score.Should().Be(70);
+        score
+            .Should()
+            .Be(
+                ActivityEvaluator.HorseyActivityTable[new AlgebraicPoint("e5").AsIdx()]
+                    - ActivityEvaluator.CheckerActivityTable[new AlgebraicPoint("a1").AsIdx()]
+            );
     }
 
     [Fact]

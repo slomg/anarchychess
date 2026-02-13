@@ -87,11 +87,11 @@ public static class MobilityEvaluator
     private static int GetPieceMobilityBonus(PieceType type) =>
         type switch
         {
-            PieceType.Rook => 2,
-            PieceType.Bishop => 5,
-            PieceType.Horsey => 4,
-            PieceType.Knook => 5,
-            PieceType.Antiqueen => 4,
+            PieceType.Rook => 1,
+            PieceType.Bishop => 2,
+            PieceType.Horsey => 2,
+            PieceType.Knook => 2,
+            PieceType.Antiqueen => 2,
 
             _ => 0,
         };
