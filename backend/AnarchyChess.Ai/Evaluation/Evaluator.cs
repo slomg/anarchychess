@@ -29,12 +29,21 @@ public sealed class Evaluator : IEvaluator
         );
         int pawnSpaceScore = PawnSpaceEvaluator.Evaluate(board);
         int kingSafteyScore = KingSafetyEvaluator.Evaluate(board, isEndgame: isEndgame);
+        int aggressionScore = AggressionEvaluator.Evaluate(board);
+        int pawnStructureScore = PawnStructureEvaluator.Evaluate(board);
 
-        return materialScore + activityScore + mobilityScore + pawnSpaceScore + kingSafteyScore;
+        return materialScore
+            + activityScore
+            + mobilityScore
+            + pawnSpaceScore
+            + kingSafteyScore
+            + aggressionScore
+            + pawnSpaceScore
+            + pawnStructureScore;
     }
 
     public static bool IsEndgame(BitBoard board) =>
         board.BitboardFor(PieceType.Queen, BitPieceColor.White) == 0
         && board.BitboardFor(PieceType.Queen, BitPieceColor.Black) == 0
-        && board.WhiteMaterialCount + board.BlackMaterialCount <= 2200;
+        && board.WhiteMaterialCount + board.BlackMaterialCount <= 1800;
 }
