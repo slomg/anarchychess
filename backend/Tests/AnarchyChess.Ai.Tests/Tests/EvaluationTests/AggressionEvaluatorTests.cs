@@ -43,14 +43,13 @@ public class AggressionEvaluatorTests
         {
             [new("e1")] = PieceFactory.White(PieceType.King),
             [new("e8")] = PieceFactory.Black(PieceType.King),
-            [new("d7")] = PieceFactory.White(PieceType.Rook),
+            [new("b5")] = PieceFactory.White(PieceType.Rook),
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        // distance from d7 (file 3, rank 6) to e8 (file 4, rank 7) = |3-4| + |6-7| = 2
         (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
 
-        whiteScore.Should().Be(AggressionEvaluator.MaxDistanceBonus - 2);
+        whiteScore.Should().Be(AggressionEvaluator.MaxDistanceBonus - 3);
         blackScore.Should().Be(0);
     }
 
@@ -61,15 +60,14 @@ public class AggressionEvaluatorTests
         {
             [new("e1")] = PieceFactory.White(PieceType.King),
             [new("e8")] = PieceFactory.Black(PieceType.King),
-            [new("d2")] = PieceFactory.Black(PieceType.Rook),
+            [new("b4")] = PieceFactory.Black(PieceType.Rook),
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        // distance from d2 (file 3, rank 1) to e1 (file 4, rank 0) = |3-4| + |1-0| = 2
         (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
 
         whiteScore.Should().Be(0);
-        blackScore.Should().Be(AggressionEvaluator.MaxDistanceBonus - 2);
+        blackScore.Should().Be(AggressionEvaluator.MaxDistanceBonus - 3);
     }
 
     [Fact]
@@ -79,8 +77,8 @@ public class AggressionEvaluatorTests
         {
             [new("e1")] = PieceFactory.White(PieceType.King),
             [new("e8")] = PieceFactory.Black(PieceType.King),
-            [new("d7")] = PieceFactory.White(PieceType.Rook),
-            [new("d2")] = PieceFactory.Black(PieceType.Rook),
+            [new("c6")] = PieceFactory.White(PieceType.Rook),
+            [new("c3")] = PieceFactory.Black(PieceType.Rook),
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
@@ -106,24 +104,24 @@ public class AggressionEvaluatorTests
         BitBoard board = BitBoard.FromPieces(pieces);
 
         // White pieces distances to black king:
-        // d7 -> e8 = 2
-        // f7 -> e8 = 2
+        // d7 -> e8 = 1
+        // f7 -> e8 = 1
         // Black pieces distances to white king:
-        // f2 -> e1 = 2
-        // c3 -> e1 = 4
+        // f2 -> e1 = 1
+        // c3 -> e1 = 2
         (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
 
         whiteScore
             .Should()
             .Be(
-                (AggressionEvaluator.MaxDistanceBonus - 2)
-                    + (AggressionEvaluator.MaxDistanceBonus - 2)
+                (AggressionEvaluator.MaxDistanceBonus - 1)
+                    + (AggressionEvaluator.MaxDistanceBonus - 1)
             );
         blackScore
             .Should()
             .Be(
-                (AggressionEvaluator.MaxDistanceBonus - 2)
-                    + (AggressionEvaluator.MaxDistanceBonus - 4)
+                (AggressionEvaluator.MaxDistanceBonus - 1)
+                    + (AggressionEvaluator.MaxDistanceBonus - 2)
             );
     }
 }
