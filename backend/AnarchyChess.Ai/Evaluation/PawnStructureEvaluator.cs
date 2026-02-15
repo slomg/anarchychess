@@ -6,27 +6,10 @@ namespace AnarchyChess.Ai.Evaluation;
 
 public sealed class PawnStructureEvaluator : IEvaluatorFunction
 {
-    private static readonly UInt128[] FileMasks = CreateFileMasks();
-
     public const int DoubledPenalty = 12;
     public const int IsolatedPenalty = 18;
     public const int BackwardsPenalty = 10;
     public const int PassedBonus = 35;
-
-    private static UInt128[] CreateFileMasks()
-    {
-        UInt128[] masks = new UInt128[10];
-        for (int file = 0; file < 10; file++)
-        {
-            UInt128 mask = 0;
-            for (int rank = 0; rank < 10; rank++)
-            {
-                mask |= UInt128.One << (rank * 10 + file);
-            }
-            masks[file] = mask;
-        }
-        return masks;
-    }
 
     public (int WhiteScore, int BlackScore) Evaluate(BitBoard board, float endgameFactor)
     {
@@ -59,7 +42,7 @@ public sealed class PawnStructureEvaluator : IEvaluatorFunction
     }
 
     private static int CountDoubled(UInt128 pawns, int file) =>
-        Math.Max(0, BitboardHelpers.CountBits(pawns & FileMasks[file]) - 1);
+        Math.Max(0, BitboardHelpers.CountBits(pawns & BitboardConstants.FileMasks[file]) - 1);
 
     private static int CountIsolated(UInt128 pawns)
     {
