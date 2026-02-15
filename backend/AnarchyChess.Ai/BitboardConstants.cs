@@ -121,6 +121,8 @@ public static class BitboardConstants
 
     public static readonly UInt128[] FileMasks = CreateFileMasks();
 
+    public static readonly int[,] BoardDistance = CreateDistanceMap();
+
     private static UInt128 MakeFileMask(int file)
     {
         UInt128 mask = 0;
@@ -154,5 +156,32 @@ public static class BitboardConstants
             masks[file] = mask;
         }
         return masks;
+    }
+
+    private static int[,] CreateDistanceMap()
+    {
+        int[,] distances = new int[10 * 10, 10 * 10];
+        for (int file1 = 0; file1 < 10; file1++)
+        {
+            for (int rank1 = 0; rank1 < 10; rank1++)
+            {
+                int square1 = file1 * 10 + rank1;
+
+                for (int file2 = 0; file2 < 10; file2++)
+                {
+                    for (int rank2 = 0; rank2 < 10; rank2++)
+                    {
+                        int square2 = file2 * 10 + rank2;
+
+                        distances[square1, square2] = Math.Max(
+                            Math.Abs(file1 - file2),
+                            Math.Abs(rank1 - rank2)
+                        );
+                    }
+                }
+            }
+        }
+
+        return distances;
     }
 }
