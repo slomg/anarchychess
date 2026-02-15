@@ -1,15 +1,17 @@
-﻿using AnarchyChess.Ai.Models;
-using AnarchyChess.EngineShared;
-
-namespace AnarchyChess.Ai.Evaluation;
+﻿namespace AnarchyChess.Ai.Evaluation;
 
 public interface IEvaluator
 {
     int Evaluate(BitBoard board);
 }
 
-public sealed class Evaluator(IEnumerable<IEvaluatorFunction>? evaluators = null) : IEvaluator
+public sealed class Evaluator(
+    IEndgameFactorCalculator? endgameFactorCalculator = null,
+    IEnumerable<IEvaluatorFunction>? evaluators = null
+) : IEvaluator
 {
+    private readonly IEndgameFactorCalculator _endgameFactorCalculator =
+        endgameFactorCalculator ?? new EndgameFactorCalculator();
     private readonly IEvaluatorFunction[] _evaluators = evaluators is not null
         ? [.. evaluators]
         :
@@ -25,23 +27,18 @@ public sealed class Evaluator(IEnumerable<IEvaluatorFunction>? evaluators = null
 
     public int Evaluate(BitBoard board)
     {
-        bool isEndgame = IsEndgame(board);
+        float endgameFactor = _endgameFactorCalculator.EndgameFactor(board);
 
         int whiteScore = 0;
         int blackScore = 0;
 
         foreach (var evaluator in _evaluators)
         {
-            (int whiteResult, int blackResult) = evaluator.Evaluate(board, endgameFactor: 0);
+            (int whiteResult, int blackResult) = evaluator.Evaluate(board, endgameFactor);
             whiteScore += whiteResult;
             blackScore += blackResult;
         }
 
         return board.IsWhiteToMove ? whiteScore - blackScore : blackScore - whiteScore;
     }
-
-    public static bool IsEndgame(BitBoard board) =>
-        board.BitboardFor(PieceType.Queen, BitPieceColor.White) == 0
-        && board.BitboardFor(PieceType.Queen, BitPieceColor.Black) == 0
-        && board.WhiteMaterialCount + board.BlackMaterialCount <= 1800;
 }
