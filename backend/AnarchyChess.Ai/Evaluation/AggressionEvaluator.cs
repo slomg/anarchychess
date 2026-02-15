@@ -50,19 +50,19 @@ public sealed class AggressionEvaluator : IEvaluatorFunction
         while (pieces != 0)
         {
             byte square = (byte)BitboardHelpers.BitScanForward(ref pieces);
-            int distance = ManhattanDistance(square, targetKingSquare);
+            int distance = ChebyshevDistance(square, targetKingSquare);
             score += Math.Max(0, MaxDistanceBonus - distance);
         }
 
         return score;
     }
 
-    private static int ManhattanDistance(int sq1, int sq2)
+    private static int ChebyshevDistance(int sq1, int sq2)
     {
         int file1 = sq1 % 10;
         int rank1 = sq1 / 10;
         int file2 = sq2 % 10;
         int rank2 = sq2 / 10;
-        return Math.Abs(file1 - file2) + Math.Abs(rank1 - rank2);
+        return Math.Max(Math.Abs(file1 - file2), Math.Abs(rank1 - rank2));
     }
 }
