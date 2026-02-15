@@ -107,35 +107,9 @@ public sealed class PawnStructureEvaluator : IEvaluatorFunction
         return BitboardHelpers.CountBits(backwardPawns);
     }
 
-    private static int CountWhitePassed(UInt128 pawns, UInt128 enemyPawns)
-    {
-        UInt128 mask = enemyPawns;
-        for (int file = 0; file < 10; file++)
-        {
-            mask |= mask >> 10;
-        }
-        mask &= (UInt128.One << 100) - 1;
+    private static int CountWhitePassed(UInt128 pawns, UInt128 enemyPawns) =>
+        BitboardHelpers.CountBits(PawnStructureHelpers.GetWhitePassed(pawns, enemyPawns));
 
-        UInt128 leftMask = (mask & BitboardConstants.LeftEdgeExcludeMask) >> 1;
-        UInt128 rightMask = (mask & BitboardConstants.RightEdgeExcludeMask) << 1;
-
-        UInt128 blocking = mask | leftMask | rightMask;
-        return BitboardHelpers.CountBits(pawns & ~blocking);
-    }
-
-    private static int CountBlackPassed(UInt128 pawns, UInt128 enemyPawns)
-    {
-        UInt128 mask = enemyPawns;
-        for (int file = 0; file < 10; file++)
-        {
-            mask |= mask << 10;
-        }
-        mask &= (UInt128.One << 100) - 1;
-
-        UInt128 leftMask = (mask & BitboardConstants.LeftEdgeExcludeMask) >> 1;
-        UInt128 rightMask = (mask & BitboardConstants.RightEdgeExcludeMask) << 1;
-
-        UInt128 blocking = mask | leftMask | rightMask;
-        return BitboardHelpers.CountBits(pawns & ~blocking);
-    }
+    private static int CountBlackPassed(UInt128 pawns, UInt128 enemyPawns) =>
+        BitboardHelpers.CountBits(PawnStructureHelpers.GetBlackPassed(pawns, enemyPawns));
 }
