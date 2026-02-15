@@ -128,7 +128,7 @@ public class MaterialEvaluatorTests
         (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
 
         whiteScore.Should().Be(850);
-        blackScore.Should().Be(1050);
+        blackScore.Should().Be(1150);
     }
 
     [Fact]

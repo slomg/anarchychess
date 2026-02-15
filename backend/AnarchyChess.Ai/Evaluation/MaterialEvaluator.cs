@@ -30,7 +30,7 @@ public sealed class MaterialEvaluator : IEvaluatorFunction
     public static int GetPieceValue(PieceType type) =>
         type switch
         {
-            PieceType.Queen => 900,
+            PieceType.Queen => 1000,
             PieceType.Pawn => 100,
             PieceType.Rook => 500,
             PieceType.Bishop => 300,
