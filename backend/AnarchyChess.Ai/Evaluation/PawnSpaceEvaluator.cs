@@ -4,12 +4,12 @@ using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai.Evaluation;
 
-public static class PawnSpaceEvaluator
+public sealed class PawnSpaceEvaluator : IEvaluatorFunction
 {
     public const int CenterAmplifier = 3;
     public const int PawnAdvanceValue = 6;
 
-    public static int Evaluate(BitBoard board)
+    public (int WhiteScore, int BlackScore) Evaluate(BitBoard board, float endgameFactor)
     {
         int whiteScore = EvaluatePawnSpace(
             board.BitboardFor(PieceType.Pawn, BitPieceColor.White)
@@ -23,7 +23,7 @@ public static class PawnSpaceEvaluator
             targetRank: 0
         );
 
-        return board.IsWhiteToMove ? whiteScore - blackScore : blackScore - whiteScore;
+        return (WhiteScore: whiteScore, BlackScore: blackScore);
     }
 
     private static int EvaluatePawnSpace(UInt128 pawnBitboard, int targetRank)

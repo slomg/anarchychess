@@ -4,23 +4,15 @@ using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai.Evaluation;
 
-public static class MaterialEvaluator
+public sealed class MaterialEvaluator : IEvaluatorFunction
 {
-    public static int Evaluate(BitBoard board, BitPieceColor ourColor)
+    public (int WhiteScore, int BlackScore) Evaluate(BitBoard board, float endgameFactor)
     {
-        int materialScore = 0;
-        if (ourColor is BitPieceColor.White)
-        {
-            materialScore += board.WhiteMaterialCount - board.BlackMaterialCount;
-            materialScore += EvaluateKingValue(board.WhiteKingCount);
-            materialScore -= EvaluateKingValue(board.BlackKingCount);
-        }
-        else
-        {
-            materialScore += board.BlackMaterialCount - board.WhiteMaterialCount;
-            materialScore += EvaluateKingValue(board.BlackKingCount);
-            materialScore -= EvaluateKingValue(board.WhiteKingCount);
-        }
+        int whiteScore = board.WhiteMaterialCount;
+        int blackScore = board.BlackMaterialCount;
+
+        whiteScore += EvaluateKingValue(board.BitboardFor(PieceType.King, BitPieceColor.White));
+        blackScore += EvaluateKingValue(board.BitboardFor(PieceType.King, BitPieceColor.Black));
 
         UInt128 traitorRookBitboard = board.BitboardFor(
             PieceType.TraitorRook,
@@ -29,10 +21,10 @@ public static class MaterialEvaluator
         while (traitorRookBitboard != 0)
         {
             byte position = (byte)BitboardHelpers.BitScanForward(ref traitorRookBitboard);
-            materialScore += EvaluateTraitorRookValue(board, ourColor, position);
+            EvaluateTraitorRookValue(board, position, ref whiteScore, ref blackScore);
         }
 
-        return materialScore;
+        return (WhiteScore: whiteScore, BlackScore: blackScore);
     }
 
     public static int GetPieceValue(PieceType type) =>
@@ -53,40 +45,43 @@ public static class MaterialEvaluator
             _ => 0,
         };
 
-    private static int EvaluateKingValue(int kingCount) =>
-        kingCount > 0 ? 10_000 + (kingCount * 350) : 0;
+    private static int EvaluateKingValue(UInt128 kingBitboard)
+    {
+        int kingCount = BitboardHelpers.CountBits(kingBitboard);
+        return kingCount > 0 ? 10_000 + (kingCount * 350) : 0;
+    }
 
-    private static int EvaluateTraitorRookValue(
+    private static void EvaluateTraitorRookValue(
         BitBoard board,
-        BitPieceColor ourColor,
-        byte position
+        byte position,
+        ref int whiteScore,
+        ref int blackScore
     )
     {
-        UInt128 ourPieces = board.BitboardForFriendOf(ourColor);
-        UInt128 enemyPieces = board.BitboardForEnemyOf(ourColor);
-
         UInt128 adjacent = PieceMasks.AdjacentMasks[position];
-        UInt128 ourAdjacent = adjacent & ourPieces;
-        UInt128 enemyAdjacent = adjacent & enemyPieces;
+        UInt128 whiteAdjacent = adjacent & board.WhitePieces;
+        UInt128 blackAdjacent = adjacent & board.BlackPieces;
 
-        if (ourAdjacent == 0 && enemyAdjacent == 0)
+        if (whiteAdjacent == 0 && blackAdjacent == 0)
         {
-            return 0;
+            return;
         }
 
-        int ourAdjacentCount = BitboardHelpers.CountBits(ourAdjacent);
-        int enemyAdjacentCount = BitboardHelpers.CountBits(enemyAdjacent);
-        if (ourAdjacentCount > enemyAdjacentCount)
+        int whiteAdjacentCount = BitboardHelpers.CountBits(whiteAdjacent);
+        int blackAdjacentCount = BitboardHelpers.CountBits(blackAdjacent);
+        if (whiteAdjacentCount == blackAdjacentCount)
         {
-            return 150;
+            return;
         }
-        else if (ourAdjacentCount == enemyAdjacentCount)
+
+        if (whiteAdjacentCount > blackAdjacentCount)
         {
-            return 50;
+            whiteScore += 150;
         }
         else
         {
-            return -150;
+            blackScore += 150;
+            return;
         }
     }
 }

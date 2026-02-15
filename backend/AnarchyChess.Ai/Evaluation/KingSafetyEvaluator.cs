@@ -4,7 +4,7 @@ using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai.Evaluation;
 
-public static class KingSafetyEvaluator
+public sealed class KingSafetyEvaluator : IEvaluatorFunction
 {
     public const int PawnProtectionValue = 2;
     public const int EdgeAmplifier = 2;
@@ -22,14 +22,11 @@ public static class KingSafetyEvaluator
     private static readonly UInt128 BlackQueensideRookMask =
         UInt128.One << BitboardConstants.BlackQueensideCastle.RookStart;
 
-    public static int Evaluate(BitBoard board, bool isEndgame)
+    public (int WhiteScore, int BlackScore) Evaluate(BitBoard board, float endgameFactor)
     {
-        if (isEndgame)
-        {
-            return 0;
-        }
+        float kingSafetyWeight = 1f - endgameFactor;
 
-        int whiteScore = EvaluateKingSpace(
+        int whiteKingSafety = EvaluateKingSpace(
             board,
             kingBitboard: board.BitboardFor(PieceType.King, BitPieceColor.White),
             pawnBitboard: board.BitboardFor(PieceType.Pawn, BitPieceColor.White)
@@ -38,8 +35,9 @@ public static class KingSafetyEvaluator
             kingsideRookMask: WhiteKingsideRookMask,
             queensideRookMask: WhiteQueensideRookMask
         );
+        int whiteScore = (int)(whiteKingSafety * kingSafetyWeight);
 
-        int blackScore = EvaluateKingSpace(
+        int blackKingSafety = EvaluateKingSpace(
             board,
             kingBitboard: board.BitboardFor(PieceType.King, BitPieceColor.Black),
             pawnBitboard: board.BitboardFor(PieceType.Pawn, BitPieceColor.Black)
@@ -48,8 +46,9 @@ public static class KingSafetyEvaluator
             kingsideRookMask: BlackKingsideRookMask,
             queensideRookMask: BlackQueensideRookMask
         );
+        int blackScore = (int)(blackKingSafety * kingSafetyWeight);
 
-        return board.IsWhiteToMove ? whiteScore - blackScore : blackScore - whiteScore;
+        return (WhiteScore: whiteScore, BlackScore: blackScore);
     }
 
     private static int EvaluateKingSpace(

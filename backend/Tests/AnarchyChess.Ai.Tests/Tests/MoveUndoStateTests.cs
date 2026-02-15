@@ -21,9 +21,7 @@ public class MoveUndoStateTests
             PrevLastCaptureMask = 0,
 
             PrevWhiteMaterialCount = 0,
-            PrevWhiteKingCount = 0,
             PrevBlackMaterialCount = 0,
-            PrevBlackKingCount = 0,
         };
 
     [Fact]

@@ -18,9 +18,7 @@ public class BitBoardMakeMoveTests
         BitBoard board = BitBoard.FromPieces(pieces);
 
         int initialWhiteMaterial = board.WhiteMaterialCount;
-        int initialWhiteKingCount = board.WhiteKingCount;
         int initialBlackMaterial = board.BlackMaterialCount;
-        int initialBlackKingCount = board.BlackKingCount;
 
         BitMove move = new()
         {
@@ -44,9 +42,7 @@ public class BitBoardMakeMoveTests
         board.IsWhiteToMove.Should().BeFalse();
 
         board.WhiteMaterialCount.Should().Be(initialWhiteMaterial);
-        board.WhiteKingCount.Should().Be(initialWhiteKingCount);
         board.BlackMaterialCount.Should().Be(initialBlackMaterial);
-        board.BlackKingCount.Should().Be(initialBlackKingCount);
     }
 
     [Fact]
@@ -133,54 +129,6 @@ public class BitBoardMakeMoveTests
     }
 
     [Fact]
-    public void MakeMove_decrements_white_king_count_on_king_capture()
-    {
-        Dictionary<AlgebraicPoint, Piece> pieces = new()
-        {
-            [new("a1")] = PieceFactory.Black(PieceType.Rook),
-            [new("b1")] = PieceFactory.White(PieceType.King),
-        };
-        BitBoard board = BitBoard.FromPieces(pieces, isWhiteToMove: false);
-
-        board.WhiteKingCount.Should().Be(1);
-
-        BitMove move = new()
-        {
-            From = new AlgebraicPoint("a1").AsIdx(),
-            To = new AlgebraicPoint("b1").AsIdx(),
-            Piece = new() { Type = PieceType.Rook, Color = BitPieceColor.Black },
-            CapturesMask = UInt128.One << new AlgebraicPoint("b1").AsIdx(),
-        };
-        board.MakeMove(move);
-
-        board.WhiteKingCount.Should().Be(0);
-    }
-
-    [Fact]
-    public void MakeMove_decrements_black_king_count_on_king_capture()
-    {
-        Dictionary<AlgebraicPoint, Piece> pieces = new()
-        {
-            [new("a1")] = PieceFactory.White(PieceType.Rook),
-            [new("b1")] = PieceFactory.Black(PieceType.King),
-        };
-        BitBoard board = BitBoard.FromPieces(pieces);
-
-        board.BlackKingCount.Should().Be(1);
-
-        BitMove move = new()
-        {
-            From = new AlgebraicPoint("a1").AsIdx(),
-            To = new AlgebraicPoint("b1").AsIdx(),
-            Piece = new() { Type = PieceType.Rook, Color = BitPieceColor.Black },
-            CapturesMask = UInt128.One << new AlgebraicPoint("b1").AsIdx(),
-        };
-        board.MakeMove(move);
-
-        board.BlackKingCount.Should().Be(0);
-    }
-
-    [Fact]
     public void MakeMove_handles_white_promotion_correctly()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
@@ -241,52 +189,6 @@ public class BitBoardMakeMoveTests
                     - MaterialEvaluator.GetPieceValue(PieceType.Pawn)
                     + MaterialEvaluator.GetPieceValue(PieceType.Queen)
             );
-    }
-
-    [Fact]
-    public void MakeMove_increments_king_count_for_white_checker_promotion()
-    {
-        Dictionary<AlgebraicPoint, Piece> pieces = new()
-        {
-            [new AlgebraicPoint("b9")] = PieceFactory.White(PieceType.Checker),
-            [new AlgebraicPoint("a1")] = PieceFactory.White(PieceType.King),
-        };
-        BitBoard board = BitBoard.FromPieces(pieces);
-
-        BitMove move = new()
-        {
-            From = new AlgebraicPoint("b9").AsIdx(),
-            To = new AlgebraicPoint("c10").AsIdx(),
-            Piece = new() { Type = PieceType.Checker, Color = BitPieceColor.White },
-            PromotesTo = PieceType.King,
-        };
-        board.MakeMove(move);
-
-        AssertPieceAt(board, new("c10"), PieceType.King);
-        board.WhiteKingCount.Should().Be(2);
-    }
-
-    [Fact]
-    public void MakeMove_increments_king_count_for_black_checker_promotion()
-    {
-        Dictionary<AlgebraicPoint, Piece> pieces = new()
-        {
-            [new AlgebraicPoint("b2")] = PieceFactory.Black(PieceType.Checker),
-            [new AlgebraicPoint("a10")] = PieceFactory.Black(PieceType.King),
-        };
-        BitBoard board = BitBoard.FromPieces(pieces);
-
-        BitMove move = new()
-        {
-            From = new AlgebraicPoint("b2").AsIdx(),
-            To = new AlgebraicPoint("c1").AsIdx(),
-            Piece = new() { Type = PieceType.Checker, Color = BitPieceColor.Black },
-            PromotesTo = PieceType.King,
-        };
-        board.MakeMove(move);
-
-        AssertPieceAt(board, new("c1"), PieceType.King);
-        board.BlackKingCount.Should().Be(2);
     }
 
     [Fact]

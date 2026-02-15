@@ -1,5 +1,4 @@
 ﻿using AnarchyChess.Ai.Evaluation;
-using AnarchyChess.Ai.Models;
 using AnarchyChess.Api.TestInfrastructure.Factories;
 using AnarchyChess.EngineShared;
 using AwesomeAssertions;
@@ -8,8 +7,10 @@ namespace AnarchyChess.Ai.Tests.Tests.EvaluationTests;
 
 public class MaterialEvaluatorTests
 {
+    private readonly MaterialEvaluator _evaluator = new();
+
     [Fact]
-    public void EvaluateBoard_returns_positive_score_when_only_our_pieces()
+    public void EvaluateBoard_counts_white_material_correctly()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
@@ -18,13 +19,14 @@ public class MaterialEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        int score = MaterialEvaluator.Evaluate(board, ourColor: BitPieceColor.White);
+        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
 
-        score.Should().Be(850);
+        whiteScore.Should().Be(850);
+        blackScore.Should().Be(0);
     }
 
     [Fact]
-    public void EvaluateBoard_returns_negative_score_when_only_enemy_pieces()
+    public void EvaluateBoard_counts_black_material_correctly()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
@@ -33,13 +35,14 @@ public class MaterialEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        int score = MaterialEvaluator.Evaluate(board, ourColor: BitPieceColor.White);
+        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
 
-        score.Should().Be(-850);
+        whiteScore.Should().Be(0);
+        blackScore.Should().Be(850);
     }
 
     [Fact]
-    public void EvaluateBoard_evaluates_traitor_rook_as_0_without_adjacent_pieces()
+    public void EvaluateBoard_traitor_rook_counts_zero_when_no_adjacent_pieces()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
@@ -49,13 +52,14 @@ public class MaterialEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        int score = MaterialEvaluator.Evaluate(board, ourColor: BitPieceColor.White);
+        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
 
-        score.Should().Be(0);
+        whiteScore.Should().Be(500);
+        blackScore.Should().Be(500);
     }
 
     [Fact]
-    public void EvaluateBoard_evaluates_traitor_rook_as_150_when_under_our_control()
+    public void EvaluateBoard_traitor_rook_counts_as_150_when_adjacent_to_white_majority()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
@@ -67,13 +71,14 @@ public class MaterialEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        int score = MaterialEvaluator.Evaluate(board, ourColor: BitPieceColor.White);
+        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
 
-        score.Should().Be(150);
+        whiteScore.Should().Be((100 * 2) + 150);
+        blackScore.Should().Be((100 * 2) + 0);
     }
 
     [Fact]
-    public void EvaluateBoard_evaluates_traitor_rook_as_50_when_adjacent_is_equal()
+    public void EvaluateBoard_traitor_rook_counts_zero_when_adjacent_equal()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
@@ -83,13 +88,14 @@ public class MaterialEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        int score = MaterialEvaluator.Evaluate(board, ourColor: BitPieceColor.White);
+        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
 
-        score.Should().Be(50);
+        whiteScore.Should().Be(100);
+        blackScore.Should().Be(100);
     }
 
     [Fact]
-    public void EvaluateBoard_evaluates_traitor_rook_as_negative_150_when_under_enemy_control()
+    public void EvaluateBoard_traitor_rook_counts_as_150_when_adjacent_to_black_majority()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
@@ -101,13 +107,14 @@ public class MaterialEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        int score = MaterialEvaluator.Evaluate(board, ourColor: BitPieceColor.White);
+        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
 
-        score.Should().Be(-150);
+        whiteScore.Should().Be((100 * 2) + 0);
+        blackScore.Should().Be((100 * 2) + 150);
     }
 
     [Fact]
-    public void EvaluateBoard_sums_own_and_enemy_pieces_correctly()
+    public void EvaluateBoard_sums_white_and_black_material_independently()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
@@ -118,13 +125,14 @@ public class MaterialEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        int score = MaterialEvaluator.Evaluate(board, ourColor: BitPieceColor.White);
+        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
 
-        score.Should().Be(-200);
+        whiteScore.Should().Be(850);
+        blackScore.Should().Be(1050);
     }
 
     [Fact]
-    public void EvaluateBoard_handles_a_single_king_correctly()
+    public void EvaluateBoard_counts_single_white_king_correctly()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
@@ -132,13 +140,15 @@ public class MaterialEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        int score = MaterialEvaluator.Evaluate(board, ourColor: BitPieceColor.White);
+        int expectedWhiteKing = 10_000 / 1 + 350; // 10_350
+        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
 
-        score.Should().Be(10_350);
+        whiteScore.Should().Be(expectedWhiteKing);
+        blackScore.Should().Be(0);
     }
 
     [Fact]
-    public void EvaluateBoard_handles_multiple_kings_correctly()
+    public void EvaluateBoard_counts_multiple_kings_correctly()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
@@ -148,13 +158,14 @@ public class MaterialEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        int score = MaterialEvaluator.Evaluate(board, ourColor: BitPieceColor.White);
+        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
 
-        score.Should().Be(350);
+        whiteScore.Should().Be(10_000 + (2 * 350));
+        blackScore.Should().Be(10_000 + (1 * 350));
     }
 
     [Fact]
-    public void EvaluateBoard_handles_black_to_move()
+    public void EvaluateBoard_counts_black_material_correctly_when_black_to_move()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
@@ -164,8 +175,9 @@ public class MaterialEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces, isWhiteToMove: false);
 
-        int score = MaterialEvaluator.Evaluate(board, ourColor: BitPieceColor.Black);
+        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
 
-        score.Should().Be(-500);
+        whiteScore.Should().Be(1000);
+        blackScore.Should().Be(500);
     }
 }

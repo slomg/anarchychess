@@ -34,9 +34,7 @@ public unsafe struct MoveUndoState
     public required bool PrevIsWhiteToMove;
 
     public required int PrevWhiteMaterialCount;
-    public required int PrevWhiteKingCount;
     public required int PrevBlackMaterialCount;
-    public required int PrevBlackKingCount;
 
     public void AddCapture(byte square, PieceType piece, BitPieceColor color)
     {

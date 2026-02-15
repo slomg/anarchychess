@@ -31,10 +31,7 @@ public partial class BitBoard
     public UInt128 LastCaptureMask { get; private set; }
 
     public int WhiteMaterialCount { get; private set; }
-    public int WhiteKingCount { get; private set; }
-
     public int BlackMaterialCount { get; private set; }
-    public int BlackKingCount { get; private set; }
 
     private BitBoard(UInt128[,] bitboards, BitPiece?[] pieceAt, BitMove? prevMove)
     {
@@ -92,9 +89,7 @@ public partial class BitBoard
         EnPassantSquaresMask = other.EnPassantSquaresMask;
         EnPassantPawnSquare = other.EnPassantPawnSquare;
         WhiteMaterialCount = other.WhiteMaterialCount;
-        WhiteKingCount = other.WhiteKingCount;
         BlackMaterialCount = other.BlackMaterialCount;
-        BlackKingCount = other.BlackKingCount;
     }
 
     public static BitBoard FromPieces(
@@ -111,9 +106,7 @@ public partial class BitBoard
         UInt128 hasMoved = 0;
 
         int whiteScore = 0;
-        int whiteKingCount = 0;
         int blackScore = 0;
-        int blackKingCount = 0;
 
         foreach (var (point, piece) in pieces)
         {
@@ -139,27 +132,14 @@ public partial class BitBoard
             {
                 blackScore += MaterialEvaluator.GetPieceValue(piece.Type);
             }
-
-            if (piece.Color is GameColor.White && piece.Type is PieceType.King)
-            {
-                whiteKingCount++;
-            }
-            else if (piece.Color is GameColor.Black && piece.Type is PieceType.King)
-            {
-                blackKingCount++;
-            }
         }
 
         return new BitBoard(bitboards, pieceAt, prevMove: prevMove)
         {
             HasMoved = hasMoved,
             IsWhiteToMove = isWhiteToMove,
-
             WhiteMaterialCount = whiteScore,
-            WhiteKingCount = whiteKingCount,
-
             BlackMaterialCount = blackScore,
-            BlackKingCount = blackKingCount,
         };
     }
 
@@ -233,9 +213,7 @@ public partial class BitBoard
             PrevLastCaptureMask = LastCaptureMask,
 
             PrevWhiteMaterialCount = WhiteMaterialCount,
-            PrevWhiteKingCount = WhiteKingCount,
             PrevBlackMaterialCount = BlackMaterialCount,
-            PrevBlackKingCount = BlackKingCount,
         };
 
         UInt128 captureMask = move.CapturesMask;
@@ -286,9 +264,7 @@ public partial class BitBoard
         }
 
         WhiteMaterialCount = undoState.PrevWhiteMaterialCount;
-        WhiteKingCount = undoState.PrevWhiteKingCount;
         BlackMaterialCount = undoState.PrevBlackMaterialCount;
-        BlackKingCount = undoState.PrevBlackKingCount;
 
         IsWhiteToMove = undoState.PrevIsWhiteToMove;
         HasMoved = undoState.PrevHasMoved;
@@ -354,21 +330,11 @@ public partial class BitBoard
         {
             case BitPieceColor.White:
                 WhitePieces |= mask;
-
                 WhiteMaterialCount += MaterialEvaluator.GetPieceValue(pieceType);
-                if (pieceType is PieceType.King)
-                {
-                    WhiteKingCount++;
-                }
                 break;
             case BitPieceColor.Black:
                 BlackPieces |= mask;
-
                 BlackMaterialCount += MaterialEvaluator.GetPieceValue(pieceType);
-                if (pieceType is PieceType.King)
-                {
-                    BlackKingCount++;
-                }
                 break;
             case BitPieceColor.Neutral:
                 NeutralPieces |= mask;
@@ -409,21 +375,11 @@ public partial class BitBoard
         {
             case BitPieceColor.White:
                 WhitePieces &= inverseMask;
-
                 WhiteMaterialCount -= MaterialEvaluator.GetPieceValue(pieceType);
-                if (pieceType is PieceType.King)
-                {
-                    WhiteKingCount--;
-                }
                 break;
             case BitPieceColor.Black:
                 BlackPieces &= inverseMask;
                 BlackMaterialCount -= MaterialEvaluator.GetPieceValue(pieceType);
-
-                if (pieceType is PieceType.King)
-                {
-                    BlackKingCount--;
-                }
                 break;
             case BitPieceColor.Neutral:
                 NeutralPieces &= inverseMask;

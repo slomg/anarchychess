@@ -5,80 +5,59 @@ using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai.Evaluation;
 
-public static class MobilityEvaluator
+public sealed class MobilityEvaluator : IEvaluatorFunction
 {
-    public static int Evaluate(BitBoard board, BitPieceColor ourColor, BitPieceColor enemyColor)
+    public (int WhiteScore, int BlackScore) Evaluate(BitBoard board, float endgameFactor)
     {
-        int mobilityScore = 0;
-        mobilityScore += CalculateMobilityScoreForPiece(
-            board,
-            PieceType.Bishop,
-            ourColor,
-            enemyColor
-        );
-        mobilityScore += CalculateMobilityScoreForPiece(
-            board,
-            PieceType.Rook,
-            ourColor,
-            enemyColor
-        );
-        mobilityScore += CalculateMobilityScoreForPiece(
-            board,
-            PieceType.Horsey,
-            ourColor,
-            enemyColor
-        );
-        mobilityScore += CalculateMobilityScoreForPiece(
+        int whiteScore = 0;
+        int blackScore = 0;
+
+        whiteScore += CalculateMobilityScoreForPiece(board, PieceType.Bishop, BitPieceColor.White);
+        blackScore += CalculateMobilityScoreForPiece(board, PieceType.Bishop, BitPieceColor.Black);
+
+        whiteScore += CalculateMobilityScoreForPiece(board, PieceType.Rook, BitPieceColor.White);
+        blackScore += CalculateMobilityScoreForPiece(board, PieceType.Rook, BitPieceColor.Black);
+
+        whiteScore += CalculateMobilityScoreForPiece(board, PieceType.Horsey, BitPieceColor.White);
+        blackScore += CalculateMobilityScoreForPiece(board, PieceType.Horsey, BitPieceColor.Black);
+
+        whiteScore += CalculateMobilityScoreForPiece(
             board,
             PieceType.Antiqueen,
-            ourColor,
-            enemyColor
+            BitPieceColor.White
         );
-        mobilityScore += CalculateMobilityScoreForPiece(
+        blackScore += CalculateMobilityScoreForPiece(
             board,
-            PieceType.Knook,
-            ourColor,
-            enemyColor
+            PieceType.Antiqueen,
+            BitPieceColor.Black
         );
-        return mobilityScore;
+
+        whiteScore += CalculateMobilityScoreForPiece(board, PieceType.Knook, BitPieceColor.White);
+        blackScore += CalculateMobilityScoreForPiece(board, PieceType.Knook, BitPieceColor.Black);
+
+        return (WhiteScore: whiteScore, BlackScore: blackScore);
     }
 
     private static int CalculateMobilityScoreForPiece(
         BitBoard board,
         PieceType pieceType,
-        BitPieceColor ourColor,
-        BitPieceColor enemyColor
+        BitPieceColor color
     )
     {
-        UInt128 ourBitboard = board.BitboardFor(pieceType, ourColor);
-        UInt128 enemyBitboard = board.BitboardFor(pieceType, enemyColor);
-
-        UInt128 enemyPieces = board.BitboardForEnemyOf(ourColor);
-        UInt128 ourPieces = board.BitboardForEnemyOf(enemyColor);
-
         int mobilityBonus = GetPieceMobilityBonus(pieceType);
 
         int mobilityScore = 0;
-        while (ourBitboard != 0)
+        UInt128 bitboard = board.BitboardFor(pieceType, color);
+        UInt128 enemyPieces = board.BitboardForEnemyOf(color);
+        while (bitboard != 0)
         {
-            byte position = (byte)BitboardHelpers.BitScanForward(ref ourBitboard);
+            byte position = (byte)BitboardHelpers.BitScanForward(ref bitboard);
             UInt128 attacks = GetEvalMaskForPiece(pieceType, position, board.Occupancy);
             UInt128 quiets = attacks & board.Empty;
             UInt128 captures = attacks & enemyPieces;
 
             mobilityScore += BitboardHelpers.CountBits(quiets) * mobilityBonus;
             mobilityScore += BitboardHelpers.CountBits(captures) * (mobilityBonus + 1);
-        }
-
-        while (enemyBitboard != 0)
-        {
-            byte position = (byte)BitboardHelpers.BitScanForward(ref enemyBitboard);
-            UInt128 attacks = GetEvalMaskForPiece(pieceType, position, board.Occupancy);
-            UInt128 quiets = attacks & board.Empty;
-            UInt128 captures = attacks & ourPieces;
-
-            mobilityScore -= BitboardHelpers.CountBits(quiets) * mobilityBonus;
-            mobilityScore -= BitboardHelpers.CountBits(captures) * (mobilityBonus + 1);
         }
 
         return mobilityScore;

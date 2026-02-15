@@ -8,38 +8,36 @@ public interface IEvaluator
     int Evaluate(BitBoard board);
 }
 
-public sealed class Evaluator : IEvaluator
+public sealed class Evaluator(IEnumerable<IEvaluatorFunction>? evaluators = null) : IEvaluator
 {
+    private readonly IEvaluatorFunction[] _evaluators = evaluators is not null
+        ? [.. evaluators]
+        :
+        [
+            new ActivityEvaluator(),
+            new AggressionEvaluator(),
+            new KingSafetyEvaluator(),
+            new MaterialEvaluator(),
+            new MobilityEvaluator(),
+            new PawnSpaceEvaluator(),
+            new PawnStructureEvaluator(),
+        ];
+
     public int Evaluate(BitBoard board)
     {
-        BitPieceColor ourColor = board.IsWhiteToMove ? BitPieceColor.White : BitPieceColor.Black;
-        BitPieceColor enemyColor = board.IsWhiteToMove ? BitPieceColor.Black : BitPieceColor.White;
         bool isEndgame = IsEndgame(board);
 
-        int materialScore = MaterialEvaluator.Evaluate(board, ourColor: ourColor);
-        int activityScore = ActivityEvaluator.Evaluate(
-            board,
-            ourColor: ourColor,
-            enemyColor: enemyColor
-        );
-        int mobilityScore = ActivityEvaluator.Evaluate(
-            board,
-            ourColor: ourColor,
-            enemyColor: enemyColor
-        );
-        int pawnSpaceScore = PawnSpaceEvaluator.Evaluate(board);
-        int kingSafteyScore = KingSafetyEvaluator.Evaluate(board, isEndgame: isEndgame);
-        int aggressionScore = AggressionEvaluator.Evaluate(board);
-        int pawnStructureScore = PawnStructureEvaluator.Evaluate(board);
+        int whiteScore = 0;
+        int blackScore = 0;
 
-        return materialScore
-            + activityScore
-            + mobilityScore
-            + pawnSpaceScore
-            + kingSafteyScore
-            + aggressionScore
-            + pawnSpaceScore
-            + pawnStructureScore;
+        foreach (var evaluator in _evaluators)
+        {
+            (int whiteResult, int blackResult) = evaluator.Evaluate(board, endgameFactor: 0);
+            whiteScore += whiteResult;
+            blackScore += blackResult;
+        }
+
+        return board.IsWhiteToMove ? whiteScore - blackScore : blackScore - whiteScore;
     }
 
     public static bool IsEndgame(BitBoard board) =>

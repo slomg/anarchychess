@@ -4,7 +4,7 @@ using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai.Evaluation;
 
-public static class PawnStructureEvaluator
+public sealed class PawnStructureEvaluator : IEvaluatorFunction
 {
     private static readonly UInt128[] FileMasks = CreateFileMasks();
 
@@ -28,7 +28,7 @@ public static class PawnStructureEvaluator
         return masks;
     }
 
-    public static int Evaluate(BitBoard board)
+    public (int WhiteScore, int BlackScore) Evaluate(BitBoard board, float endgameFactor)
     {
         int whiteScore = 0;
         int blackScore = 0;
@@ -55,7 +55,7 @@ public static class PawnStructureEvaluator
         whiteScore += CountWhitePassed(whitePawns, enemyPawns: blackPawns) * PassedBonus;
         blackScore += CountBlackPassed(blackPawns, enemyPawns: whitePawns) * PassedBonus;
 
-        return board.IsWhiteToMove ? whiteScore - blackScore : blackScore - whiteScore;
+        return (WhiteScore: whiteScore, BlackScore: blackScore);
     }
 
     private static int CountDoubled(UInt128 pawns, int file) =>

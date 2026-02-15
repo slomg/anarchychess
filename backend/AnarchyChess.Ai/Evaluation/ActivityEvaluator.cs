@@ -4,7 +4,7 @@ using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai.Evaluation;
 
-public static class ActivityEvaluator
+public sealed class ActivityEvaluator : IEvaluatorFunction
 {
     // csharpier-ignore
     public static readonly int[] HorseyActivityTable =
@@ -51,54 +51,54 @@ public static class ActivityEvaluator
         -25, -17, -15, -12, -12, -12, -12, -15, -17, -25,
     ];
 
-    public static int Evaluate(BitBoard board, BitPieceColor ourColor, BitPieceColor enemyColor)
+    public (int WhiteScore, int BlackScore) Evaluate(BitBoard board, float endgameFactor)
     {
-        int activityScore = 0;
+        int whiteScore = 0;
+        int blackScore = 0;
 
-        activityScore += CalculateActivityScoreForPiece(
-            ourBitboard: board.BitboardFor(PieceType.Horsey, ourColor)
-                | board.BitboardFor(PieceType.Antiqueen, ourColor)
-                | board.BitboardFor(PieceType.Knook, ourColor),
-            enemyBitboard: board.BitboardFor(PieceType.Horsey, enemyColor)
-                | board.BitboardFor(PieceType.Antiqueen, enemyColor)
-                | board.BitboardFor(PieceType.Knook, enemyColor),
-            activityTable: HorseyActivityTable
+        whiteScore += CalculateActivityScoreForPiece(
+            board.BitboardFor(PieceType.Horsey, BitPieceColor.White)
+                | board.BitboardFor(PieceType.Antiqueen, BitPieceColor.White)
+                | board.BitboardFor(PieceType.Knook, BitPieceColor.White),
+            HorseyActivityTable
+        );
+        blackScore += CalculateActivityScoreForPiece(
+            board.BitboardFor(PieceType.Horsey, BitPieceColor.Black)
+                | board.BitboardFor(PieceType.Antiqueen, BitPieceColor.Black)
+                | board.BitboardFor(PieceType.Knook, BitPieceColor.Black),
+            HorseyActivityTable
         );
 
-        activityScore += CalculateActivityScoreForPiece(
-            ourBitboard: board.BitboardFor(PieceType.Bishop, ourColor),
-            enemyBitboard: board.BitboardFor(PieceType.Bishop, enemyColor),
-            activityTable: BishopActivityTable
+        whiteScore += CalculateActivityScoreForPiece(
+            board.BitboardFor(PieceType.Bishop, BitPieceColor.White),
+            BishopActivityTable
+        );
+        blackScore += CalculateActivityScoreForPiece(
+            board.BitboardFor(PieceType.Bishop, BitPieceColor.Black),
+            BishopActivityTable
         );
 
-        activityScore += CalculateActivityScoreForPiece(
-            ourBitboard: board.BitboardFor(PieceType.Checker, ourColor),
-            enemyBitboard: board.BitboardFor(PieceType.Checker, enemyColor),
-            activityTable: CheckerActivityTable
+        whiteScore += CalculateActivityScoreForPiece(
+            board.BitboardFor(PieceType.Checker, BitPieceColor.White),
+            CheckerActivityTable
+        );
+        blackScore += CalculateActivityScoreForPiece(
+            board.BitboardFor(PieceType.Checker, BitPieceColor.Black),
+            CheckerActivityTable
         );
 
-        return activityScore;
+        return (WhiteScore: whiteScore, BlackScore: blackScore);
     }
 
-    private static int CalculateActivityScoreForPiece(
-        UInt128 ourBitboard,
-        UInt128 enemyBitboard,
-        int[] activityTable
-    )
+    private static int CalculateActivityScoreForPiece(UInt128 bitboard, int[] activityTable)
     {
-        int activityScore = 0;
-        while (ourBitboard != 0)
+        int score = 0;
+        while (bitboard != 0)
         {
-            int position = BitboardHelpers.BitScanForward(ref ourBitboard);
-            activityScore += activityTable[position];
+            int position = BitboardHelpers.BitScanForward(ref bitboard);
+            score += activityTable[position];
         }
 
-        while (enemyBitboard != 0)
-        {
-            int position = BitboardHelpers.BitScanForward(ref enemyBitboard);
-            activityScore -= activityTable[position];
-        }
-
-        return activityScore;
+        return score;
     }
 }
