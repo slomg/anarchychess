@@ -26,7 +26,7 @@ public sealed class KingSafetyEvaluator : IEvaluatorFunction
 
     public (int WhiteScore, int BlackScore) Evaluate(BitBoard board, float endgameFactor)
     {
-        if (endgameFactor > EndgameFactorThreshold)
+        if (endgameFactor >= EndgameFactorThreshold)
         {
             return (0, 0);
         }
