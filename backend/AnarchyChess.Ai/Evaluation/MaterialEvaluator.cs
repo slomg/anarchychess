@@ -64,24 +64,38 @@ public sealed class MaterialEvaluator : IEvaluatorFunction
 
         if (whiteAdjacent == 0 && blackAdjacent == 0)
         {
+            if (position < 50)
+            {
+                whiteScore += 150;
+            }
+            else
+            {
+                blackScore += 150;
+            }
             return;
         }
 
         int whiteAdjacentCount = BitboardHelpers.CountBits(whiteAdjacent);
         int blackAdjacentCount = BitboardHelpers.CountBits(blackAdjacent);
-        if (whiteAdjacentCount == blackAdjacentCount)
+
+        if (whiteAdjacentCount > blackAdjacentCount)
         {
+            whiteScore += 150;
+            return;
+        }
+        else if (blackAdjacentCount > whiteAdjacentCount)
+        {
+            blackScore += 150;
             return;
         }
 
-        if (whiteAdjacentCount > blackAdjacentCount)
+        if (position < 50)
         {
             whiteScore += 150;
         }
         else
         {
             blackScore += 150;
-            return;
         }
     }
 }

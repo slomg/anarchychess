@@ -42,23 +42,6 @@ public class MaterialEvaluatorTests
     }
 
     [Fact]
-    public void EvaluateBoard_traitor_rook_counts_zero_when_no_adjacent_pieces()
-    {
-        Dictionary<AlgebraicPoint, Piece> pieces = new()
-        {
-            [new("e5")] = PieceFactory.Neutral(PieceType.TraitorRook),
-            [new("h2")] = PieceFactory.White(PieceType.Rook),
-            [new("b8")] = PieceFactory.Black(PieceType.Rook),
-        };
-        BitBoard board = BitBoard.FromPieces(pieces);
-
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
-
-        whiteScore.Should().Be(500);
-        blackScore.Should().Be(500);
-    }
-
-    [Fact]
     public void EvaluateBoard_traitor_rook_counts_as_150_when_adjacent_to_white_majority()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
@@ -78,11 +61,11 @@ public class MaterialEvaluatorTests
     }
 
     [Fact]
-    public void EvaluateBoard_traitor_rook_counts_zero_when_adjacent_equal()
+    public void EvaluateBoard_traitor_rook_counts_to_white_when_adjacent_equal_and_closer_to_white()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
-            [new("e5")] = PieceFactory.Neutral(PieceType.TraitorRook),
+            [new("e5")] = PieceFactory.Neutral(PieceType.TraitorRook), // position < 50
             [new("d5")] = PieceFactory.White(PieceType.Pawn),
             [new("f5")] = PieceFactory.Black(PieceType.Pawn),
         };
@@ -90,8 +73,59 @@ public class MaterialEvaluatorTests
 
         (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
 
-        whiteScore.Should().Be(100);
+        whiteScore.Should().Be(250);
         blackScore.Should().Be(100);
+    }
+
+    [Fact]
+    public void EvaluateBoard_traitor_rook_counts_to_white_when_no_adjacent_pieces_and_closer_to_white()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new("e5")] = PieceFactory.Neutral(PieceType.TraitorRook),
+            [new("h2")] = PieceFactory.White(PieceType.Rook),
+            [new("b8")] = PieceFactory.Black(PieceType.Rook),
+        };
+        BitBoard board = BitBoard.FromPieces(pieces);
+
+        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+
+        whiteScore.Should().Be(650);
+        blackScore.Should().Be(500);
+    }
+
+    [Fact]
+    public void EvaluateBoard_traitor_rook_counts_to_black_when_adjacent_equal_and_closer_to_black()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new("e8")] = PieceFactory.Neutral(PieceType.TraitorRook), // position >= 50
+            [new("d8")] = PieceFactory.White(PieceType.Pawn),
+            [new("f8")] = PieceFactory.Black(PieceType.Pawn),
+        };
+        BitBoard board = BitBoard.FromPieces(pieces);
+
+        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+
+        whiteScore.Should().Be(100);
+        blackScore.Should().Be(250);
+    }
+
+    [Fact]
+    public void EvaluateBoard_traitor_rook_counts_to_black_when_no_adjacent_pieces_and_closer_to_black_side()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new("e8")] = PieceFactory.Neutral(PieceType.TraitorRook),
+            [new("h2")] = PieceFactory.White(PieceType.Rook),
+            [new("b8")] = PieceFactory.Black(PieceType.Rook),
+        };
+        BitBoard board = BitBoard.FromPieces(pieces);
+
+        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+
+        whiteScore.Should().Be(500);
+        blackScore.Should().Be(650);
     }
 
     [Fact]
