@@ -6,6 +6,7 @@ namespace AnarchyChess.Ai.Helpers;
 
 public static class BitboardHelpers
 {
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int BitScanForward(ref UInt128 bitboard)
     {
         if (bitboard == 0)
@@ -30,6 +31,7 @@ public static class BitboardHelpers
         return index;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static int BitScanBackward(ref UInt128 bitboard)
     {
         if (bitboard == 0)
