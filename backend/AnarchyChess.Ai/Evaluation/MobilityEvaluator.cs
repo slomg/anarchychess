@@ -12,28 +12,61 @@ public sealed class MobilityEvaluator : IEvaluatorFunction
         int whiteScore = 0;
         int blackScore = 0;
 
-        whiteScore += CalculateMobilityScoreForPiece(board, PieceType.Bishop, BitPieceColor.White);
-        blackScore += CalculateMobilityScoreForPiece(board, PieceType.Bishop, BitPieceColor.Black);
-
-        whiteScore += CalculateMobilityScoreForPiece(board, PieceType.Rook, BitPieceColor.White);
-        blackScore += CalculateMobilityScoreForPiece(board, PieceType.Rook, BitPieceColor.Black);
-
-        whiteScore += CalculateMobilityScoreForPiece(board, PieceType.Horsey, BitPieceColor.White);
-        blackScore += CalculateMobilityScoreForPiece(board, PieceType.Horsey, BitPieceColor.Black);
-
         whiteScore += CalculateMobilityScoreForPiece(
             board,
-            PieceType.Antiqueen,
-            BitPieceColor.White
+            PieceType.Bishop,
+            BitPieceColor.White,
+            board.BitboardFor(PieceType.Bishop, BitPieceColor.White)
         );
         blackScore += CalculateMobilityScoreForPiece(
             board,
-            PieceType.Antiqueen,
-            BitPieceColor.Black
+            PieceType.Bishop,
+            BitPieceColor.Black,
+            board.BitboardFor(PieceType.Bishop, BitPieceColor.Black)
         );
 
-        whiteScore += CalculateMobilityScoreForPiece(board, PieceType.Knook, BitPieceColor.White);
-        blackScore += CalculateMobilityScoreForPiece(board, PieceType.Knook, BitPieceColor.Black);
+        whiteScore += CalculateMobilityScoreForPiece(
+            board,
+            PieceType.Rook,
+            BitPieceColor.White,
+            board.BitboardFor(PieceType.Rook, BitPieceColor.White)
+        );
+        blackScore += CalculateMobilityScoreForPiece(
+            board,
+            PieceType.Rook,
+            BitPieceColor.Black,
+            board.BitboardFor(PieceType.Rook, BitPieceColor.Black)
+        );
+
+        whiteScore += CalculateMobilityScoreForPiece(
+            board,
+            PieceType.Horsey,
+            BitPieceColor.White,
+            board.BitboardFor(PieceType.Horsey, BitPieceColor.White)
+                | board.BitboardFor(PieceType.Antiqueen, BitPieceColor.White)
+                | board.BitboardFor(PieceType.Knook, BitPieceColor.White)
+        );
+        blackScore += CalculateMobilityScoreForPiece(
+            board,
+            PieceType.Horsey,
+            BitPieceColor.Black,
+            board.BitboardFor(PieceType.Horsey, BitPieceColor.Black)
+                | board.BitboardFor(PieceType.Antiqueen, BitPieceColor.Black)
+                | board.BitboardFor(PieceType.Knook, BitPieceColor.Black)
+        );
+
+        whiteScore += CalculateMobilityScoreForPiece(
+            board,
+            PieceType.Knook,
+            BitPieceColor.White,
+            board.BitboardFor(PieceType.Knook, BitPieceColor.White)
+        );
+        blackScore += CalculateMobilityScoreForPiece(
+            board,
+            PieceType.Knook,
+            BitPieceColor.Black,
+            board.BitboardFor(PieceType.Knook, BitPieceColor.Black)
+        );
 
         return (WhiteScore: whiteScore, BlackScore: blackScore);
     }
@@ -41,13 +74,13 @@ public sealed class MobilityEvaluator : IEvaluatorFunction
     private static int CalculateMobilityScoreForPiece(
         BitBoard board,
         PieceType pieceType,
-        BitPieceColor color
+        BitPieceColor color,
+        UInt128 bitboard
     )
     {
         int mobilityBonus = GetPieceMobilityBonus(pieceType);
 
         int mobilityScore = 0;
-        UInt128 bitboard = board.BitboardFor(pieceType, color);
         UInt128 enemyPieces = board.BitboardForEnemyOf(color);
         while (bitboard != 0)
         {
@@ -70,7 +103,6 @@ public sealed class MobilityEvaluator : IEvaluatorFunction
             PieceType.Bishop => 2,
             PieceType.Horsey => 2,
             PieceType.Knook => 2,
-            PieceType.Antiqueen => 2,
 
             _ => 0,
         };
@@ -79,19 +111,17 @@ public sealed class MobilityEvaluator : IEvaluatorFunction
         piece switch
         {
             PieceType.Horsey => PieceMasks.HorseyMasks[position],
-            PieceType.Antiqueen => PieceMasks.HorseyMasks[position],
             PieceType.Rook => MagicLibrary.GetAttacks(MagicLibrary.RookTable, position, occupancy),
             PieceType.Bishop => MagicLibrary.GetAttacks(
                 MagicLibrary.BishopTable,
                 position,
                 occupancy
             ),
-            PieceType.Knook => PieceMasks.HorseyMasks[position]
-                | MagicLibrary.GetAttacks(
-                    MagicLibrary.TwoStraightSquaresTable,
-                    position,
-                    occupancy
-                ),
+            PieceType.Knook => MagicLibrary.GetAttacks(
+                MagicLibrary.TwoStraightSquaresTable,
+                position,
+                occupancy
+            ),
 
             _ => 0,
         };
