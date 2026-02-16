@@ -1,4 +1,5 @@
-﻿using AnarchyChess.Ai.Evaluation;
+﻿using System.Runtime.CompilerServices;
+using AnarchyChess.Ai.Evaluation;
 using AnarchyChess.Ai.Helpers;
 using AnarchyChess.Ai.Models;
 using AnarchyChess.EngineShared;
@@ -23,6 +24,25 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
     private readonly IEvaluator _evaluator = evaluator ?? new Evaluator();
 
     private BitMove[,] _killerMoves = new BitMove[0, 0];
+
+    const int MaxDepth = 16;
+
+    private static readonly int[,] LmrTable = CreateLMR();
+
+    static int[,] CreateLMR()
+    {
+        int[,] lm = new int[MaxDepth, MaxMoves];
+        for (int depth = 1; depth < MaxDepth; depth++)
+        {
+            for (int move = 1; move < MaxMoves; move++)
+            {
+                double reduction = 0.99 + Math.Log(depth) * Math.Log(move) / 3.14;
+
+                lm[depth, move] = Math.Clamp((int)reduction, 1, 3);
+            }
+        }
+        return lm;
+    }
 
     public BitMove? FindBestMove(BitBoard board, int depth)
     {
@@ -92,7 +112,9 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
             || board.BitboardFor(PieceType.King, BitPieceColor.Black) == 0
         )
         {
-            return isLastMoveCapture ? Quiescence(board, alpha, beta) : _evaluator.Evaluate(board);
+            return isLastMoveCapture
+                ? Quiescence(board, alpha, beta, maxDepth: 3)
+                : _evaluator.Evaluate(board);
         }
 
         if (depth < 3)
@@ -133,9 +155,17 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
             BitMove move = moves[i];
             MoveUndoState undo = board.MakeMove(move);
 
+            int searchDepth = depth - 1;
+
+            if (i > 0 && depth >= 3 && move.CapturesMask == 0 && move.PromotesTo is null)
+            {
+                int reduction = LmrTable[depth, i];
+                searchDepth -= reduction;
+            }
+
             int score = -Negamax(
                 board,
-                depth - 1,
+                searchDepth,
                 alpha: -beta,
                 beta: -alpha,
                 isLastMoveCapture = move.CapturesMask != 0
@@ -160,7 +190,7 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
         return alpha;
     }
 
-    private int Quiescence(BitBoard board, int alpha, int beta)
+    private int Quiescence(BitBoard board, int alpha, int beta, int maxDepth)
     {
         int standPat = _evaluator.Evaluate(board);
 
@@ -171,6 +201,14 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
         if (standPat > alpha)
         {
             alpha = standPat;
+        }
+        if (
+            maxDepth <= 0
+            || board.BitboardFor(PieceType.King, BitPieceColor.White) == 0
+            || board.BitboardFor(PieceType.King, BitPieceColor.Black) == 0
+        )
+        {
+            return alpha;
         }
 
         Span<BitMove> moves = stackalloc BitMove[MaxMoves];
@@ -216,7 +254,7 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
             BitMove move = captures[i];
 
             MoveUndoState undo = board.MakeMove(move);
-            int score = -Quiescence(board, -beta, -alpha);
+            int score = -Quiescence(board, -beta, -alpha, maxDepth - 1);
             board.UndoMove(undo);
 
             if (score >= beta)
@@ -297,6 +335,7 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private int ScoreMove(BitMove move, BitBoard board, int depth)
     {
         if (move.CapturesMask != 0)
