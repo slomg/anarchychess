@@ -1,4 +1,5 @@
-﻿using AnarchyChess.Ai.Models;
+﻿using AnarchyChess.Ai.BitForeverRules;
+using AnarchyChess.Ai.Models;
 using AnarchyChess.Api.TestInfrastructure.Factories;
 using AnarchyChess.EngineShared;
 using AwesomeAssertions;
@@ -117,6 +118,39 @@ public class BitMoveGeneratorTests
         {
             expectedDestinations.Should().Contain(move.To);
         }
+    }
+
+    [Fact]
+    public void Generate_applies_forever_rules()
+    {
+        BitMove prevMove = new()
+        {
+            Piece = new BitPiece { Type = PieceType.Rook, Color = BitPieceColor.Black },
+            From = 0,
+            To = BitOmnipotentPawnRule.WhiteSquare,
+            CapturesMask = BitOmnipotentPawnRule.WhiteSquareMask,
+        };
+
+        BitBoard board = BitBoard.FromPieces([], prevMove: prevMove);
+
+        Span<BitMove> moves = stackalloc BitMove[10];
+        int moveCount = 0;
+
+        _generator.Generate(board, moves, ref moveCount);
+
+        moveCount.Should().Be(1);
+        moves[0]
+            .Should()
+            .BeEquivalentTo(
+                new BitMove
+                {
+                    From = BitOmnipotentPawnRule.WhiteSquare,
+                    To = BitOmnipotentPawnRule.WhiteSquare,
+                    Piece = new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.White },
+                    CapturesMask = BitOmnipotentPawnRule.WhiteSquareMask,
+                    SpecialMoveType = SpecialMoveType.OmnipotentPawnSpawn,
+                }
+            );
     }
 
     [Fact]

@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using AnarchyChess.Ai.BitForeverRules;
 using AnarchyChess.Ai.BitPieceDefinition;
 using AnarchyChess.Ai.Helpers;
 using AnarchyChess.Ai.Models;
@@ -36,6 +37,8 @@ public sealed class BitMoveGenerator : IBitMoveGenerator
         new BitCheckerDefinition(),
     ];
 
+    private readonly IBitForeverRule[] _foreverRules = [new BitOmnipotentPawnRule()];
+
     public void Generate(BitBoard board, Span<BitMove> moves, ref int moveCount)
     {
         BitPieceColor color = board.IsWhiteToMove ? BitPieceColor.White : BitPieceColor.Black;
@@ -64,6 +67,11 @@ public sealed class BitMoveGenerator : IBitMoveGenerator
                 moves,
                 ref moveCount
             );
+        }
+
+        for (int i = 0; i < _foreverRules.Length; i++)
+        {
+            _foreverRules[i].GenerateMoves(board, moves, ref moveCount);
         }
 
         int newMoveCount = 0;

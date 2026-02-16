@@ -181,10 +181,12 @@ public partial class BitBoard
             PrevIsWhiteToMove = IsWhiteToMove,
             PrevEnPassantPawnSquare = EnPassantPawnSquare,
             PrevEnPassantSquaresMask = EnPassantSquaresMask,
+            PrevLastCaptureMask = LastCaptureMask,
         };
         IsWhiteToMove = !IsWhiteToMove;
         EnPassantPawnSquare = 0;
         EnPassantSquaresMask = 0;
+        LastCaptureMask = 0;
         return undo;
     }
 
@@ -193,6 +195,7 @@ public partial class BitBoard
         IsWhiteToMove = undo.PrevIsWhiteToMove;
         EnPassantPawnSquare = undo.PrevEnPassantPawnSquare;
         EnPassantSquaresMask = undo.PrevEnPassantSquaresMask;
+        LastCaptureMask = undo.PrevLastCaptureMask;
     }
 
     public MoveUndoState MakeMove(BitMove move)
