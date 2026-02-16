@@ -12,6 +12,8 @@ public sealed class KingSafetyEvaluator : IEvaluatorFunction
     public const int CenterStuckKingPenalty = 50;
     public const int SemiStuckKingPenalty = 20;
 
+    public const float EndgameFactorThreshold = 0.8f;
+
     private static readonly UInt128 WhiteKingsideRookMask =
         UInt128.One << BitboardConstants.WhiteKingsideCastle.RookStart;
     private static readonly UInt128 WhiteQueensideRookMask =
@@ -24,6 +26,11 @@ public sealed class KingSafetyEvaluator : IEvaluatorFunction
 
     public (int WhiteScore, int BlackScore) Evaluate(BitBoard board, float endgameFactor)
     {
+        if (endgameFactor > EndgameFactorThreshold)
+        {
+            return (0, 0);
+        }
+
         float kingSafetyWeight = 1f - endgameFactor;
 
         int whiteKingSafety = EvaluateKingSpace(

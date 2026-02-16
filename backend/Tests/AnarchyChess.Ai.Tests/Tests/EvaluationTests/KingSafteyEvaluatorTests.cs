@@ -21,6 +21,37 @@ public class KingSafetyEvaluatorTests
     }
 
     [Fact]
+    public void Evaluate_returns_zero_when_too_deep_to_endgame()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new("a1")] = PieceFactory.White(PieceType.Rook, hasMoved: false),
+            [new("f1")] = PieceFactory.White(PieceType.King, hasMoved: false),
+            [new("j1")] = PieceFactory.White(PieceType.Rook, hasMoved: false),
+
+            [new("e2")] = PieceFactory.White(PieceType.Pawn),
+            [new("f2")] = PieceFactory.White(PieceType.Pawn),
+            [new("g2")] = PieceFactory.White(PieceType.Pawn),
+
+            [new("a10")] = PieceFactory.Black(PieceType.Rook, hasMoved: false),
+            [new("f10")] = PieceFactory.Black(PieceType.King, hasMoved: false),
+            [new("j10")] = PieceFactory.Black(PieceType.Rook, hasMoved: false),
+
+            [new("e9")] = PieceFactory.Black(PieceType.Pawn),
+            [new("f9")] = PieceFactory.Black(PieceType.Pawn),
+        };
+        BitBoard board = BitBoard.FromPieces(pieces);
+
+        (int whiteScore, int blackScore) = _evaluator.Evaluate(
+            board,
+            endgameFactor: KingSafetyEvaluator.EndgameFactorThreshold
+        );
+
+        whiteScore.Should().Be(0);
+        blackScore.Should().Be(0);
+    }
+
+    [Fact]
     public void Evaluate_rewards_pawn_protection_around_white_king()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
