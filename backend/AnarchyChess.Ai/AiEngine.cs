@@ -18,7 +18,6 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
 
     private const int MaxMoves = 256;
     private const int NullMoveReduction = 2;
-    private readonly int PieceCount = Enum.GetValues<PieceType>().Length;
 
     private readonly IBitMoveGenerator _moveGenerator = moveGenerator ?? new BitMoveGenerator();
     private readonly IEvaluator _evaluator = evaluator ?? new Evaluator();
@@ -79,7 +78,13 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
         return bestMove;
     }
 
-    private int Negamax(BitBoard board, int depth, int alpha, int beta)
+    private int Negamax(
+        BitBoard board,
+        int depth,
+        int alpha,
+        int beta,
+        bool isLastMoveCapture = false
+    )
     {
         if (
             depth <= 0
@@ -87,7 +92,17 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
             || board.BitboardFor(PieceType.King, BitPieceColor.Black) == 0
         )
         {
-            return _evaluator.Evaluate(board);
+            return isLastMoveCapture ? Quiescence(board, alpha, beta) : _evaluator.Evaluate(board);
+        }
+
+        if (depth < 3)
+        {
+            int standPat = _evaluator.Evaluate(board);
+            int margin = 350;
+            if (standPat + margin <= alpha)
+            {
+                return alpha;
+            }
         }
 
         Span<BitMove> moves = stackalloc BitMove[MaxMoves];
@@ -118,7 +133,13 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
             BitMove move = moves[i];
             MoveUndoState undo = board.MakeMove(move);
 
-            int score = -Negamax(board, depth - 1, alpha: -beta, beta: -alpha);
+            int score = -Negamax(
+                board,
+                depth - 1,
+                alpha: -beta,
+                beta: -alpha,
+                isLastMoveCapture = move.CapturesMask != 0
+            );
 
             board.UndoMove(undo);
 
@@ -136,6 +157,78 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
                 break;
             }
         }
+        return alpha;
+    }
+
+    private int Quiescence(BitBoard board, int alpha, int beta)
+    {
+        int standPat = _evaluator.Evaluate(board);
+
+        if (standPat >= beta)
+        {
+            return beta;
+        }
+        if (standPat > alpha)
+        {
+            alpha = standPat;
+        }
+
+        Span<BitMove> moves = stackalloc BitMove[MaxMoves];
+        Span<BitMove> captures = stackalloc BitMove[50];
+        int moveCount = 0;
+        int captureCount = 0;
+        _moveGenerator.Generate(board, moves, ref moveCount);
+
+        int maxCaptureValue = 0;
+        UInt128 pawns =
+            board.BitboardFor(PieceType.Pawn, BitPieceColor.White)
+            | board.BitboardFor(PieceType.Pawn, BitPieceColor.Black);
+
+        for (int i = 0; i < moveCount; i++)
+        {
+            BitMove move = moves[i];
+            if (move.CapturesMask != 0)
+            {
+                UInt128 capturesMask = move.CapturesMask;
+                if (
+                    board.TryGetPieceAt(
+                        (byte)BitboardHelpers.BitScanForward(ref capturesMask),
+                        out var piece
+                    )
+                )
+                {
+                    maxCaptureValue = Math.Max(
+                        maxCaptureValue,
+                        MaterialEvaluator.GetPieceValue(piece.Value.Type)
+                    );
+                }
+                captures[captureCount++] = move;
+            }
+        }
+
+        if (standPat + maxCaptureValue < alpha)
+        {
+            return alpha;
+        }
+
+        for (int i = 0; i < captureCount; i++)
+        {
+            BitMove move = captures[i];
+
+            MoveUndoState undo = board.MakeMove(move);
+            int score = -Quiescence(board, -beta, -alpha);
+            board.UndoMove(undo);
+
+            if (score >= beta)
+            {
+                return beta;
+            }
+            if (score > alpha)
+            {
+                alpha = score;
+            }
+        }
+
         return alpha;
     }
 
