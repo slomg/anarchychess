@@ -48,7 +48,7 @@ public sealed class MaterialEvaluator : IEvaluatorFunction
     private static int EvaluateKingValue(UInt128 kingBitboard)
     {
         int kingCount = BitboardHelpers.CountBits(kingBitboard);
-        return kingCount > 0 ? 10_000 + (kingCount * 350) : 0;
+        return kingCount > 0 ? 100_000 + (kingCount * 350) : 0;
     }
 
     private static void EvaluateTraitorRookValue(

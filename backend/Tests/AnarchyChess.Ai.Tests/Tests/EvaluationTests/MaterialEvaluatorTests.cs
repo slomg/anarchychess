@@ -174,7 +174,7 @@ public class MaterialEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        int expectedWhiteKing = 10_000 / 1 + 350; // 10_350
+        int expectedWhiteKing = 100_000 / 1 + 350;
         (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
 
         whiteScore.Should().Be(expectedWhiteKing);
@@ -194,8 +194,8 @@ public class MaterialEvaluatorTests
 
         (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
 
-        whiteScore.Should().Be(10_000 + (2 * 350));
-        blackScore.Should().Be(10_000 + (1 * 350));
+        whiteScore.Should().Be(100_000 + (2 * 350));
+        blackScore.Should().Be(100_000 + (1 * 350));
     }
 
     [Fact]
