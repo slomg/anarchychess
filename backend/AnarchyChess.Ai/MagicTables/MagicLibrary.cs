@@ -1,4 +1,5 @@
-﻿using AnarchyChess.EngineShared;
+﻿using System.Runtime.CompilerServices;
+using AnarchyChess.EngineShared;
 using MessagePack;
 
 namespace AnarchyChess.Ai.MagicTables;
@@ -39,6 +40,7 @@ public static class MagicLibrary
         return MessagePackSerializer.Deserialize<MagicPieceTable>(bytes);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static UInt128 GetAttacks(MagicPieceTable table, int square, UInt128 occupancy)
     {
         UInt128 blockers = occupancy & table.Masks[square];
