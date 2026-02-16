@@ -129,7 +129,7 @@ const ChessPiece = ({ id }: { id: PieceID }) => {
                 data-testid="piece"
                 position={piecePosition}
                 className={clsx(
-                    `pointer-events-none z-10 touch-none bg-size-[length:100%]
+                    `pointer-events-none z-10 touch-none bg-size-[100%]
                     bg-no-repeat transition-colors select-none`,
                     isAnimating && "transition-transform duration-100 ease-out",
                     isDragging && "z-30",

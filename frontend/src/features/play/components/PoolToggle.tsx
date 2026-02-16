@@ -13,7 +13,7 @@ const PoolToggle = ({
                 data-testid="poolToggle"
                 onClick={() => onToggle(!isRated)}
                 className="from-primary via-primary/50 to-primary relative col-span-2 h-8 w-full
-                    cursor-pointer rounded-sm bg-gradient-to-r"
+                    cursor-pointer rounded-sm bg-linear-to-r"
             >
                 <div
                     className={clsx(

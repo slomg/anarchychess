@@ -71,7 +71,7 @@ const GameChat = ({ initialShowChat }: { initialShowChat: boolean }) => {
     return (
         <Card className="relative overflow-y-auto">
             <div
-                className="h-full w-full overflow-auto break-words"
+                className="h-full w-full overflow-auto wrap-break-word"
                 ref={chatRef}
             >
                 {!showChat && chatMessages.length > 0 && (
