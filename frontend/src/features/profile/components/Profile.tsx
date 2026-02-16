@@ -85,7 +85,7 @@ const Profile = ({
                 </div>
 
                 <p
-                    className="text-text/50 max-w-full text-sm break-words"
+                    className="text-text/50 max-w-full text-sm wrap-break-word"
                     data-testid="aboutMe"
                 >
                     {profile.about}

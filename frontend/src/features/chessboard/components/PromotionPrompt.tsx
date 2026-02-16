@@ -75,9 +75,9 @@ const PromotionPiece = ({
             position={position}
             className={clsx(
                 `border-secondary hover:bg-secondary cursor-pointer rounded-md
-                border-3 bg-[length:90%_90%] bg-center bg-no-repeat
+                border-3 bg-size-[90%_90%] bg-center bg-no-repeat
                 transition-all duration-200 hover:rounded-none
-                hover:bg-[length:110%_110%]`,
+                hover:bg-size-[110%_110%]`,
                 isFirst || "border-t-2",
                 isLast || "border-b-2",
             )}

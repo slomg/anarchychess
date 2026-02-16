@@ -39,7 +39,7 @@ const Carousel = ({
                         width={width}
                         height={height}
                         alt={`${alt} ${i + 1}`}
-                        className="w-full flex-shrink-0 object-cover"
+                        className="w-full shrink-0 object-cover"
                         data-testid={`carouselImage-${i}`}
                     />
                 ))}

@@ -58,7 +58,7 @@ const IntermediateSquare = ({ point }: { point: LogicalPoint }) => {
             }}
             onPointerUp={handlePointerUp}
             className="border-accent z-30 cursor-pointer rounded-sm border-4
-                bg-[length:100%_100%] bg-center bg-no-repeat transition-colors
+                bg-size-[100%_100%] bg-center bg-no-repeat transition-colors
                 duration-100 ease-out hover:bg-[rgba(255,215,0,0.2)]"
         />
     );

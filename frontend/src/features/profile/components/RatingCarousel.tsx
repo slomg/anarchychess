@@ -9,7 +9,7 @@ const RatingCarousel = ({ children }: { children: React.ReactNode }) => {
     useHorizontalScroll(ref);
 
     return (
-        <section ref={ref} className="flex flex-shrink-0 gap-5 overflow-x-auto">
+        <section ref={ref} className="flex shrink-0 gap-5 overflow-x-auto">
             {children}
         </section>
     );

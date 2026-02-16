@@ -62,7 +62,7 @@ const HomeDiscordSection = () => {
                         <Image
                             src={sniperBishopPfp}
                             alt="sniper bishop pfp"
-                            className="flex-shrink-0 rounded-full"
+                            className="shrink-0 rounded-full"
                             width={36}
                             height={36}
                         />
@@ -86,7 +86,7 @@ const HomeDiscordSection = () => {
                         <Image
                             src={slomgPfp}
                             alt="slomg pfp"
-                            className="flex-shrink-0 rounded-full"
+                            className="shrink-0 rounded-full"
                             width={36}
                             height={36}
                         />
