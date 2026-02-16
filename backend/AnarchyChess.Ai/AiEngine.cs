@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using AnarchyChess.Ai.Evaluation;
+﻿using AnarchyChess.Ai.Evaluation;
 using AnarchyChess.Ai.Helpers;
 using AnarchyChess.Ai.Models;
 using AnarchyChess.EngineShared;
@@ -335,7 +334,6 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private int ScoreMove(BitMove move, BitBoard board, int depth)
     {
         if (move.CapturesMask != 0)
