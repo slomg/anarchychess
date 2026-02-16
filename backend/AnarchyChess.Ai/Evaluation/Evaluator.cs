@@ -23,6 +23,7 @@ public sealed class Evaluator(
             new MobilityEvaluator(),
             new PawnSpaceEvaluator(),
             new PawnStructureEvaluator(),
+            new KingEndgameActivityEvaluator(),
         ];
 
     public int Evaluate(BitBoard board)
