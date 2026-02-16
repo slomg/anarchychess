@@ -105,11 +105,12 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
         bool isLastMoveCapture = false
     )
     {
-        if (
-            depth <= 0
-            || board.BitboardFor(PieceType.King, BitPieceColor.White) == 0
-            || board.BitboardFor(PieceType.King, BitPieceColor.Black) == 0
-        )
+        if (_evaluator.TryEvaluateTermination(board, out int terminationEval))
+        {
+            return terminationEval;
+        }
+
+        if (depth <= 0)
         {
             return isLastMoveCapture
                 ? Quiescence(board, alpha, beta, maxDepth: 3)
@@ -201,11 +202,13 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
         {
             alpha = standPat;
         }
-        if (
-            maxDepth <= 0
-            || board.BitboardFor(PieceType.King, BitPieceColor.White) == 0
-            || board.BitboardFor(PieceType.King, BitPieceColor.Black) == 0
-        )
+
+        if (_evaluator.TryEvaluateTermination(board, out int terminationEval))
+        {
+            return terminationEval;
+        }
+
+        if (maxDepth <= 0)
         {
             return alpha;
         }

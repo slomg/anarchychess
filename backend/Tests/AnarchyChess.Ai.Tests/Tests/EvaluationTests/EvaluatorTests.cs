@@ -48,4 +48,117 @@ public class EvaluatorTests
 
         score.Should().BeLessThan(0);
     }
+
+    [Fact]
+    public void TryEvaluateTermination_returns_false_when_kings_present_and_not_adjacent()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new("a1")] = PieceFactory.White(PieceType.King),
+            [new("h8")] = PieceFactory.Black(PieceType.King),
+        };
+
+        BitBoard board = BitBoard.FromPieces(pieces, isWhiteToMove: true);
+
+        bool result = _evaluator.TryEvaluateTermination(board, out int terminationEval);
+
+        result.Should().BeFalse();
+        terminationEval.Should().Be(0);
+    }
+
+    [Fact]
+    public void TryEvaluateTermination_returns_correct_eval_when_white_has_no_kings_and_white_to_move()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new("h8")] = PieceFactory.Black(PieceType.King),
+        };
+
+        BitBoard board = BitBoard.FromPieces(pieces, isWhiteToMove: true);
+
+        bool result = _evaluator.TryEvaluateTermination(board, out int terminationEval);
+
+        result.Should().BeTrue();
+        terminationEval.Should().Be(-100_000);
+    }
+
+    [Fact]
+    public void TryEvaluateTermination_returns_correct_eval_when_white_has_no_kings_and_black_to_move()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new("h8")] = PieceFactory.Black(PieceType.King),
+        };
+
+        BitBoard board = BitBoard.FromPieces(pieces, isWhiteToMove: false);
+
+        bool result = _evaluator.TryEvaluateTermination(board, out int terminationEval);
+
+        result.Should().BeTrue();
+        terminationEval.Should().Be(100_000);
+    }
+
+    [Fact]
+    public void TryEvaluateTermination_returns_correct_eval_when_black_has_no_kings_and_white_to_move()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new("a1")] = PieceFactory.White(PieceType.King),
+        };
+
+        BitBoard board = BitBoard.FromPieces(pieces, isWhiteToMove: true);
+
+        bool result = _evaluator.TryEvaluateTermination(board, out int terminationEval);
+
+        result.Should().BeTrue();
+        terminationEval.Should().Be(100_000);
+    }
+
+    [Fact]
+    public void TryEvaluateTermination_returns_correct_eval_when_black_has_no_kings_and_black_to_move()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new("a1")] = PieceFactory.White(PieceType.King),
+        };
+        BitBoard board = BitBoard.FromPieces(pieces, isWhiteToMove: false);
+
+        bool result = _evaluator.TryEvaluateTermination(board, out int terminationEval);
+
+        result.Should().BeTrue();
+        terminationEval.Should().Be(-100_000);
+    }
+
+    [Fact]
+    public void TryEvaluateTermination_returns_draw_when_both_sides_have_no_kings()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new("a1")] = PieceFactory.White(PieceType.Rook),
+            [new("c1")] = PieceFactory.Black(PieceType.Rook),
+        };
+        BitBoard board = BitBoard.FromPieces(pieces);
+
+        bool result = _evaluator.TryEvaluateTermination(board, out int terminationEval);
+
+        result.Should().BeTrue();
+        terminationEval.Should().Be(0);
+    }
+
+    [Fact]
+    public void TryEvaluateTermination_returns_draw_when_kings_are_adjacent()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new("e4")] = PieceFactory.White(PieceType.King),
+            [new("e5")] = PieceFactory.Black(PieceType.King),
+        };
+
+        BitBoard board = BitBoard.FromPieces(pieces);
+
+        bool result = _evaluator.TryEvaluateTermination(board, out int terminationEval);
+
+        result.Should().BeTrue();
+        terminationEval.Should().Be(0);
+    }
 }
