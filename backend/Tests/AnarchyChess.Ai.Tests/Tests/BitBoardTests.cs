@@ -128,7 +128,7 @@ public class BitBoardTests
     public void FromPieces_sets_last_move_state()
     {
         PrevMoveState prevMoveState = new(
-            From: new AlgebraicPoint("a2").AsIdx(),
+            From: new AlgebraicPoint("b2").AsIdx(),
             To: new AlgebraicPoint("b5").AsIdx(),
             Piece: new() { Type = PieceType.Pawn, Color = BitPieceColor.White },
             CaptureMask: (UInt128.One << 1) | (UInt128.One << 15)
