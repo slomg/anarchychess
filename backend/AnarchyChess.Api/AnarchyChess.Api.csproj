@@ -41,6 +41,7 @@
     <PackageReference Include="NSwag.AspNetCore" Version="14.6.3" />
     <PackageReference Include="OpenIddict.Client.AspNetCore" Version="7.2.0" />
     <PackageReference Include="OpenIddict.Client.WebIntegration" Version="7.2.0" />
+    <PackageReference Include="protobuf-net.Grpc.ClientFactory" Version="1.2.2" />
     <PackageReference Include="Scalar.AspNetCore" Version="2.12.8" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageReference Include="Serilog.Sinks.Async" Version="2.1.0" />
@@ -51,6 +52,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AnarchyChess.Ai.Service\AnarchyChess.Ai.Service.csproj" />
     <ProjectReference Include="..\AnarchyChess.EngineShared\AnarchyChess.EngineShared.csproj" />
   </ItemGroup>
 

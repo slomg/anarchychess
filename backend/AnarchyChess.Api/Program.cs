@@ -3,7 +3,9 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using AnarchyChess.Ai.Service.Services;
 using AnarchyChess.Api.Analysis.Services;
+using AnarchyChess.Api.AnarchyBot.Services;
 using AnarchyChess.Api.ArchivedGames.Repositories;
 using AnarchyChess.Api.ArchivedGames.Services;
 using AnarchyChess.Api.Auth.Errors;
@@ -523,6 +525,13 @@ builder.Services.AddScoped<IChallengeRequestCreator, ChallengeRequestCreator>();
 #endregion
 
 
+#region Anarchy Bot
+builder.Services.AddSingleton<IAnarchyBotService>();
+builder.Services.AddGrpcClient<IAiEngineService>(client =>
+{
+    client.Address = appSettings.AnarchyBot.ServiceUrl;
+});
+#endregion
 
 builder.Services.AddSingleton<IShardRouter, ShardRouter>();
 builder.Services.AddSingleton<IRandomCodeGenerator, RandomCodeGenerator>();
