@@ -108,8 +108,8 @@ namespace AnarchyChess.Api.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("move_number");
 
-                    b.Property<int?>("PromotesTo")
-                        .HasColumnType("integer")
+                    b.Property<byte?>("PromotesTo")
+                        .HasColumnType("smallint")
                         .HasColumnName("promotes_to");
 
                     b.Property<string>("San")
@@ -178,8 +178,8 @@ namespace AnarchyChess.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("Color")
-                        .HasColumnType("integer")
+                    b.Property<byte?>("Color")
+                        .HasColumnType("smallint")
                         .HasColumnName("color");
 
                     b.Property<int?>("MoveArchiveId")
@@ -190,8 +190,8 @@ namespace AnarchyChess.Api.Migrations
                         .HasColumnType("smallint")
                         .HasColumnName("pos_idx");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("integer")
+                    b.Property<byte>("Type")
+                        .HasColumnType("smallint")
                         .HasColumnName("type");
 
                     b.HasKey("Id")
@@ -212,8 +212,8 @@ namespace AnarchyChess.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Color")
-                        .HasColumnType("integer")
+                    b.Property<byte>("Color")
+                        .HasColumnType("smallint")
                         .HasColumnName("color");
 
                     b.Property<string>("CountryCode")

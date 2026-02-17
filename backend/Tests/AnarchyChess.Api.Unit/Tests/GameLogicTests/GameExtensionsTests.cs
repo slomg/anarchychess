@@ -1,4 +1,4 @@
-﻿using AnarchyChess.Api.GameLogic.Extensions;
+﻿using AnarchyChess.EngineShared.Extensions;
 using AnarchyChess.EngineShared;
 using AwesomeAssertions;
 

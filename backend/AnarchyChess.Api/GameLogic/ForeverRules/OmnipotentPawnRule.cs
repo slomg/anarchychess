@@ -1,6 +1,6 @@
-﻿using AnarchyChess.Api.GameLogic.Extensions;
-using AnarchyChess.Api.GameLogic.Models;
+﻿using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.EngineShared;
+using AnarchyChess.EngineShared.Extensions;
 
 namespace AnarchyChess.Api.GameLogic.ForeverRules;
 

@@ -1,7 +1,7 @@
 ﻿using AnarchyChess.Api.Game.Errors;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
-using AnarchyChess.Api.GameLogic.Extensions;
+using AnarchyChess.EngineShared.Extensions;
 using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Shared.Models;

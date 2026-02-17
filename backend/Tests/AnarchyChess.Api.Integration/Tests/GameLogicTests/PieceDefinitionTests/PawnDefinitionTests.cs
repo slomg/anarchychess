@@ -1,7 +1,5 @@
-﻿using AnarchyChess.Api.GameLogic;
-using AnarchyChess.Api.TestInfrastructure;
-using AnarchyChess.Api.TestInfrastructure.Utils;
-using AnarchyChess.EngineShared;
+﻿using AnarchyChess.Api.TestInfrastructure;
+using AnarchyChess.EngineTests.Shared;
 
 namespace AnarchyChess.Api.Integration.Tests.GameLogicTests.PieceDefinitionTests;
 
@@ -9,19 +7,7 @@ public class PawnDefinitionTests(AnarchyChessWebApplicationFactory factory)
     : PieceDefinitionTestBase(factory)
 {
     [Theory]
-    [ClassData(typeof(PawnDefinitionTestData))]
+    [ClassData(typeof(PawnTestData))]
     public void PawnDefinition_evaluates_expected_positions(PieceTestCase testCase) =>
         TestMoves(testCase);
-}
-
-public class PawnDefinitionTestData : PawnLikeTestData
-{
-    public PawnDefinitionTestData()
-    {
-        AddMoveTests(
-            PieceType.Pawn,
-            maxInitialMoveDistance: 3,
-            promotesTo: GameLogicConstants.PromotablePieces
-        );
-    }
 }

@@ -1,6 +1,6 @@
 ﻿namespace AnarchyChess.EngineShared;
 
-public enum PieceType
+public enum PieceType : byte
 {
     King,
     Queen,

@@ -147,13 +147,14 @@ dotnet ef database update
 
 ## Backend
 
-There are 3 test projects:
+There are 4 test projects:
 
 ```bash
 backend/Tests
 |- AnarchyChess.Api.Unit
 |- AnarchyChess.Api.Integration
 |- AnarchyChess.Api.Functional
+|- AnarchyChess.Ai.Tests
 ```
 
 To run all backend tests:

@@ -72,7 +72,7 @@ public class PieceLetterMapTests : BaseUnitTest
     public void GetLetter_returns_a_question_mark_for_unknown_pieces()
     {
         // some invalid PieceType
-        var unknownPiece = (PieceType)999;
+        var unknownPiece = (PieceType)99;
 
         var result = _pieceLetterMap.GetLetter(unknownPiece);
 

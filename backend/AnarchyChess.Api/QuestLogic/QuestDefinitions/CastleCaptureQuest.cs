@@ -1,5 +1,4 @@
-﻿using AnarchyChess.Api.GameLogic.Models;
-using AnarchyChess.Api.QuestLogic.Models;
+﻿using AnarchyChess.Api.QuestLogic.Models;
 using AnarchyChess.Api.QuestLogic.MoveConditions;
 using AnarchyChess.Api.QuestLogic.QuestConditions;
 using AnarchyChess.EngineShared;
