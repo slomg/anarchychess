@@ -37,7 +37,7 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
             {
                 double reduction = 0.99 + Math.Log(depth) * Math.Log(move) / 3.14;
 
-                lm[depth, move] = Math.Clamp((int)reduction, 1, 3);
+                lm[depth, move] = Math.Max((int)Math.Round(reduction), 1);
             }
         }
         return lm;
