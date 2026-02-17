@@ -8,5 +8,5 @@ public record PrevMoveStateDto(
     AlgebraicPoint From,
     AlgebraicPoint To,
     Piece Piece,
-    IReadOnlyCollection<AlgebraicPoint> LastCaptures
+    IReadOnlyCollection<AlgebraicPoint> Captures
 );

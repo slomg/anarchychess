@@ -83,7 +83,7 @@ public class AiEngineServiceTests
             From: new("a5"),
             To: new("a2"),
             Piece: PieceFactory.Black(PieceType.Pawn),
-            LastCaptures: [prevCapture1, prevCapture2]
+            Captures: [prevCapture1, prevCapture2]
         );
 
         Dictionary<AlgebraicPoint, Piece> pieces = new()

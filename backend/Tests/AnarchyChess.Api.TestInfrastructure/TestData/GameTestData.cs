@@ -1,4 +1,5 @@
-﻿using Bogus;
+﻿using AnarchyChess.EngineShared;
+using Bogus;
 
 namespace AnarchyChess.Api.TestInfrastructure.TestData;
 
@@ -23,12 +24,26 @@ public static class GameTestData
 
     public static byte[] RandomIdxs(Faker faker)
     {
-        var length = faker.Random.Number(0, 5);
+        int length = faker.Random.Number(0, 5);
         byte[] idxs = new byte[length];
         for (int i = 0; i < length; i++)
         {
             idxs[i] = (byte)faker.Random.Number(0, 99);
         }
         return idxs;
+    }
+
+    public static AlgebraicPoint[] RandomPoints(Faker faker)
+    {
+        int length = faker.Random.Number(1, 5);
+        AlgebraicPoint[] points = new AlgebraicPoint[length];
+        for (int i = 0; i < length; i++)
+        {
+            points[i] = new AlgebraicPoint(
+                X: faker.Random.Number(0, 9),
+                Y: faker.Random.Number(0, 9)
+            );
+        }
+        return points;
     }
 }

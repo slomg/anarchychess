@@ -50,7 +50,7 @@ public class AiEngineService(IAiEngine aiEngine) : IAiEngineService
         }
 
         UInt128 captureMask = 0;
-        foreach (AlgebraicPoint capture in prevMoveState.LastCaptures)
+        foreach (AlgebraicPoint capture in prevMoveState.Captures)
         {
             captureMask |= UInt128.One << capture.AsIdx();
         }
