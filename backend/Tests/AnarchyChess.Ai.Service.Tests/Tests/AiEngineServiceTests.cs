@@ -37,11 +37,6 @@ public class AiEngineServiceTests
             PromotesTo = promotesTo,
         };
 
-        LastMoveState lastMoveState = new(
-            EnPassantPawnSquare: 10,
-            EnPassantSquaresMask: UInt128.One << 11,
-            LastCaptureMask: UInt128.One << 12
-        );
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
             [new("f6")] = PieceFactory.White(),
@@ -49,11 +44,7 @@ public class AiEngineServiceTests
         };
         bool isWhiteToMove = true;
 
-        BitBoard expectedBoard = BitBoard.FromPieces(
-            pieces,
-            isWhiteToMove: isWhiteToMove,
-            lastMoveState: lastMoveState
-        );
+        BitBoard expectedBoard = BitBoard.FromPieces(pieces, isWhiteToMove: isWhiteToMove);
         _aiEngineMock
             .FindBestMove(
                 ArgEx.FluentAssert<BitBoard>(x => x.Should().BeEquivalentTo(expectedBoard)),
@@ -62,7 +53,7 @@ public class AiEngineServiceTests
             .Returns(move);
 
         var response = await _engine.FindBestMoveAsync(
-            new(pieces, IsWhiteToMove: isWhiteToMove, LastMoveState: lastMoveState)
+            new(pieces, IsWhiteToMove: isWhiteToMove, PrevMoveState: null)
         );
 
         AiEngineMoveReply expectedReply = new(
@@ -75,6 +66,65 @@ public class AiEngineServiceTests
     }
 
     [Fact]
+    public async Task FindBestMoveAsync_passes_prev_move_state_correctly()
+    {
+        AlgebraicPoint from = new("e2");
+        AlgebraicPoint to = new("e4");
+        BitMove move = new()
+        {
+            From = from.AsIdx(),
+            To = to.AsIdx(),
+            Piece = new() { Type = PieceType.Horsey, Color = BitPieceColor.White },
+        };
+
+        AlgebraicPoint prevCapture1 = new("b5");
+        AlgebraicPoint prevCapture2 = new("a6");
+        PrevMoveStateDto prevMoveDto = new(
+            From: new("a5"),
+            To: new("a2"),
+            Piece: PieceFactory.Black(PieceType.Pawn),
+            LastCaptures: [prevCapture1, prevCapture2]
+        );
+
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new("e2")] = PieceFactory.White(PieceType.Horsey),
+            [new("d3")] = PieceFactory.Black(PieceType.Pawn),
+        };
+
+        _aiEngineMock
+            .FindBestMove(
+                ArgEx.FluentAssert<BitBoard>(board =>
+                {
+                    board.Should().NotBeNull();
+
+                    board.EnPassantPawnSquare.Should().Be(prevMoveDto.To.AsIdx());
+                    board
+                        .EnPassantSquaresMask.Should()
+                        .Be(
+                            (UInt128.One << new AlgebraicPoint("a3").AsIdx())
+                                | (UInt128.One << new AlgebraicPoint("a4").AsIdx())
+                        );
+                    board
+                        .LastCaptureMask.Should()
+                        .Be(
+                            (UInt128.One << prevCapture1.AsIdx())
+                                | (UInt128.One << prevCapture2.AsIdx())
+                        );
+                }),
+                depth: AiEngineService.Depth
+            )
+            .Returns(move);
+
+        var response = await _engine.FindBestMoveAsync(
+            new(pieces, IsWhiteToMove: true, PrevMoveState: prevMoveDto)
+        );
+
+        AiEngineMoveReply expectedReply = new(From: from, To: to, Captures: [], PromotesTo: null);
+        response.Should().BeEquivalentTo(expectedReply);
+    }
+
+    [Fact]
     public async Task FindBestMoveAsync_returns_null_when_no_move_is_found()
     {
         _aiEngineMock
@@ -82,7 +132,7 @@ public class AiEngineServiceTests
             .Returns((BitMove?)null);
 
         var response = await _engine.FindBestMoveAsync(
-            new(Pieces: [], IsWhiteToMove: true, LastMoveState: null)
+            new(Pieces: [], IsWhiteToMove: true, PrevMoveState: null)
         );
 
         response.Should().BeNull();
