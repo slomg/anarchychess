@@ -1,8 +1,10 @@
 ﻿using System.Text.Json.Serialization;
 using Orleans;
+using ProtoBuf;
 
 namespace AnarchyChess.EngineShared;
 
+[ProtoContract]
 [GenerateSerializer]
 [Alias("AnarchyChess.EngineShared.AlgebraicPoint")]
 [method: JsonConstructor]
@@ -10,6 +12,13 @@ public readonly record struct AlgebraicPoint(int X, int Y)
 {
     public AlgebraicPoint(string algebraic)
         : this(algebraic[0] - 'a', int.Parse(algebraic[1..]) - 1) { }
+
+    public static AlgebraicPoint FromIdx(byte idx, int boardWidth = 10)
+    {
+        int y = idx / boardWidth;
+        int x = idx % boardWidth;
+        return new AlgebraicPoint(X: x, Y: y);
+    }
 
     public static bool TryParse(
         string algebraic,
