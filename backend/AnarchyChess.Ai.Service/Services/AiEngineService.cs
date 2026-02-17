@@ -2,6 +2,7 @@ using AnarchyChess.Ai.Helpers;
 using AnarchyChess.Ai.Models;
 using AnarchyChess.Ai.Service.DTO;
 using AnarchyChess.EngineShared;
+using AnarchyChess.EngineShared.Extensions;
 
 namespace AnarchyChess.Ai.Service.Services;
 
@@ -16,7 +17,7 @@ public class AiEngineService(IAiEngine aiEngine) : IAiEngineService
         BitBoard board = BitBoard.FromPieces(
             request.Pieces,
             isWhiteToMove: request.IsWhiteToMove,
-            lastMoveState: request.LastMoveState
+            prevMoveState: CreatePrevMove(request.PrevMoveState)
         );
         BitMove? bestMove = _aiEngine.FindBestMove(board, depth: Depth);
         if (bestMove is null)
@@ -39,5 +40,32 @@ public class AiEngineService(IAiEngine aiEngine) : IAiEngineService
             PromotesTo: bestMove.Value.PromotesTo
         );
         return ValueTask.FromResult<AiEngineMoveReply?>(reply);
+    }
+
+    private static PrevMoveState? CreatePrevMove(PrevMoveStateDto? prevMoveState)
+    {
+        if (prevMoveState is null)
+        {
+            return null;
+        }
+
+        UInt128 captureMask = 0;
+        foreach (AlgebraicPoint capture in prevMoveState.LastCaptures)
+        {
+            captureMask |= UInt128.One << capture.AsIdx();
+        }
+
+        BitPieceColor color = prevMoveState.Piece.Color.Match(
+            whenWhite: BitPieceColor.White,
+            whenBlack: BitPieceColor.Black,
+            whenNeutral: BitPieceColor.Neutral
+        );
+        BitPiece piece = new() { Type = prevMoveState.Piece.Type, Color = color };
+        return new(
+            From: prevMoveState.From.AsIdx(),
+            To: prevMoveState.To.AsIdx(),
+            Piece: piece,
+            CaptureMask: captureMask
+        );
     }
 }

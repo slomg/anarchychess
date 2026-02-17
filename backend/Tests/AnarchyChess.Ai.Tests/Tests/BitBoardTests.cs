@@ -124,28 +124,30 @@ public class BitBoardTests
         board.IsWhiteToMove.Should().Be(isWhiteToMove);
     }
 
-    [Theory]
-    [InlineData(PieceType.Pawn)]
-    [InlineData(PieceType.UnderagePawn)]
-    [InlineData(PieceType.SterilePawn)]
-    public void FromPieces_sets_last_move_state(PieceType pawnType)
+    [Fact]
+    public void FromPieces_sets_last_move_state()
     {
-        LastMoveState lastMoveState = new(
-            EnPassantPawnSquare: new AlgebraicPoint("b5").AsIdx(),
-            EnPassantSquaresMask: (UInt128.One << new AlgebraicPoint("b3").AsIdx())
-                | (UInt128.One << new AlgebraicPoint("b4").AsIdx()),
-            LastCaptureMask: (UInt128.One << 1) | (UInt128.One << 15)
+        PrevMoveState prevMoveState = new(
+            From: new AlgebraicPoint("a2").AsIdx(),
+            To: new AlgebraicPoint("b5").AsIdx(),
+            Piece: new() { Type = PieceType.Pawn, Color = BitPieceColor.White },
+            CaptureMask: (UInt128.One << 1) | (UInt128.One << 15)
         );
 
         BitBoard board = BitBoard.FromPieces(
-            new() { [new AlgebraicPoint("b2")] = PieceFactory.White(pawnType) },
+            new() { [new AlgebraicPoint("b2")] = PieceFactory.White(PieceType.Pawn) },
             isWhiteToMove: true,
-            lastMoveState
+            prevMoveState
         );
 
-        board.EnPassantSquaresMask.Should().Be(lastMoveState.EnPassantSquaresMask);
-        board.EnPassantPawnSquare.Should().Be(lastMoveState.EnPassantPawnSquare);
-        board.LastCaptureMask.Should().Be(lastMoveState.LastCaptureMask);
+        board
+            .EnPassantSquaresMask.Should()
+            .Be(
+                (UInt128.One << new AlgebraicPoint("b3").AsIdx())
+                    | (UInt128.One << new AlgebraicPoint("b4").AsIdx())
+            );
+        board.EnPassantPawnSquare.Should().Be(prevMoveState.To);
+        board.LastCaptureMask.Should().Be(prevMoveState.CaptureMask);
     }
 
     [Fact]
@@ -297,20 +299,26 @@ public class BitBoardTests
             [new AlgebraicPoint("b2")] = PieceFactory.White(PieceType.Pawn),
             [new AlgebraicPoint("a5")] = PieceFactory.Black(PieceType.Pawn),
         };
-        LastMoveState lastMoveState = new(
-            EnPassantPawnSquare: new AlgebraicPoint("b4").AsIdx(),
-            EnPassantSquaresMask: UInt128.One << new AlgebraicPoint("b3").AsIdx(),
-            LastCaptureMask: UInt128.One << new AlgebraicPoint("a5").AsIdx()
+
+        PrevMoveState prevMoveState = new(
+            From: new AlgebraicPoint("b2").AsIdx(),
+            To: new AlgebraicPoint("b4").AsIdx(),
+            Piece: new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.White },
+            CaptureMask: UInt128.One << new AlgebraicPoint("a5").AsIdx()
         );
         BitBoard board = BitBoard.FromPieces(
             pieces,
             isWhiteToMove: true,
-            lastMoveState: lastMoveState
+            prevMoveState: prevMoveState
         );
 
-        board.EnPassantPawnSquare.Should().Be(lastMoveState.EnPassantPawnSquare);
-        board.EnPassantSquaresMask.Should().Be(lastMoveState.EnPassantSquaresMask);
-        board.LastCaptureMask.Should().Be(lastMoveState.LastCaptureMask);
+        byte enPassantPawnSquare = new AlgebraicPoint("b4").AsIdx();
+        UInt128 enPassantSquaresMask = UInt128.One << new AlgebraicPoint("b3").AsIdx();
+        UInt128 lastCaptureMask = UInt128.One << new AlgebraicPoint("a5").AsIdx();
+
+        board.EnPassantPawnSquare.Should().Be(enPassantPawnSquare);
+        board.EnPassantSquaresMask.Should().Be(enPassantSquaresMask);
+        board.LastCaptureMask.Should().Be(lastCaptureMask);
 
         var undo = board.MakeNullMove();
 
@@ -337,9 +345,9 @@ public class BitBoardTests
                 new NullMoveUndoState()
                 {
                     PrevIsWhiteToMove = true,
-                    PrevEnPassantPawnSquare = lastMoveState.EnPassantPawnSquare,
-                    PrevEnPassantSquaresMask = lastMoveState.EnPassantSquaresMask,
-                    PrevLastCaptureMask = lastMoveState.LastCaptureMask,
+                    PrevEnPassantPawnSquare = enPassantPawnSquare,
+                    PrevEnPassantSquaresMask = enPassantSquaresMask,
+                    PrevLastCaptureMask = lastCaptureMask,
                 }
             );
     }
@@ -347,23 +355,24 @@ public class BitBoardTests
     [Fact]
     public void UndoNullMove_restores_previous_board_state()
     {
-        LastMoveState lastMoveState = new(
-            EnPassantPawnSquare: new AlgebraicPoint("b4").AsIdx(),
-            EnPassantSquaresMask: UInt128.One << new AlgebraicPoint("b3").AsIdx(),
-            LastCaptureMask: UInt128.One << new AlgebraicPoint("a5").AsIdx()
+        PrevMoveState prevMoveState = new(
+            From: new AlgebraicPoint("b2").AsIdx(),
+            To: new AlgebraicPoint("b4").AsIdx(),
+            Piece: new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.White },
+            CaptureMask: UInt128.One << new AlgebraicPoint("a5").AsIdx()
         );
         BitBoard board = BitBoard.FromPieces(
             new() { [new AlgebraicPoint("b2")] = PieceFactory.White(PieceType.Pawn) },
             isWhiteToMove: true,
-            lastMoveState
+            prevMoveState
         );
 
         var undo = board.MakeNullMove();
         board.UndoNullMove(undo);
 
         board.IsWhiteToMove.Should().BeTrue();
-        board.EnPassantPawnSquare.Should().Be(lastMoveState.EnPassantPawnSquare);
-        board.EnPassantSquaresMask.Should().Be(lastMoveState.EnPassantSquaresMask);
-        board.LastCaptureMask.Should().Be(lastMoveState.LastCaptureMask);
+        board.EnPassantPawnSquare.Should().Be(new AlgebraicPoint("b4").AsIdx());
+        board.EnPassantSquaresMask.Should().Be(UInt128.One << new AlgebraicPoint("b3").AsIdx());
+        board.LastCaptureMask.Should().Be(UInt128.One << new AlgebraicPoint("a5").AsIdx());
     }
 }

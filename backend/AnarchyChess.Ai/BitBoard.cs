@@ -33,7 +33,7 @@ public partial class BitBoard
     public int WhiteMaterialCount { get; private set; }
     public int BlackMaterialCount { get; private set; }
 
-    private BitBoard(UInt128[,] bitboards, BitPiece?[] pieceAt)
+    private BitBoard(UInt128[,] bitboards, BitPiece?[] pieceAt, PrevMoveState? prevMoveState)
     {
         Bitboards = bitboards;
         PieceAt = pieceAt;
@@ -46,6 +46,12 @@ public partial class BitBoard
         }
 
         ComputeAggregateBitboards();
+
+        if (prevMoveState is not null)
+        {
+            ProcessEnPassant(from: prevMoveState.From, to: prevMoveState.To, prevMoveState.Piece);
+            LastCaptureMask = prevMoveState.CaptureMask;
+        }
     }
 
     public BitBoard()
@@ -91,7 +97,7 @@ public partial class BitBoard
     public static BitBoard FromPieces(
         Dictionary<AlgebraicPoint, Piece> pieces,
         bool isWhiteToMove = true,
-        LastMoveState? lastMoveState = null
+        PrevMoveState? prevMoveState = null
     )
     {
         UInt128[,] bitboards = new UInt128[
@@ -130,16 +136,12 @@ public partial class BitBoard
             }
         }
 
-        return new BitBoard(bitboards, pieceAt)
+        return new BitBoard(bitboards, pieceAt, prevMoveState)
         {
             HasMoved = hasMoved,
             IsWhiteToMove = isWhiteToMove,
             WhiteMaterialCount = whiteScore,
             BlackMaterialCount = blackScore,
-
-            EnPassantPawnSquare = lastMoveState?.EnPassantPawnSquare ?? 0,
-            EnPassantSquaresMask = lastMoveState?.EnPassantSquaresMask ?? 0,
-            LastCaptureMask = lastMoveState?.LastCaptureMask ?? 0,
         };
     }
 
@@ -403,34 +405,34 @@ public partial class BitBoard
 
     private void ProcessMoveEffects(BitMove move)
     {
-        ProcessEnPassant(move);
+        ProcessEnPassant(move.From, move.To, move.Piece);
         LastCaptureMask = move.CapturesMask;
     }
 
-    private void ProcessEnPassant(BitMove move)
+    private void ProcessEnPassant(byte from, byte to, BitPiece piece)
     {
         EnPassantSquaresMask = 0;
         EnPassantPawnSquare = 0;
 
-        if (!GameLogicConstants.PawnLikePieces.Contains(move.Piece.Type) || move.From == move.To)
+        if (!GameLogicConstants.PawnLikePieces.Contains(piece.Type) || from == to)
         {
             return;
         }
 
-        int fromRank = move.From / 10;
-        int toRank = move.To / 10;
+        int fromRank = from / 10;
+        int toRank = to / 10;
         if (fromRank == toRank)
         {
             return;
         }
 
-        int file = move.From % 10;
+        int file = from % 10;
         int step = (toRank > fromRank) ? 1 : -1;
         for (int rank = fromRank + step; rank != toRank; rank += step)
         {
             EnPassantSquaresMask |= UInt128.One << (rank * 10 + file);
         }
 
-        EnPassantPawnSquare = move.To;
+        EnPassantPawnSquare = to;
     }
 }

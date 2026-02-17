@@ -1,5 +1,4 @@
-﻿using AnarchyChess.Ai.Models;
-using AnarchyChess.EngineShared;
+﻿using AnarchyChess.EngineShared;
 using ProtoBuf;
 
 namespace AnarchyChess.Ai.Service.DTO;
@@ -8,5 +7,5 @@ namespace AnarchyChess.Ai.Service.DTO;
 public record AiEngineMoveRequest(
     Dictionary<AlgebraicPoint, Piece> Pieces,
     bool IsWhiteToMove,
-    LastMoveState? LastMoveState
+    PrevMoveStateDto? PrevMoveState
 );
