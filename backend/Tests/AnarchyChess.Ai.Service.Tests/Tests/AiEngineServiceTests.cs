@@ -21,7 +21,7 @@ public class AiEngineServiceTests
     }
 
     [Fact]
-    public async Task PlayMoveAsync_returns_expected_move()
+    public async Task FindBestMoveAsync_returns_expected_move()
     {
         AlgebraicPoint from = new("a5");
         AlgebraicPoint to = new("d7");
@@ -61,7 +61,7 @@ public class AiEngineServiceTests
             )
             .Returns(move);
 
-        var response = await _engine.PlayMoveAsync(
+        var response = await _engine.FindBestMoveAsync(
             new(pieces, IsWhiteToMove: isWhiteToMove, LastMoveState: lastMoveState)
         );
 
@@ -75,13 +75,13 @@ public class AiEngineServiceTests
     }
 
     [Fact]
-    public async Task PlayMoveAsync_returns_null_when_no_move_is_found()
+    public async Task FindBestMoveAsync_returns_null_when_no_move_is_found()
     {
         _aiEngineMock
             .FindBestMove(Arg.Any<BitBoard>(), AiEngineService.Depth)
             .Returns((BitMove?)null);
 
-        var response = await _engine.PlayMoveAsync(
+        var response = await _engine.FindBestMoveAsync(
             new(Pieces: [], IsWhiteToMove: true, LastMoveState: null)
         );
 

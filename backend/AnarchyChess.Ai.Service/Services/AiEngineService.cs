@@ -11,7 +11,7 @@ public class AiEngineService(IAiEngine aiEngine) : IAiEngineService
 
     public const int Depth = 8;
 
-    public ValueTask<AiEngineMoveReply?> PlayMoveAsync(AiEngineMoveRequest request)
+    public ValueTask<AiEngineMoveReply?> FindBestMoveAsync(AiEngineMoveRequest request)
     {
         BitBoard board = BitBoard.FromPieces(
             request.Pieces,

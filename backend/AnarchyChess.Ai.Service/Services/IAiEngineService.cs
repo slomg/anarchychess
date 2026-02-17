@@ -6,5 +6,5 @@ namespace AnarchyChess.Ai.Service.Services;
 [ServiceContract]
 public interface IAiEngineService
 {
-    ValueTask<AiEngineMoveReply?> PlayMoveAsync(AiEngineMoveRequest request);
+    ValueTask<AiEngineMoveReply?> FindBestMoveAsync(AiEngineMoveRequest request);
 }
