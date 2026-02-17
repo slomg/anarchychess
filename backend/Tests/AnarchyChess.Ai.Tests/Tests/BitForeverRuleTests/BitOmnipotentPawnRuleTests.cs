@@ -12,7 +12,7 @@ public class BitOmnipotentPawnRuleTests
     [Fact]
     public void GenerateMoves_does_nothing_when_last_capture_mask_is_zero()
     {
-        BitBoard board = BitBoard.FromPieces([], isWhiteToMove: true, prevMove: null);
+        BitBoard board = BitBoard.FromPieces([], isWhiteToMove: true);
         Span<BitMove> moves = stackalloc BitMove[10];
         int moveCount = 0;
 
@@ -24,15 +24,15 @@ public class BitOmnipotentPawnRuleTests
     [Fact]
     public void GenerateMoves_adds_white_pawn_when_white_to_move_and_last_capture_on_white_square()
     {
-        BitMove prevMove = new()
-        {
-            Piece = new BitPiece { Type = PieceType.Rook, Color = BitPieceColor.Black },
-            From = 0,
-            To = BitOmnipotentPawnRule.WhiteSquare,
-            CapturesMask = BitOmnipotentPawnRule.WhiteSquareMask,
-        };
-
-        BitBoard board = BitBoard.FromPieces([], isWhiteToMove: true, prevMove: prevMove);
+        BitBoard board = BitBoard.FromPieces(
+            [],
+            isWhiteToMove: true,
+            lastMoveState: new(
+                EnPassantPawnSquare: 0,
+                EnPassantSquaresMask: 0,
+                LastCaptureMask: BitOmnipotentPawnRule.WhiteSquareMask
+            )
+        );
         Span<BitMove> moves = stackalloc BitMove[10];
         int moveCount = 0;
 
@@ -56,15 +56,15 @@ public class BitOmnipotentPawnRuleTests
     [Fact]
     public void GenerateMoves_adds_black_pawn_when_black_to_move_and_last_capture_on_black_square()
     {
-        BitMove prevMove = new()
-        {
-            Piece = new BitPiece { Type = PieceType.Rook, Color = BitPieceColor.White },
-            From = 0,
-            To = BitOmnipotentPawnRule.BlackSquare,
-            CapturesMask = BitOmnipotentPawnRule.BlackSquareMask,
-        };
-
-        BitBoard board = BitBoard.FromPieces([], isWhiteToMove: false, prevMove: prevMove);
+        BitBoard board = BitBoard.FromPieces(
+            [],
+            isWhiteToMove: false,
+            lastMoveState: new(
+                EnPassantPawnSquare: 0,
+                EnPassantSquaresMask: 0,
+                LastCaptureMask: BitOmnipotentPawnRule.BlackSquareMask
+            )
+        );
         Span<BitMove> moves = stackalloc BitMove[10];
         int moveCount = 0;
 
@@ -88,15 +88,15 @@ public class BitOmnipotentPawnRuleTests
     [Fact]
     public void GenerateMoves_does_not_add_white_pawn_if_last_capture_not_on_white_square()
     {
-        BitMove prevMove = new()
-        {
-            Piece = new BitPiece { Type = PieceType.Rook, Color = BitPieceColor.Black },
-            From = 0,
-            To = BitOmnipotentPawnRule.BlackSquare,
-            CapturesMask = BitOmnipotentPawnRule.BlackSquareMask,
-        };
-
-        BitBoard board = BitBoard.FromPieces([], isWhiteToMove: true, prevMove: prevMove);
+        BitBoard board = BitBoard.FromPieces(
+            [],
+            isWhiteToMove: true,
+            lastMoveState: new(
+                EnPassantPawnSquare: 0,
+                EnPassantSquaresMask: 0,
+                LastCaptureMask: BitOmnipotentPawnRule.BlackSquareMask
+            )
+        );
         Span<BitMove> moves = stackalloc BitMove[10];
         int moveCount = 0;
 
@@ -116,7 +116,15 @@ public class BitOmnipotentPawnRuleTests
             CapturesMask = BitOmnipotentPawnRule.WhiteSquare,
         };
 
-        BitBoard board = BitBoard.FromPieces([], isWhiteToMove: false, prevMove: prevMove);
+        BitBoard board = BitBoard.FromPieces(
+            [],
+            isWhiteToMove: false,
+            lastMoveState: new(
+                EnPassantPawnSquare: 0,
+                EnPassantSquaresMask: 0,
+                LastCaptureMask: BitOmnipotentPawnRule.WhiteSquareMask
+            )
+        );
         Span<BitMove> moves = stackalloc BitMove[10];
         int moveCount = 0;
 

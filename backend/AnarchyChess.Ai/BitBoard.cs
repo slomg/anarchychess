@@ -33,7 +33,7 @@ public partial class BitBoard
     public int WhiteMaterialCount { get; private set; }
     public int BlackMaterialCount { get; private set; }
 
-    private BitBoard(UInt128[,] bitboards, BitPiece?[] pieceAt, BitMove? prevMove)
+    private BitBoard(UInt128[,] bitboards, BitPiece?[] pieceAt)
     {
         Bitboards = bitboards;
         PieceAt = pieceAt;
@@ -46,10 +46,6 @@ public partial class BitBoard
         }
 
         ComputeAggregateBitboards();
-        if (prevMove is not null)
-        {
-            ProcessMoveEffects(prevMove.Value);
-        }
     }
 
     public BitBoard()
@@ -95,7 +91,7 @@ public partial class BitBoard
     public static BitBoard FromPieces(
         Dictionary<AlgebraicPoint, Piece> pieces,
         bool isWhiteToMove = true,
-        BitMove? prevMove = null
+        LastMoveState? lastMoveState = null
     )
     {
         UInt128[,] bitboards = new UInt128[
@@ -134,12 +130,16 @@ public partial class BitBoard
             }
         }
 
-        return new BitBoard(bitboards, pieceAt, prevMove: prevMove)
+        return new BitBoard(bitboards, pieceAt)
         {
             HasMoved = hasMoved,
             IsWhiteToMove = isWhiteToMove,
             WhiteMaterialCount = whiteScore,
             BlackMaterialCount = blackScore,
+
+            EnPassantPawnSquare = lastMoveState?.EnPassantPawnSquare ?? 0,
+            EnPassantSquaresMask = lastMoveState?.EnPassantSquaresMask ?? 0,
+            LastCaptureMask = lastMoveState?.LastCaptureMask ?? 0,
         };
     }
 

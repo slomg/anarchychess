@@ -123,15 +123,14 @@ public class BitMoveGeneratorTests
     [Fact]
     public void Generate_applies_forever_rules()
     {
-        BitMove prevMove = new()
-        {
-            Piece = new BitPiece { Type = PieceType.Rook, Color = BitPieceColor.Black },
-            From = 0,
-            To = BitOmnipotentPawnRule.WhiteSquare,
-            CapturesMask = BitOmnipotentPawnRule.WhiteSquareMask,
-        };
-
-        BitBoard board = BitBoard.FromPieces([], prevMove: prevMove);
+        BitBoard board = BitBoard.FromPieces(
+            [],
+            lastMoveState: new(
+                EnPassantPawnSquare: 0,
+                EnPassantSquaresMask: 0,
+                LastCaptureMask: BitOmnipotentPawnRule.WhiteSquareMask
+            )
+        );
 
         Span<BitMove> moves = stackalloc BitMove[10];
         int moveCount = 0;
