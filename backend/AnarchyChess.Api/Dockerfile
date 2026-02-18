@@ -8,8 +8,8 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-COPY "AnarchyChess.Api/AnarchyChess.Api.csproj" "AnarchyChess.Api"
-COPY "AnarchyChess.EngineShared/AnarchyChess.EngineShared.csproj" "AnarchyChess.EngineShared"
+COPY AnarchyChess.Api/AnarchyChess.Api.csproj AnarchyChess.Api/AnarchyChess.Api.csproj
+COPY AnarchyChess.EngineShared/AnarchyChess.EngineShared.csproj AnarchyChess.EngineShared/AnarchyChess.EngineShared.csproj
 
 RUN dotnet restore "./AnarchyChess.Api/AnarchyChess.Api.csproj"
 
