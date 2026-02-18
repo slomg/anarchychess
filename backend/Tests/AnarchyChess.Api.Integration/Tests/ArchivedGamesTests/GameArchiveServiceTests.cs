@@ -6,7 +6,7 @@ using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Pagination.Models;
 using AnarchyChess.Api.TestInfrastructure;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
-using AnarchyChess.Api.UserRating.Models;
+using AnarchyChess.EngineShared;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,15 +28,17 @@ public class GameArchiveServiceTests : BaseIntegrationTest
     [Fact]
     public async Task CreateArchiveAsync_creates_and_saves_the_game_archive_correctly()
     {
-        var gameState = new GameStateFaker().Generate();
+        var pool = new PoolKeyFaker().Generate();
+        var whitePlayer = new GamePlayerFaker(GameColor.White).Generate();
+        var blackPlayer = new GamePlayerFaker(GameColor.Black).Generate();
         GameEndStatus endStatus = new(GameResult.WhiteWin, "White Won by Resignation");
-        RatingChange ratingChange = new(WhiteChange: 100, BlackChange: -150);
 
         var result = await _gameArchiveService.CreateArchiveAsync(
             _gameToken,
-            gameState,
+            pool,
+            whitePlayer,
+            blackPlayer,
             endStatus,
-            ratingChange,
             CT
         );
 
@@ -45,18 +47,18 @@ public class GameArchiveServiceTests : BaseIntegrationTest
         var savedArchive = await GetSavedArchiveAsync(_gameToken);
 
         savedArchive.Should().BeEquivalentTo(result);
-        var expectedArchive = new GameArchive
+        GameArchive expectedArchive = new()
         {
             GameToken = _gameToken,
             Result = endStatus.Result,
             ResultDescription = endStatus.ResultDescription,
 
-            PoolType = gameState.Pool.PoolType,
-            BaseSeconds = gameState.Pool.TimeControl.BaseSeconds,
-            IncrementSeconds = gameState.Pool.TimeControl.IncrementSeconds,
+            PoolType = pool.PoolType,
+            BaseSeconds = pool.TimeControl.BaseSeconds,
+            IncrementSeconds = pool.TimeControl.IncrementSeconds,
 
-            WhitePlayer = CreateExpectedPlayerArchive(player: gameState.WhitePlayer),
-            BlackPlayer = CreateExpectedPlayerArchive(player: gameState.BlackPlayer),
+            WhitePlayer = CreateExpectedPlayerArchive(player: whitePlayer),
+            BlackPlayer = CreateExpectedPlayerArchive(player: blackPlayer),
         };
 
         savedArchive

@@ -3,10 +3,10 @@ using AnarchyChess.Api.ArchivedGames.Models;
 using AnarchyChess.Api.ArchivedGames.Repositories;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
+using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.Pagination.Models;
 using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Shared.Models;
-using AnarchyChess.Api.UserRating.Models;
 
 namespace AnarchyChess.Api.ArchivedGames.Services;
 
@@ -14,9 +14,10 @@ public interface IGameArchiveService
 {
     Task<GameArchive> CreateArchiveAsync(
         GameToken gameToken,
-        GameState state,
+        PoolKey pool,
+        GamePlayer whitePlayer,
+        GamePlayer blackPlayer,
         GameEndStatus endStatus,
-        RatingChange? ratingChange,
         CancellationToken token = default
     );
     Task<PagedResult<GameSummaryDto>> GetPaginatedResultsAsync(
@@ -32,14 +33,15 @@ public class GameArchiveService(IGameArchiveRepository gameArchiveRepository) : 
 
     public async Task<GameArchive> CreateArchiveAsync(
         GameToken gameToken,
-        GameState state,
+        PoolKey pool,
+        GamePlayer whitePlayer,
+        GamePlayer blackPlayer,
         GameEndStatus endStatus,
-        RatingChange? ratingChange,
         CancellationToken token = default
     )
     {
-        var whiteArchive = CreatePlayerArchive(state.WhitePlayer);
-        var blackArchive = CreatePlayerArchive(state.BlackPlayer);
+        var whiteArchive = CreatePlayerArchive(whitePlayer);
+        var blackArchive = CreatePlayerArchive(blackPlayer);
 
         GameArchive gameArchive = new()
         {
@@ -50,9 +52,9 @@ public class GameArchiveService(IGameArchiveRepository gameArchiveRepository) : 
             WhitePlayer = whiteArchive,
             BlackPlayerId = blackArchive.Id,
             BlackPlayer = blackArchive,
-            PoolType = state.Pool.PoolType,
-            BaseSeconds = state.Pool.TimeControl.BaseSeconds,
-            IncrementSeconds = state.Pool.TimeControl.IncrementSeconds,
+            PoolType = pool.PoolType,
+            BaseSeconds = pool.TimeControl.BaseSeconds,
+            IncrementSeconds = pool.TimeControl.IncrementSeconds,
         };
 
         await _gameArchiveRepository.AddArchiveAsync(gameArchive, token);
