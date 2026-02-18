@@ -15,8 +15,8 @@ const GamesTable = ({
         <Card className="overflow-x-auto p-0.5">
             <table className="h-min table-auto overflow-x-auto">
                 <colgroup>
-                    <col style={{ width: "5%" }} />
-                    <col style={{ width: "45%" }} />
+                    <col style={{ width: "0%" }} />
+                    <col style={{ width: "50%" }} />
                     <col style={{ width: "30%" }} />
                     <col style={{ width: "20%" }} />
                 </colgroup>
