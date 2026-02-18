@@ -527,6 +527,7 @@ builder.Services.AddScoped<IChallengeRequestCreator, ChallengeRequestCreator>();
 
 #region Anarchy Bot
 builder.Services.AddSingleton<IAnarchyBotService, AnarchyBotService>();
+builder.Services.AddSingleton<IAnarchyBotNotifier, AnarchyBotNotifier>();
 builder.Services.AddGrpcClient<IAiEngineService>(client =>
 {
     client.Address = appSettings.AnarchyBot.ServiceUrl;
