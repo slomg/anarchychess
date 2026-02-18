@@ -15,12 +15,17 @@ const GamesTable = ({
         <Card className="overflow-x-auto p-0.5">
             <table className="h-min table-auto overflow-x-auto">
                 <colgroup>
-                    <col style={{ width: "50%" }} />
+                    <col style={{ width: "7%" }} />
+                    <col style={{ width: "43%" }} />
                     <col style={{ width: "30%" }} />
                     <col style={{ width: "20%" }} />
                 </colgroup>
                 <thead className="bg-card text-xl">
                     <tr data-testid="gamesTableHeader">
+                        <th
+                            scope="col"
+                            className="rounded-l-md p-4 text-start"
+                        ></th>
                         <th scope="col" className="rounded-l-md p-4 text-start">
                             Players
                         </th>

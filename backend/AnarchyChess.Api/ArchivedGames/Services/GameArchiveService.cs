@@ -94,7 +94,10 @@ public class GameArchiveService(IGameArchiveRepository gameArchiveRepository) : 
                 UserId: archive.BlackPlayer.UserId,
                 UserName: archive.BlackPlayer.UserName
             ),
-            archive.Result,
+            PoolType: archive.PoolType,
+            BaseSeconds: archive.BaseSeconds,
+            IncrementSeconds: archive.IncrementSeconds,
+            Result: archive.Result,
             CreatedAt: archive.CreatedAt
         );
 

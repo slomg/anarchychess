@@ -489,6 +489,9 @@ export type GameSummary = {
     gameToken: string;
     whitePlayer: PlayerSummary;
     blackPlayer: PlayerSummary;
+    poolType: PoolType;
+    baseSeconds: number;
+    incrementSeconds: number;
     result: GameResult;
     createdAt: string;
 };

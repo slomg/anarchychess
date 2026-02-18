@@ -139,6 +139,9 @@ public class GameArchiveServiceTests : BaseIntegrationTest
                 UserId: archive.BlackPlayer.UserId,
                 UserName: archive.BlackPlayer.UserName
             ),
+            PoolType: archive.PoolType,
+            BaseSeconds: archive.BaseSeconds,
+            IncrementSeconds: archive.IncrementSeconds,
             Result: archive.Result,
             CreatedAt: archive.CreatedAt
         );
