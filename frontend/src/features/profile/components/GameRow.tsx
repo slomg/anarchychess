@@ -63,7 +63,7 @@ const GameRow = ({
                 <GameLink gameToken={game.gameToken} />
                 <div
                     className="flex flex-col items-center justify-center gap-2
-                        px-5"
+                        px-3"
                 >
                     <TimeControlIconFromSeconds
                         baseSeconds={game.baseSeconds}
