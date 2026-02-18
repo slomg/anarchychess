@@ -12,6 +12,7 @@ public interface IAnarchyBotHubClient : IAnarchyChessHubClient
 {
     Task PlayerMadeMoveAsync(MoveSnapshot move, int plyNumber, bool didMoveEndGame);
     Task BotMadeMoveAsync(MoveSnapshot move, int plyNumber, CompressedMoves compressedLegalMoves);
+    Task GameEndedAsync(GameResultData result);
 }
 
 [Authorize(AuthPolicies.ActiveSession)]

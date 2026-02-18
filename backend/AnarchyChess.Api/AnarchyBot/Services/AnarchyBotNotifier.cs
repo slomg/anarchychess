@@ -20,6 +20,8 @@ public interface IAnarchyBotNotifier
         int plyNumber,
         bool didMoveEndGame
     );
+
+    Task NotifyGameEndedAsync(GameToken gameToken, GameResultData result);
 }
 
 public class AnarchyBotNotifier(IHubContext<AnarchyBotHub, IAnarchyBotHubClient> hub)
@@ -40,4 +42,7 @@ public class AnarchyBotNotifier(IHubContext<AnarchyBotHub, IAnarchyBotHubClient>
         int plyNumber,
         CompressedMoves compressedLegalMoves
     ) => _hub.Clients.Group(gameToken).BotMadeMoveAsync(move, plyNumber, compressedLegalMoves);
+
+    public Task NotifyGameEndedAsync(GameToken gameToken, GameResultData result) =>
+        _hub.Clients.Group(gameToken).GameEndedAsync(result);
 }

@@ -69,4 +69,14 @@ public class AnarchyBotNotifierTests
             .Received(1)
             .BotMadeMoveAsync(move, plyNumber: plyNumber, compressedLegalMoves);
     }
+
+    [Fact]
+    public async Task NotifyGameEndedAsync_sends_game_ended()
+    {
+        var result = new GameResultDataFaker().Generate();
+
+        await _notifier.NotifyGameEndedAsync(_gameToken, result);
+
+        await _clientGroupProxyMock.Received(1).GameEndedAsync(result);
+    }
 }
