@@ -59,9 +59,12 @@ const GameRow = ({
                 "whitespace-nowrap",
             )}
         >
-            <td className="relative p-3">
+            <td className="relative">
                 <GameLink gameToken={game.gameToken} />
-                <div className="flex flex-col items-center justify-center gap-2">
+                <div
+                    className="flex flex-col items-center justify-center gap-2
+                        px-5"
+                >
                     <TimeControlIconFromSeconds
                         baseSeconds={game.baseSeconds}
                         className="h-8 w-8"
@@ -74,7 +77,8 @@ const GameRow = ({
             </td>
             <td className="relative flex">
                 <GameLink gameToken={game.gameToken} />
-                <div className="relative flex flex-col justify-center py-4 pl-4">
+
+                <div className="relative flex flex-col justify-center py-4">
                     <ProfileTooltip userId={game.whitePlayer.userId}>
                         <p data-testid="gameRowWhiteUsername">
                             {game.whitePlayer.userName}
@@ -91,7 +95,7 @@ const GameRow = ({
                 </div>
             </td>
 
-            <td className="relative p-4">
+            <td className="relative">
                 <GameLink gameToken={game.gameToken} />
                 <div className="flex items-center gap-3">
                     <div className="flex w-3 flex-col justify-between">
@@ -107,7 +111,7 @@ const GameRow = ({
                 </div>
             </td>
 
-            <td className="relative p-4">
+            <td className="relative">
                 <GameLink gameToken={game.gameToken} />
                 <span data-testid="gameRowDate">{formattedDate}</span>
             </td>
