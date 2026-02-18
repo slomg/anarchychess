@@ -74,10 +74,6 @@ export default function useLiveChessEvents(
                 sideToMove: move.nextSideToMove,
                 san: move.san,
                 move: decodedMove,
-                // clocks: {
-                //     whiteClock: clocks.whiteClock,
-                //     blackClock: clocks.blackClock,
-                // },
             },
             legalMoves,
         );
