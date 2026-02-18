@@ -4,7 +4,7 @@ using Orleans;
 namespace AnarchyChess.EngineShared;
 
 [GenerateSerializer]
-[Alias("AnarchyChess.EngineShared.AlgebraicPoint")]
+[Alias("AnarchyChess.Api.GameLogic.Models.AlgebraicPoint")]
 [method: JsonConstructor]
 public readonly record struct AlgebraicPoint(int X, int Y)
 {

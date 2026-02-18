@@ -3,5 +3,5 @@
 namespace AnarchyChess.EngineShared;
 
 [GenerateSerializer]
-[Alias("AnarchyChess.EngineShared.Piece")]
+[Alias("AnarchyChess.Api.GameLogic.Models.Piece")]
 public record Piece(PieceType Type, GameColor? Color, bool HasMoved = false);
