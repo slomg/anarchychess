@@ -9,7 +9,7 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
 COPY "AnarchyChess.Api/AnarchyChess.Api.csproj" "AnarchyChess.Api"
-COPY "AnarchyChess.EngineShared/AnarchyChess.EngineShared.csproj", "AnarchyChess.EngineShared"
+COPY "AnarchyChess.EngineShared/AnarchyChess.EngineShared.csproj" "AnarchyChess.EngineShared"
 
 RUN dotnet restore "./AnarchyChess.Api/AnarchyChess.Api.csproj"
 
