@@ -4,12 +4,10 @@ using AnarchyChess.Api.ErrorHandling.Extensions;
 using AnarchyChess.Api.ErrorHandling.Infrastructure;
 using AnarchyChess.Api.Game.Grains;
 using AnarchyChess.Api.GameSnapshot.Models;
-using AnarchyChess.Api.Infrastructure;
 using AnarchyChess.Api.Infrastructure.Extensions;
 using AnarchyChess.Api.Pagination.Models;
 using AnarchyChess.Api.Shared.Models;
 using FluentValidation;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AnarchyChess.Api.Game.Controllers;
@@ -29,7 +27,6 @@ public class GameController(
     [HttpGet("{gameToken}")]
     [ProducesResponseType<GameState>(StatusCodes.Status200OK)]
     [ProducesResponseType<ApiProblemDetails>(StatusCodes.Status404NotFound)]
-    [Authorize(AuthPolicies.ActiveSession)]
     public async Task<ActionResult<GameState>> GetGame(string gameToken)
     {
         var gameGrain = _grains.GetGrain<IGameGrain>(gameToken);
