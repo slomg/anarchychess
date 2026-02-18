@@ -12,10 +12,7 @@ public class GameArchive
     public required GameToken GameToken { get; set; }
     public required GameResult Result { get; set; }
     public required string ResultDescription { get; set; }
-    public required string InitialFen { get; set; }
-    public required ICollection<MoveArchive> Moves { get; set; } = [];
 
-    public required GameSource GameSource { get; set; }
     public required PoolType PoolType { get; set; }
     public required int BaseSeconds { get; set; }
     public required int IncrementSeconds { get; set; }

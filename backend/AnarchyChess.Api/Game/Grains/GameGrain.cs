@@ -19,7 +19,7 @@ public class GameGrain : Grain, IGameGrain, IRemindable
     public const string ClockReactivationReminder = "clockReactivationReminder";
     public const string StateName = "game";
 
-    private readonly string _gameToken;
+    private readonly GameToken _gameToken;
 
     private readonly ILogger<GameGrain> _logger;
     private readonly IPersistentState<GameGrainState> _state;

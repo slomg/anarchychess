@@ -27,8 +27,7 @@ public class GameArchiveRepositoryTests : BaseIntegrationTest
         await DbContext.SaveChangesAsync(CT);
 
         var result = await DbContext
-            .GameArchives.Include(g => g.Moves)
-            .Include(g => g.WhitePlayer)
+            .GameArchives.Include(g => g.WhitePlayer)
             .Include(g => g.BlackPlayer)
             .FirstOrDefaultAsync(g => g.GameToken == gameArchive.GameToken, CT);
 

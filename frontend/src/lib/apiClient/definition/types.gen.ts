@@ -496,7 +496,6 @@ export type GameSummary = {
 export type PlayerSummary = {
     userId: string;
     userName: string;
-    rating?: number | null;
 };
 
 export type ChallengeRequest = {

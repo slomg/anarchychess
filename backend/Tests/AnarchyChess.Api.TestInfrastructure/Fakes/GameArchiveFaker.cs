@@ -13,22 +13,12 @@ public class GameArchiveFaker : Faker<GameArchive>
     public GameArchiveFaker()
         : this(whitePlayer: null, blackPlayer: null) { }
 
-    public GameArchiveFaker(int moveCount)
-        : this(whitePlayer: null, blackPlayer: null, moveCount) { }
-
-    public GameArchiveFaker(
-        PlayerArchive? whitePlayer = null,
-        PlayerArchive? blackPlayer = null,
-        int moveCount = 5
-    )
+    public GameArchiveFaker(PlayerArchive? whitePlayer = null, PlayerArchive? blackPlayer = null)
     {
         StrictMode(true);
         RuleFor(x => x.GameToken, f => (GameToken)f.Random.AlphaNumeric(16));
         RuleFor(x => x.Result, f => f.PickRandom<GameResult>());
         RuleFor(x => x.ResultDescription, "some description");
-        RuleFor(x => x.InitialFen, "10/10/10/10/10/10/10/10/10/10");
-        RuleFor(x => x.Moves, new MoveArchiveFaker().Generate(moveCount));
-        RuleFor(x => x.GameSource, f => f.PickRandom<GameSource>());
 
         RuleFor(x => x.PoolType, f => f.PickRandom<PoolType>());
         RuleFor(x => x.BaseSeconds, f => f.Random.Int(60, 6000));
@@ -52,11 +42,7 @@ public class GameArchiveFaker : Faker<GameArchive>
         );
     }
 
-    public GameArchiveFaker(
-        UserId? whiteUserId = null,
-        UserId? blackUserId = null,
-        int moveCount = 5
-    )
+    public GameArchiveFaker(UserId? whiteUserId = null, UserId? blackUserId = null)
         : this(
             whiteUserId is not null
                 ? new PlayerArchiveFaker(GameColor.White)
@@ -67,7 +53,6 @@ public class GameArchiveFaker : Faker<GameArchive>
                 ? new PlayerArchiveFaker(GameColor.Black)
                     .RuleFor(x => x.UserId, blackUserId)
                     .Generate()
-                : null,
-            moveCount
+                : null
         ) { }
 }

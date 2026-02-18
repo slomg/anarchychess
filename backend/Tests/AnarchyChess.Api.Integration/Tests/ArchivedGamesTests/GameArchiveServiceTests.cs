@@ -50,24 +50,13 @@ public class GameArchiveServiceTests : BaseIntegrationTest
             GameToken = _gameToken,
             Result = endStatus.Result,
             ResultDescription = endStatus.ResultDescription,
-            InitialFen = gameState.InitialFen,
 
-            GameSource = gameState.GameSource,
             PoolType = gameState.Pool.PoolType,
             BaseSeconds = gameState.Pool.TimeControl.BaseSeconds,
             IncrementSeconds = gameState.Pool.TimeControl.IncrementSeconds,
 
-            WhitePlayer = CreateExpectedPlayerArchive(
-                player: gameState.WhitePlayer,
-                ratingChange: ratingChange.WhiteChange,
-                timeLeft: gameState.Clocks.WhiteClock.TimeLeftMs
-            ),
-            BlackPlayer = CreateExpectedPlayerArchive(
-                player: gameState.BlackPlayer,
-                ratingChange: ratingChange.BlackChange,
-                timeLeft: gameState.Clocks.BlackClock.TimeLeftMs
-            ),
-            Moves = [.. CreateExpectedMoveArchives(gameState.MoveHistory)],
+            WhitePlayer = CreateExpectedPlayerArchive(player: gameState.WhitePlayer),
+            BlackPlayer = CreateExpectedPlayerArchive(player: gameState.BlackPlayer),
         };
 
         savedArchive
@@ -81,36 +70,7 @@ public class GameArchiveServiceTests : BaseIntegrationTest
                         .Excluding(x => x.WhitePlayer.Id)
                         .Excluding(x => x.BlackPlayerId)
                         .Excluding(x => x.BlackPlayer.Id)
-                        .For(x => x.Moves)
-                        .Exclude(x => x.Id)
-                        .For(x => x.Moves)
-                        .For(x => x.SideEffects)
-                        .Exclude(x => x.Id)
-                        .For(x => x.Moves)
-                        .For(x => x.PieceSpawns)
-                        .Exclude(x => x.Id)
             );
-    }
-
-    [Fact]
-    public async Task CreateArchiveAsync_saves_rating_even_if_rating_change_is_null()
-    {
-        var gameState = new GameStateFaker().Generate();
-        GameEndStatus endStatus = new(GameResult.WhiteWin, "White Won by Resignation");
-
-        var result = await _gameArchiveService.CreateArchiveAsync(
-            _gameToken,
-            gameState,
-            endStatus,
-            ratingChange: null,
-            CT
-        );
-
-        result.WhitePlayer.RatingChange.Should().BeNull();
-        result.WhitePlayer.NewRating.Should().Be(gameState.WhitePlayer.Rating);
-
-        result.BlackPlayer.RatingChange.Should().BeNull();
-        result.BlackPlayer.NewRating.Should().Be(gameState.BlackPlayer.Rating);
     }
 
     [Fact]
@@ -171,13 +131,11 @@ public class GameArchiveServiceTests : BaseIntegrationTest
             GameToken: archive.GameToken,
             WhitePlayer: new PlayerSummaryDto(
                 UserId: archive.WhitePlayer.UserId,
-                UserName: archive.WhitePlayer.UserName,
-                Rating: archive.WhitePlayer.NewRating
+                UserName: archive.WhitePlayer.UserName
             ),
             BlackPlayer: new PlayerSummaryDto(
                 UserId: archive.BlackPlayer.UserId,
-                UserName: archive.BlackPlayer.UserName,
-                Rating: archive.BlackPlayer.NewRating
+                UserName: archive.BlackPlayer.UserName
             ),
             Result: archive.Result,
             CreatedAt: archive.CreatedAt
@@ -188,8 +146,7 @@ public class GameArchiveServiceTests : BaseIntegrationTest
     private async Task<GameArchive> GetSavedArchiveAsync(GameToken gameToken)
     {
         var archive = await DbContext
-            .GameArchives.Include(g => g.Moves)
-            .Include(g => g.WhitePlayer)
+            .GameArchives.Include(g => g.WhitePlayer)
             .Include(g => g.BlackPlayer)
             .FirstOrDefaultAsync(g => g.GameToken == gameToken, CT);
 
@@ -197,52 +154,11 @@ public class GameArchiveServiceTests : BaseIntegrationTest
         return archive;
     }
 
-    private static PlayerArchive CreateExpectedPlayerArchive(
-        GamePlayer player,
-        int ratingChange,
-        double timeLeft
-    ) =>
+    private static PlayerArchive CreateExpectedPlayerArchive(GamePlayer player) =>
         new()
         {
             UserId = player.UserId,
             UserName = player.UserName,
-            CountryCode = player.CountryCode,
             Color = player.Color,
-            NewRating = player.Rating + ratingChange,
-            RatingChange = ratingChange,
-            FinalTimeRemaining = timeLeft,
         };
-
-    private static IEnumerable<MoveArchive> CreateExpectedMoveArchives(
-        IEnumerable<MoveSnapshot> moveHistory
-    ) =>
-        moveHistory.Select(
-            (move, index) =>
-                new MoveArchive
-                {
-                    TimeLeft = move.TimeLeft,
-                    MoveNumber = index,
-                    San = move.San,
-                    FromIdx = move.Path.FromIdx,
-                    ToIdx = move.Path.ToIdx,
-                    Captures = move.Path.CapturedIdxs?.ToList() ?? [],
-                    Triggers = move.Path.TriggerIdxs?.ToList() ?? [],
-                    SideEffects =
-                        move.Path.SideEffects?.Select(x => new MoveSideEffectArchive
-                        {
-                            FromIdx = x.FromIdx,
-                            ToIdx = x.ToIdx,
-                        })
-                            .ToList() ?? [],
-                    PieceSpawns =
-                        move.Path.PieceSpawns?.Select(x => new PieceSpawnArchive
-                        {
-                            Type = x.Type,
-                            Color = x.Color,
-                            PosIdx = x.PosIdx,
-                        })
-                            .ToList() ?? [],
-                    PromotesTo = move.Path.PromotesTo,
-                }
-        );
 }

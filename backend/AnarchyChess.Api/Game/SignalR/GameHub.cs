@@ -51,7 +51,7 @@ public class GameHub(ILogger<GameHub> logger, IGrainFactory grains, IGameNotifie
     private readonly IGrainFactory _grains = grains;
     private readonly IGameNotifier _gameNotifier = gameNotifier;
 
-    public async Task MovePieceAsync(GameToken gameToken, string key)
+    public async Task MovePieceAsync(GameToken gameToken, MoveKey key)
     {
         if (!TryGetUserId(out var userId))
         {

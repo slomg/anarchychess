@@ -38,22 +38,8 @@ public class GameArchiveService(IGameArchiveRepository gameArchiveRepository) : 
         CancellationToken token = default
     )
     {
-        var whiteArchive = CreatePlayerArchive(
-            state.WhitePlayer,
-            ratingChange?.WhiteChange,
-            state.Clocks.WhiteClock.TimeLeftMs
-        );
-        var blackArchive = CreatePlayerArchive(
-            state.BlackPlayer,
-            ratingChange?.BlackChange,
-            state.Clocks.BlackClock.TimeLeftMs
-        );
-        List<MoveArchive> moves = [];
-        for (int i = 0; i < state.MoveHistory.Count; i++)
-        {
-            var moveArchive = CreateMoveArchive(state.MoveHistory.ElementAt(i), i);
-            moves.Add(moveArchive);
-        }
+        var whiteArchive = CreatePlayerArchive(state.WhitePlayer);
+        var blackArchive = CreatePlayerArchive(state.BlackPlayer);
 
         GameArchive gameArchive = new()
         {
@@ -64,9 +50,6 @@ public class GameArchiveService(IGameArchiveRepository gameArchiveRepository) : 
             WhitePlayer = whiteArchive,
             BlackPlayerId = blackArchive.Id,
             BlackPlayer = blackArchive,
-            InitialFen = state.InitialFen,
-            Moves = moves,
-            GameSource = state.GameSource,
             PoolType = state.Pool.PoolType,
             BaseSeconds = state.Pool.TimeControl.BaseSeconds,
             IncrementSeconds = state.Pool.TimeControl.IncrementSeconds,
@@ -103,65 +86,21 @@ public class GameArchiveService(IGameArchiveRepository gameArchiveRepository) : 
             archive.GameToken,
             new PlayerSummaryDto(
                 UserId: archive.WhitePlayer.UserId,
-                UserName: archive.WhitePlayer.UserName,
-                Rating: archive.WhitePlayer.NewRating
+                UserName: archive.WhitePlayer.UserName
             ),
             new PlayerSummaryDto(
                 UserId: archive.BlackPlayer.UserId,
-                UserName: archive.BlackPlayer.UserName,
-                Rating: archive.BlackPlayer.NewRating
+                UserName: archive.BlackPlayer.UserName
             ),
             archive.Result,
             CreatedAt: archive.CreatedAt
         );
 
-    private static PlayerArchive CreatePlayerArchive(
-        GamePlayer player,
-        int? ratingChange,
-        double timeRemaining
-    ) =>
+    private static PlayerArchive CreatePlayerArchive(GamePlayer player) =>
         new()
         {
             Color = player.Color,
             UserId = player.UserId,
             UserName = player.UserName,
-            FinalTimeRemaining = timeRemaining,
-            CountryCode = player.CountryCode,
-            NewRating = player.Rating + (ratingChange ?? 0),
-            RatingChange = ratingChange,
         };
-
-    private static MoveArchive CreateMoveArchive(MoveSnapshot moveSnapshot, int moveNumber)
-    {
-        var path = moveSnapshot.Path;
-        var sideEffects =
-            path.SideEffects?.Select(x => new MoveSideEffectArchive
-            {
-                FromIdx = x.FromIdx,
-                ToIdx = x.ToIdx,
-            })
-                .ToList() ?? [];
-        var pieceSpawns =
-            path.PieceSpawns?.Select(x => new PieceSpawnArchive
-            {
-                Type = x.Type,
-                Color = x.Color,
-                PosIdx = x.PosIdx,
-            })
-                .ToList() ?? [];
-
-        return new()
-        {
-            MoveNumber = moveNumber,
-            San = moveSnapshot.San,
-            TimeLeft = moveSnapshot.TimeLeft,
-            FromIdx = path.FromIdx,
-            ToIdx = path.ToIdx,
-            Captures = path.CapturedIdxs?.ToList() ?? [],
-            Triggers = path.TriggerIdxs?.ToList() ?? [],
-            SideEffects = sideEffects,
-            PieceSpawns = pieceSpawns,
-            PromotesTo = path.PromotesTo,
-        };
-    }
 }

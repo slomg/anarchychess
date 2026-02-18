@@ -10,8 +10,4 @@ public class PlayerArchive
 
     public required GameColor Color { get; set; }
     public required string UserName { get; set; }
-    public required double FinalTimeRemaining { get; set; }
-    public required int? NewRating { get; set; }
-    public required int? RatingChange { get; set; }
-    public required string CountryCode { get; set; }
 }
