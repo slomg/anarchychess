@@ -111,7 +111,10 @@ public class GameArchiveService(IGameArchiveRepository gameArchiveRepository) : 
                 UserName: archive.BlackPlayer.UserName,
                 Rating: archive.BlackPlayer.NewRating
             ),
-            archive.Result,
+            PoolType: archive.PoolType,
+            BaseSeconds: archive.BaseSeconds,
+            IncrementSeconds: archive.IncrementSeconds,
+            Result: archive.Result,
             CreatedAt: archive.CreatedAt
         );
 

@@ -37,7 +37,7 @@ const NavMobile = () => {
 
     return (
         <header
-            className="sticky top-0 z-50 h-[75px] w-full md:hidden"
+            className="sticky top-0 z-50 h-18.75 w-full md:hidden"
             ref={headerRef}
         >
             <section
@@ -80,7 +80,7 @@ const NavMobile = () => {
 
             <section
                 className={clsx(
-                    `fixed top-[75px] z-50 flex h-[calc(100vh-75px)]
+                    `fixed top-18.75 z-50 flex h-[calc(100vh-75px)]
                     transition-transform`,
                     isOpen ? "translate-x-0" : "-translate-x-full",
                     getSidebarCollapseWidthCls(false),

@@ -7,6 +7,7 @@ import {
 import Link from "next/link";
 import clsx from "clsx";
 
+import TimeControlIconFromSeconds from "@/features/lobby/components/TimeControlIconFromSeconds";
 import { GameResult, GameSummary, PublicUser } from "@/lib/apiClient";
 import ProfileTooltip from "./ProfileTooltip";
 
@@ -58,6 +59,19 @@ const GameRow = ({
                 "whitespace-nowrap",
             )}
         >
+            <td className="relative p-4">
+                <GameLink gameToken={game.gameToken} />
+                <div className="flex flex-col items-center gap-1">
+                    <TimeControlIconFromSeconds
+                        baseSeconds={game.baseSeconds}
+                        className="h-8 w-8"
+                    />
+                    <span className="text-xl" data-testid="timeControlText">
+                        {(game.baseSeconds / 60).toString().replace(/^0/, "")}+
+                        {game.incrementSeconds}
+                    </span>
+                </div>
+            </td>
             <td className="relative flex">
                 <GameLink gameToken={game.gameToken} />
                 <div className="relative flex flex-col justify-center py-4 pl-4">

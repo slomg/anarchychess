@@ -6,6 +6,12 @@ import { createFakeUser } from "@/lib/testUtils/fakers/userFaker";
 import GameRow from "../GameRow";
 import { GameResult, GameSummary, PublicUser } from "@/lib/apiClient";
 
+vi.mock("@/features/lobby/components/TimeControlIconFromSeconds", () => ({
+    default: ({ baseSeconds }: { baseSeconds: number }) => (
+        <div data-testid="timeControlFromSecondsIcon">{baseSeconds}</div>
+    ),
+}));
+
 describe("GameRow", () => {
     let gameSummaryMock: GameSummary;
     let userMock: PublicUser;
@@ -109,6 +115,62 @@ describe("GameRow", () => {
         });
         expect(screen.getByTestId("gameRowDate").textContent).toBe(
             formattedDate,
+        );
+    });
+
+    it("should display the correct base seconds in the icon", () => {
+        render(
+            <table>
+                <tbody>
+                    <GameRow
+                        game={gameSummaryMock}
+                        profileViewpoint={userMock}
+                        index={0}
+                    />
+                </tbody>
+            </table>,
+        );
+
+        expect(
+            screen.getByTestId("timeControlFromSecondsIcon"),
+        ).toHaveTextContent(gameSummaryMock.baseSeconds.toString());
+    });
+
+    it("should display the correct time control string", () => {
+        render(
+            <table>
+                <tbody>
+                    <GameRow
+                        game={gameSummaryMock}
+                        profileViewpoint={userMock}
+                        index={0}
+                    />
+                </tbody>
+            </table>,
+        );
+
+        expect(screen.getByTestId("timeControlText")).toHaveTextContent(
+            `${gameSummaryMock.baseSeconds / 60}+${gameSummaryMock.incrementSeconds}`,
+        );
+    });
+
+    it("should display the correct minute when the time control is < 1 minute", () => {
+        gameSummaryMock.baseSeconds = 30;
+
+        render(
+            <table>
+                <tbody>
+                    <GameRow
+                        game={gameSummaryMock}
+                        profileViewpoint={userMock}
+                        index={0}
+                    />
+                </tbody>
+            </table>,
+        );
+
+        expect(screen.getByTestId("timeControlText")).toHaveTextContent(
+            `.5+${gameSummaryMock.incrementSeconds}`,
         );
     });
 });
