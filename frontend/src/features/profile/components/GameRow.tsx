@@ -59,9 +59,9 @@ const GameRow = ({
                 "whitespace-nowrap",
             )}
         >
-            <td className="relative p-4">
+            <td className="relative p-3">
                 <GameLink gameToken={game.gameToken} />
-                <div className="flex flex-col items-center gap-1">
+                <div className="flex flex-col items-center justify-center gap-2">
                     <TimeControlIconFromSeconds
                         baseSeconds={game.baseSeconds}
                         className="h-8 w-8"
