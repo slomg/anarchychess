@@ -21,18 +21,18 @@ const GamesTable = ({
                     <col style={{ width: "20%" }} />
                 </colgroup>
                 <thead className="bg-card text-xl">
-                    <tr data-testid="gamesTableHeader">
-                        <th
-                            scope="col"
-                            className="rounded-l-md p-4 text-start"
-                        ></th>
-                        <th scope="col" className="rounded-l-md p-4 text-start">
+                    <tr data-testid="gamesTableHeader p-3">
+                        <th scope="col" className="rounded-l-md text-start" />
+                        <th scope="col" className="py-3 text-start">
                             Players
                         </th>
-                        <th scope="col" className="p-3 text-start">
+                        <th scope="col" className="py-3 text-start">
                             Results
                         </th>
-                        <th scope="col" className="rounded-r-md p-3 text-start">
+                        <th
+                            scope="col"
+                            className="rounded-r-md py-3 text-start"
+                        >
                             Date
                         </th>
                     </tr>
