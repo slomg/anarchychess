@@ -87,6 +87,48 @@ public class GameResultDescriberTests
         result.Should().Be(new GameEndStatus(expectedResult, expectedDescription));
     }
 
+    [Theory]
+    [InlineData(
+        GameColor.White,
+        GameResult.BlackWin,
+        "Bot tried to play an illegal move. This should NEVER happen. Please report this on the discord."
+    )]
+    [InlineData(
+        GameColor.Black,
+        GameResult.WhiteWin,
+        "Bot tried to play an illegal move. This should NEVER happen. Please report this on the discord."
+    )]
+    public void AnarchyBotIllegalMove_returns_the_correct_status(
+        GameColor loser,
+        GameResult expectedResult,
+        string expectedDescription
+    )
+    {
+        var result = _describer.AnarchyBotIllegalMove(loser);
+        result.Should().Be(new GameEndStatus(expectedResult, expectedDescription));
+    }
+
+    [Theory]
+    [InlineData(
+        GameColor.White,
+        GameResult.BlackWin,
+        "Bot could not find a move. This should NEVER happen. Please report this on the discord."
+    )]
+    [InlineData(
+        GameColor.Black,
+        GameResult.WhiteWin,
+        "Bot could not find a move. This should NEVER happen. Please report this on the discord."
+    )]
+    public void AnarchyBotNoMove_returns_the_correct_status(
+        GameColor loser,
+        GameResult expectedResult,
+        string expectedDescription
+    )
+    {
+        var result = _describer.AnarchyBotNoMove(loser);
+        result.Should().Be(new GameEndStatus(expectedResult, expectedDescription));
+    }
+
     [Fact]
     public void DrawByAgreement_returns_the_correct_status()
     {
