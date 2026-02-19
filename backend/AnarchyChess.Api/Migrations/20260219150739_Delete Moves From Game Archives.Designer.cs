@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AnarchyChess.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260219133209_Delete Moves From Game Archives")]
+    [Migration("20260219150739_Delete Moves From Game Archives")]
     partial class DeleteMovesFromGameArchives
     {
         /// <inheritdoc />
