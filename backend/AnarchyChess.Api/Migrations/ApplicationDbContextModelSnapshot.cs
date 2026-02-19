@@ -82,8 +82,8 @@ namespace AnarchyChess.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<byte>("Color")
-                        .HasColumnType("smallint")
+                    b.Property<int>("Color")
+                        .HasColumnType("integer")
                         .HasColumnName("color");
 
                     b.Property<string>("UserId")

@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AnarchyChess.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260218104515_Delete Moves From Game Archives")]
+    [Migration("20260219133209_Delete Moves From Game Archives")]
     partial class DeleteMovesFromGameArchives
     {
         /// <inheritdoc />
@@ -85,8 +85,8 @@ namespace AnarchyChess.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<byte>("Color")
-                        .HasColumnType("smallint")
+                    b.Property<int>("Color")
+                        .HasColumnType("integer")
                         .HasColumnName("color");
 
                     b.Property<string>("UserId")
