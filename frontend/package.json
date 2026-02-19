@@ -64,9 +64,5 @@
         "vitest": "4.0.15",
         "vitest-dom": "0.1.1",
         "vitest-mock-extended": "3.1.0"
-    },
-    "overrides": {
-        "@types/react": "19.2.10",
-        "@types/react-dom": "19.2.3"
     }
 }
