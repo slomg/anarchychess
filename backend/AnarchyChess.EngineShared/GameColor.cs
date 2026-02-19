@@ -1,6 +1,6 @@
 ﻿namespace AnarchyChess.EngineShared;
 
-public enum GameColor : byte
+public enum GameColor
 {
     White,
     Black,

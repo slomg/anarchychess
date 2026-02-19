@@ -1,6 +1,6 @@
 ﻿namespace AnarchyChess.EngineShared;
 
-public enum SpecialMoveType : byte
+public enum SpecialMoveType
 {
     None,
     KingsideCastle,
