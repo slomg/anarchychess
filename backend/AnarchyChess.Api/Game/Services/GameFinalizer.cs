@@ -41,6 +41,7 @@ public class GameFinalizer(
         CancellationToken token = default
     )
     {
+        var ratingChange = await UpdateRatingAsync(state, endStatus.Result, token);
         try
         {
             await _gameArchiveService.CreateArchiveAsync(
@@ -57,7 +58,6 @@ public class GameFinalizer(
         {
             _logger.LogError(err, "Failed saving game");
         }
-        var ratingChange = await UpdateRatingAsync(state, endStatus.Result, token);
 
         GameResultData result = new(
             Result: endStatus.Result,
