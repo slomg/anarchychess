@@ -78,4 +78,8 @@ public static class ErrorCodes
     public const string ChallengeCannotAccept = "Challenge.CannotAccept";
     public const string ChallengeNotFound = "Challenge.NotFound";
     public const string ChallengeClosed = "Challenge.Closed";
+
+    public const string AnarchyBotOffline = "AnarchyBot.Offline";
+    public const string AnarchyBotNoMove = "AnarchyBot.NoMove";
+    public const string AnarchyBotFailure = "AnarchyBot.Failure";
 }

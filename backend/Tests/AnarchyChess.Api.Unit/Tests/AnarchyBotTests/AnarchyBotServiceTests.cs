@@ -1,5 +1,6 @@
 ﻿using AnarchyChess.Ai.Service.DTO;
 using AnarchyChess.Ai.Service.Services;
+using AnarchyChess.Api.AnarchyBot.Errors;
 using AnarchyChess.Api.AnarchyBot.Services;
 using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Models;
@@ -57,9 +58,10 @@ public class AnarchyBotServiceTests : BaseUnitTest
             )
             .Returns(expectedReply);
 
-        var reply = await _bot.FindBestMoveAsync(board, CT);
+        var result = await _bot.FindBestMoveAsync(board, CT);
 
-        reply.Should().Be(expectedReply);
+        result.IsError.Should().BeFalse();
+        result.Value.Should().Be(expectedReply);
     }
 
     [Fact]
@@ -76,9 +78,51 @@ public class AnarchyBotServiceTests : BaseUnitTest
             .FindBestMoveAsync(Arg.Is<AiEngineMoveRequest>(x => x.PrevMoveState == null), CT)
             .Returns(expectedReply);
 
-        var reply = await _bot.FindBestMoveAsync(chessBoard, CT);
+        var result = await _bot.FindBestMoveAsync(chessBoard, CT);
 
-        reply.Should().Be(expectedReply);
+        result.IsError.Should().BeFalse();
+        result.Value.Should().Be(expectedReply);
+    }
+
+    [Fact]
+    public async Task FindBestMoveAsync_returns_BotOffline_when_status_unavailable()
+    {
+        _aiEngineMock
+            .FindBestMoveAsync(Arg.Any<AiEngineMoveRequest>(), CT)
+            .ThrowsAsync(new RpcException(new Status(StatusCode.Unavailable, "unavailable")));
+
+        var result = await _bot.FindBestMoveAsync(new ChessBoard(), CT);
+
+        result.IsError.Should().BeTrue();
+        result.FirstError.Should().Be(AnarchyBotErrors.BotOffline);
+    }
+
+    [Fact]
+    public async Task FindBestMoveAsync_returns_NoMoveFound_when_status_invalid_argument()
+    {
+        _aiEngineMock
+            .FindBestMoveAsync(Arg.Any<AiEngineMoveRequest>(), CT)
+            .ThrowsAsync(
+                new RpcException(new Status(StatusCode.InvalidArgument, "invalid argument"))
+            );
+
+        var result = await _bot.FindBestMoveAsync(new ChessBoard(), CT);
+
+        result.IsError.Should().BeTrue();
+        result.FirstError.Should().Be(AnarchyBotErrors.NoMoveFound);
+    }
+
+    [Fact]
+    public async Task FindBestMoveAsync_returns_BotFailure_for_other_exceptions()
+    {
+        _aiEngineMock
+            .FindBestMoveAsync(Arg.Any<AiEngineMoveRequest>(), CT)
+            .ThrowsAsync(new RpcException(new Status(StatusCode.Internal, "internal error")));
+
+        var result = await _bot.FindBestMoveAsync(new ChessBoard(), CT);
+
+        result.IsError.Should().BeTrue();
+        result.FirstError.Should().Be(AnarchyBotErrors.BotFailure);
     }
 
     [Fact]
@@ -106,7 +150,7 @@ public class AnarchyBotServiceTests : BaseUnitTest
     {
         _aiEngineMock
             .CheckHealthAsync(CT)
-            .Throws(new RpcException(new Status(StatusCode.Unavailable, "unavailable")));
+            .ThrowsAsync(new RpcException(new Status(StatusCode.Unavailable, "unavailable")));
 
         var result = await _bot.CheckHealthAsync(CT);
 

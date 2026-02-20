@@ -149,7 +149,7 @@ public class AiEngineServiceTests
     [Fact]
     public async Task CheckHealthAsync_returns_true()
     {
-        bool result = await _engine.CheckHealthAsync(TestContext.Current.CancellationToken);
-        result.Should().BeTrue();
+        var result = await _engine.CheckHealthAsync(TestContext.Current.CancellationToken);
+        result.IsHealthy.Should().BeTrue();
     }
 }

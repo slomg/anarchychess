@@ -149,7 +149,9 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
             Captures: [],
             PromotesTo: null
         );
-        _anarchyBotServiceMock.FindBestMoveAsync(Arg.Any<IReadOnlyChessBoard>()).Returns(botMove);
+        _anarchyBotServiceMock
+            .FindBestMoveAsync(Arg.Any<IReadOnlyChessBoard>(), ApiTestBase.CT)
+            .Returns(botMove);
 
         await grain.StartGameAsync(_whitePlayer, ApiTestBase.CT);
 
@@ -217,7 +219,7 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
             PromotesTo: null
         );
         _anarchyBotServiceMock
-            .FindBestMoveAsync(_state.CurrentGame!.Core.Board)
+            .FindBestMoveAsync(_state.CurrentGame!.Core.Board, ApiTestBase.CT)
             .Returns(secondBotMove);
         _notifierMock.ClearReceivedCalls();
 
@@ -234,7 +236,7 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
         await StartGameAsync(grain, _whitePlayer);
 
         _anarchyBotServiceMock
-            .FindBestMoveAsync(_state.CurrentGame!.Core.Board)
+            .FindBestMoveAsync(_state.CurrentGame!.Core.Board, ApiTestBase.CT)
             .Returns(
                 new AiEngineMoveReply(
                     From: new("g9"),
@@ -265,7 +267,7 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
         var grain = await Silo.CreateGrainAsync<AnarchyBotGrain>(_gameToken);
 
         _anarchyBotServiceMock
-            .FindBestMoveAsync(Arg.Any<IReadOnlyChessBoard>())
+            .FindBestMoveAsync(Arg.Any<IReadOnlyChessBoard>(), ApiTestBase.CT)
             .Returns(
                 new AiEngineMoveReply(
                     From: new("f2"),
@@ -372,7 +374,7 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
         if (setMove)
         {
             _anarchyBotServiceMock
-                .FindBestMoveAsync(Arg.Any<IReadOnlyChessBoard>())
+                .FindBestMoveAsync(Arg.Any<IReadOnlyChessBoard>(), ApiTestBase.CT)
                 .Returns(player.Color is GameColor.White ? _firstBlackBotMove : _firstWhiteBotMove);
         }
         return grain.StartGameAsync(player ?? _player, ApiTestBase.CT);

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using AnarchyChess.Api.AnarchyBot.Errors;
 using AnarchyChess.Api.AnarchyBot.Models;
 using AnarchyChess.Api.AnarchyBot.Services;
 using AnarchyChess.Api.ArchivedGames.Services;
@@ -222,7 +223,19 @@ public class AnarchyBotGrain : Grain, IAnarchyBotGrain
     private async Task PlayBotMoveAsync(AnarchyBotGameData game, CancellationToken token = default)
     {
         IReadOnlyChessBoard board = _core.GetReadOnlyBoard(game.Core);
-        var botMove = await _anarchyBotService.FindBestMoveAsync(board, token);
+
+        var botMoveResult = await _anarchyBotService.FindBestMoveAsync(board, token);
+        if (botMoveResult.FirstError == AnarchyBotErrors.BotOffline)
+        {
+            await EndGameAsync(_gameResultDescriber.AnarchyBotOffline(game.BotColor), game, token);
+            return;
+        }
+        else if (botMoveResult.IsError)
+        {
+            await EndGameAsync(_gameResultDescriber.AnarchyBotFailure(game.BotColor), game, token);
+            return;
+        }
+        var botMove = botMoveResult.Value;
 
         LegalMoveSet legalMoves = _core.GetLegalMoves(game.Core);
         Move? legalMove = legalMoves.AllMoves.FirstOrDefault(move =>

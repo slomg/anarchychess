@@ -1,15 +1,18 @@
 ﻿using AnarchyChess.Ai.Service.DTO;
 using AnarchyChess.Ai.Service.Services;
+using AnarchyChess.Api.AnarchyBot.Errors;
 using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.EngineShared;
+using ErrorOr;
+using Grpc.Core;
 
 namespace AnarchyChess.Api.AnarchyBot.Services;
 
 public interface IAnarchyBotService
 {
     Task<bool> CheckHealthAsync(CancellationToken token = default);
-    Task<AiEngineMoveReply> FindBestMoveAsync(
+    Task<ErrorOr<AiEngineMoveReply>> FindBestMoveAsync(
         IReadOnlyChessBoard board,
         CancellationToken token = default
     );
@@ -21,7 +24,7 @@ public class AnarchyBotService(ILogger<AnarchyBotService> logger, IAiEngineServi
     private readonly ILogger<AnarchyBotService> _logger = logger;
     private readonly IAiEngineService _aiEngineService = aiEngineService;
 
-    public async Task<AiEngineMoveReply> FindBestMoveAsync(
+    public async Task<ErrorOr<AiEngineMoveReply>> FindBestMoveAsync(
         IReadOnlyChessBoard board,
         CancellationToken token = default
     )
@@ -33,7 +36,27 @@ public class AnarchyBotService(ILogger<AnarchyBotService> logger, IAiEngineServi
             prevMove
         );
 
-        var bestMove = await _aiEngineService.FindBestMoveAsync(request, token);
+        AiEngineMoveReply bestMove;
+        try
+        {
+            bestMove = await _aiEngineService.FindBestMoveAsync(request, token);
+        }
+        catch (RpcException ex)
+        {
+            _logger.LogWarning("Error when trying to get anarchy bot move: {Ex}", ex);
+            if (ex.StatusCode is StatusCode.Unavailable)
+            {
+                return AnarchyBotErrors.BotOffline;
+            }
+            else if (ex.StatusCode is StatusCode.InvalidArgument)
+            {
+                return AnarchyBotErrors.NoMoveFound;
+            }
+            else
+            {
+                return AnarchyBotErrors.BotFailure;
+            }
+        }
         return bestMove;
     }
 
