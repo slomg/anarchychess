@@ -12,7 +12,7 @@ export interface LiveChessViewer {
 export interface GamePlaySliceProps {
     sideToMove: GameColor;
     clockSnapshotByPly: Map<number, ClockSnapshot>;
-    liveClocks: Clocks;
+    liveClocks: Clocks | null;
 
     viewer: LiveChessViewer;
 }
@@ -20,7 +20,7 @@ export interface GamePlaySliceProps {
 export interface GamePlaySlice {
     sideToMove: GameColor;
     clockSnapshotByPly: Map<number, ClockSnapshot>;
-    liveClocks: Clocks;
+    liveClocks: Clocks | null;
 
     viewer: LiveChessViewer;
     isPendingMoveAck: boolean;
@@ -52,7 +52,9 @@ export function createGamePlaySlice(
 
         isPendingMoveAck: false,
         serverClockAheadByMs:
-            initState.liveClocks.serverTime - new Date().valueOf(),
+            initState.liveClocks !== null
+                ? initState.liveClocks.serverTime - new Date().valueOf()
+                : 0,
 
         isInteractionAllowed() {
             const { resultData, viewer, sideToMove } = get();

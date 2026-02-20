@@ -183,7 +183,7 @@ describe("GameClock", () => {
             liveStore.setState({
                 sideToMove: GameColor.BLACK,
                 liveClocks: {
-                    ...liveStore.getState().liveClocks,
+                    ...liveStore.getState().liveClocks!,
                     whiteClock: createFakeClockPlayer({ timeLeftMs: 305_000 }),
                     lastUpdated: Date.now().valueOf(),
                 },
@@ -404,5 +404,12 @@ describe("GameClock", () => {
         );
 
         expect(screen.getByText("04:10")).toBeInTheDocument();
+    });
+
+    it("should not render anything if liveClocks is null", () => {
+        liveStore.setState({ liveClocks: null });
+
+        const { container } = renderWithCtx(GameColor.WHITE);
+        expect(container).toBeEmptyDOMElement();
     });
 });

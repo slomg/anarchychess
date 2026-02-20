@@ -18,10 +18,10 @@ export interface GameStateSliceProps {
     blackPlayer: GamePlayer;
 
     sourceRevision: number;
-    pool: PoolKey;
+    pool: PoolKey | null;
 
     resultData: GameResultData | null;
-    drawState: DrawState;
+    drawState: DrawState | null;
 }
 
 export interface GameStateSlice extends GameStateSliceProps {
@@ -49,14 +49,16 @@ export function createGameStateSlice(
 
         decrementDrawCooldown() {
             set((state) => {
-                state.drawState.whiteCooldown = Math.max(
-                    0,
-                    state.drawState.whiteCooldown - 1,
-                );
-                state.drawState.blackCooldown = Math.max(
-                    0,
-                    state.drawState.blackCooldown - 1,
-                );
+                if (state.drawState !== null) {
+                    state.drawState.whiteCooldown = Math.max(
+                        0,
+                        state.drawState.whiteCooldown - 1,
+                    );
+                    state.drawState.blackCooldown = Math.max(
+                        0,
+                        state.drawState.blackCooldown - 1,
+                    );
+                }
             });
         },
 

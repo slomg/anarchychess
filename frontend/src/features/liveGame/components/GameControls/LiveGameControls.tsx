@@ -22,8 +22,12 @@ const LiveGameControls = () => {
 
     const sendGameEvent = useGameEmitter(gameToken);
 
+    if (drawState === null) {
+        return null;
+    }
+
     const isDrawPending =
-        typeof drawState.activeRequester === "number" &&
+        drawState.activeRequester != null &&
         drawState.activeRequester !== playerColor;
 
     const cooldown =
