@@ -3,6 +3,8 @@ using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Api.AnarchyBot.Models;
 
+[GenerateSerializer]
+[Alias("AnarchyChess.Api.AnarchyBot.Models.AnarchyBotGameState")]
 public record AnarchyBotGameState(
     GamePlayer WhitePlayer,
     GamePlayer BlackPlayer,

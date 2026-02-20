@@ -177,7 +177,7 @@ public class AnarchyBotGrain : Grain, IAnarchyBotGrain
         var moveSnapshot = game.MoveHistory.AddMove(
             nextPlayer: nextSideToMove,
             moveResult,
-            timeLeft: double.PositiveInfinity
+            timeLeft: 0
         );
         await _notifier.NotifyPlayerMadeMoveAsync(
             _gameToken,
@@ -223,12 +223,6 @@ public class AnarchyBotGrain : Grain, IAnarchyBotGrain
     {
         IReadOnlyChessBoard board = _core.GetReadOnlyBoard(game.Core);
         var botMove = await _anarchyBotService.FindBestMoveAsync(board);
-        if (botMove is null)
-        {
-            _logger.LogError("Anarchy Bot could not find a move on game {BotToken}", _gameToken);
-            await EndGameAsync(_gameResultDescriber.AnarchyBotNoMove(game.BotColor), game, token);
-            return;
-        }
 
         LegalMoveSet legalMoves = _core.GetLegalMoves(game.Core);
         Move? legalMove = legalMoves.AllMoves.FirstOrDefault(move =>
@@ -237,7 +231,7 @@ public class AnarchyBotGrain : Grain, IAnarchyBotGrain
             return move.From == botMove.From
                 && move.To == botMove.To
                 && move.PromotesTo == botMove.PromotesTo
-                && captures.SequenceEqual(botMove.Captures);
+                && captures.SequenceEqual(botMove.Captures ?? []);
         });
         if (legalMove is null)
         {
@@ -259,7 +253,7 @@ public class AnarchyBotGrain : Grain, IAnarchyBotGrain
         var moveSnapshot = game.MoveHistory.AddMove(
             nextPlayer: _core.SideToMove(game.Core),
             moveResult: moveResult,
-            timeLeft: double.PositiveInfinity
+            timeLeft: 0
         );
         var newLegalMoves = _core.EncodeLegalMoves(game.Core);
         await _notifier.NotifyBotMadeMoveAsync(

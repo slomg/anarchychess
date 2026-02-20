@@ -94,7 +94,7 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
         var grain = await Silo.CreateGrainAsync<AnarchyBotGrain>(_gameToken);
 
         GamePlayer player = playerColor is GameColor.White ? _whitePlayer : _blackPlayer;
-        await grain.StartGameAsync(player, ApiTestBase.CT);
+        await StartGameAsync(grain, player);
 
         _state.CurrentGame.Should().NotBeNull();
         GamePlayer botPlayer = new(
@@ -119,8 +119,12 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
                     HumanColor = playerColor,
                     InitialFen = _state.CurrentGame.InitialFen,
                     Core = _state.CurrentGame.Core,
-                }
+                },
+                options => options.Excluding(x => x.MoveHistory)
             );
+        _state
+            .CurrentGame.MoveHistory.Moves.Should()
+            .HaveCount(playerColor is GameColor.White ? 0 : 1);
         _stateStats.Writes.Should().BeGreaterThan(0);
     }
 
@@ -174,7 +178,7 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
             Fen: expectedFen,
             NextSideToMove: GameColor.Black,
             San: _sanCalculator.CalculateSan(move, legalMoves.AllMoves),
-            TimeLeft: double.PositiveInfinity
+            TimeLeft: 0
         );
         await _notifierMock
             .Received(1)
@@ -385,13 +389,9 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
                     snapshot.Path.FromIdx == expectedMove.From.AsIdx()
                     && snapshot.Path.ToIdx == expectedMove.To.AsIdx()
                     && snapshot.Path.PromotesTo == expectedMove.PromotesTo
-                    && (
-                        (snapshot.Path.CapturedIdxs == null && expectedMove.Captures.Count == 0)
-                        || (
-                            snapshot.Path.CapturedIdxs != null
-                            && snapshot.Path.CapturedIdxs.SequenceEqual(
-                                expectedMove.Captures.Select(capture => capture.AsIdx())
-                            )
+                    && (snapshot.Path.CapturedIdxs ?? Enumerable.Empty<byte>()).SequenceEqual(
+                        (expectedMove.Captures ?? Enumerable.Empty<AlgebraicPoint>()).Select(
+                            capture => capture.AsIdx()
                         )
                     )
                 ),
@@ -402,7 +402,7 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
         MoveSnapshot lastMove = _state.CurrentGame.MoveHistory.Moves[^1];
         lastMove.Path.FromIdx.Should().Be(expectedMove.From.AsIdx());
         lastMove.Path.ToIdx.Should().Be(expectedMove.To.AsIdx());
-        lastMove.TimeLeft.Should().Be(double.PositiveInfinity);
+        lastMove.TimeLeft.Should().Be(0);
     }
 
     private async Task AssertGameEndedAsync(AnarchyBotGrain grain, GameEndStatus expectedEndStatus)
