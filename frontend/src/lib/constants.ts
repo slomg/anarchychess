@@ -68,6 +68,7 @@ const SIGNALR_PATHS = {
     LOBBY: `${process.env.NEXT_PUBLIC_API_URL}/api/hub/lobby`,
     OPENSEEK: `${process.env.NEXT_PUBLIC_API_URL}/api/hub/openseek`,
     GAME: `${process.env.NEXT_PUBLIC_API_URL}/api/hub/game`,
+    BOT: `${process.env.NEXT_PUBLIC_API_URL}/api/hub/bot`,
     CHALLENGE: `${process.env.NEXT_PUBLIC_API_URL}/api/hub/challenge`,
 };
 
