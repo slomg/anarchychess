@@ -91,12 +91,12 @@ public class GameResultDescriberTests
     [InlineData(
         GameColor.White,
         GameResult.BlackWin,
-        "Bot tried to play an illegal move. This should NEVER happen. Please report this on the discord."
+        "Bot tried to play an illegal move. This should NEVER happen. Please report this on the discord"
     )]
     [InlineData(
         GameColor.Black,
         GameResult.WhiteWin,
-        "Bot tried to play an illegal move. This should NEVER happen. Please report this on the discord."
+        "Bot tried to play an illegal move. This should NEVER happen. Please report this on the discord
     )]
     public void AnarchyBotIllegalMove_returns_the_correct_status(
         GameColor loser,
@@ -112,12 +112,12 @@ public class GameResultDescriberTests
     [InlineData(
         GameColor.White,
         GameResult.BlackWin,
-        "You were playing so bad the bot got bored and went offline."
+        "You were playing so bad the bot got bored and went offline"
     )]
     [InlineData(
         GameColor.Black,
         GameResult.WhiteWin,
-        "You were playing so bad the bot got bored and went offline."
+        "You were playing so bad the bot got bored and went offline"
     )]
     public void AnarchyBotOffline_returns_the_correct_status(
         GameColor loser,
@@ -133,12 +133,12 @@ public class GameResultDescriberTests
     [InlineData(
         GameColor.White,
         GameResult.BlackWin,
-        "The bot failed to make a move. This should NEVER happen. Please report this on the discord."
+        "The bot failed to make a move. This should NEVER happen. Please report this on the discord"
     )]
     [InlineData(
         GameColor.Black,
         GameResult.WhiteWin,
-        "The bot failed to make a move. This should NEVER happen. Please report this on the discord."
+        "The bot failed to make a move. This should NEVER happen. Please report this on the discord"
     )]
     public void AnarchyBotFailure_returns_the_correct_status(
         GameColor loser,
