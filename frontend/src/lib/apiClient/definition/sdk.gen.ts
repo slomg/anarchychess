@@ -23,6 +23,8 @@ import type {
     CancelChallengeData,
     CancelChallengeErrors,
     CancelChallengeResponses,
+    CheckBotHealthData,
+    CheckBotHealthResponses,
     CollectQuestRewardData,
     CollectQuestRewardErrors,
     CollectQuestRewardResponses,
@@ -43,6 +45,9 @@ import type {
     GetBlockedUsersData,
     GetBlockedUsersErrors,
     GetBlockedUsersResponses,
+    GetBotGameData,
+    GetBotGameErrors,
+    GetBotGameResponses,
     GetChallengeData,
     GetChallengeErrors,
     GetChallengeResponses,
@@ -119,6 +124,9 @@ import type {
     SetPreferencesErrors,
     SetPreferencesResponses,
     SignInOAuthData,
+    StartBotGameData,
+    StartBotGameErrors,
+    StartBotGameResponses,
     TestAuthedData,
     TestAuthedErrors,
     TestAuthedResponses,
@@ -562,6 +570,33 @@ export const signInOAuth = <ThrowOnError extends boolean = false>(
         url: "/api/OAuth/signin/{provider}",
         ...options,
     });
+
+export const getBotGame = <ThrowOnError extends boolean = false>(
+    options: Options<GetBotGameData, ThrowOnError>,
+) =>
+    (options.client ?? client).get<
+        GetBotGameResponses,
+        GetBotGameErrors,
+        ThrowOnError
+    >({ url: "/api/AnarchyBot/{gameToken}", ...options });
+
+export const startBotGame = <ThrowOnError extends boolean = false>(
+    options?: Options<StartBotGameData, ThrowOnError>,
+) =>
+    (options?.client ?? client).post<
+        StartBotGameResponses,
+        StartBotGameErrors,
+        ThrowOnError
+    >({ url: "/api/AnarchyBot/start", ...options });
+
+export const checkBotHealth = <ThrowOnError extends boolean = false>(
+    options?: Options<CheckBotHealthData, ThrowOnError>,
+) =>
+    (options?.client ?? client).get<
+        CheckBotHealthResponses,
+        unknown,
+        ThrowOnError
+    >({ url: "/api/AnarchyBot/health", ...options });
 
 export const getInitialAnalysisPosition = <
     ThrowOnError extends boolean = false,

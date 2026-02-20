@@ -521,6 +521,16 @@ export type TimeControlSettingsRequest = {
     incrementSeconds: number;
 };
 
+export type AnarchyBotGameState = {
+    whitePlayer: GamePlayer;
+    blackPlayer: GamePlayer;
+    sideToMove: GameColor;
+    initialFen: string;
+    moveHistory: Array<MoveSnapshot>;
+    legalMoves: Array<MovePath>;
+    resultData?: GameResultData | null;
+};
+
 export type RootAnalysisPosition = {
     fen: string;
     legalMoves: Array<MovePath>;
@@ -598,6 +608,9 @@ export enum ErrorCode {
     CHALLENGE_CANNOT_ACCEPT = "Challenge.CannotAccept",
     CHALLENGE_NOT_FOUND = "Challenge.NotFound",
     CHALLENGE_CLOSED = "Challenge.Closed",
+    ANARCHY_BOT_OFFLINE = "AnarchyBot.Offline",
+    ANARCHY_BOT_NO_MOVE = "AnarchyBot.NoMove",
+    ANARCHY_BOT_FAILURE = "AnarchyBot.Failure",
 }
 
 export type GetRatingArchivesData = {
@@ -1182,7 +1195,6 @@ export type GetGameData = {
 };
 
 export type GetGameErrors = {
-    401: ApiProblemDetails;
     404: ApiProblemDetails;
 };
 
@@ -1453,6 +1465,63 @@ export type SignInOAuthData = {
     query?: never;
     url: "/api/OAuth/signin/{provider}";
 };
+
+export type GetBotGameData = {
+    body?: never;
+    path: {
+        gameToken: string;
+    };
+    query?: never;
+    url: "/api/AnarchyBot/{gameToken}";
+};
+
+export type GetBotGameErrors = {
+    404: ApiProblemDetails;
+};
+
+export type GetBotGameError = GetBotGameErrors[keyof GetBotGameErrors];
+
+export type GetBotGameResponses = {
+    200: AnarchyBotGameState;
+};
+
+export type GetBotGameResponse = GetBotGameResponses[keyof GetBotGameResponses];
+
+export type StartBotGameData = {
+    body?: never;
+    path?: never;
+    query?: {
+        myColor?: GameColor;
+    };
+    url: "/api/AnarchyBot/start";
+};
+
+export type StartBotGameErrors = {
+    401: ApiProblemDetails;
+};
+
+export type StartBotGameError = StartBotGameErrors[keyof StartBotGameErrors];
+
+export type StartBotGameResponses = {
+    200: string;
+};
+
+export type StartBotGameResponse =
+    StartBotGameResponses[keyof StartBotGameResponses];
+
+export type CheckBotHealthData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: "/api/AnarchyBot/health";
+};
+
+export type CheckBotHealthResponses = {
+    200: boolean;
+};
+
+export type CheckBotHealthResponse =
+    CheckBotHealthResponses[keyof CheckBotHealthResponses];
 
 export type GetInitialAnalysisPositionData = {
     body?: never;
