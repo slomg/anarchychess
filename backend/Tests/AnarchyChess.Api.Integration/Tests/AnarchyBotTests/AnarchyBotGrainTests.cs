@@ -102,7 +102,7 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
             Color: playerColor.Invert(),
             UserName: "Anarchy Bot",
             CountryCode: "XX",
-            Rating: null
+            Rating: 161660
         );
         PlayerRoster expectedPlayers = new(
             WhitePlayer: playerColor == GameColor.White ? player : botPlayer,
@@ -351,7 +351,7 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
                 Color: GameColor.Black,
                 UserName: "Anarchy Bot",
                 CountryCode: "XX",
-                Rating: null
+                Rating: 161660
             ),
             SideToMove: GameColor.White,
             InitialFen: _state.CurrentGame.InitialFen,

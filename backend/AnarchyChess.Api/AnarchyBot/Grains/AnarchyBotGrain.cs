@@ -117,7 +117,7 @@ public class AnarchyBotGrain : Grain, IAnarchyBotGrain
             Color: player.Color.Invert(),
             UserName: "Anarchy Bot",
             CountryCode: "XX",
-            Rating: null
+            Rating: 161660
         );
 
         _state.State.CurrentGame = new AnarchyBotGameData()
