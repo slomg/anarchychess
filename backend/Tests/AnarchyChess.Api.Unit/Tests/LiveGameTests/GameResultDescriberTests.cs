@@ -96,7 +96,7 @@ public class GameResultDescriberTests
     [InlineData(
         GameColor.Black,
         GameResult.WhiteWin,
-        "Bot tried to play an illegal move. This should NEVER happen. Please report this on the discord
+        "Bot tried to play an illegal move. This should NEVER happen. Please report this on the discord"
     )]
     public void AnarchyBotIllegalMove_returns_the_correct_status(
         GameColor loser,
