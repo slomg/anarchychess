@@ -578,7 +578,7 @@ export const getBotGame = <ThrowOnError extends boolean = false>(
         GetBotGameResponses,
         GetBotGameErrors,
         ThrowOnError
-    >({ url: "/api/AnarchyBot/{gameToken}", ...options });
+    >({ url: "/api/Bot/{gameToken}", ...options });
 
 export const startBotGame = <ThrowOnError extends boolean = false>(
     options?: Options<StartBotGameData, ThrowOnError>,
@@ -587,7 +587,7 @@ export const startBotGame = <ThrowOnError extends boolean = false>(
         StartBotGameResponses,
         StartBotGameErrors,
         ThrowOnError
-    >({ url: "/api/AnarchyBot/start", ...options });
+    >({ url: "/api/Bot/start", ...options });
 
 export const checkBotHealth = <ThrowOnError extends boolean = false>(
     options?: Options<CheckBotHealthData, ThrowOnError>,
@@ -596,7 +596,7 @@ export const checkBotHealth = <ThrowOnError extends boolean = false>(
         CheckBotHealthResponses,
         unknown,
         ThrowOnError
-    >({ url: "/api/AnarchyBot/health", ...options });
+    >({ url: "/api/Bot/health", ...options });
 
 export const getInitialAnalysisPosition = <
     ThrowOnError extends boolean = false,

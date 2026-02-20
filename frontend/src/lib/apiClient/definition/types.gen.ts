@@ -521,7 +521,7 @@ export type TimeControlSettingsRequest = {
     incrementSeconds: number;
 };
 
-export type AnarchyBotGameState = {
+export type BotGameState = {
     whitePlayer: GamePlayer;
     blackPlayer: GamePlayer;
     sideToMove: GameColor;
@@ -608,9 +608,9 @@ export enum ErrorCode {
     CHALLENGE_CANNOT_ACCEPT = "Challenge.CannotAccept",
     CHALLENGE_NOT_FOUND = "Challenge.NotFound",
     CHALLENGE_CLOSED = "Challenge.Closed",
-    ANARCHY_BOT_OFFLINE = "AnarchyBot.Offline",
-    ANARCHY_BOT_NO_MOVE = "AnarchyBot.NoMove",
-    ANARCHY_BOT_FAILURE = "AnarchyBot.Failure",
+    BOT_OFFLINE = "Bot.Offline",
+    BOT_NO_MOVE = "Bot.NoMove",
+    BOT_FAILURE = "Bot.Failure",
 }
 
 export type GetRatingArchivesData = {
@@ -1472,7 +1472,7 @@ export type GetBotGameData = {
         gameToken: string;
     };
     query?: never;
-    url: "/api/AnarchyBot/{gameToken}";
+    url: "/api/Bot/{gameToken}";
 };
 
 export type GetBotGameErrors = {
@@ -1482,7 +1482,7 @@ export type GetBotGameErrors = {
 export type GetBotGameError = GetBotGameErrors[keyof GetBotGameErrors];
 
 export type GetBotGameResponses = {
-    200: AnarchyBotGameState;
+    200: BotGameState;
 };
 
 export type GetBotGameResponse = GetBotGameResponses[keyof GetBotGameResponses];
@@ -1493,7 +1493,7 @@ export type StartBotGameData = {
     query?: {
         myColor?: GameColor;
     };
-    url: "/api/AnarchyBot/start";
+    url: "/api/Bot/start";
 };
 
 export type StartBotGameErrors = {
@@ -1513,7 +1513,7 @@ export type CheckBotHealthData = {
     body?: never;
     path?: never;
     query?: never;
-    url: "/api/AnarchyBot/health";
+    url: "/api/Bot/health";
 };
 
 export type CheckBotHealthResponses = {
