@@ -27,10 +27,10 @@ import useLiveMoveEmitter from "../hooks/useLiveMoveEmitter";
 import useLiveChessEvents from "../hooks/useLiveChessEvents";
 import useGameStartAudio from "../hooks/useGameStartAudio";
 import { GameState, Preferences } from "@/lib/apiClient";
-import GameOverPopup from "./GameOverPopup";
+import LiveGameOverPopup from "./LiveGameOverPopup";
+import OvertimeAlert from "./OvertimeAlert";
 import useConst from "@/hooks/useConst";
 import GameChat from "./GameChat";
-import OvertimeAlert from "./OvertimeAlert";
 
 const LiveChessboard = ({
     gameToken,
@@ -65,7 +65,7 @@ const LiveChessboard = ({
     return (
         <LiveChessStoreContext.Provider value={liveChessStore}>
             <ChessboardStoreContext.Provider value={chessboardStore}>
-                <GameOverPopup />
+                <LiveGameOverPopup />
                 <ChessboardWithSidebar
                     chessboard={
                         <>

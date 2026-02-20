@@ -1,26 +1,24 @@
-import ProfilePicture from "@/features/profile/components/ProfilePicture";
-import Card from "@/components/ui/Card";
-import { GameColor, GamePlayer, GameResult } from "@/lib/apiClient";
-import clsx from "clsx";
-import Button from "@/components/ui/Button";
 import { useEffect, useRef } from "react";
-import useLiveChessStore from "../hooks/useLiveChessStore";
-import useMatchmaking from "@/features/lobby/hooks/useMatchmaking";
-import Popup, { PopupRef } from "@/components/Popup";
-import useRematch from "../hooks/useRematch";
+import clsx from "clsx";
 
-const GameOverPopup = () => {
+import ProfilePicture from "@/features/profile/components/ProfilePicture";
+import { GameColor, GamePlayer, GameResult } from "@/lib/apiClient";
+import useLiveChessStore from "../hooks/useLiveChessStore";
+import Popup, { PopupRef } from "@/components/Popup";
+import Card from "@/components/ui/Card";
+
+const GameOverPopup = ({ controls }: { controls?: React.ReactNode }) => {
     const whitePlayer = useLiveChessStore((x) => x.whitePlayer);
     const blackPlayer = useLiveChessStore((x) => x.blackPlayer);
     const resultData = useLiveChessStore((x) => x.resultData);
     const viewer = useLiveChessStore((x) => x.viewer);
-    const pool = useLiveChessStore((x) => x.pool);
 
-    const { toggleSeek, isSeeking } = useMatchmaking(pool);
     const popupRef = useRef<PopupRef>(null);
 
     useEffect(() => {
-        if (resultData && popupRef.current) popupRef.current.open();
+        if (resultData && popupRef.current) {
+            popupRef.current.open();
+        }
     }, [resultData]);
 
     if (!resultData) return;
@@ -72,51 +70,11 @@ const GameOverPopup = () => {
                 />
             </div>
 
-            <div className="flex gap-3">
-                <Button
-                    className={clsx("flex-1", isSeeking && "animate-breathe")}
-                    onClick={() => toggleSeek()}
-                >
-                    {isSeeking ? "SEARCHING..." : "NEW GAME"}
-                </Button>
-                {viewer.playerColor !== null && <RematchButton />}
-            </div>
+            <div className="flex gap-3">{controls}</div>
         </Popup>
     );
 };
 export default GameOverPopup;
-
-const RematchButton = () => {
-    const {
-        toggleRematch,
-        requestRematch,
-        isRequestingRematch,
-        isRematchRequested,
-    } = useRematch();
-
-    if (isRematchRequested) {
-        return (
-            <Button
-                onClick={requestRematch}
-                className="bg-secondary flex-1 text-black"
-            >
-                REMATCH?
-            </Button>
-        );
-    } else {
-        return (
-            <Button
-                onClick={toggleRematch}
-                className={clsx(
-                    "flex-1",
-                    isRequestingRematch && "animate-breathe",
-                )}
-            >
-                REMATCH
-            </Button>
-        );
-    }
-};
 
 const PopupCardProfile = ({
     player,
