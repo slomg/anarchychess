@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 using AnarchyChess.Ai.Service.Services;
 using AnarchyChess.Api.Analysis.Services;
 using AnarchyChess.Api.AnarchyBot.Services;
+using AnarchyChess.Api.AnarchyBot.SignalR;
 using AnarchyChess.Api.ArchivedGames.Repositories;
 using AnarchyChess.Api.ArchivedGames.Services;
 using AnarchyChess.Api.Auth.Errors;
@@ -587,6 +588,7 @@ app.MapHub<ChallengeHub>("/api/hub/challenge");
 app.MapHub<OpenSeekHub>("/api/hub/openseek");
 app.MapHub<LobbyHub>("/api/hub/lobby");
 app.MapHub<GameHub>("/api/hub/game");
+app.MapHub<BotHub>("/api/hub/bot");
 
 app.UseResponseCompression();
 
