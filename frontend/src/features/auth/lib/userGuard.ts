@@ -16,5 +16,6 @@ export function isGuest(user: SessionUser | null): user is GuestUser {
 
 export function isIdAuthed(userId: string | null): boolean {
     if (userId === null) return false;
-    return !userId.startsWith("guest:");
+
+    return !userId.startsWith("guest:") && !userId.startsWith("bot:");
 }

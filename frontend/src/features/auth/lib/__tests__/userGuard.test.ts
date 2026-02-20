@@ -44,4 +44,8 @@ describe("isIdAuthed", () => {
     it("should return false for null userId", () => {
         expect(isIdAuthed(null)).toBe(false);
     });
+
+    it("should return false for bot userId", () => {
+        expect(isIdAuthed("bot:" + crypto.randomUUID())).toBe(false);
+    });
 });
