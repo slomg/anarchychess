@@ -62,7 +62,7 @@ const GameRow = ({
             <td className="relative">
                 <GameLink gameToken={game.gameToken} />
                 <div
-                    className="flex flex-col items-center justify-center gap-2
+                    className="flex flex-col items-center justify-center gap-1
                         px-3"
                 >
                     <TimeControlIconFromSeconds
