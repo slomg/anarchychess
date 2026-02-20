@@ -63,4 +63,27 @@ public class AnarchyBotControllerTests : BaseFunctionalTest
 
         state.BlackPlayer.UserId.Should().Be(UserId.AnarchyBot());
     }
+
+    [Fact]
+    public async Task GetBotGame_returns_correct_state()
+    {
+        var guest = UserId.Guest();
+        AuthUtils.AuthenticateGuest(ApiClient, guest);
+
+        var startResponse = await ApiClient.Api.StartAnarchyBotGameAsync(myColor: GameColor.White);
+        startResponse.IsSuccessful.Should().BeTrue();
+        startResponse.Content.Should().NotBeNull();
+        string gameToken = startResponse.Content;
+
+        var response = await ApiClient.Api.GetAnarchyBotGameAsync(gameToken);
+
+        response.IsSuccessful.Should().BeTrue();
+        response.Content.Should().NotBeNull();
+        var gameState = response.Content;
+
+        var grain = _grains.GetGrain<IAnarchyBotGrain>(gameToken);
+        var grainStateResult = await grain.GetStateAsync(CT);
+        grainStateResult.IsError.Should().BeFalse();
+        gameState.Should().BeEquivalentTo(grainStateResult.Value);
+    }
 }
