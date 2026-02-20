@@ -8,14 +8,23 @@ namespace AnarchyChess.Api.AnarchyBot.Services;
 
 public interface IAnarchyBotService
 {
-    Task<AiEngineMoveReply> FindBestMoveAsync(IReadOnlyChessBoard board);
+    Task<bool> CheckHealthAsync(CancellationToken token = default);
+    Task<AiEngineMoveReply> FindBestMoveAsync(
+        IReadOnlyChessBoard board,
+        CancellationToken token = default
+    );
 }
 
-public class AnarchyBotService(IAiEngineService aiEngineService) : IAnarchyBotService
+public class AnarchyBotService(ILogger<AnarchyBotService> logger, IAiEngineService aiEngineService)
+    : IAnarchyBotService
 {
+    private readonly ILogger<AnarchyBotService> _logger = logger;
     private readonly IAiEngineService _aiEngineService = aiEngineService;
 
-    public async Task<AiEngineMoveReply> FindBestMoveAsync(IReadOnlyChessBoard board)
+    public async Task<AiEngineMoveReply> FindBestMoveAsync(
+        IReadOnlyChessBoard board,
+        CancellationToken token = default
+    )
     {
         PrevMoveStateDto? prevMove = GetPrevMoveState(board);
         AiEngineMoveRequest request = new(
@@ -24,8 +33,22 @@ public class AnarchyBotService(IAiEngineService aiEngineService) : IAnarchyBotSe
             prevMove
         );
 
-        var bestMove = await _aiEngineService.FindBestMoveAsync(request);
+        var bestMove = await _aiEngineService.FindBestMoveAsync(request, token);
         return bestMove;
+    }
+
+    public async Task<bool> CheckHealthAsync(CancellationToken token = default)
+    {
+        try
+        {
+            var result = await _aiEngineService.CheckHealthAsync(token);
+            return result.IsHealthy;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning("Exception when checking ai engine service health: {Ex}", ex);
+            return false;
+        }
     }
 
     private static PrevMoveStateDto? GetPrevMoveState(IReadOnlyChessBoard board)

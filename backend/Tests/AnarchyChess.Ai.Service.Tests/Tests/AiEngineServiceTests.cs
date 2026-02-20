@@ -54,7 +54,8 @@ public class AiEngineServiceTests
             .Returns(move);
 
         var response = await _engine.FindBestMoveAsync(
-            new(pieces, IsWhiteToMove: isWhiteToMove, PrevMoveState: null)
+            new(pieces, IsWhiteToMove: isWhiteToMove, PrevMoveState: null),
+            TestContext.Current.CancellationToken
         );
 
         AiEngineMoveReply expectedReply = new(
@@ -118,7 +119,8 @@ public class AiEngineServiceTests
             .Returns(move);
 
         var response = await _engine.FindBestMoveAsync(
-            new(pieces, IsWhiteToMove: true, PrevMoveState: prevMoveDto)
+            new(pieces, IsWhiteToMove: true, PrevMoveState: prevMoveDto),
+            TestContext.Current.CancellationToken
         );
 
         AiEngineMoveReply expectedReply = new(From: from, To: to, Captures: [], PromotesTo: null);
@@ -142,5 +144,12 @@ public class AiEngineServiceTests
         ex.Which.StatusCode.Should().Be(StatusCode.InvalidArgument);
         ex.Which.Status.Detail.Should()
             .Be("The provided position contains no legal moves and is invalid");
+    }
+
+    [Fact]
+    public async Task CheckHealthAsync_returns_true()
+    {
+        bool result = await _engine.CheckHealthAsync(TestContext.Current.CancellationToken);
+        result.Should().BeTrue();
     }
 }

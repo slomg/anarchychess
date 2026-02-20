@@ -222,7 +222,7 @@ public class AnarchyBotGrain : Grain, IAnarchyBotGrain
     private async Task PlayBotMoveAsync(AnarchyBotGameData game, CancellationToken token = default)
     {
         IReadOnlyChessBoard board = _core.GetReadOnlyBoard(game.Core);
-        var botMove = await _anarchyBotService.FindBestMoveAsync(board);
+        var botMove = await _anarchyBotService.FindBestMoveAsync(board, token);
 
         LegalMoveSet legalMoves = _core.GetLegalMoves(game.Core);
         Move? legalMove = legalMoves.AllMoves.FirstOrDefault(move =>

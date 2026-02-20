@@ -7,5 +7,11 @@ namespace AnarchyChess.Ai.Service.Services;
 public interface IAiEngineService
 {
     [Operation]
-    ValueTask<AiEngineMoveReply> FindBestMoveAsync(AiEngineMoveRequest request);
+    ValueTask<AiEngineMoveReply> FindBestMoveAsync(
+        AiEngineMoveRequest request,
+        CancellationToken token = default
+    );
+
+    [Operation]
+    ValueTask<HealthReply> CheckHealthAsync(CancellationToken token = default);
 }

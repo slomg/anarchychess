@@ -8,18 +8,21 @@ using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AnarchyChess.Api.TestInfrastructure.NSubtituteExtenstion;
 using AnarchyChess.EngineShared;
 using AwesomeAssertions;
+using Grpc.Core;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 
 namespace AnarchyChess.Api.Unit.Tests.AnarchyBotTests;
 
-public class AnarchyBotServiceTests
+public class AnarchyBotServiceTests : BaseUnitTest
 {
     private readonly IAiEngineService _aiEngineMock = Substitute.For<IAiEngineService>();
     private readonly AnarchyBotService _bot;
 
     public AnarchyBotServiceTests()
     {
-        _bot = new(_aiEngineMock);
+        _bot = new(Substitute.For<ILogger<AnarchyBotService>>(), _aiEngineMock);
     }
 
     [Fact]
@@ -49,11 +52,12 @@ public class AnarchyBotServiceTests
             .FindBestMoveAsync(
                 ArgEx.FluentAssert<AiEngineMoveRequest>(x =>
                     x.Should().BeEquivalentTo(expectedRequest)
-                )
+                ),
+                CT
             )
             .Returns(expectedReply);
 
-        var reply = await _bot.FindBestMoveAsync(board);
+        var reply = await _bot.FindBestMoveAsync(board, CT);
 
         reply.Should().Be(expectedReply);
     }
@@ -69,11 +73,43 @@ public class AnarchyBotServiceTests
 
         var expectedReply = new AiEngineMoveReplyFaker().Generate();
         _aiEngineMock
-            .FindBestMoveAsync(Arg.Is<AiEngineMoveRequest>(x => x.PrevMoveState == null))
+            .FindBestMoveAsync(Arg.Is<AiEngineMoveRequest>(x => x.PrevMoveState == null), CT)
             .Returns(expectedReply);
 
-        var reply = await _bot.FindBestMoveAsync(chessBoard);
+        var reply = await _bot.FindBestMoveAsync(chessBoard, CT);
 
         reply.Should().Be(expectedReply);
+    }
+
+    [Fact]
+    public async Task CheckHealthAsync_returns_true_when_ai_engine_is_healthy()
+    {
+        _aiEngineMock.CheckHealthAsync(CT).Returns(new HealthReply(IsHealthy: true));
+
+        var result = await _bot.CheckHealthAsync(CT);
+
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task CheckHealthAsync_returns_false_when_ai_engine_is_unhealthy()
+    {
+        _aiEngineMock.CheckHealthAsync(CT).Returns(new HealthReply(IsHealthy: false));
+
+        var result = await _bot.CheckHealthAsync(CT);
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task CheckHealthAsync_returns_false_when_ai_engine_throws_exception()
+    {
+        _aiEngineMock
+            .CheckHealthAsync(CT)
+            .Throws(new RpcException(new Status(StatusCode.Unavailable, "unavailable")));
+
+        var result = await _bot.CheckHealthAsync(CT);
+
+        result.Should().BeFalse();
     }
 }

@@ -13,7 +13,10 @@ public class AiEngineService(IAiEngine aiEngine) : IAiEngineService
 
     public const int Depth = 8;
 
-    public ValueTask<AiEngineMoveReply> FindBestMoveAsync(AiEngineMoveRequest request)
+    public ValueTask<AiEngineMoveReply> FindBestMoveAsync(
+        AiEngineMoveRequest request,
+        CancellationToken token = default
+    )
     {
         BitBoard board = BitBoard.FromPieces(
             request.Pieces,
@@ -45,6 +48,9 @@ public class AiEngineService(IAiEngine aiEngine) : IAiEngineService
         );
         return ValueTask.FromResult(reply);
     }
+
+    public ValueTask<HealthReply> CheckHealthAsync(CancellationToken token = default) =>
+        ValueTask.FromResult(new HealthReply(IsHealthy: true));
 
     private static PrevMoveState? CreatePrevMove(PrevMoveStateDto? prevMoveState)
     {

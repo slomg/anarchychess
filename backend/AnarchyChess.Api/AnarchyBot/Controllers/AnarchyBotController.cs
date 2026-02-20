@@ -1,5 +1,6 @@
 ﻿using AnarchyChess.Api.AnarchyBot.Grains;
 using AnarchyChess.Api.AnarchyBot.Models;
+using AnarchyChess.Api.AnarchyBot.Services;
 using AnarchyChess.Api.Auth.Services;
 using AnarchyChess.Api.ErrorHandling.Extensions;
 using AnarchyChess.Api.ErrorHandling.Infrastructure;
@@ -19,12 +20,14 @@ namespace AnarchyChess.Api.AnarchyBot.Controllers;
 [Route("/api/[controller]")]
 public class AnarchyBotController(
     IGrainFactory grains,
+    IAnarchyBotService botService,
     UserManager<AuthedUser> userManager,
     IAuthService authService,
     IRandomCodeGenerator randomCodeGenerator
 ) : Controller
 {
     private readonly IGrainFactory _grains = grains;
+    private readonly IAnarchyBotService _botService = botService;
     private readonly UserManager<AuthedUser> _userManager = userManager;
     private readonly IAuthService _authService = authService;
     private readonly IRandomCodeGenerator _randomCodeGenerator = randomCodeGenerator;
@@ -64,5 +67,13 @@ public class AnarchyBotController(
         await botGrain.StartGameAsync(player, token);
 
         return Ok(gameToken.ToString());
+    }
+
+    [HttpGet("health")]
+    [ProducesResponseType<bool>(StatusCodes.Status200OK)]
+    public async Task<ActionResult<bool>> CheckBotHealth(CancellationToken token)
+    {
+        bool result = await _botService.CheckHealthAsync(token);
+        return Ok(result);
     }
 }
