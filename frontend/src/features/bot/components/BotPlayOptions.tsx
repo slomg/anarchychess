@@ -16,23 +16,32 @@ const BotPlayOptions = () => {
     const [selected, setSelected] = useState("Anarchy Bot");
     const [color, setColor] = useState<GameColor | null>(null);
     const [error, setError] = useState<string>();
+    const [isFetching, setIsFetching] = useState(false);
 
     const router = useRouter();
 
     async function startGame() {
         setError(undefined);
+        setIsFetching(true);
 
-        const myColor =
-            color ?? (Math.random() < 0.5 ? GameColor.WHITE : GameColor.BLACK);
-        const { error, data: gameToken } = await startBotGame({
-            query: { myColor },
-        });
-        if (error || !gameToken) {
-            setError("Failed to start game. Please try again.");
-            console.error("BotPlayOptions startGame", error);
-            return;
+        try {
+            const myColor =
+                color ??
+                (Math.random() < 0.5 ? GameColor.WHITE : GameColor.BLACK);
+            const { error, data: gameToken } = await startBotGame({
+                query: { myColor },
+            });
+
+            if (error || !gameToken) {
+                setError("Failed to start game. Please try again.");
+                console.error("BotPlayOptions startGame", error);
+                return;
+            }
+
+            router.push(`${constants.PATHS.BOT}/${gameToken}`);
+        } finally {
+            setIsFetching(false);
         }
-        router.push(`${constants.PATHS.BOT}/${gameToken}`);
     }
 
     return (
@@ -88,6 +97,7 @@ const BotPlayOptions = () => {
                 <Button
                     className="h-min"
                     onClick={startGame}
+                    disabled={isFetching}
                     data-testid="botPlayOptionsStartButton"
                 >
                     Play
