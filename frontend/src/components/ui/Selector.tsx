@@ -1,10 +1,10 @@
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import clsx from "clsx";
 
 import Button from "./Button";
 
 type Option<T> = {
-    label: string;
+    label: React.ReactNode;
     value: T;
 };
 

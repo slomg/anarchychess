@@ -31,6 +31,7 @@ const PATHS = {
     LOGOUT: "/logout",
     REFRESH: "/refresh",
     GAME: "/game",
+    BOT: "/bot",
     PLAY: "/play",
     GUIDE: "/guide",
     QUESTS: "/quests",
