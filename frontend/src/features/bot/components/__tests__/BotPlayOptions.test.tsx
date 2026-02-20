@@ -4,16 +4,20 @@ import { render, screen, within } from "@testing-library/react";
 import BotPlayOptions from "../BotPlayOptions";
 import userEvent from "@testing-library/user-event";
 import constants from "@/lib/constants";
+import { randomizeColor } from "@/lib/utils/chessUtils";
 
 vi.mock("@/lib/apiClient/definition");
+vi.mock("@/lib/utils/chessUtils");
 
 describe("BotPlayOptions", () => {
     let routerMock: RouterMock;
     const mockStartBotGame = vi.mocked(startBotGame);
     const fakeGameToken = "fakeGameToken";
+    const randomizeColorMock = vi.mocked(randomizeColor);
 
     beforeEach(() => {
         routerMock = mockRouter();
+        randomizeColorMock.mockReturnValue(GameColor.WHITE);
         mockStartBotGame.mockResolvedValue({
             data: fakeGameToken,
             error: undefined,
@@ -69,11 +73,10 @@ describe("BotPlayOptions", () => {
     );
 
     it("should select a random color if random is selected", async () => {
-        const mathRandomSpy = vi.spyOn(Math, "random");
         const user = userEvent.setup();
         render(<BotPlayOptions />);
 
-        mathRandomSpy.mockReturnValueOnce(0.3); // white
+        randomizeColorMock.mockReturnValueOnce(GameColor.WHITE);
 
         const selector = screen.getByTestId("botPlayOptionsColorSelector");
         await user.click(within(selector).getByTestId("selector-null"));
@@ -84,12 +87,10 @@ describe("BotPlayOptions", () => {
             query: { myColor: GameColor.WHITE },
         });
 
-        mathRandomSpy.mockReturnValueOnce(0.8); // black
+        randomizeColorMock.mockReturnValueOnce(GameColor.BLACK);
         await user.click(screen.getByTestId("botPlayOptionsStartButton"));
         expect(mockStartBotGame).toHaveBeenCalledWith({
             query: { myColor: GameColor.BLACK },
         });
-
-        mathRandomSpy.mockRestore();
     });
 });

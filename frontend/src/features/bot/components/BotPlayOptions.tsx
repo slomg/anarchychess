@@ -11,12 +11,13 @@ import Selector from "@/components/ui/Selector";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import constants from "@/lib/constants";
+import { randomizeColor } from "@/lib/utils/chessUtils";
 
 const BotPlayOptions = () => {
     const [selected, setSelected] = useState("Anarchy Bot");
     const [color, setColor] = useState<GameColor | null>(null);
-    const [error, setError] = useState<string>();
     const [isFetching, setIsFetching] = useState(false);
+    const [error, setError] = useState<string>();
 
     const router = useRouter();
 
@@ -25,9 +26,7 @@ const BotPlayOptions = () => {
         setIsFetching(true);
 
         try {
-            const myColor =
-                color ??
-                (Math.random() < 0.5 ? GameColor.WHITE : GameColor.BLACK);
+            const myColor = color ?? randomizeColor();
             const { error, data: gameToken } = await startBotGame({
                 query: { myColor },
             });
