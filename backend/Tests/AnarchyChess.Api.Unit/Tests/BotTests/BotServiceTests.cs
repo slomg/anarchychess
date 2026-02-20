@@ -14,16 +14,16 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 
-namespace AnarchyChess.Api.Unit.Tests.AnarchyBotTests;
+namespace AnarchyChess.Api.Unit.Tests.BotTests;
 
-public class AnarchyBotServiceTests : BaseUnitTest
+public class BotServiceTests : BaseUnitTest
 {
     private readonly IAiEngineService _aiEngineMock = Substitute.For<IAiEngineService>();
-    private readonly AnarchyBotService _bot;
+    private readonly BotService _bot;
 
-    public AnarchyBotServiceTests()
+    public BotServiceTests()
     {
-        _bot = new(Substitute.For<ILogger<AnarchyBotService>>(), _aiEngineMock);
+        _bot = new(Substitute.For<ILogger<BotService>>(), _aiEngineMock);
     }
 
     [Fact]
@@ -94,7 +94,7 @@ public class AnarchyBotServiceTests : BaseUnitTest
         var result = await _bot.FindBestMoveAsync(new ChessBoard(), CT);
 
         result.IsError.Should().BeTrue();
-        result.FirstError.Should().Be(AnarchyBotErrors.BotOffline);
+        result.FirstError.Should().Be(BotErrors.BotOffline);
     }
 
     [Fact]
@@ -109,7 +109,7 @@ public class AnarchyBotServiceTests : BaseUnitTest
         var result = await _bot.FindBestMoveAsync(new ChessBoard(), CT);
 
         result.IsError.Should().BeTrue();
-        result.FirstError.Should().Be(AnarchyBotErrors.NoMoveFound);
+        result.FirstError.Should().Be(BotErrors.NoMoveFound);
     }
 
     [Fact]
@@ -122,7 +122,7 @@ public class AnarchyBotServiceTests : BaseUnitTest
         var result = await _bot.FindBestMoveAsync(new ChessBoard(), CT);
 
         result.IsError.Should().BeTrue();
-        result.FirstError.Should().Be(AnarchyBotErrors.BotFailure);
+        result.FirstError.Should().Be(BotErrors.BotFailure);
     }
 
     [Fact]

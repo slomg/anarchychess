@@ -186,10 +186,10 @@ public interface IAnarchyChessApi
     #endregion
 
     #region Anarchy Bot
-    [Get("/api/anarchybot/{gameToken}")]
-    Task<IApiResponse<AnarchyBotGameState>> GetAnarchyBotGameAsync(string gameToken);
+    [Get("/api/bot/{gameToken}")]
+    Task<IApiResponse<BotGameState>> GetBotGameAsync(string gameToken);
 
-    [Post("/api/anarchybot/start")]
-    Task<IApiResponse<string>> StartAnarchyBotGameAsync(GameColor myColor);
+    [Post("/api/bot/start")]
+    Task<IApiResponse<string>> StartBotGameAsync(GameColor myColor);
     #endregion
 }

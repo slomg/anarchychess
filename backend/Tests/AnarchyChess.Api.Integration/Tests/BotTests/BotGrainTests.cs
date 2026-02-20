@@ -23,9 +23,9 @@ using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using Orleans.TestKit.Storage;
 
-namespace AnarchyChess.Api.Integration.Tests.AnarchyBotTests;
+namespace AnarchyChess.Api.Integration.Tests.BotTests;
 
-public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
+public class BotGrainTests : BaseOrleansIntegrationTest
 {
     private readonly GameToken _gameToken = "testtoken";
     private readonly AiEngineMoveReply _firstWhiteBotMove = new(
@@ -42,9 +42,8 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
         PromotesTo: null
     );
 
-    private readonly IAnarchyBotNotifier _notifierMock = Substitute.For<IAnarchyBotNotifier>();
-    private readonly IAnarchyBotService _anarchyBotServiceMock =
-        Substitute.For<IAnarchyBotService>();
+    private readonly IBotNotifier _notifierMock = Substitute.For<IBotNotifier>();
+    private readonly IBotService _anarchyBotServiceMock = Substitute.For<IBotService>();
 
     private readonly IGameResultDescriber _gameResultDescriber;
     private readonly ISanCalculator _sanCalculator;
@@ -56,10 +55,10 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
 
     private readonly GamePlayer _player;
 
-    private readonly AnarchyBotGrainState _state;
+    private readonly BotGrainState _state;
     private readonly TestStorageStats _stateStats;
 
-    public AnarchyBotGrainTests(AnarchyChessWebApplicationFactory factory)
+    public BotGrainTests(AnarchyChessWebApplicationFactory factory)
         : base(factory)
     {
         _player = _whitePlayer;
@@ -80,10 +79,8 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
         Silo.ServiceProvider.AddService(_anarchyBotServiceMock);
         Silo.ServiceProvider.AddService(_notifierMock);
 
-        _state = Silo
-            .StorageManager.GetStorage<AnarchyBotGrainState>(AnarchyBotGrain.StateName)
-            .State;
-        _stateStats = Silo.StorageManager.GetStorageStats(AnarchyBotGrain.StateName)!;
+        _state = Silo.StorageManager.GetStorage<BotGrainState>(BotGrain.StateName).State;
+        _stateStats = Silo.StorageManager.GetStorageStats(BotGrain.StateName)!;
     }
 
     [Theory]
@@ -91,7 +88,7 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
     [InlineData(GameColor.Black)]
     public async Task StartGameAsync_creates_correct_state(GameColor playerColor)
     {
-        var grain = await Silo.CreateGrainAsync<AnarchyBotGrain>(_gameToken);
+        var grain = await Silo.CreateGrainAsync<BotGrain>(_gameToken);
 
         GamePlayer player = playerColor is GameColor.White ? _whitePlayer : _blackPlayer;
         await StartGameAsync(grain, player);
@@ -112,7 +109,7 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
         _state
             .CurrentGame.Should()
             .BeEquivalentTo(
-                new AnarchyBotGameData()
+                new BotGameData()
                 {
                     Players = expectedPlayers,
                     BotColor = botPlayer.Color,
@@ -131,7 +128,7 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
     [Fact]
     public async Task StartGameAsync_plays_bot_move_if_player_color_is_black()
     {
-        var grain = await Silo.CreateGrainAsync<AnarchyBotGrain>(_gameToken);
+        var grain = await Silo.CreateGrainAsync<BotGrain>(_gameToken);
 
         await StartGameAsync(grain, _blackPlayer);
 
@@ -141,7 +138,7 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
     [Fact]
     public async Task StartGame_doesnt_play_bot_move_if_player_color_is_white()
     {
-        var grain = await Silo.CreateGrainAsync<AnarchyBotGrain>(_gameToken);
+        var grain = await Silo.CreateGrainAsync<BotGrain>(_gameToken);
 
         AiEngineMoveReply botMove = new(
             From: new("f9"),
@@ -162,7 +159,7 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
     [Fact]
     public async Task PlayMoveAsync_notifies_player()
     {
-        var grain = await Silo.CreateGrainAsync<AnarchyBotGrain>(_gameToken);
+        var grain = await Silo.CreateGrainAsync<BotGrain>(_gameToken);
         await StartGameAsync(grain);
 
         Move move = GetLegalMove();
@@ -197,7 +194,7 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
     [Fact]
     public async Task PlayMoveAsync_plays_bot_move_when_player_is_white()
     {
-        var grain = await Silo.CreateGrainAsync<AnarchyBotGrain>(_gameToken);
+        var grain = await Silo.CreateGrainAsync<BotGrain>(_gameToken);
         await StartGameAsync(grain, _whitePlayer);
 
         Move move = GetLegalMove();
@@ -209,7 +206,7 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
     [Fact]
     public async Task PlayMoveAsync_plays_bot_move_when_player_is_black()
     {
-        var grain = await Silo.CreateGrainAsync<AnarchyBotGrain>(_gameToken);
+        var grain = await Silo.CreateGrainAsync<BotGrain>(_gameToken);
         await StartGameAsync(grain, _blackPlayer);
 
         AiEngineMoveReply secondBotMove = new(
@@ -232,7 +229,7 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
     [Fact]
     public async Task PlayMoveAsync_ends_game_when_player_ends_game()
     {
-        var grain = await Silo.CreateGrainAsync<AnarchyBotGrain>(_gameToken);
+        var grain = await Silo.CreateGrainAsync<BotGrain>(_gameToken);
         await StartGameAsync(grain, _whitePlayer);
 
         _anarchyBotServiceMock
@@ -264,7 +261,7 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
     [Fact]
     public async Task PlayMoveAsync_ends_game_when_bot_ends_game()
     {
-        var grain = await Silo.CreateGrainAsync<AnarchyBotGrain>(_gameToken);
+        var grain = await Silo.CreateGrainAsync<BotGrain>(_gameToken);
 
         _anarchyBotServiceMock
             .FindBestMoveAsync(Arg.Any<IReadOnlyChessBoard>(), ApiTestBase.CT)
@@ -301,7 +298,7 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
     [Fact]
     public async Task PlayMoveAsync_returns_error_for_illegal_move()
     {
-        var grain = await Silo.CreateGrainAsync<AnarchyBotGrain>(_gameToken);
+        var grain = await Silo.CreateGrainAsync<BotGrain>(_gameToken);
         await StartGameAsync(grain);
 
         var result = await grain.PlayMoveAsync(_player.UserId, new("ILLEGAL"), ApiTestBase.CT);
@@ -313,7 +310,7 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
     [Fact]
     public async Task ResignAsync_ends_game()
     {
-        var grain = await Silo.CreateGrainAsync<AnarchyBotGrain>(_gameToken);
+        var grain = await Silo.CreateGrainAsync<BotGrain>(_gameToken);
         await StartGameAsync(grain);
 
         var result = await grain.ResignAsync(_player.UserId, ApiTestBase.CT);
@@ -325,7 +322,7 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
     [Fact]
     public async Task ResignAsync_rejects_wrong_user()
     {
-        var grain = await Silo.CreateGrainAsync<AnarchyBotGrain>(_gameToken);
+        var grain = await Silo.CreateGrainAsync<BotGrain>(_gameToken);
         await StartGameAsync(grain);
 
         var result = await grain.ResignAsync("wrong user", ApiTestBase.CT);
@@ -337,14 +334,14 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
     [Fact]
     public async Task GetStateAsync_returns_the_correct_state()
     {
-        var grain = await Silo.CreateGrainAsync<AnarchyBotGrain>(_gameToken);
+        var grain = await Silo.CreateGrainAsync<BotGrain>(_gameToken);
         await StartGameAsync(grain, _whitePlayer);
 
         var result = await grain.GetStateAsync(ApiTestBase.CT);
 
         result.IsError.Should().BeFalse();
         var legalMoves = _core.GetLegalMoves(_state.CurrentGame!.Core);
-        AnarchyBotGameState expectedState = new(
+        BotGameState expectedState = new(
             WhitePlayer: _whitePlayer,
             BlackPlayer: new(
                 UserId: UserId.AnarchyBot(),
@@ -364,11 +361,7 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
 
     private Move GetLegalMove() => _core.GetLegalMoves(_state.CurrentGame!.Core).AllMoves.First();
 
-    private Task StartGameAsync(
-        AnarchyBotGrain grain,
-        GamePlayer? player = null,
-        bool setMove = true
-    )
+    private Task StartGameAsync(BotGrain grain, GamePlayer? player = null, bool setMove = true)
     {
         player ??= _player;
         if (setMove)
@@ -407,7 +400,7 @@ public class AnarchyBotGrainTests : BaseOrleansIntegrationTest
         lastMove.TimeLeft.Should().Be(0);
     }
 
-    private async Task AssertGameEndedAsync(AnarchyBotGrain grain, GameEndStatus expectedEndStatus)
+    private async Task AssertGameEndedAsync(BotGrain grain, GameEndStatus expectedEndStatus)
     {
         await _notifierMock
             .Received(1)

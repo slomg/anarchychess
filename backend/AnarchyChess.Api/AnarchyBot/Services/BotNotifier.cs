@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace AnarchyChess.Api.AnarchyBot.Services;
 
-public interface IAnarchyBotNotifier
+public interface IBotNotifier
 {
     Task NotifyBotMadeMoveAsync(
         GameToken gameToken,
@@ -24,10 +24,9 @@ public interface IAnarchyBotNotifier
     Task NotifyGameEndedAsync(GameToken gameToken, GameResultData result);
 }
 
-public class AnarchyBotNotifier(IHubContext<AnarchyBotHub, IAnarchyBotHubClient> hub)
-    : IAnarchyBotNotifier
+public class BotNotifier(IHubContext<BotHub, IBotHubClient> hub) : IBotNotifier
 {
-    private readonly IHubContext<AnarchyBotHub, IAnarchyBotHubClient> _hub = hub;
+    private readonly IHubContext<BotHub, IBotHubClient> _hub = hub;
 
     public Task NotifyPlayerMadeMoveAsync(
         GameToken gameToken,

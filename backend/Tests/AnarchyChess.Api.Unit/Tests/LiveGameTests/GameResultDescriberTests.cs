@@ -98,13 +98,13 @@ public class GameResultDescriberTests
         GameResult.WhiteWin,
         "Bot tried to play an illegal move. This should NEVER happen. Please report this on the discord"
     )]
-    public void AnarchyBotIllegalMove_returns_the_correct_status(
+    public void BotIllegalMove_returns_the_correct_status(
         GameColor loser,
         GameResult expectedResult,
         string expectedDescription
     )
     {
-        var result = _describer.AnarchyBotIllegalMove(loser);
+        var result = _describer.BotIllegalMove(loser);
         result.Should().Be(new GameEndStatus(expectedResult, expectedDescription));
     }
 
@@ -119,13 +119,13 @@ public class GameResultDescriberTests
         GameResult.WhiteWin,
         "You were playing so bad the bot got bored and went offline"
     )]
-    public void AnarchyBotOffline_returns_the_correct_status(
+    public void BotOffline_returns_the_correct_status(
         GameColor loser,
         GameResult expectedResult,
         string expectedDescription
     )
     {
-        var result = _describer.AnarchyBotOffline(loser);
+        var result = _describer.BotOffline(loser);
         result.Should().Be(new GameEndStatus(expectedResult, expectedDescription));
     }
 
@@ -140,13 +140,13 @@ public class GameResultDescriberTests
         GameResult.WhiteWin,
         "The bot failed to make a move. This should NEVER happen. Please report this on the discord"
     )]
-    public void AnarchyBotFailure_returns_the_correct_status(
+    public void BotFailure_returns_the_correct_status(
         GameColor loser,
         GameResult expectedResult,
         string expectedDescription
     )
     {
-        var result = _describer.AnarchyBotFailure(loser);
+        var result = _describer.BotFailure(loser);
         result.Should().Be(new GameEndStatus(expectedResult, expectedDescription));
     }
 

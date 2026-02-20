@@ -9,7 +9,7 @@ using Grpc.Core;
 
 namespace AnarchyChess.Api.AnarchyBot.Services;
 
-public interface IAnarchyBotService
+public interface IBotService
 {
     Task<bool> CheckHealthAsync(CancellationToken token = default);
     Task<ErrorOr<AiEngineMoveReply>> FindBestMoveAsync(
@@ -18,10 +18,9 @@ public interface IAnarchyBotService
     );
 }
 
-public class AnarchyBotService(ILogger<AnarchyBotService> logger, IAiEngineService aiEngineService)
-    : IAnarchyBotService
+public class BotService(ILogger<BotService> logger, IAiEngineService aiEngineService) : IBotService
 {
-    private readonly ILogger<AnarchyBotService> _logger = logger;
+    private readonly ILogger<BotService> _logger = logger;
     private readonly IAiEngineService _aiEngineService = aiEngineService;
 
     public async Task<ErrorOr<AiEngineMoveReply>> FindBestMoveAsync(
@@ -46,15 +45,15 @@ public class AnarchyBotService(ILogger<AnarchyBotService> logger, IAiEngineServi
             _logger.LogWarning("Error when trying to get anarchy bot move: {Ex}", ex);
             if (ex.StatusCode is StatusCode.Unavailable)
             {
-                return AnarchyBotErrors.BotOffline;
+                return BotErrors.BotOffline;
             }
             else if (ex.StatusCode is StatusCode.InvalidArgument)
             {
-                return AnarchyBotErrors.NoMoveFound;
+                return BotErrors.NoMoveFound;
             }
             else
             {
-                return AnarchyBotErrors.BotFailure;
+                return BotErrors.BotFailure;
             }
         }
         return bestMove;

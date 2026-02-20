@@ -18,26 +18,26 @@ namespace AnarchyChess.Api.AnarchyBot.Controllers;
 
 [ApiController]
 [Route("/api/[controller]")]
-public class AnarchyBotController(
+public class BotController(
     IGrainFactory grains,
-    IAnarchyBotService botService,
+    IBotService botService,
     UserManager<AuthedUser> userManager,
     IAuthService authService,
     IRandomCodeGenerator randomCodeGenerator
 ) : Controller
 {
     private readonly IGrainFactory _grains = grains;
-    private readonly IAnarchyBotService _botService = botService;
+    private readonly IBotService _botService = botService;
     private readonly UserManager<AuthedUser> _userManager = userManager;
     private readonly IAuthService _authService = authService;
     private readonly IRandomCodeGenerator _randomCodeGenerator = randomCodeGenerator;
 
     [HttpGet("{gameToken}")]
-    [ProducesResponseType<AnarchyBotGameState>(StatusCodes.Status200OK)]
+    [ProducesResponseType<BotGameState>(StatusCodes.Status200OK)]
     [ProducesResponseType<ApiProblemDetails>(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<GameState>> GetBotGame(string gameToken)
     {
-        var botGrain = _grains.GetGrain<IAnarchyBotGrain>(gameToken);
+        var botGrain = _grains.GetGrain<IBotGrain>(gameToken);
         var result = await botGrain.GetStateAsync();
         return result.Match(Ok, errors => errors.ToActionResult());
     }
@@ -63,7 +63,7 @@ public class AnarchyBotController(
         );
 
         GameToken gameToken = _randomCodeGenerator.Generate(16);
-        var botGrain = _grains.GetGrain<IAnarchyBotGrain>(gameToken);
+        var botGrain = _grains.GetGrain<IBotGrain>(gameToken);
         await botGrain.StartGameAsync(player, token);
 
         return Ok(gameToken.ToString());

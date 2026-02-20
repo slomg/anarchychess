@@ -4,8 +4,8 @@ using AnarchyChess.EngineShared;
 namespace AnarchyChess.Api.AnarchyBot.Models;
 
 [GenerateSerializer]
-[Alias("AnarchyChess.Api.AnarchyBot.Models.AnarchyBotGameState")]
-public record AnarchyBotGameState(
+[Alias("AnarchyChess.Api.AnarchyBot.Models.BotGameState")]
+public record BotGameState(
     GamePlayer WhitePlayer,
     GamePlayer BlackPlayer,
     GameColor SideToMove,

@@ -5,25 +5,25 @@ using AnarchyChess.Api.TestInfrastructure.Fakes;
 using Microsoft.AspNetCore.SignalR;
 using NSubstitute;
 
-namespace AnarchyChess.Api.Unit.Tests.AnarchyBotTests;
+namespace AnarchyChess.Api.Unit.Tests.BotTests;
 
-public class AnarchyBotNotifierTests
+public class BotNotifierTests
 {
     private readonly GameToken _gameToken = "game-123";
 
-    private readonly IHubContext<AnarchyBotHub, IAnarchyBotHubClient> _hubContextMock =
-        Substitute.For<IHubContext<AnarchyBotHub, IAnarchyBotHubClient>>();
-    private readonly IHubClients<IAnarchyBotHubClient> _clientsMock = Substitute.For<
-        IHubClients<IAnarchyBotHubClient>
+    private readonly IHubContext<BotHub, IBotHubClient> _hubContextMock = Substitute.For<
+        IHubContext<BotHub, IBotHubClient>
+    >();
+    private readonly IHubClients<IBotHubClient> _clientsMock = Substitute.For<
+        IHubClients<IBotHubClient>
     >();
     private readonly IGroupManager _groupsMock = Substitute.For<IGroupManager>();
 
-    private readonly IAnarchyBotHubClient _clientGroupProxyMock =
-        Substitute.For<IAnarchyBotHubClient>();
+    private readonly IBotHubClient _clientGroupProxyMock = Substitute.For<IBotHubClient>();
 
-    private readonly AnarchyBotNotifier _notifier;
+    private readonly BotNotifier _notifier;
 
-    public AnarchyBotNotifierTests()
+    public BotNotifierTests()
     {
         _clientsMock.Group(_gameToken).Returns(_clientGroupProxyMock);
 

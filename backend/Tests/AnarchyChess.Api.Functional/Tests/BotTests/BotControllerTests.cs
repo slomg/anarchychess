@@ -5,13 +5,13 @@ using AnarchyChess.EngineShared;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AnarchyChess.Api.Functional.Tests.AnarchyBotTests;
+namespace AnarchyChess.Api.Functional.Tests.BotTests;
 
-public class AnarchyBotControllerTests : BaseFunctionalTest
+public class BotControllerTests : BaseFunctionalTest
 {
     private readonly IGrainFactory _grains;
 
-    public AnarchyBotControllerTests(AnarchyChessWebApplicationFactory factory)
+    public BotControllerTests(AnarchyChessWebApplicationFactory factory)
         : base(factory)
     {
         _grains = Scope.ServiceProvider.GetRequiredService<IGrainFactory>();
@@ -23,13 +23,13 @@ public class AnarchyBotControllerTests : BaseFunctionalTest
         var guest = UserId.Guest();
         AuthUtils.AuthenticateGuest(ApiClient, guest);
 
-        var response = await ApiClient.Api.StartAnarchyBotGameAsync(myColor: GameColor.White);
+        var response = await ApiClient.Api.StartBotGameAsync(myColor: GameColor.White);
 
         response.IsSuccessful.Should().BeTrue();
         response.Content.Should().NotBeNull();
         string gameToken = response.Content;
 
-        var grain = _grains.GetGrain<IAnarchyBotGrain>(gameToken);
+        var grain = _grains.GetGrain<IBotGrain>(gameToken);
         var stateResult = await grain.GetStateAsync(CT);
         stateResult.IsError.Should().BeFalse();
         var state = stateResult.Value;
@@ -46,13 +46,13 @@ public class AnarchyBotControllerTests : BaseFunctionalTest
     {
         var user = (await AuthUtils.AuthenticateAsync(ApiClient)).User;
 
-        var response = await ApiClient.Api.StartAnarchyBotGameAsync(myColor: GameColor.White);
+        var response = await ApiClient.Api.StartBotGameAsync(myColor: GameColor.White);
 
         response.IsSuccessful.Should().BeTrue();
         response.Content.Should().NotBeNull();
         string gameToken = response.Content;
 
-        var grain = _grains.GetGrain<IAnarchyBotGrain>(gameToken);
+        var grain = _grains.GetGrain<IBotGrain>(gameToken);
         var stateResult = await grain.GetStateAsync(CT);
         stateResult.IsError.Should().BeFalse();
         var state = stateResult.Value;
@@ -70,18 +70,18 @@ public class AnarchyBotControllerTests : BaseFunctionalTest
         var guest = UserId.Guest();
         AuthUtils.AuthenticateGuest(ApiClient, guest);
 
-        var startResponse = await ApiClient.Api.StartAnarchyBotGameAsync(myColor: GameColor.White);
+        var startResponse = await ApiClient.Api.StartBotGameAsync(myColor: GameColor.White);
         startResponse.IsSuccessful.Should().BeTrue();
         startResponse.Content.Should().NotBeNull();
         string gameToken = startResponse.Content;
 
-        var response = await ApiClient.Api.GetAnarchyBotGameAsync(gameToken);
+        var response = await ApiClient.Api.GetBotGameAsync(gameToken);
 
         response.IsSuccessful.Should().BeTrue();
         response.Content.Should().NotBeNull();
         var gameState = response.Content;
 
-        var grain = _grains.GetGrain<IAnarchyBotGrain>(gameToken);
+        var grain = _grains.GetGrain<IBotGrain>(gameToken);
         var grainStateResult = await grain.GetStateAsync(CT);
         grainStateResult.IsError.Should().BeFalse();
         gameState.Should().BeEquivalentTo(grainStateResult.Value);

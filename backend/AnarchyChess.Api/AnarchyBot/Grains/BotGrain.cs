@@ -18,14 +18,14 @@ using ErrorOr;
 
 namespace AnarchyChess.Api.AnarchyBot.Grains;
 
-[Alias("AnarchyChess.Api.AnarchyBot.Grains.IAnarchyBotGrain")]
-public interface IAnarchyBotGrain : IGrainWithStringKey
+[Alias("AnarchyChess.Api.AnarchyBot.Grains.IBotGrain")]
+public interface IBotGrain : IGrainWithStringKey
 {
     [Alias("CreateAsync")]
     Task StartGameAsync(GamePlayer player, CancellationToken token = default);
 
     [Alias("GetStateAsync")]
-    Task<ErrorOr<AnarchyBotGameState>> GetStateAsync(CancellationToken token = default);
+    Task<ErrorOr<BotGameState>> GetStateAsync(CancellationToken token = default);
 
     [Alias("PlayMoveAsync")]
     Task<ErrorOr<Success>> PlayMoveAsync(
@@ -39,8 +39,8 @@ public interface IAnarchyBotGrain : IGrainWithStringKey
 }
 
 [GenerateSerializer]
-[Alias("AnarchyChess.Api.AnarchyBot.Grains.AnarchyBotGameData")]
-public class AnarchyBotGameData
+[Alias("AnarchyChess.Api.AnarchyBot.Grains.BotGameData")]
+public class BotGameData
 {
     [Id(0)]
     public required PlayerRoster Players { get; init; }
@@ -65,33 +65,33 @@ public class AnarchyBotGameData
 }
 
 [GenerateSerializer]
-[Alias("AnarchyChess.Api.AnarchyBot.Grains.AnarchyBotGrainState")]
-public class AnarchyBotGrainState
+[Alias("AnarchyChess.Api.AnarchyBot.Grains.BotGrainState")]
+public class BotGrainState
 {
     [Id(0)]
-    public AnarchyBotGameData? CurrentGame { get; set; }
+    public BotGameData? CurrentGame { get; set; }
 }
 
-public class AnarchyBotGrain : Grain, IAnarchyBotGrain
+public class BotGrain : Grain, IBotGrain
 {
-    public const string StateName = "anarchyBotGame";
+    public const string StateName = "botGame";
 
-    private readonly ILogger<AnarchyBotGrain> _logger;
-    private readonly IPersistentState<AnarchyBotGrainState> _state;
+    private readonly ILogger<BotGrain> _logger;
+    private readonly IPersistentState<BotGrainState> _state;
     private readonly IGameCore _core;
-    private readonly IAnarchyBotService _anarchyBotService;
-    private readonly IAnarchyBotNotifier _notifier;
+    private readonly IBotService _botService;
+    private readonly IBotNotifier _notifier;
     private readonly IGameArchiveService _gameArchiveService;
     private readonly IGameResultDescriber _gameResultDescriber;
     private readonly IUnitOfWork _unitOfWork;
     private readonly GameToken _gameToken;
 
-    public AnarchyBotGrain(
-        ILogger<AnarchyBotGrain> logger,
-        [PersistentState(StateName)] IPersistentState<AnarchyBotGrainState> state,
+    public BotGrain(
+        ILogger<BotGrain> logger,
+        [PersistentState(StateName)] IPersistentState<BotGrainState> state,
         IGameCore core,
-        IAnarchyBotService anarchyBotService,
-        IAnarchyBotNotifier notifier,
+        IBotService botService,
+        IBotNotifier notifier,
         IGameArchiveService gameArchiveService,
         IGameResultDescriber gameResultDescriber,
         IUnitOfWork unitOfWork
@@ -102,7 +102,7 @@ public class AnarchyBotGrain : Grain, IAnarchyBotGrain
         _logger = logger;
         _state = state;
         _core = core;
-        _anarchyBotService = anarchyBotService;
+        _botService = botService;
         _notifier = notifier;
         _gameArchiveService = gameArchiveService;
         _gameResultDescriber = gameResultDescriber;
@@ -120,7 +120,7 @@ public class AnarchyBotGrain : Grain, IAnarchyBotGrain
             Rating: 161660
         );
 
-        _state.State.CurrentGame = new AnarchyBotGameData()
+        _state.State.CurrentGame = new BotGameData()
         {
             Players = new(
                 WhitePlayer: player.Color is GameColor.White ? player : botPlayer,
@@ -140,14 +140,14 @@ public class AnarchyBotGrain : Grain, IAnarchyBotGrain
         await _state.WriteStateAsync(token);
     }
 
-    public Task<ErrorOr<AnarchyBotGameState>> GetStateAsync(CancellationToken token = default)
+    public Task<ErrorOr<BotGameState>> GetStateAsync(CancellationToken token = default)
     {
         if (!TryGetCurrentGame(out var game))
         {
-            return Task.FromResult<ErrorOr<AnarchyBotGameState>>(GameErrors.GameNotFound);
+            return Task.FromResult<ErrorOr<BotGameState>>(GameErrors.GameNotFound);
         }
 
-        return Task.FromResult<ErrorOr<AnarchyBotGameState>>(GetGameState(game));
+        return Task.FromResult<ErrorOr<BotGameState>>(GetGameState(game));
     }
 
     public async Task<ErrorOr<Success>> PlayMoveAsync(
@@ -220,19 +220,19 @@ public class AnarchyBotGrain : Grain, IAnarchyBotGrain
         return Result.Success;
     }
 
-    private async Task PlayBotMoveAsync(AnarchyBotGameData game, CancellationToken token = default)
+    private async Task PlayBotMoveAsync(BotGameData game, CancellationToken token = default)
     {
         IReadOnlyChessBoard board = _core.GetReadOnlyBoard(game.Core);
 
-        var botMoveResult = await _anarchyBotService.FindBestMoveAsync(board, token);
-        if (botMoveResult.FirstError == AnarchyBotErrors.BotOffline)
+        var botMoveResult = await _botService.FindBestMoveAsync(board, token);
+        if (botMoveResult.FirstError == BotErrors.BotOffline)
         {
-            await EndGameAsync(_gameResultDescriber.AnarchyBotOffline(game.BotColor), game, token);
+            await EndGameAsync(_gameResultDescriber.BotOffline(game.BotColor), game, token);
             return;
         }
         else if (botMoveResult.IsError)
         {
-            await EndGameAsync(_gameResultDescriber.AnarchyBotFailure(game.BotColor), game, token);
+            await EndGameAsync(_gameResultDescriber.BotFailure(game.BotColor), game, token);
             return;
         }
         var botMove = botMoveResult.Value;
@@ -253,11 +253,7 @@ public class AnarchyBotGrain : Grain, IAnarchyBotGrain
                 botMove,
                 _gameToken
             );
-            await EndGameAsync(
-                _gameResultDescriber.AnarchyBotIllegalMove(game.BotColor),
-                game,
-                token
-            );
+            await EndGameAsync(_gameResultDescriber.BotIllegalMove(game.BotColor), game, token);
             return;
         }
 
@@ -284,7 +280,7 @@ public class AnarchyBotGrain : Grain, IAnarchyBotGrain
 
     private async Task EndGameAsync(
         GameEndStatus endStatus,
-        AnarchyBotGameData game,
+        BotGameData game,
         CancellationToken token = default
     )
     {
@@ -317,7 +313,7 @@ public class AnarchyBotGrain : Grain, IAnarchyBotGrain
         game.Result = resultData;
     }
 
-    private AnarchyBotGameState GetGameState(AnarchyBotGameData game) =>
+    private BotGameState GetGameState(BotGameData game) =>
         new(
             WhitePlayer: game.Players.WhitePlayer,
             BlackPlayer: game.Players.BlackPlayer,
@@ -328,13 +324,13 @@ public class AnarchyBotGrain : Grain, IAnarchyBotGrain
             ResultData: game.Result
         );
 
-    private bool TryGetCurrentGame([NotNullWhen(true)] out AnarchyBotGameData? state)
+    private bool TryGetCurrentGame([NotNullWhen(true)] out BotGameData? state)
     {
         state = _state.State.CurrentGame;
         return state is not null;
     }
 
-    private bool TryGetOngoingGame([NotNullWhen(true)] out AnarchyBotGameData? state)
+    private bool TryGetOngoingGame([NotNullWhen(true)] out BotGameData? state)
     {
         state = _state.State.CurrentGame;
         return state is not null && state.Result is null;

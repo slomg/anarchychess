@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace AnarchyChess.Api.AnarchyBot.SignalR;
 
-public interface IAnarchyBotHubClient : IAnarchyChessHubClient
+public interface IBotHubClient : IAnarchyChessHubClient
 {
     Task PlayerMadeMoveAsync(MoveSnapshot move, int plyNumber, bool didMoveEndGame);
     Task BotMadeMoveAsync(MoveSnapshot move, int plyNumber, CompressedMoves compressedLegalMoves);
@@ -16,7 +16,7 @@ public interface IAnarchyBotHubClient : IAnarchyChessHubClient
 }
 
 [Authorize(AuthPolicies.ActiveSession)]
-public class AnarchyBotHub(IGrainFactory grains) : AnarchyChessHub<IAnarchyBotHubClient>
+public class BotHub(IGrainFactory grains) : AnarchyChessHub<IBotHubClient>
 {
     private readonly IGrainFactory _grains = grains;
 
@@ -28,7 +28,7 @@ public class AnarchyBotHub(IGrainFactory grains) : AnarchyChessHub<IAnarchyBotHu
             return;
         }
 
-        var result = await _grains.GetGrain<IAnarchyBotGrain>(gameToken).PlayMoveAsync(userId, key);
+        var result = await _grains.GetGrain<IBotGrain>(gameToken).PlayMoveAsync(userId, key);
         if (result.IsError)
         {
             await HandleErrors(result.Errors);
@@ -44,7 +44,7 @@ public class AnarchyBotHub(IGrainFactory grains) : AnarchyChessHub<IAnarchyBotHu
             return;
         }
 
-        var result = await _grains.GetGrain<IAnarchyBotGrain>(gameToken).ResignAsync(userId);
+        var result = await _grains.GetGrain<IBotGrain>(gameToken).ResignAsync(userId);
         if (result.IsError)
         {
             await HandleErrors(result.Errors);
