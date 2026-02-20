@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     ],
 };
 
-export default async function BotPage() {
+export default async function BotPlayPage() {
     return (
         <StaticChessboardWithSidebar
             prioritizeAside
