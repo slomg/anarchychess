@@ -5,6 +5,7 @@ using AnarchyChess.Api.TestInfrastructure.Factories;
 using AnarchyChess.Api.TestInfrastructure.NSubtituteExtenstion;
 using AnarchyChess.EngineShared;
 using AwesomeAssertions;
+using Grpc.Core;
 using NSubstitute;
 
 namespace AnarchyChess.Ai.Service.Tests.Tests;
@@ -125,16 +126,21 @@ public class AiEngineServiceTests
     }
 
     [Fact]
-    public async Task FindBestMoveAsync_returns_null_when_no_move_is_found()
+    public async Task FindBestMoveAsync_throws_when_no_move_is_found()
     {
         _aiEngineMock
             .FindBestMove(Arg.Any<BitBoard>(), AiEngineService.Depth)
             .Returns((BitMove?)null);
 
-        var response = await _engine.FindBestMoveAsync(
-            new(Pieces: [], IsWhiteToMove: true, PrevMoveState: null)
-        );
+        Func<Task> act = async () =>
+            await _engine
+                .FindBestMoveAsync(new(Pieces: [], IsWhiteToMove: true, PrevMoveState: null))
+                .AsTask();
 
-        response.Should().BeNull();
+        var ex = await act.Should().ThrowAsync<RpcException>();
+
+        ex.Which.StatusCode.Should().Be(StatusCode.InvalidArgument);
+        ex.Which.Status.Detail.Should()
+            .Be("The provided position contains no legal moves and is invalid");
     }
 }

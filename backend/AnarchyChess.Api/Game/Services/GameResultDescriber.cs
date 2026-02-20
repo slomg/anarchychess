@@ -20,7 +20,6 @@ public interface IGameResultDescriber
     GameEndStatus KingTouch();
 
     GameEndStatus AnarchyBotIllegalMove(GameColor bot);
-    GameEndStatus AnarchyBotNoMove(GameColor bot);
 }
 
 public class GameResultDescriber : IGameResultDescriber
@@ -56,12 +55,6 @@ public class GameResultDescriber : IGameResultDescriber
         new(
             GetResultByLoser(bot),
             "Bot tried to play an illegal move. This should NEVER happen. Please report this on the discord."
-        );
-
-    public GameEndStatus AnarchyBotNoMove(GameColor bot) =>
-        new(
-            GetResultByLoser(bot),
-            "Bot could not find a move. This should NEVER happen. Please report this on the discord."
         );
 
     private static GameResult GetResultByLoser(GameColor loser) =>

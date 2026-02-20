@@ -3,6 +3,7 @@ using AnarchyChess.Ai.Models;
 using AnarchyChess.Ai.Service.DTO;
 using AnarchyChess.EngineShared;
 using AnarchyChess.EngineShared.Extensions;
+using Grpc.Core;
 
 namespace AnarchyChess.Ai.Service.Services;
 
@@ -12,18 +13,21 @@ public class AiEngineService(IAiEngine aiEngine) : IAiEngineService
 
     public const int Depth = 8;
 
-    public ValueTask<AiEngineMoveReply?> FindBestMoveAsync(AiEngineMoveRequest request)
+    public ValueTask<AiEngineMoveReply> FindBestMoveAsync(AiEngineMoveRequest request)
     {
         BitBoard board = BitBoard.FromPieces(
             request.Pieces,
             isWhiteToMove: request.IsWhiteToMove,
             prevMoveState: CreatePrevMove(request.PrevMoveState)
         );
-        BitMove? bestMove = _aiEngine.FindBestMove(board, depth: Depth);
-        if (bestMove is null)
-        {
-            return ValueTask.FromResult<AiEngineMoveReply?>(null);
-        }
+        BitMove? bestMove =
+            _aiEngine.FindBestMove(board, depth: Depth)
+            ?? throw new RpcException(
+                new Status(
+                    StatusCode.InvalidArgument,
+                    "The provided position contains no legal moves and is invalid"
+                )
+            );
 
         List<AlgebraicPoint> captures = [];
         UInt128 captureMask = bestMove.Value.CapturesMask;
@@ -39,7 +43,7 @@ public class AiEngineService(IAiEngine aiEngine) : IAiEngineService
             Captures: captures,
             PromotesTo: bestMove.Value.PromotesTo
         );
-        return ValueTask.FromResult<AiEngineMoveReply?>(reply);
+        return ValueTask.FromResult(reply);
     }
 
     private static PrevMoveState? CreatePrevMove(PrevMoveStateDto? prevMoveState)

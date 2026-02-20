@@ -1,10 +1,8 @@
 ﻿using System.Text.Json.Serialization;
 using Orleans;
-using ProtoBuf;
 
 namespace AnarchyChess.EngineShared;
 
-[ProtoContract]
 [GenerateSerializer]
 [Alias("AnarchyChess.Api.GameLogic.Models.AlgebraicPoint")]
 [method: JsonConstructor]

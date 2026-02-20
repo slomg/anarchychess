@@ -68,6 +68,7 @@ using NSwag.Generation.Processors;
 using Orleans.Providers;
 using Orleans.Serialization.Serializers;
 using Orleans.Storage;
+using ProtoBuf.Grpc.ClientFactory;
 using Scalar.AspNetCore;
 using Serilog;
 
@@ -528,7 +529,7 @@ builder.Services.AddScoped<IChallengeRequestCreator, ChallengeRequestCreator>();
 #region Anarchy Bot
 builder.Services.AddSingleton<IAnarchyBotService, AnarchyBotService>();
 builder.Services.AddSingleton<IAnarchyBotNotifier, AnarchyBotNotifier>();
-builder.Services.AddGrpcClient<IAiEngineService>(client =>
+builder.Services.AddCodeFirstGrpcClient<IAiEngineService>(client =>
 {
     client.Address = appSettings.AnarchyBot.ServiceUrl;
 });

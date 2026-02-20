@@ -8,14 +8,14 @@ namespace AnarchyChess.Api.AnarchyBot.Services;
 
 public interface IAnarchyBotService
 {
-    Task<AiEngineMoveReply?> FindBestMoveAsync(IReadOnlyChessBoard board);
+    Task<AiEngineMoveReply> FindBestMoveAsync(IReadOnlyChessBoard board);
 }
 
 public class AnarchyBotService(IAiEngineService aiEngineService) : IAnarchyBotService
 {
     private readonly IAiEngineService _aiEngineService = aiEngineService;
 
-    public async Task<AiEngineMoveReply?> FindBestMoveAsync(IReadOnlyChessBoard board)
+    public async Task<AiEngineMoveReply> FindBestMoveAsync(IReadOnlyChessBoard board)
     {
         PrevMoveStateDto? prevMove = GetPrevMoveState(board);
         AiEngineMoveRequest request = new(

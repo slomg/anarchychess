@@ -1,10 +1,11 @@
-﻿using System.ServiceModel;
-using AnarchyChess.Ai.Service.DTO;
+﻿using AnarchyChess.Ai.Service.DTO;
+using ProtoBuf.Grpc.Configuration;
 
 namespace AnarchyChess.Ai.Service.Services;
 
-[ServiceContract]
+[Service]
 public interface IAiEngineService
 {
-    ValueTask<AiEngineMoveReply?> FindBestMoveAsync(AiEngineMoveRequest request);
+    [Operation]
+    ValueTask<AiEngineMoveReply> FindBestMoveAsync(AiEngineMoveRequest request);
 }
