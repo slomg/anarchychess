@@ -9,6 +9,9 @@ import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessS
 import { StoreApi } from "zustand";
 import { render, screen } from "@testing-library/react";
 
+vi.mock("@/features/lobby/hooks/useLobbyHub");
+vi.mock("@/features/liveGame/hooks/useGameHub");
+
 describe("LiveGameOverPopup", () => {
     let store: StoreApi<LiveChessStore>;
 
