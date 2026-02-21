@@ -19,8 +19,8 @@ export type BotClientEvents = {
 };
 
 type BotHubEvents = {
-    MakeMoveAsync: [moveKey: string];
-    ResignAsync: [];
+    MakeMoveAsync: [gameToken: string, moveKey: string];
+    ResignAsync: [gameToken: string];
 };
 
 export function useBotEvent<
@@ -43,7 +43,7 @@ export function useBotEvent<
     );
 }
 
-export function useGameEmitter(gameToken: string) {
+export function useBotEmitter(gameToken: string) {
     const url = useMemo(() => {
         const u = new URL(constants.SIGNALR_PATHS.BOT);
         u.searchParams.append("gameToken", gameToken);
