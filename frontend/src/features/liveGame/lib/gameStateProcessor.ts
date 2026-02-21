@@ -8,6 +8,7 @@ import {
     GameColor,
     GamePlayer,
     getGame,
+    MoveSnapshot,
     type GameState,
 } from "@/lib/apiClient";
 
@@ -31,7 +32,10 @@ export function createStoreProps(
     viewerUserId: string,
     gameState: GameState,
 ): ProcessedGameState {
-    const positionHistory = getPositionHistory(gameState);
+    const positionHistory = getPositionHistory(
+        gameState.initialFen,
+        gameState.moveHistory,
+    );
     const lastPosition = positionHistory.viewingPosition;
     const boardWidth = constants.BOARD_WIDTH;
     const boardHeight = constants.BOARD_HEIGHT;
@@ -40,18 +44,13 @@ export function createStoreProps(
         boardWidth,
     });
 
-    const viewerColor = getViewerColor(
+    const viewer = getViewer(
         gameState.whitePlayer,
         gameState.blackPlayer,
         viewerUserId,
     );
 
     const clockSnapshotByPly = getClockSnapshots(gameState);
-
-    const viewer: LiveChessViewer = {
-        userId: viewerUserId,
-        playerColor: viewerColor,
-    };
 
     const live: LiveChessStoreProps = {
         gameToken,
@@ -85,12 +84,24 @@ export function createStoreProps(
         },
 
         boardDimensions: { width: boardWidth, height: boardHeight },
-        viewingFrom: viewerColor ?? GameColor.WHITE,
+        viewingFrom: viewer.playerColor ?? GameColor.WHITE,
         allowHistoryChanges:
             gameState.resultData !== null && gameState.resultData !== undefined,
     };
 
     return { live, board };
+}
+
+export function getViewer(
+    whitePlayer: GamePlayer,
+    blackPlayer: GamePlayer,
+    userId: string,
+): LiveChessViewer {
+    const viewer: LiveChessViewer = {
+        userId: userId,
+        playerColor: getViewerColor(whitePlayer, blackPlayer, userId),
+    };
+    return viewer;
 }
 
 function getViewerColor(
@@ -102,12 +113,14 @@ function getViewerColor(
     else if (userId === blackPlayer.userId) return GameColor.BLACK;
     return null;
 }
-
-function getPositionHistory(gameState: GameState): PositionHistory {
-    let pieces = decodeFen(gameState.initialFen);
+export function getPositionHistory(
+    initialFen: string,
+    moveHistory: MoveSnapshot[],
+): PositionHistory {
+    let pieces = decodeFen(initialFen);
 
     const positionHistory = new PositionHistory(pieces);
-    for (const moveSnapshot of gameState.moveHistory) {
+    for (const moveSnapshot of moveHistory) {
         const move = decodeMovePath(moveSnapshot.path, constants.BOARD_WIDTH);
         const { newPieces } = simulateMove(pieces, move);
 
