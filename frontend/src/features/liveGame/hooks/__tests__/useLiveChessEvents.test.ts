@@ -7,10 +7,6 @@ import {
     ChessboardStore,
     createChessboardStore,
 } from "@/features/chessboard/stores/chessboardStore";
-import {
-    createFakeLegalMoves,
-    createFakePiece,
-} from "@/lib/testUtils/fakers/chessboardFakers";
 import createLiveChessStore, {
     LiveChessStore,
 } from "../../stores/liveChessStore";
@@ -30,10 +26,10 @@ import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessS
 import { createNFakePositionHistory } from "@/lib/testUtils/fakers/positionHistoryFaker";
 import { createFakeGameResultData } from "@/lib/testUtils/fakers/gameResultDataFaker";
 import { createFakeMoveSnapshot } from "@/lib/testUtils/fakers/moveSnapshotFaker";
+import { createFakeLegalMoves } from "@/lib/testUtils/fakers/chessboardFakers";
 import { createFakeMovePath } from "@/lib/testUtils/fakers/movePathFaker";
 import { EventHandlers } from "@/features/signalR/hooks/useSignalREvent";
 import { createFakeClocks } from "@/lib/testUtils/fakers/clocksFaker";
-import BoardPieces from "@/features/chessboard/lib/boardPieces";
 import { GameClientEvents, useGameEvent } from "../useGameHub";
 import LegalMoves from "@/features/chessboard/lib/legalMoves";
 import { refetchGame } from "../../lib/gameStateProcessor";
