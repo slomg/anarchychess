@@ -92,7 +92,7 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
             }
         }
 
-        Console.WriteLine($"Eval: {alpha}");
+        Console.WriteLine($"Eval: {alpha}, move count: {moveCount}");
 
         return bestMove;
     }
@@ -105,7 +105,7 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
         bool isLastMoveCapture = false
     )
     {
-        if (_evaluator.TryEvaluateTermination(board, out int terminationEval))
+        if (_evaluator.TryEvaluateTermination(board, depth, out int terminationEval))
         {
             return terminationEval;
         }
@@ -113,7 +113,7 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
         if (depth <= 0)
         {
             return isLastMoveCapture
-                ? Quiescence(board, alpha, beta, maxDepth: 3)
+                ? Quiescence(board, alpha, beta, depth: 3, initialDepth: depth)
                 : _evaluator.Evaluate(board);
         }
 
@@ -190,7 +190,7 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
         return alpha;
     }
 
-    private int Quiescence(BitBoard board, int alpha, int beta, int maxDepth)
+    private int Quiescence(BitBoard board, int alpha, int beta, int depth, int initialDepth)
     {
         int standPat = _evaluator.Evaluate(board);
 
@@ -203,12 +203,18 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
             alpha = standPat;
         }
 
-        if (_evaluator.TryEvaluateTermination(board, out int terminationEval))
+        if (
+            _evaluator.TryEvaluateTermination(
+                board,
+                depth: initialDepth - depth,
+                out int terminationEval
+            )
+        )
         {
             return terminationEval;
         }
 
-        if (maxDepth <= 0)
+        if (depth <= 0)
         {
             return alpha;
         }
@@ -256,7 +262,7 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
             BitMove move = captures[i];
 
             MoveUndoState undo = board.MakeMove(move);
-            int score = -Quiescence(board, -beta, -alpha, maxDepth - 1);
+            int score = -Quiescence(board, -beta, -alpha, depth - 1, initialDepth);
             board.UndoMove(undo);
 
             if (score >= beta)

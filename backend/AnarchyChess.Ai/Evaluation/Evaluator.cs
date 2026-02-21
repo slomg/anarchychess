@@ -7,7 +7,7 @@ namespace AnarchyChess.Ai.Evaluation;
 public interface IEvaluator
 {
     int Evaluate(BitBoard board);
-    bool TryEvaluateTermination(BitBoard board, out int eval);
+    bool TryEvaluateTermination(BitBoard board, int depth, out int eval);
 }
 
 public sealed class Evaluator(
@@ -48,7 +48,7 @@ public sealed class Evaluator(
         return board.IsWhiteToMove ? whiteScore - blackScore : blackScore - whiteScore;
     }
 
-    public bool TryEvaluateTermination(BitBoard board, out int terminationEval)
+    public bool TryEvaluateTermination(BitBoard board, int depth, out int terminationEval)
     {
         UInt128 whiteKings = board.BitboardFor(PieceType.King, BitPieceColor.White);
         UInt128 blackKings = board.BitboardFor(PieceType.King, BitPieceColor.Black);
@@ -61,12 +61,12 @@ public sealed class Evaluator(
 
         if (whiteKings == 0)
         {
-            terminationEval = board.IsWhiteToMove ? -100_000 : 100_000;
+            terminationEval = board.IsWhiteToMove ? -100_000 - depth : 100_000 + depth;
             return true;
         }
         else if (blackKings == 0)
         {
-            terminationEval = board.IsWhiteToMove ? 100_000 : -100_000;
+            terminationEval = board.IsWhiteToMove ? 100_000 + depth : -100_000 - depth;
             return true;
         }
 
