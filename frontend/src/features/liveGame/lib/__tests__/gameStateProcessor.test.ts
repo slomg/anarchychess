@@ -181,7 +181,6 @@ describe("processGameState", () => {
                 move: move.decoded,
                 sideToMove: move.nextSideToMove,
                 fen: move.fen,
-                // clocks: move.clocks,
                 san: move.san,
             });
         }

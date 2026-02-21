@@ -7,7 +7,9 @@ import {
 import {
     GameColor,
     GamePlayer,
+    GameResultData,
     getGame,
+    MovePath,
     MoveSnapshot,
     type GameState,
 } from "@/lib/apiClient";
@@ -32,24 +34,11 @@ export function processGameState(
     viewerUserId: string,
     gameState: GameState,
 ): ProcessedGameState {
-    const positionHistory = getPositionHistory(
-        gameState.initialFen,
-        gameState.moveHistory,
-    );
-    const lastPosition = positionHistory.viewingPosition;
-    const boardWidth = constants.BOARD_WIDTH;
-    const boardHeight = constants.BOARD_HEIGHT;
-    const legalMoves = decodeMovePathIntoLegalMoves({
-        paths: gameState.legalMoves,
-        boardWidth,
-    });
-
     const viewer = getViewer(
         gameState.whitePlayer,
         gameState.blackPlayer,
         viewerUserId,
     );
-
     const clockSnapshotByPly = getClockSnapshots(gameState);
 
     const live: LiveChessStoreProps = {
@@ -69,7 +58,35 @@ export function processGameState(
         clockSnapshotByPly,
         resultData: gameState.resultData ?? null,
     };
-    const board: ChessboardProps = {
+    const board = createChessboardProps(
+        viewer,
+        gameState.initialFen,
+        gameState.moveHistory,
+        gameState.legalMoves,
+        gameState.resultData,
+    );
+    return { live, board };
+}
+
+export function createChessboardProps(
+    viewer: LiveChessViewer,
+    initialFen: string,
+    moveHistory: MoveSnapshot[],
+    legalMovePaths: MovePath[],
+    resultData?: GameResultData | null,
+): ChessboardProps {
+    const boardWidth = constants.BOARD_WIDTH;
+    const boardHeight = constants.BOARD_HEIGHT;
+
+    const legalMoves = decodeMovePathIntoLegalMoves({
+        paths: legalMovePaths,
+        boardWidth,
+    });
+
+    const positionHistory = getPositionHistory(initialFen, moveHistory);
+    const lastPosition = positionHistory.viewingPosition;
+
+    return {
         pieces: new BoardPieces(
             lastPosition?.pieces ?? positionHistory.rootPieces,
         ),
@@ -85,11 +102,8 @@ export function processGameState(
 
         boardDimensions: { width: boardWidth, height: boardHeight },
         viewingFrom: viewer.playerColor ?? GameColor.WHITE,
-        allowHistoryChanges:
-            gameState.resultData !== null && gameState.resultData !== undefined,
+        allowHistoryChanges: resultData != null,
     };
-
-    return { live, board };
 }
 
 export function getViewer(
@@ -113,7 +127,8 @@ function getViewerColor(
     else if (userId === blackPlayer.userId) return GameColor.BLACK;
     return null;
 }
-export function getPositionHistory(
+
+function getPositionHistory(
     initialFen: string,
     moveHistory: MoveSnapshot[],
 ): PositionHistory {
