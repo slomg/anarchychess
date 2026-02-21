@@ -67,6 +67,6 @@ public class BotHub(IGrainFactory grains, IBotNotifier notifier) : AnarchyChessH
             return;
         }
 
-        await _notifier.JoinBotGroupAsync(Context.ConnectionId, gameToken);
+        await _notifier.JoinBotGroupAsync(gameToken, Context.ConnectionId);
     }
 }
