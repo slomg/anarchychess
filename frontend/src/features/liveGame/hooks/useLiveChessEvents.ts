@@ -4,13 +4,13 @@ import { useRef } from "react";
 import { ChessboardStore } from "@/features/chessboard/stores/chessboardStore";
 import { decodeMovePath, decodeLegalMoves } from "../lib/moveDecoder";
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
-import { Position } from "@/features/chessboard/lib/position";
 import LegalMoves from "@/features/chessboard/lib/legalMoves";
 import { LiveChessStore } from "../stores/liveChessStore";
 import { refetchGame } from "../lib/gameStateProcessor";
 import { Clocks, MoveSnapshot } from "@/lib/apiClient";
 import { LogicalPoint } from "@/features/point/types";
 import { useGameEvent } from "./useGameHub";
+import handleMoveUpdate from "../lib/handleMoveUpdate";
 
 export default function useLiveChessEvents(
     liveChessStore: StoreApi<LiveChessStore>,
@@ -26,7 +26,7 @@ export default function useLiveChessEvents(
         >
     >(new Map());
 
-    async function handleMoveUpdate({
+    async function processMove({
         move,
         plyNumber,
         clocks,
@@ -36,26 +36,8 @@ export default function useLiveChessEvents(
         plyNumber: number;
         clocks: Clocks;
         legalMoves?: LegalMoves;
-    }): Promise<Position | undefined> {
-        const {
-            positionHistory,
-            addPosition,
-            applyMoveAnimated,
-            goToLatestPosition,
-        } = chessboardStore.getState();
-        const { isPendingMoveAck, receiveLiveMove } = liveChessStore.getState();
-
-        // we missed a move... we need to refetch the state
-        if (plyNumber - 1 !== positionHistory.mainPlyCount) {
-            await refetchGame(liveChessStore, chessboardStore);
-            return;
-        }
-        await goToLatestPosition();
-
+    }): Promise<void> {
         const decodedMove = decodeMovePath(move.path, boardDimensions.width);
-        if (!isPendingMoveAck) {
-            await applyMoveAnimated(decodedMove);
-        }
 
         const queuedOvertime = queuedOvertimeRef.current.get(plyNumber);
         if (queuedOvertime) {
@@ -63,22 +45,25 @@ export default function useLiveChessEvents(
             decodedMove.overtimeRemovals.push(
                 ...queuedOvertime.overtimeRemovals,
             );
-            queuedOvertimeRef.current.delete(plyNumber);
         }
 
-        const pieces = chessboardStore.getState().pieces;
-        const position = addPosition(
+        const success = await handleMoveUpdate(
+            liveChessStore,
+            chessboardStore,
             {
-                pieces,
-                fen: move.fen,
-                sideToMove: move.nextSideToMove,
-                san: move.san,
-                move: decodedMove,
+                move: move,
+                decodedMove,
+                plyNumber,
+                legalMoves,
+                clocks,
             },
-            legalMoves,
         );
-        receiveLiveMove(plyNumber, clocks, move.nextSideToMove);
-        return position;
+
+        if (success) {
+            queuedOvertimeRef.current.delete(plyNumber);
+        } else {
+            await refetchGame(liveChessStore, chessboardStore);
+        }
     }
 
     useGameEvent(gameToken, "SyncRevisionAsync", async (currentRevision) => {
@@ -100,7 +85,8 @@ export default function useLiveChessEvents(
             const legalMoves = didMoveEndGame
                 ? LegalMoves.StableEmpty
                 : undefined;
-            await handleMoveUpdate({ move, plyNumber, clocks, legalMoves });
+
+            await processMove({ move, plyNumber, clocks, legalMoves });
         },
     );
 
@@ -115,7 +101,7 @@ export default function useLiveChessEvents(
                 encoded: encodedLegalMoves,
                 boardWidth: boardDimensions.width,
             });
-            await handleMoveUpdate({
+            await processMove({
                 move,
                 plyNumber,
                 clocks,

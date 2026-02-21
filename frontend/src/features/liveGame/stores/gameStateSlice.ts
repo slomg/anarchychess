@@ -30,7 +30,7 @@ export interface GameStateSlice extends GameStateSliceProps {
     endGame(
         plyNumber: number,
         resultData: GameResultData,
-        finalClocks: Clocks,
+        finalClocks?: Clocks,
     ): void;
 
     resetState(initState: LiveChessStoreProps): void;
@@ -71,7 +71,9 @@ export function createGameStateSlice(
         endGame(plyNumber, resultData, finalClocks) {
             const { setClocks } = get();
 
-            setClocks(plyNumber, finalClocks);
+            if (finalClocks) {
+                setClocks(plyNumber, finalClocks);
+            }
             set((state) => {
                 if (state.whitePlayer.rating && resultData.whiteRatingChange)
                     state.whitePlayer.rating += resultData.whiteRatingChange;

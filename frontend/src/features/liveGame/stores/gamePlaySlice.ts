@@ -29,8 +29,8 @@ export interface GamePlaySlice {
     isInteractionAllowed(): boolean;
     receiveLiveMove(
         plyNumber: number,
-        clocks: Clocks,
         sideToMove: GameColor,
+        clocks?: Clocks,
     ): void;
     markPendingMoveAck(): void;
     cancelPendingMoveAch(): void;
@@ -65,11 +65,13 @@ export function createGamePlaySlice(
             return isGameOver || viewer.playerColor === sideToMove;
         },
 
-        receiveLiveMove(plyNumber, clocks, sideToMove) {
+        receiveLiveMove(plyNumber, sideToMove, clocks) {
             const { decrementDrawCooldown, setClocks } = get();
 
             decrementDrawCooldown();
-            setClocks(plyNumber, clocks);
+            if (clocks) {
+                setClocks(plyNumber, clocks);
+            }
             set((state) => {
                 state.sideToMove = sideToMove;
                 state.isPendingMoveAck = false;

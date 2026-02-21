@@ -118,7 +118,7 @@ describe("gamePlaySlice", () => {
 
             store
                 .getState()
-                .receiveLiveMove(plyNumber, createFakeClocks(), newSideToMove);
+                .receiveLiveMove(plyNumber, newSideToMove, createFakeClocks());
             const state = store.getState();
 
             expect(state.sideToMove).toBe(newSideToMove);
@@ -136,8 +136,8 @@ describe("gamePlaySlice", () => {
                 .getState()
                 .receiveLiveMove(
                     plyNumber,
-                    createFakeClocks(),
                     GameColor.WHITE,
+                    createFakeClocks(),
                 );
 
             expect(decrementDrawCooldownMock).toHaveBeenCalledOnce();
@@ -153,7 +153,7 @@ describe("gamePlaySlice", () => {
 
             store
                 .getState()
-                .receiveLiveMove(plyNumber, newClocks, GameColor.WHITE);
+                .receiveLiveMove(plyNumber, GameColor.WHITE, newClocks);
 
             expect(setClocksMock).toHaveBeenCalledExactlyOnceWith(
                 plyNumber,

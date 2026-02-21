@@ -1,11 +1,16 @@
+import { ChessboardStore } from "@/features/chessboard/stores/chessboardStore";
 import {
     createChessboardProps,
     getViewer,
     ProcessedGameState,
 } from "@/features/liveGame/lib/gameStateProcessor";
 
-import { LiveChessStoreProps } from "@/features/liveGame/stores/liveChessStore";
-import { BotGameState } from "@/lib/apiClient";
+import {
+    LiveChessStore,
+    LiveChessStoreProps,
+} from "@/features/liveGame/stores/liveChessStore";
+import { BotGameState, getBotGame } from "@/lib/apiClient";
+import { StoreApi } from "zustand";
 
 export default function processBotGameState(
     gameToken: string,
@@ -43,4 +48,26 @@ export default function processBotGameState(
         gameState.resultData,
     );
     return { live, board };
+}
+
+export async function refetchBotGame(
+    liveChessStore: StoreApi<LiveChessStore>,
+    chessboardStore: StoreApi<ChessboardStore>,
+) {
+    const {
+        gameToken,
+        viewer: { userId },
+    } = liveChessStore.getState();
+
+    const { error, data: gameState } = await getBotGame({
+        path: { gameToken },
+    });
+    if (error || gameState === undefined) {
+        console.error("refetchBotGame getGame", error);
+        return;
+    }
+
+    const { live, board } = processBotGameState(gameToken, userId, gameState);
+    liveChessStore.getState().resetState(live);
+    chessboardStore.getState().resetState(board);
 }
