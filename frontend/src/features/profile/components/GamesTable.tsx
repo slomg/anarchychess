@@ -21,7 +21,7 @@ const GamesTable = ({
                     <col style={{ width: "20%" }} />
                 </colgroup>
                 <thead className="bg-card text-xl">
-                    <tr data-testid="gamesTableHeader p-3">
+                    <tr data-testid="gamesTableHeader">
                         <th scope="col" className="rounded-l-md text-start" />
                         <th scope="col" className="py-3 text-start">
                             Players
