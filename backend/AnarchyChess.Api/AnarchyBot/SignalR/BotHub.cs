@@ -1,10 +1,12 @@
 ﻿using AnarchyChess.Api.AnarchyBot.Grains;
+using AnarchyChess.Api.AnarchyBot.Services;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Infrastructure;
 using AnarchyChess.Api.Infrastructure.SignalR;
 using ErrorOr;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
 
 namespace AnarchyChess.Api.AnarchyBot.SignalR;
 
@@ -16,9 +18,12 @@ public interface IBotHubClient : IAnarchyChessHubClient
 }
 
 [Authorize(AuthPolicies.ActiveSession)]
-public class BotHub(IGrainFactory grains) : AnarchyChessHub<IBotHubClient>
+public class BotHub(IGrainFactory grains, IBotNotifier notifier) : AnarchyChessHub<IBotHubClient>
 {
+    private const string GameTokenQueryParam = "gameToken";
+
     private readonly IGrainFactory _grains = grains;
+    private readonly IBotNotifier _notifier = notifier;
 
     public async Task MakeMoveAsync(GameToken gameToken, MoveKey key)
     {
@@ -50,5 +55,18 @@ public class BotHub(IGrainFactory grains) : AnarchyChessHub<IBotHubClient>
             await HandleErrors(result.Errors);
             return;
         }
+    }
+
+    public override async Task OnConnectedAsync()
+    {
+        await base.OnConnectedAsync();
+
+        string? gameToken = Context.GetHttpContext()?.Request.Query[GameTokenQueryParam];
+        if (string.IsNullOrWhiteSpace(gameToken))
+        {
+            return;
+        }
+
+        await _notifier.JoinBotGroupAsync(Context.ConnectionId, gameToken);
     }
 }

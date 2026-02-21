@@ -1,13 +1,14 @@
 ﻿using AnarchyChess.Api.AnarchyBot.Services;
 using AnarchyChess.Api.AnarchyBot.SignalR;
 using AnarchyChess.Api.Game.Models;
+using AnarchyChess.Api.Shared.Models;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
 using Microsoft.AspNetCore.SignalR;
 using NSubstitute;
 
 namespace AnarchyChess.Api.Unit.Tests.BotTests;
 
-public class BotNotifierTests
+public class BotNotifierTests : BaseUnitTest
 {
     private readonly GameToken _gameToken = "game-123";
 
@@ -78,5 +79,15 @@ public class BotNotifierTests
         await _notifier.NotifyGameEndedAsync(_gameToken, result);
 
         await _clientGroupProxyMock.Received(1).GameEndedAsync(result);
+    }
+
+    [Fact]
+    public async Task JoinBotGroupAsync_adds_connection_to_group()
+    {
+        ConnectionId connectionId = "conn1";
+
+        await _notifier.JoinBotGroupAsync(_gameToken, connectionId, CT);
+
+        await _groupsMock.Received(1).AddToGroupAsync(connectionId, _gameToken, CT);
     }
 }
