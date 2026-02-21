@@ -240,11 +240,14 @@ public class BotGrain : Grain, IBotGrain
         LegalMoveSet legalMoves = _core.GetLegalMoves(game.Core);
         Move? legalMove = legalMoves.AllMoves.FirstOrDefault(move =>
         {
+            HashSet<AlgebraicPoint> moveCaptures = [.. move.Captures.Select(c => c.Position)];
+            HashSet<AlgebraicPoint> botCaptures = botMove.Captures?.ToHashSet() ?? [];
+
             List<AlgebraicPoint> captures = [.. move.Captures.Select(x => x.Position)];
             return move.From == botMove.From
                 && move.To == botMove.To
                 && move.PromotesTo == botMove.PromotesTo
-                && captures.SequenceEqual(botMove.Captures ?? []);
+                && moveCaptures.SetEquals(botCaptures);
         });
         if (legalMove is null)
         {
