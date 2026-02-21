@@ -27,7 +27,7 @@ export interface ProcessedGameState {
     board: ChessboardProps;
 }
 
-export function createStoreProps(
+export function processGameState(
     gameToken: string,
     viewerUserId: string,
     gameState: GameState,
@@ -180,7 +180,7 @@ export async function refetchGame(
         return;
     }
 
-    const { live, board } = createStoreProps(gameToken, userId, gameState);
+    const { live, board } = processGameState(gameToken, userId, gameState);
     liveChessStore.getState().resetState(live);
     chessboardStore.getState().resetState(board);
 }

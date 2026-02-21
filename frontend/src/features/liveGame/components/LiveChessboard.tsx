@@ -7,7 +7,7 @@ import {
     createChessboardStore,
 } from "@/features/chessboard/stores/chessboardStore";
 import {
-    createStoreProps,
+    processGameState,
     ProcessedGameState,
 } from "../lib/gameStateProcessor";
 
@@ -44,7 +44,7 @@ const LiveChessboard = ({
     const user = useSessionUser();
 
     const storeProps = useConst<ProcessedGameState>(() =>
-        createStoreProps(gameToken, user?.userId ?? "", gameState),
+        processGameState(gameToken, user?.userId ?? "", gameState),
     );
 
     const liveChessStore = useConst<StoreApi<LiveChessStore>>(() =>
