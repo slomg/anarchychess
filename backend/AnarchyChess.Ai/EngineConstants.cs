@@ -8,7 +8,7 @@ public static class EngineConstants
     public const int NullMoveReduction = 2;
     public const int FutilityMargin = 350;
     public const int MaxMoves = 256;
-    public const int MaxDepth = 16;
+    public const int MaxDepth = 32;
 
     public static readonly int[,] LmrTable = CreateLMR();
 
