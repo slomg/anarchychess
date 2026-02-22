@@ -60,18 +60,17 @@ public class AiEngine(
 
                 SearchThread search = new(_moveGenerator, _evaluator, _moveOrdering, depth);
 
-                int alphaLocal = alpha;
-
+                int score = EngineConstants.AlphaStart;
                 for (int iterativeDepth = 1; iterativeDepth <= depth; iterativeDepth++)
                 {
-                    int score = -search.Negamax(
+                    score = -search.Negamax(
                         boardCopy,
                         iterativeDepth,
-                        alpha: -alphaLocal - 1,
-                        beta: -alphaLocal
+                        alpha: -alpha - 1,
+                        beta: -alpha
                     );
 
-                    if (score > alphaLocal)
+                    if (score > alpha)
                     {
                         score = -search.Negamax(
                             boardCopy,
@@ -80,11 +79,9 @@ public class AiEngine(
                             beta: EngineConstants.BetaStart
                         );
                     }
-
-                    alphaLocal = score;
                 }
 
-                scores[i] = alphaLocal;
+                scores[i] = score;
             }
         );
 
