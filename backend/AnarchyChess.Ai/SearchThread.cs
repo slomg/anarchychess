@@ -26,7 +26,8 @@ internal class SearchThread(
         int depth,
         int alpha,
         int beta,
-        bool isLastMoveCapture = false
+        bool isLastMoveCapture = false,
+        bool isLastMoveForced = false
     )
     {
         if (_evaluator.TryEvaluateTermination(board, depth, out int terminationEval))
@@ -89,6 +90,7 @@ internal class SearchThread(
                 && move.CapturesMask == 0
                 && move.PromotesTo is null
                 && move.ForcedMovePriority is ForcedMovePriority.None
+                && !isLastMoveForced
             )
             {
                 int reduction = EngineConstants.LmrTable[depth, i];
@@ -100,7 +102,8 @@ internal class SearchThread(
                 searchDepth,
                 alpha: -beta,
                 beta: -alpha,
-                isLastMoveCapture = move.CapturesMask != 0
+                isLastMoveCapture = move.CapturesMask != 0,
+                isLastMoveForced = move.ForcedMovePriority is not ForcedMovePriority.None
             );
 
             board.UndoMove(undo);
