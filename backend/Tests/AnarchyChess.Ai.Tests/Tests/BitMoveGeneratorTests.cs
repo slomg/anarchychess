@@ -15,7 +15,7 @@ public class BitMoveGeneratorTests
     [Fact]
     public void Generate_returns_expected_moves_for_white()
     {
-        var board = BitBoard.FromPieces(
+        BitBoard board = BitBoard.FromPieces(
             new()
             {
                 [new AlgebraicPoint("f5")] = PieceFactory.White(PieceType.King),
@@ -74,7 +74,7 @@ public class BitMoveGeneratorTests
     [Fact]
     public void Generate_returns_expected_moves_for_black()
     {
-        var board = BitBoard.FromPieces(
+        BitBoard board = BitBoard.FromPieces(
             new()
             {
                 [new AlgebraicPoint("d9")] = PieceFactory.Black(PieceType.Pawn, hasMoved: false),
@@ -154,7 +154,7 @@ public class BitMoveGeneratorTests
     [Fact]
     public void Generate_returns_only_highest_priority_moves()
     {
-        var board = BitBoard.FromPieces(
+        BitBoard board = BitBoard.FromPieces(
             new Dictionary<AlgebraicPoint, Piece>
             {
                 [new("e5")] = PieceFactory.White(PieceType.Bishop),
