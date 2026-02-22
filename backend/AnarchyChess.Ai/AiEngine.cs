@@ -13,18 +13,18 @@ public interface IAiEngine
 public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evaluator = null)
     : IAiEngine
 {
-    private const int ALPHA_START = -10_000_000;
-    private const int BETA_START = 10_000_000;
+    private const int AlphaStart = -10_000_000;
+    private const int BetaStart = 10_000_000;
 
     private const int MaxMoves = 256;
     private const int NullMoveReduction = 2;
+    private const int FutilityMargin = 350;
+    private const int MaxDepth = 16;
 
     private readonly IBitMoveGenerator _moveGenerator = moveGenerator ?? new BitMoveGenerator();
     private readonly IEvaluator _evaluator = evaluator ?? new Evaluator();
 
     private BitMove[,] _killerMoves = new BitMove[0, 0];
-
-    const int MaxDepth = 16;
 
     private static readonly int[,] LmrTable = CreateLMR();
 
@@ -60,7 +60,7 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
         BitBoard boardCopy = new(board);
         boardCopy.MakeMove(bestMove);
 
-        int alpha = -Negamax(boardCopy, depth - 1, alpha: ALPHA_START, beta: BETA_START);
+        int alpha = -Negamax(boardCopy, depth - 1, alpha: AlphaStart, beta: BetaStart);
 
         int[] scores = new int[moveCount];
 
@@ -76,7 +76,7 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
                 int score = -Negamax(boardCopy, depth - 1, alpha: -alpha - 1, beta: -alpha);
                 if (score > alpha)
                 {
-                    score = -Negamax(boardCopy, depth - 1, alpha: ALPHA_START, beta: BETA_START);
+                    score = -Negamax(boardCopy, depth - 1, alpha: AlphaStart, beta: BetaStart);
                 }
 
                 scores[i] = score;
@@ -117,14 +117,9 @@ public class AiEngine(IBitMoveGenerator? moveGenerator = null, IEvaluator? evalu
                 : _evaluator.Evaluate(board);
         }
 
-        if (depth < 3)
+        if (depth < 3 && _evaluator.Evaluate(board) + FutilityMargin <= alpha)
         {
-            int standPat = _evaluator.Evaluate(board);
-            int margin = 350;
-            if (standPat + margin <= alpha)
-            {
-                return alpha;
-            }
+            return alpha;
         }
 
         Span<BitMove> moves = stackalloc BitMove[MaxMoves];
