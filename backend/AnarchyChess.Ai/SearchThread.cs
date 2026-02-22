@@ -12,8 +12,6 @@ internal class SearchThread(
     int depth
 )
 {
-    public int Score { get; private set; }
-
     private readonly IBitMoveGenerator _moveGenerator = moveGenerator;
     private readonly IEvaluator _evaluator = evaluator;
     private readonly IMoveOrdering _moveOrdering = moveOrdering;
