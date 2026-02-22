@@ -14,16 +14,16 @@ public static class EngineConstants
 
     static int[,] CreateLMR()
     {
-        int[,] lm = new int[MaxDepth, MaxMoves];
+        int[,] lmr = new int[MaxDepth, MaxMoves];
         for (int depth = 1; depth < MaxDepth; depth++)
         {
             for (int move = 1; move < MaxMoves; move++)
             {
-                double reduction = 0.99 + Math.Log(depth) * Math.Log(move) / 3.14;
+                double reduction = 0.99 + Math.Log(depth) * Math.Log(move) * 1.3 / 3.14;
 
-                lm[depth, move] = Math.Max((int)Math.Round(reduction), 1);
+                lmr[depth, move] = Math.Max((int)Math.Round(reduction), 1);
             }
         }
-        return lm;
+        return lmr;
     }
 }
