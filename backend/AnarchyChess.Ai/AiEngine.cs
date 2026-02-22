@@ -24,7 +24,14 @@ public class AiEngine(
         int moveCount = 0;
 
         _moveGenerator.Generate(board, moves, ref moveCount);
-        _moveOrdering.OrderMoves(board, depth, new BitMove[depth + 1, 2], moves, moveCount);
+        _moveOrdering.OrderMoves(
+            board,
+            depth,
+            new BitMove[depth + 1, 2],
+            new int[10 * 10, 10 * 10],
+            moves,
+            moveCount
+        );
 
         if (moveCount == 0)
             return null;
@@ -53,18 +60,31 @@ public class AiEngine(
 
                 SearchThread search = new(_moveGenerator, _evaluator, _moveOrdering, depth);
 
-                int score = -search.Negamax(boardCopy, depth - 1, alpha: -alpha - 1, beta: -alpha);
-                if (score > alpha)
+                int alphaLocal = alpha;
+
+                for (int iterativeDepth = 1; iterativeDepth <= depth; iterativeDepth++)
                 {
-                    score = -search.Negamax(
+                    int score = -search.Negamax(
                         boardCopy,
-                        depth - 1,
-                        alpha: EngineConstants.AlphaStart,
-                        beta: EngineConstants.BetaStart
+                        iterativeDepth,
+                        alpha: -alphaLocal - 1,
+                        beta: -alphaLocal
                     );
+
+                    if (score > alphaLocal)
+                    {
+                        score = -search.Negamax(
+                            boardCopy,
+                            iterativeDepth,
+                            alpha: EngineConstants.AlphaStart,
+                            beta: EngineConstants.BetaStart
+                        );
+                    }
+
+                    alphaLocal = score;
                 }
 
-                scores[i] = score;
+                scores[i] = alphaLocal;
             }
         );
 

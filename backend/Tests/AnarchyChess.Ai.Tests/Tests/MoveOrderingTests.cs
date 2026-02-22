@@ -37,7 +37,7 @@ public class MoveOrderingTests
         };
 
         Span<BitMove> moves = [quiet, capture];
-        _ordering.OrderMoves(board, depth: 0, new BitMove[1, 2], moves, 2);
+        _ordering.OrderMoves(board, depth: 0, new BitMove[1, 2], new int[100, 100], moves, 2);
 
         moves[0].Should().BeEquivalentTo(capture);
         moves[1].Should().BeEquivalentTo(quiet);
@@ -73,7 +73,7 @@ public class MoveOrderingTests
         };
 
         Span<BitMove> moves = [badCapture, goodCapture];
-        _ordering.OrderMoves(board, depth: 0, new BitMove[1, 2], moves, 2);
+        _ordering.OrderMoves(board, depth: 0, new BitMove[1, 2], new int[100, 100], moves, 2);
 
         moves[0].Should().BeEquivalentTo(goodCapture);
         moves[1].Should().BeEquivalentTo(badCapture);
@@ -82,7 +82,7 @@ public class MoveOrderingTests
     [Fact]
     public void OrderMoves_prioritizes_promotions_over_special_and_killer()
     {
-        BitBoard board = BitBoard.FromPieces([], isWhiteToMove: true);
+        BitBoard board = BitBoard.FromPieces([]);
 
         BitMove promotion = new()
         {
@@ -111,7 +111,7 @@ public class MoveOrderingTests
         killers[0, 0] = killer;
 
         Span<BitMove> moves = [special, killer, promotion];
-        _ordering.OrderMoves(board, depth: 0, killers, moves, 3);
+        _ordering.OrderMoves(board, depth: 0, killers, new int[100, 100], moves, 3);
 
         moves[0].Should().BeEquivalentTo(promotion);
         moves[1].Should().BeEquivalentTo(special);
@@ -121,7 +121,7 @@ public class MoveOrderingTests
     [Fact]
     public void OrderMoves_prioritizes_killer_over_quiet()
     {
-        BitBoard board = BitBoard.FromPieces([], isWhiteToMove: true);
+        BitBoard board = BitBoard.FromPieces([]);
 
         BitMove killer = new()
         {
@@ -141,41 +141,77 @@ public class MoveOrderingTests
         killers[0, 0] = killer;
 
         Span<BitMove> moves = [quiet, killer];
-        _ordering.OrderMoves(board, depth: 0, killers, moves, 2);
+        _ordering.OrderMoves(board, depth: 0, killers, new int[100, 100], moves, 2);
 
         moves[0].Should().BeEquivalentTo(killer);
         moves[1].Should().BeEquivalentTo(quiet);
     }
 
     [Fact]
-    public void OrderMoves_keeps_quiet_moves_in_original_order()
+    public void OrderMoves_prioritizes_quiet_moves_by_history_heuristic_10x10()
     {
         BitBoard board = BitBoard.FromPieces([], isWhiteToMove: true);
 
-        BitMove move1 = new()
+        BitMove moveLow = new()
         {
+            From = 0,
+            To = 1,
             Piece = new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.White },
-            From = 1,
-            To = 2,
         };
-        BitMove move2 = new()
+        BitMove moveHigh = new()
         {
-            Piece = new BitPiece { Type = PieceType.Horsey, Color = BitPieceColor.White },
-            From = 3,
-            To = 4,
-        };
-        BitMove move3 = new()
-        {
-            Piece = new BitPiece { Type = PieceType.Bishop, Color = BitPieceColor.White },
-            From = 5,
-            To = 6,
+            From = 2,
+            To = 3,
+            Piece = new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.White },
         };
 
-        Span<BitMove> moves = [move1, move2, move3];
-        _ordering.OrderMoves(board, depth: 0, new BitMove[1, 2], moves, 3);
+        int[,] history = new int[100, 100];
+        history[moveLow.From, moveLow.To] = 10;
+        history[moveHigh.From, moveHigh.To] = 50;
 
-        moves[0].Should().BeEquivalentTo(move1);
-        moves[1].Should().BeEquivalentTo(move2);
-        moves[2].Should().BeEquivalentTo(move3);
+        Span<BitMove> moves = [moveLow, moveHigh];
+        _ordering.OrderMoves(board, depth: 0, new BitMove[1, 2], history, moves, 2);
+
+        moves[0].Should().BeEquivalentTo(moveHigh);
+        moves[1].Should().BeEquivalentTo(moveLow);
+    }
+
+    [Fact]
+    public void OrderMoves_history_is_lower_than_promotions_and_killers()
+    {
+        BitBoard board = BitBoard.FromPieces([], isWhiteToMove: true);
+
+        BitMove quiet = new()
+        {
+            From = 10,
+            To = 11,
+            Piece = new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.White },
+        };
+        BitMove killer = new()
+        {
+            From = 12,
+            To = 13,
+            Piece = new BitPiece { Type = PieceType.Rook, Color = BitPieceColor.White },
+        };
+        BitMove promotion = new()
+        {
+            From = 14,
+            To = 15,
+            Piece = new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.White },
+            PromotesTo = PieceType.Queen,
+        };
+
+        int[,] history = new int[100, 100];
+        history[quiet.From, quiet.To] = 1000;
+
+        BitMove[,] killers = new BitMove[1, 2];
+        killers[0, 0] = killer;
+
+        Span<BitMove> moves = [quiet, killer, promotion];
+        _ordering.OrderMoves(board, depth: 0, killers, history, moves, 3);
+
+        moves[0].Should().BeEquivalentTo(promotion);
+        moves[1].Should().BeEquivalentTo(killer);
+        moves[2].Should().BeEquivalentTo(quiet);
     }
 }

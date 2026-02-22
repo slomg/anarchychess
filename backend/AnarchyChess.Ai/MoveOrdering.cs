@@ -11,6 +11,7 @@ public interface IMoveOrdering
         BitBoard board,
         int depth,
         BitMove[,] killerMoves,
+        int[,] historyHeuristic,
         Span<BitMove> moves,
         int moveCount
     );
@@ -22,6 +23,7 @@ public sealed class MoveOrdering : IMoveOrdering
         BitBoard board,
         int depth,
         BitMove[,] killerMoves,
+        int[,] historyHeuristic,
         Span<BitMove> moves,
         int moveCount
     )
@@ -31,7 +33,7 @@ public sealed class MoveOrdering : IMoveOrdering
         int write = 0;
         for (int i = 0; i < moveCount; i++)
         {
-            int score = ScoreMove(moves[i], board, depth, killerMoves);
+            int score = ScoreMove(moves[i], board, depth, killerMoves, historyHeuristic);
 
             scores[i] = score;
 
@@ -94,7 +96,13 @@ public sealed class MoveOrdering : IMoveOrdering
         }
     }
 
-    private static int ScoreMove(BitMove move, BitBoard board, int depth, BitMove[,] killerMoves)
+    private static int ScoreMove(
+        BitMove move,
+        BitBoard board,
+        int depth,
+        BitMove[,] killerMoves,
+        int[,] historyHeuristic
+    )
     {
         if (move.CapturesMask != 0)
         {
@@ -131,6 +139,6 @@ public sealed class MoveOrdering : IMoveOrdering
             return 6_000;
         }
 
-        return 0;
+        return historyHeuristic[move.From, move.To];
     }
 }

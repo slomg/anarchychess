@@ -19,6 +19,7 @@ internal class SearchThread(
     private readonly IMoveOrdering _moveOrdering = moveOrdering;
 
     private readonly BitMove[,] _killerMoves = new BitMove[depth + 1, 2];
+    private readonly int[,] _historyHeuristic = new int[10 * 10, 10 * 10];
 
     public int Negamax(
         BitBoard board,
@@ -40,18 +41,22 @@ internal class SearchThread(
                 : _evaluator.Evaluate(board);
         }
 
-        if (depth < 3 && _evaluator.Evaluate(board) + EngineConstants.FutilityMargin <= alpha)
-        {
-            return alpha;
-        }
-
         Span<BitMove> moves = stackalloc BitMove[EngineConstants.MaxMoves];
         int moveCount = 0;
         _moveGenerator.Generate(board, moves, ref moveCount);
 
         if (
+            depth < 3
+            && moves[0].ForcedMovePriority is ForcedMovePriority.None
+            && _evaluator.Evaluate(board) + EngineConstants.FutilityMargin <= alpha
+        )
+        {
+            return alpha;
+        }
+
+        if (
             depth > EngineConstants.NullMoveReduction + 1
-            && moves[0].ForcedMovePriority == ForcedMovePriority.None
+            && moves[0].ForcedMovePriority is ForcedMovePriority.None
         )
         {
             NullMoveUndoState undo = board.MakeNullMove();
@@ -69,7 +74,7 @@ internal class SearchThread(
             }
         }
 
-        _moveOrdering.OrderMoves(board, depth, _killerMoves, moves, moveCount);
+        _moveOrdering.OrderMoves(board, depth, _killerMoves, _historyHeuristic, moves, moveCount);
 
         for (int i = 0; i < moveCount; i++)
         {
@@ -78,7 +83,13 @@ internal class SearchThread(
 
             int searchDepth = depth - 1;
 
-            if (i > 0 && depth >= 3 && move.CapturesMask == 0 && move.PromotesTo is null)
+            if (
+                i > 0
+                && depth >= 3
+                && move.CapturesMask == 0
+                && move.PromotesTo is null
+                && move.ForcedMovePriority is ForcedMovePriority.None
+            )
             {
                 int reduction = EngineConstants.LmrTable[depth, i];
                 searchDepth -= reduction;
@@ -104,6 +115,7 @@ internal class SearchThread(
                 {
                     _killerMoves[depth, 1] = _killerMoves[depth, 0];
                     _killerMoves[depth, 0] = move;
+                    _historyHeuristic[move.From, move.To] += depth * depth;
                 }
                 break;
             }
@@ -147,10 +159,6 @@ internal class SearchThread(
         _moveGenerator.Generate(board, moves, ref moveCount);
 
         int maxCaptureValue = 0;
-        UInt128 pawns =
-            board.BitboardFor(PieceType.Pawn, BitPieceColor.White)
-            | board.BitboardFor(PieceType.Pawn, BitPieceColor.Black);
-
         for (int i = 0; i < moveCount; i++)
         {
             BitMove move = moves[i];
@@ -173,7 +181,10 @@ internal class SearchThread(
             }
         }
 
-        if (standPat + maxCaptureValue < alpha)
+        if (
+            standPat + maxCaptureValue < alpha
+            && moves[0].ForcedMovePriority is ForcedMovePriority.None
+        )
         {
             return alpha;
         }

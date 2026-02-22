@@ -19,6 +19,7 @@ builder.Services.AddScoped<IAiEngineService, AiEngineService>();
 
 builder.Services.AddScoped<IAiEngine, AiEngine>();
 builder.Services.AddSingleton<IBitMoveGenerator, BitMoveGenerator>();
+builder.Services.AddSingleton<IMoveOrdering, MoveOrdering>();
 builder.Services.AddSingleton<IEvaluator, Evaluator>();
 builder.Services.AddSingleton<IEndgameFactorCalculator, EndgameFactorCalculator>();
 
