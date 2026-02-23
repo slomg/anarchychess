@@ -1,27 +1,21 @@
-import { GameColor, startBotGame } from "@/lib/apiClient";
-import { mockRouter, RouterMock } from "@/lib/testUtils/mocks/mockRouter";
 import { render, screen, within } from "@testing-library/react";
-import BotPlayOptions from "../BotPlayOptions";
 import userEvent from "@testing-library/user-event";
-import constants from "@/lib/constants";
-import { randomizeColor } from "@/lib/utils/chessUtils";
+
+import useBotMatch from "../../hooks/useBotMatch";
+import BotPlayOptions from "../BotPlayOptions";
+import { GameColor } from "@/lib/apiClient";
 
 vi.mock("@/lib/apiClient/definition");
-vi.mock("@/lib/utils/chessUtils");
+vi.mock("../../hooks/useBotMatch");
 
 describe("BotPlayOptions", () => {
-    let routerMock: RouterMock;
-    const mockStartBotGame = vi.mocked(startBotGame);
-    const fakeGameToken = "fakeGameToken";
-    const randomizeColorMock = vi.mocked(randomizeColor);
+    const useBotMatchMock = vi.mocked(useBotMatch);
+    const matchBotGameMock = vi.fn();
 
     beforeEach(() => {
-        routerMock = mockRouter();
-        randomizeColorMock.mockReturnValue(GameColor.WHITE);
-        mockStartBotGame.mockResolvedValue({
-            data: fakeGameToken,
-            error: undefined,
-            response: new Response(),
+        useBotMatchMock.mockReturnValue({
+            matchBotGame: matchBotGameMock,
+            isMatching: false,
         });
     });
 
@@ -32,20 +26,13 @@ describe("BotPlayOptions", () => {
 
         await user.click(screen.getByTestId("botPlayOptionsStartButton"));
 
-        expect(mockStartBotGame).toHaveBeenCalledOnce();
-        expect(routerMock.push).toHaveBeenCalledExactlyOnceWith(
-            `${constants.PATHS.BOT}/${fakeGameToken}`,
-        );
+        expect(matchBotGameMock).toHaveBeenCalledOnce();
     });
 
     it("should show an error message if starting a game fails", async () => {
-        const user = userEvent.setup();
-        mockStartBotGame.mockResolvedValue({
-            data: undefined,
-            error: { errors: [] },
-            response: new Response(),
-        });
+        matchBotGameMock.mockResolvedValue(false);
 
+        const user = userEvent.setup();
         render(<BotPlayOptions />);
 
         await user.click(screen.getByTestId("botPlayOptionsStartButton"));
@@ -55,7 +42,7 @@ describe("BotPlayOptions", () => {
         );
     });
 
-    it.each([GameColor.WHITE, GameColor.BLACK])(
+    it.each([GameColor.WHITE, GameColor.BLACK, null])(
         "should allow selecting color and pass it to startBotGame",
         async (color) => {
             const user = userEvent.setup();
@@ -66,31 +53,7 @@ describe("BotPlayOptions", () => {
 
             await user.click(screen.getByTestId("botPlayOptionsStartButton"));
 
-            expect(mockStartBotGame).toHaveBeenCalledExactlyOnceWith({
-                query: { myColor: color },
-            });
+            expect(matchBotGameMock).toHaveBeenCalledExactlyOnceWith(color);
         },
     );
-
-    it("should select a random color if random is selected", async () => {
-        const user = userEvent.setup();
-        render(<BotPlayOptions />);
-
-        randomizeColorMock.mockReturnValueOnce(GameColor.WHITE);
-
-        const selector = screen.getByTestId("botPlayOptionsColorSelector");
-        await user.click(within(selector).getByTestId("selector-null"));
-
-        await user.click(screen.getByTestId("botPlayOptionsStartButton"));
-
-        expect(mockStartBotGame).toHaveBeenCalledExactlyOnceWith({
-            query: { myColor: GameColor.WHITE },
-        });
-
-        randomizeColorMock.mockReturnValueOnce(GameColor.BLACK);
-        await user.click(screen.getByTestId("botPlayOptionsStartButton"));
-        expect(mockStartBotGame).toHaveBeenCalledWith({
-            query: { myColor: GameColor.BLACK },
-        });
-    });
 });

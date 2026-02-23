@@ -1,45 +1,30 @@
 "use client";
 
 import Image, { StaticImageData } from "next/image";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import clsx from "clsx";
 
 import AnarchyBotPfp from "@public/assets/bots/anarchybot.png";
-import { GameColor, startBotGame } from "@/lib/apiClient";
 import Selector from "@/components/ui/Selector";
+import useBotMatch from "../hooks/useBotMatch";
 import Button from "@/components/ui/Button";
+import { GameColor } from "@/lib/apiClient";
 import Card from "@/components/ui/Card";
-import constants from "@/lib/constants";
-import { randomizeColor } from "@/lib/utils/chessUtils";
 
 const BotPlayOptions = () => {
     const [selected, setSelected] = useState("Anarchy Bot");
     const [color, setColor] = useState<GameColor | null>(null);
-    const [isFetching, setIsFetching] = useState(false);
     const [error, setError] = useState<string>();
 
-    const router = useRouter();
+    const { matchBotGame, isMatching } = useBotMatch();
 
     async function startGame() {
         setError(undefined);
-        setIsFetching(true);
 
-        try {
-            const myColor = color ?? randomizeColor();
-            const { error, data: gameToken } = await startBotGame({
-                query: { myColor },
-            });
-
-            if (error || !gameToken) {
-                setError("Failed to start game. Please try again.");
-                console.error("BotPlayOptions startGame", error);
-                return;
-            }
-
-            router.push(`${constants.PATHS.BOT}/${gameToken}`);
-        } finally {
-            setIsFetching(false);
+        const success = await matchBotGame(color);
+        if (!success) {
+            setError("Failed to start game. Please try again.");
+            return;
         }
     }
 
@@ -96,7 +81,7 @@ const BotPlayOptions = () => {
                 <Button
                     className="h-min"
                     onClick={startGame}
-                    disabled={isFetching}
+                    disabled={isMatching}
                     data-testid="botPlayOptionsStartButton"
                 >
                     Play
