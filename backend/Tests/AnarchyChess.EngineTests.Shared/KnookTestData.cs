@@ -143,5 +143,14 @@ public class KnookTestData : TheoryData<PieceTestCase>
                 .GoesTo("e6", captures: ["e6"])
                 .WithDescription("Can't capture beyond piece")
         );
+
+        Add(
+            PieceTestCase
+                .From("c10", knook)
+                .WithFriendlyPieceAt("b10")
+                .WithEnemyPieceAt("a10")
+                .GoesTo("d10", "e10", "a9", "c9", "e9", "b8", "c8", "d8")
+                .WithDescription("Knook on the edge with blockers")
+        );
     }
 }

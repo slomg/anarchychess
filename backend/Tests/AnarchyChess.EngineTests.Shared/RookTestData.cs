@@ -92,6 +92,17 @@ public class RookTestData : TheoryData<PieceTestCase>
 
         Add(
             PieceTestCase
+                .From("a1", rook)
+                .WithFriendlyPieceAt("d1")
+                .WithEnemyPieceAt("e1")
+                .WithFriendlyPieceAt("a4")
+                .WithEnemyPieceAt("a5")
+                .GoesTo("a2", "a3", "b1", "c1")
+                .WithDescription("Rook at a1 with blockers")
+        );
+
+        Add(
+            PieceTestCase
                 .From("e5", rook)
                 .WithFriendlyPieceAt("e7", excludePieces: [PieceType.Horsey]) // blocks beyond e6
                 .WithFriendlyPieceAt("h5", excludePieces: [PieceType.Horsey]) // blocks beyond g5
