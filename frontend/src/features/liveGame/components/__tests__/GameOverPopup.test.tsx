@@ -1,15 +1,15 @@
 import { act, render, screen } from "@testing-library/react";
-import React from "react";
+import userEvent from "@testing-library/user-event";
+import { StoreApi } from "zustand";
 
 import createLiveChessStore, {
     LiveChessStore,
 } from "@/features/liveGame/stores/liveChessStore";
-import { GameColor, GameResult } from "@/lib/apiClient";
-import GameOverPopup from "../GameOverPopup";
-import userEvent from "@testing-library/user-event";
+
 import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
 import LiveChessStoreContext from "@/features/liveGame/contexts/liveChessContext";
-import { StoreApi } from "zustand";
+import { GameColor, GameResult } from "@/lib/apiClient";
+import GameOverPopup from "../GameOverPopup";
 
 vi.mock("@/features/lobby/hooks/useLobbyHub");
 vi.mock("@/features/liveGame/hooks/useGameHub");
