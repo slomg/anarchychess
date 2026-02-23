@@ -5,7 +5,6 @@ import useBotMatch from "../../hooks/useBotMatch";
 import BotPlayOptions from "../BotPlayOptions";
 import { GameColor } from "@/lib/apiClient";
 
-vi.mock("@/lib/apiClient/definition");
 vi.mock("../../hooks/useBotMatch");
 
 describe("BotPlayOptions", () => {
