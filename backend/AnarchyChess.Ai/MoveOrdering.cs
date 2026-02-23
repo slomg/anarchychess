@@ -7,7 +7,7 @@ namespace AnarchyChess.Ai;
 
 public interface IMoveOrdering
 {
-    void OrderMoves(
+    BitMove SelectAndPromoteHighestMove(
         BitBoard board,
         int depth,
         BitMove[,] killerMoves,
@@ -15,11 +15,21 @@ public interface IMoveOrdering
         Span<BitMove> moves,
         int moveCount
     );
+    void ScoreMoves(
+        BitBoard board,
+        int depth,
+        BitMove[,] killerMoves,
+        int[,] historyHeuristic,
+        Span<int> scores,
+        Span<BitMove> moves,
+        int moveCount
+    );
+    BitMove GetNextHighestMove(int i, Span<BitMove> moves, Span<int> scores, int moveCount);
 }
 
 public sealed class MoveOrdering : IMoveOrdering
 {
-    public void OrderMoves(
+    public BitMove SelectAndPromoteHighestMove(
         BitBoard board,
         int depth,
         BitMove[,] killerMoves,
@@ -28,72 +38,58 @@ public sealed class MoveOrdering : IMoveOrdering
         int moveCount
     )
     {
-        Span<int> scores = stackalloc int[moveCount];
-
-        int write = 0;
+        int bestScore = 0;
+        BitMove bestMove = default;
         for (int i = 0; i < moveCount; i++)
         {
-            int score = ScoreMove(moves[i], board, depth, killerMoves, historyHeuristic);
-
-            scores[i] = score;
-
-            if (score > 0 && i != write)
+            BitMove move = moves[i];
+            int score = ScoreMove(move, board, depth, killerMoves, historyHeuristic);
+            if (score > bestScore)
             {
-                (moves[write], moves[i]) = (moves[i], moves[write]);
-                (scores[write], scores[i]) = (scores[i], scores[write]);
-            }
-            if (score > 0)
-            {
-                write += 1;
+                bestScore = score;
+                bestMove = move;
+                (moves[0], moves[i]) = (moves[i], moves[0]);
             }
         }
+        return bestMove;
+    }
 
-        if (write > 1)
+    public void ScoreMoves(
+        BitBoard board,
+        int depth,
+        BitMove[,] killerMoves,
+        int[,] historyHeuristic,
+        Span<int> scores,
+        Span<BitMove> moves,
+        int moveCount
+    )
+    {
+        for (int i = 0; i < moveCount; i++)
         {
-            QuickSort(moves, scores, left: 0, right: write - 1);
+            scores[i] = ScoreMove(moves[i], board, depth, killerMoves, historyHeuristic);
         }
     }
 
-    private static void QuickSort(Span<BitMove> moves, Span<int> scores, int left, int right)
+    public BitMove GetNextHighestMove(int i, Span<BitMove> moves, Span<int> scores, int moveCount)
     {
-        if (left >= right)
+        int bestIndex = i;
+        int bestScore = scores[i];
+
+        for (int j = i + 1; j < moveCount; j++)
         {
-            return;
-        }
-
-        int pivotIndex = left + (right - left) / 2;
-        int pivotValue = scores[pivotIndex];
-
-        int i = left;
-        int j = right;
-        while (i <= j)
-        {
-            while (scores[i] > pivotValue)
+            if (scores[j] > bestScore)
             {
-                i++;
-            }
-            while (scores[j] < pivotValue)
-            {
-                j--;
-            }
-
-            if (i <= j)
-            {
-                (moves[i], moves[j]) = (moves[j], moves[i]);
-                (scores[i], scores[j]) = (scores[j], scores[i]);
-                i++;
-                j--;
+                bestScore = scores[j];
+                bestIndex = j;
             }
         }
 
-        if (left < j)
+        if (bestIndex != i)
         {
-            QuickSort(moves, scores, left, j);
+            (moves[i], moves[bestIndex]) = (moves[bestIndex], moves[i]);
+            (scores[i], scores[bestIndex]) = (scores[bestIndex], scores[i]);
         }
-        if (i < right)
-        {
-            QuickSort(moves, scores, i, right);
-        }
+        return moves[i];
     }
 
     private static int ScoreMove(
@@ -104,6 +100,14 @@ public sealed class MoveOrdering : IMoveOrdering
         int[,] historyHeuristic
     )
     {
+        if (
+            (move.From == killerMoves[depth, 0].From && move.To == killerMoves[depth, 0].To)
+            || (move.From == killerMoves[depth, 1].From && move.To == killerMoves[depth, 1].To)
+        )
+        {
+            return 15_000;
+        }
+
         if (move.CapturesMask != 0)
         {
             UInt128 captureMask = move.CapturesMask;
@@ -129,14 +133,6 @@ public sealed class MoveOrdering : IMoveOrdering
         if (move.SpecialMoveType is not SpecialMoveType.None)
         {
             return 7_000;
-        }
-
-        if (
-            (move.From == killerMoves[depth, 0].From && move.To == killerMoves[depth, 0].To)
-            || (move.From == killerMoves[depth, 1].From && move.To == killerMoves[depth, 1].To)
-        )
-        {
-            return 6_000;
         }
 
         return historyHeuristic[move.From, move.To];

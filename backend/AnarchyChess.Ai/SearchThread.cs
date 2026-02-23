@@ -9,14 +9,14 @@ internal class SearchThread(
     IBitMoveGenerator moveGenerator,
     IEvaluator evaluator,
     IMoveOrdering moveOrdering,
-    int depth
+    int maxDepth
 )
 {
     private readonly IBitMoveGenerator _moveGenerator = moveGenerator;
     private readonly IEvaluator _evaluator = evaluator;
     private readonly IMoveOrdering _moveOrdering = moveOrdering;
 
-    private readonly BitMove[,] _killerMoves = new BitMove[depth + 1, 2];
+    private readonly BitMove[,] _killerMoves = new BitMove[maxDepth + 1, 2];
     private readonly int[,] _historyHeuristic = new int[10 * 10, 10 * 10];
 
     public int Negamax(
@@ -73,11 +73,20 @@ internal class SearchThread(
             }
         }
 
-        _moveOrdering.OrderMoves(board, depth, _killerMoves, _historyHeuristic, moves, moveCount);
+        Span<int> scores = stackalloc int[moveCount];
+        _moveOrdering.ScoreMoves(
+            board,
+            depth,
+            _killerMoves,
+            _historyHeuristic,
+            scores,
+            moves,
+            moveCount
+        );
 
         for (int i = 0; i < moveCount; i++)
         {
-            BitMove move = moves[i];
+            BitMove move = _moveOrdering.GetNextHighestMove(i, moves, scores, moveCount);
             MoveUndoState undo = board.MakeMove(move);
 
             int searchDepth = depth - 1;
@@ -92,7 +101,7 @@ internal class SearchThread(
             )
             {
                 int reduction = EngineConstants.LmrTable[depth, i];
-                searchDepth -= reduction;
+                searchDepth -= Math.Min(reduction, depth - 2);
             }
 
             int score = -Negamax(
@@ -100,8 +109,8 @@ internal class SearchThread(
                 searchDepth,
                 alpha: -beta,
                 beta: -alpha,
-                isLastMoveCapture = move.CapturesMask != 0,
-                isLastMoveForced = move.ForcedMovePriority is not ForcedMovePriority.None
+                isLastMoveCapture: move.CapturesMask != 0,
+                isLastMoveForced: move.ForcedMovePriority is not ForcedMovePriority.None
             );
 
             board.UndoMove(undo);
@@ -112,15 +121,16 @@ internal class SearchThread(
             }
             if (alpha >= beta)
             {
+                _killerMoves[depth, 1] = _killerMoves[depth, 0];
+                _killerMoves[depth, 0] = move;
                 if (move.CapturesMask == 0 && move.PromotesTo is null)
                 {
-                    _killerMoves[depth, 1] = _killerMoves[depth, 0];
-                    _killerMoves[depth, 0] = move;
                     _historyHeuristic[move.From, move.To] += depth * depth;
                 }
                 break;
             }
         }
+
         return alpha;
     }
 

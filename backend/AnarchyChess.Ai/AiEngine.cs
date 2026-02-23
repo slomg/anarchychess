@@ -24,7 +24,10 @@ public class AiEngine(
         int moveCount = 0;
 
         _moveGenerator.Generate(board, moves, ref moveCount);
-        _moveOrdering.OrderMoves(
+        if (moveCount == 0)
+            return null;
+
+        BitMove bestMove = _moveOrdering.SelectAndPromoteHighestMove(
             board,
             depth,
             new BitMove[depth + 1, 2],
@@ -32,11 +35,6 @@ public class AiEngine(
             moves,
             moveCount
         );
-
-        if (moveCount == 0)
-            return null;
-
-        BitMove bestMove = moves[0];
         BitBoard boardCopy = new(board);
         boardCopy.MakeMove(bestMove);
 
@@ -60,26 +58,39 @@ public class AiEngine(
 
                 SearchThread search = new(_moveGenerator, _evaluator, _moveOrdering, depth);
 
-                int score = EngineConstants.AlphaStart;
-                for (int iterativeDepth = 1; iterativeDepth <= depth; iterativeDepth++)
+                int score = -search.Negamax(boardCopy, depth - 1, alpha: -alpha - 1, beta: -alpha);
+
+                if (score > alpha)
                 {
+                    List<BitMove> pv = [];
                     score = -search.Negamax(
                         boardCopy,
-                        iterativeDepth,
-                        alpha: -alpha - 1,
-                        beta: -alpha
+                        depth - 1,
+                        alpha: EngineConstants.AlphaStart,
+                        beta: EngineConstants.BetaStart
                     );
-
-                    if (score > alpha)
-                    {
-                        score = -search.Negamax(
-                            boardCopy,
-                            iterativeDepth,
-                            alpha: EngineConstants.AlphaStart,
-                            beta: EngineConstants.BetaStart
-                        );
-                    }
                 }
+
+                //int score = 0;
+                //for (int iterativeDepth = 1; iterativeDepth <= depth - 1; iterativeDepth++)
+                //{
+                //    score = -search.Negamax(
+                //        boardCopy,
+                //        iterativeDepth,
+                //        alpha: -alpha - 1,
+                //        beta: -alpha
+                //    );
+
+                //    if (score > alpha)
+                //    {
+                //        score = -search.Negamax(
+                //            boardCopy,
+                //            iterativeDepth,
+                //            alpha: EngineConstants.AlphaStart,
+                //            beta: EngineConstants.BetaStart
+                //        );
+                //    }
+                //}
 
                 scores[i] = score;
             }
@@ -94,7 +105,7 @@ public class AiEngine(
             }
         }
 
-        Console.WriteLine($"Eval: {alpha}, move count: {moveCount}");
+        Console.WriteLine($"Eval: {alpha}, move count: {moveCount}, {bestMove.From} {bestMove.To}");
 
         return bestMove;
     }
