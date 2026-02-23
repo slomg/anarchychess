@@ -136,6 +136,13 @@ public class MoveOrderingTests
     [Fact]
     public void SelectAndPromoteHighestMove_moves_highest_to_front()
     {
+        BitMove expectedBest = new()
+        {
+            From = 2,
+            To = 3,
+            Piece = new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.White },
+            CapturesMask = 1,
+        };
         Span<BitMove> moves =
         [
             new BitMove
@@ -151,27 +158,19 @@ public class MoveOrderingTests
                 Piece = new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.White },
                 PromotesTo = PieceType.Queen,
             },
-            new BitMove
-            {
-                From = 2,
-                To = 3,
-                Piece = new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.White },
-                CapturesMask = 1,
-            },
+            expectedBest,
         ];
-        BitMove[,] killers = new BitMove[1, 2];
-        int[,] history = new int[100, 100];
 
         BitMove best = _ordering.SelectAndPromoteHighestMove(
             new BitBoard(),
             0,
-            killers,
-            history,
+            new BitMove[1, 2],
+            new int[100, 100],
             moves,
             moves.Length
         );
 
-        best.Should().BeEquivalentTo(moves[2]);
+        best.Should().BeEquivalentTo(expectedBest);
         moves[0].Should().BeEquivalentTo(best);
     }
 }
