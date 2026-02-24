@@ -210,7 +210,11 @@ public class RookTestData : TheoryData<PieceTestCase>
                 .WithWhitePieceAt("b1", PieceType.Horsey)
                 .WithEnemyPieceAt("b2")
                 .WithEnemyPieceAt("c2")
-                .GoesTo("b1", captures: ["b2", "c2"])
+                .GoesTo(
+                    "b1",
+                    captures: ["b1", "b2", "c2"],
+                    specialMoveType: SpecialMoveType.KnooklearFusion
+                )
                 .GoesTo("a2", "a3", "a4", "a5", "a6", "a7", "a8", "a9", "a10")
                 .WithDescription("Knooklear fusion doesn't include origin position")
         );
