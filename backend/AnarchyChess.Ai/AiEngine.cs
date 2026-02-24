@@ -48,6 +48,7 @@ public class AiEngine(
         );
 
         int[] scores = new int[moveCount];
+        scores[0] = alpha;
 
         Parallel.For(
             1,
@@ -60,17 +61,27 @@ public class AiEngine(
 
                 SearchThread search = new(_moveGenerator, _evaluator, _moveOrdering, depth);
 
-                int score = -search.Negamax(boardCopy, depth - 1, alpha: -alpha - 1, beta: -alpha);
+                int localAlpha = alpha;
+                int score = -search.Negamax(
+                    boardCopy,
+                    depth - 1,
+                    alpha: -localAlpha - 1,
+                    beta: -localAlpha
+                );
 
-                if (score > alpha)
+                if (score > localAlpha)
                 {
-                    List<BitMove> pv = [];
                     score = -search.Negamax(
                         boardCopy,
                         depth - 1,
                         alpha: EngineConstants.AlphaStart,
                         beta: EngineConstants.BetaStart
                     );
+                    scores[i] = score;
+                }
+                else
+                {
+                    scores[i] = int.MinValue;
                 }
 
                 //int score = 0;
@@ -94,20 +105,30 @@ public class AiEngine(
                 //    }
                 //}
 
-                scores[i] = score;
+                int oldAlpha;
+                do
+                {
+                    oldAlpha = alpha;
+                    if (score <= oldAlpha)
+                        break;
+                } while (Interlocked.CompareExchange(ref alpha, score, oldAlpha) != oldAlpha);
             }
         );
 
+        BitMove bestMove = moves[0];
+        int bestAlpha = scores[0];
         for (int i = 1; i < moveCount; i++)
         {
-            if (scores[i] > alpha)
+            if (scores[i] > bestAlpha)
             {
-                alpha = scores[i];
-                bestMove = moves[i];
+                bestAlpha = scores[i];
+                olderMove = moves[i];
             }
         }
 
-        Console.WriteLine($"Eval: {alpha}, move count: {moveCount}, {bestMove.From} {bestMove.To}");
+        Console.WriteLine(
+            $"Eval: {bestAlpha}, move count: {moveCount}, {olderMove.From} {olderMove.To}"
+        );
 
         return bestMove;
     }
