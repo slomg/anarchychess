@@ -203,5 +203,16 @@ public class RookTestData : TheoryData<PieceTestCase>
                 .GoesTo("a2", "b1", "c1", "d1", "e1", "f1", "g1", "h1", "i1", "j1")
                 .WithDescription("Doesn't fuse with enemy horsey")
         );
+
+        Add(
+            PieceTestCase
+                .From("a1", rook)
+                .WithWhitePieceAt("b1", PieceType.Horsey)
+                .WithEnemyPieceAt("b2")
+                .WithEnemyPieceAt("c2")
+                .GoesTo("b1", captures: ["b2", "c2"])
+                .GoesTo("a2", "a3", "a4", "a5", "a6", "a7", "a8", "a9", "a10")
+                .WithDescription("Knooklear fusion doesn't include origin position")
+        );
     }
 }

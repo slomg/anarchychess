@@ -257,7 +257,6 @@ public class BotGrain : Grain, IBotGrain
             HashSet<AlgebraicPoint> moveCaptures = [.. move.Captures.Select(c => c.Position)];
             HashSet<AlgebraicPoint> botCaptures = botMove.Captures?.ToHashSet() ?? [];
 
-            List<AlgebraicPoint> captures = [.. move.Captures.Select(x => x.Position)];
             return move.From == botMove.From
                 && move.To == botMove.To
                 && move.PromotesTo == botMove.PromotesTo
