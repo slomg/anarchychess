@@ -44,19 +44,8 @@ internal class SearchThread(
         int moveCount = 0;
         _moveGenerator.Generate(board, moves, ref moveCount);
 
-        if (
-            depth < 3
-            && moves[0].ForcedMovePriority is ForcedMovePriority.None
-            && _evaluator.Evaluate(board) + EngineConstants.FutilityMargin <= alpha
-        )
-        {
-            return alpha;
-        }
-
-        if (
-            depth > EngineConstants.NullMoveReduction + 1
-            && moves[0].ForcedMovePriority is ForcedMovePriority.None
-        )
+        bool isForced = moves[0].ForcedMovePriority is not ForcedMovePriority.None;
+        if (depth > EngineConstants.NullMoveReduction + 1 && !isForced)
         {
             NullMoveUndoState undo = board.MakeNullMove();
             int score = -Negamax(
@@ -87,55 +76,37 @@ internal class SearchThread(
         for (int i = 0; i < moveCount; i++)
         {
             BitMove move = _moveOrdering.GetNextHighestMove(i, moves, scores, moveCount);
+            bool isCapture = move.CapturesMask != 0;
+            bool isQuiet = !isCapture && !isForced && move.PromotesTo is null && !isLastMoveForced;
+
             MoveUndoState undo = board.MakeMove(move);
 
             int searchDepth = depth - 1;
-            bool reduce =
-                i > 0
-                && depth >= 3
-                && move.CapturesMask == 0
-                && move.PromotesTo is null
-                && move.ForcedMovePriority is ForcedMovePriority.None
-                && !isLastMoveForced;
+            bool reduce = i > 0 && depth >= 3 && isQuiet;
             if (reduce)
             {
                 searchDepth -= EngineConstants.LmrTable[depth, i];
             }
 
-            int score;
-            if (i == 0)
-            {
-                score = -Negamax(
-                    board,
-                    searchDepth,
-                    alpha: -beta,
-                    beta: -alpha,
-                    isLastMoveCapture: move.CapturesMask != 0,
-                    isLastMoveForced: move.ForcedMovePriority is not ForcedMovePriority.None
-                );
-            }
-            else
-            {
-                score = -Negamax(
-                    board,
-                    searchDepth,
-                    alpha: -(alpha + 1),
-                    beta: -alpha,
-                    isLastMoveCapture: move.CapturesMask != 0,
-                    isLastMoveForced: move.ForcedMovePriority is not ForcedMovePriority.None
-                );
+            int score = -Negamax(
+                board,
+                searchDepth,
+                alpha: -beta,
+                beta: -alpha,
+                isLastMoveCapture: isCapture,
+                isLastMoveForced: isForced
+            );
 
-                if (score > alpha && score < beta)
-                {
-                    score = -Negamax(
-                        board,
-                        depth - 1,
-                        alpha: -beta,
-                        beta: -alpha,
-                        isLastMoveCapture: move.CapturesMask != 0,
-                        isLastMoveForced: move.ForcedMovePriority is not ForcedMovePriority.None
-                    );
-                }
+            if (reduce && score > alpha)
+            {
+                score = -Negamax(
+                    board,
+                    depth - 1,
+                    -beta,
+                    -alpha,
+                    isLastMoveCapture: isCapture,
+                    isLastMoveForced: isForced
+                );
             }
 
             board.UndoMove(undo);

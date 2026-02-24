@@ -6,7 +6,6 @@ public static class EngineConstants
     public const int BetaStart = 10_000_000;
 
     public const int NullMoveReduction = 2;
-    public const int FutilityMargin = 350;
     public const int MaxMoves = 256;
     public const int MaxDepth = 32;
 
@@ -20,7 +19,7 @@ public static class EngineConstants
             for (int move = 1; move < MaxMoves; move++)
             {
                 int reduction = (int)Math.Round(0.99 + Math.Log(depth) * Math.Log(move) / 3.14);
-                if (depth - reduction < 2)
+                if (depth > 2 && depth - reduction < 2)
                 {
                     reduction = depth - 2;
                 }
