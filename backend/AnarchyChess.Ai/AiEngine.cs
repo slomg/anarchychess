@@ -122,12 +122,12 @@ public class AiEngine(
             if (scores[i] > bestAlpha)
             {
                 bestAlpha = scores[i];
-                olderMove = moves[i];
+                bestMove = moves[i];
             }
         }
 
         Console.WriteLine(
-            $"Eval: {bestAlpha}, move count: {moveCount}, {olderMove.From} {olderMove.To}"
+            $"Eval: {bestAlpha}, move count: {moveCount}, {bestMove.From} {bestMove.To}"
         );
 
         return bestMove;
