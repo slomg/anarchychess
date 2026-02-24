@@ -27,7 +27,7 @@ public class AiEngine(
         if (moveCount == 0)
             return null;
 
-        BitMove bestMove = _moveOrdering.SelectAndPromoteHighestMove(
+        _moveOrdering.SortMoves(
             board,
             depth,
             new BitMove[depth + 1, 2],
@@ -35,11 +35,13 @@ public class AiEngine(
             moves,
             moveCount
         );
-        BitBoard boardCopy = new(board);
-        boardCopy.MakeMove(bestMove);
+
+        BitBoard olderBoardCopy = new(board);
+        BitMove olderMove = moves[0];
+        olderBoardCopy.MakeMove(olderMove);
 
         int alpha = -new SearchThread(_moveGenerator, _evaluator, _moveOrdering, depth).Negamax(
-            boardCopy,
+            olderBoardCopy,
             depth - 1,
             alpha: EngineConstants.AlphaStart,
             beta: EngineConstants.BetaStart

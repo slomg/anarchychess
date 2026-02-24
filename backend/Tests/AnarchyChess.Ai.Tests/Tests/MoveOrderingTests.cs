@@ -9,19 +9,8 @@ public class MoveOrderingTests
 {
     private readonly MoveOrdering _ordering = new();
 
-    private void OrderMoves(BitBoard board, BitMove[,] killers, int[,] history, Span<BitMove> moves)
-    {
-        Span<int> scores = stackalloc int[moves.Length];
-        _ordering.ScoreMoves(board, depth: 0, killers, history, scores, moves, moves.Length);
-
-        for (int i = 0; i < moves.Length; i++)
-        {
-            moves[i] = _ordering.GetNextHighestMove(i, moves, scores, moves.Length);
-        }
-    }
-
     [Fact]
-    public void OrderMoves_correctly_prioritizes_all_types()
+    public void SortMoves_correctly_prioritizes_all_types()
     {
         BitMove killer = new()
         {
@@ -61,7 +50,14 @@ public class MoveOrderingTests
         killers[0, 0] = killer;
 
         Span<BitMove> moves = [quiet, capture, special, promotion, killer];
-        OrderMoves(new BitBoard(), killers, new int[100, 100], moves);
+        _ordering.SortMoves(
+            new BitBoard(),
+            depth: 0,
+            killers,
+            new int[100, 100],
+            moves,
+            moves.Length
+        );
 
         moves[0].Should().BeEquivalentTo(killer);
         moves[1].Should().BeEquivalentTo(capture);
@@ -71,7 +67,7 @@ public class MoveOrderingTests
     }
 
     [Fact]
-    public void OrderMoves_sorts_captures_by_mvv_lva()
+    public void SortMoves_sorts_captures_by_mvv_lva()
     {
         BitBoard board = BitBoard.FromPieces(
             new()
@@ -100,14 +96,21 @@ public class MoveOrderingTests
         };
 
         Span<BitMove> moves = [badCapture, goodCapture];
-        OrderMoves(board, new BitMove[1, 2], new int[100, 100], moves);
+        _ordering.SortMoves(
+            board,
+            depth: 0,
+            new BitMove[1, 2],
+            new int[100, 100],
+            moves,
+            moves.Length
+        );
 
         moves[0].Should().BeEquivalentTo(goodCapture);
         moves[1].Should().BeEquivalentTo(badCapture);
     }
 
     [Fact]
-    public void OrderMoves_prioritizes_quiet_moves_by_history_heuristic()
+    public void SortMoves_prioritizes_quiet_moves_by_history_heuristic()
     {
         BitMove moveLow = new()
         {
@@ -127,50 +130,133 @@ public class MoveOrderingTests
         history[moveHigh.From, moveHigh.To] = 50;
 
         Span<BitMove> moves = [moveLow, moveHigh];
-        OrderMoves(new BitBoard(), new BitMove[1, 2], history, moves);
+        _ordering.SortMoves(
+            new BitBoard(),
+            depth: 0,
+            new BitMove[1, 2],
+            history,
+            moves,
+            moves.Length
+        );
 
         moves[0].Should().BeEquivalentTo(moveHigh);
         moves[1].Should().BeEquivalentTo(moveLow);
     }
 
     [Fact]
-    public void SelectAndPromoteHighestMove_moves_highest_to_front()
+    public void ScoreMoves_fills_scores_array_correctly()
     {
-        BitMove expectedBest = new()
+        BitMove move1 = new()
+        {
+            From = 0,
+            To = 1,
+            Piece = new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.White },
+        };
+        BitMove move2 = new()
         {
             From = 2,
             To = 3,
-            Piece = new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.White },
-            CapturesMask = 1,
+            Piece = new BitPiece { Type = PieceType.Rook, Color = BitPieceColor.White },
         };
-        Span<BitMove> moves =
-        [
-            new BitMove
-            {
-                From = 0,
-                To = 1,
-                Piece = new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.White },
-            },
-            new BitMove
-            {
-                From = 0,
-                To = 1,
-                Piece = new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.White },
-                PromotesTo = PieceType.Queen,
-            },
-            expectedBest,
-        ];
+        BitMove move3 = new()
+        {
+            From = 4,
+            To = 5,
+            Piece = new BitPiece { Type = PieceType.Queen, Color = BitPieceColor.White },
+        };
 
-        BitMove best = _ordering.SelectAndPromoteHighestMove(
+        Span<BitMove> moves = [move1, move2, move3];
+        Span<int> scores = stackalloc int[moves.Length];
+
+        int[,] history = new int[100, 100];
+        history[move1.From, move1.To] = 5;
+        history[move2.From, move2.To] = 10;
+        history[move3.From, move3.To] = 20;
+
+        _ordering.ScoreMoves(
             new BitBoard(),
-            0,
-            new BitMove[1, 2],
-            new int[100, 100],
-            moves,
-            moves.Length
+            depth: 0,
+            killerMoves: new BitMove[1, 2],
+            historyHeuristic: history,
+            scores: scores,
+            moves: moves,
+            moveCount: moves.Length
         );
 
-        best.Should().BeEquivalentTo(expectedBest);
-        moves[0].Should().BeEquivalentTo(best);
+        scores[0].Should().Be(5);
+        scores[1].Should().Be(10);
+        scores[2].Should().Be(20);
+    }
+
+    [Fact]
+    public void GetNextHighestMove_selects_and_swaps_highest_move()
+    {
+        BitMove move1 = new()
+        {
+            From = 0,
+            To = 1,
+            Piece = new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.White },
+        };
+        BitMove move2 = new()
+        {
+            From = 2,
+            To = 3,
+            Piece = new BitPiece { Type = PieceType.Rook, Color = BitPieceColor.White },
+        };
+        BitMove move3 = new()
+        {
+            From = 4,
+            To = 5,
+            Piece = new BitPiece { Type = PieceType.Queen, Color = BitPieceColor.White },
+        };
+
+        Span<BitMove> moves = [move1, move2, move3];
+        Span<int> scores = [10, 30, 20];
+
+        BitMove best0 = _ordering.GetNextHighestMove(0, moves, scores, moves.Length);
+
+        best0.Should().Be(move2);
+        moves[0].Should().Be(move2);
+        moves[1].Should().Be(move1);
+        moves[2].Should().Be(move3);
+        scores[0].Should().Be(30);
+        scores[1].Should().Be(10);
+        scores[2].Should().Be(20);
+    }
+
+    [Fact]
+    public void GetNextHighestMove_selects_next_highest_move_at_later_index()
+    {
+        BitMove move1 = new()
+        {
+            From = 0,
+            To = 1,
+            Piece = new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.White },
+        };
+        BitMove move2 = new()
+        {
+            From = 2,
+            To = 3,
+            Piece = new BitPiece { Type = PieceType.Rook, Color = BitPieceColor.White },
+        };
+        BitMove move3 = new()
+        {
+            From = 4,
+            To = 5,
+            Piece = new BitPiece { Type = PieceType.Queen, Color = BitPieceColor.White },
+        };
+
+        Span<BitMove> moves = [move1, move2, move3];
+        Span<int> scores = [30, 10, 20];
+
+        BitMove best1 = _ordering.GetNextHighestMove(1, moves, scores, moves.Length);
+
+        best1.Should().Be(move3);
+        moves[0].Should().Be(move1);
+        moves[1].Should().Be(move3);
+        moves[2].Should().Be(move2);
+        scores[0].Should().Be(30);
+        scores[1].Should().Be(20);
+        scores[2].Should().Be(10);
     }
 }

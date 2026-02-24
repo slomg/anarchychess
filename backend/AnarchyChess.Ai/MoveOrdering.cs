@@ -7,14 +7,6 @@ namespace AnarchyChess.Ai;
 
 public interface IMoveOrdering
 {
-    BitMove SelectAndPromoteHighestMove(
-        BitBoard board,
-        int depth,
-        BitMove[,] killerMoves,
-        int[,] historyHeuristic,
-        Span<BitMove> moves,
-        int moveCount
-    );
     void ScoreMoves(
         BitBoard board,
         int depth,
@@ -25,35 +17,18 @@ public interface IMoveOrdering
         int moveCount
     );
     BitMove GetNextHighestMove(int i, Span<BitMove> moves, Span<int> scores, int moveCount);
+    void SortMoves(
+        BitBoard board,
+        int depth,
+        BitMove[,] killers,
+        int[,] history,
+        Span<BitMove> moves,
+        int moveCount
+    );
 }
 
 public sealed class MoveOrdering : IMoveOrdering
 {
-    public BitMove SelectAndPromoteHighestMove(
-        BitBoard board,
-        int depth,
-        BitMove[,] killerMoves,
-        int[,] historyHeuristic,
-        Span<BitMove> moves,
-        int moveCount
-    )
-    {
-        int bestScore = 0;
-        BitMove bestMove = default;
-        for (int i = 0; i < moveCount; i++)
-        {
-            BitMove move = moves[i];
-            int score = ScoreMove(move, board, depth, killerMoves, historyHeuristic);
-            if (score > bestScore)
-            {
-                bestScore = score;
-                bestMove = move;
-                (moves[0], moves[i]) = (moves[i], moves[0]);
-            }
-        }
-        return bestMove;
-    }
-
     public void ScoreMoves(
         BitBoard board,
         int depth,
@@ -136,5 +111,67 @@ public sealed class MoveOrdering : IMoveOrdering
         }
 
         return historyHeuristic[move.From, move.To];
+    }
+
+    public void SortMoves(
+        BitBoard board,
+        int depth,
+        BitMove[,] killers,
+        int[,] history,
+        Span<BitMove> moves,
+        int moveCount
+    )
+    {
+        Span<int> scores = stackalloc int[moveCount];
+        ScoreMoves(board, depth, killers, history, scores, moves, moveCount);
+
+        QuickSort(moves, scores, 0, moveCount - 1);
+    }
+
+    private static void QuickSort(Span<BitMove> moves, Span<int> scores, int left, int right)
+    {
+        while (left < right)
+        {
+            int i = left;
+            int j = right;
+            int pivot = scores[(left + right) >> 1];
+
+            while (i <= j)
+            {
+                while (scores[i] > pivot)
+                {
+                    i++;
+                }
+                while (scores[j] < pivot)
+                {
+                    j--;
+                }
+
+                if (i <= j)
+                {
+                    (scores[i], scores[j]) = (scores[j], scores[i]);
+                    (moves[i], moves[j]) = (moves[j], moves[i]);
+                    i++;
+                    j--;
+                }
+            }
+
+            if (j - left < right - i)
+            {
+                if (left < j)
+                {
+                    QuickSort(moves, scores, left, j);
+                }
+                left = i;
+            }
+            else
+            {
+                if (i < right)
+                {
+                    QuickSort(moves, scores, i, right);
+                }
+                right = j;
+            }
+        }
     }
 }
