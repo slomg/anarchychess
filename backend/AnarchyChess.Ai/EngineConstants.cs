@@ -19,9 +19,13 @@ public static class EngineConstants
         {
             for (int move = 1; move < MaxMoves; move++)
             {
-                double reduction = 0.99 + Math.Log(depth) * Math.Log(move) / 3.14;
+                int reduction = (int)Math.Round(0.99 + Math.Log(depth) * Math.Log(move) / 3.14);
+                if (depth - reduction < 2)
+                {
+                    reduction = depth - 2;
+                }
 
-                lmr[depth, move] = (int)Math.Round(reduction);
+                lmr[depth, move] = reduction;
             }
         }
         return lmr;

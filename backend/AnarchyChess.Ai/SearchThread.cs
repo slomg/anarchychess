@@ -90,28 +90,53 @@ internal class SearchThread(
             MoveUndoState undo = board.MakeMove(move);
 
             int searchDepth = depth - 1;
-
-            if (
+            bool reduce =
                 i > 0
                 && depth >= 3
                 && move.CapturesMask == 0
                 && move.PromotesTo is null
                 && move.ForcedMovePriority is ForcedMovePriority.None
-                && !isLastMoveForced
-            )
+                && !isLastMoveForced;
+            if (reduce)
             {
-                int reduction = EngineConstants.LmrTable[depth, i];
-                searchDepth -= Math.Min(reduction, depth - 2);
+                searchDepth -= EngineConstants.LmrTable[depth, i];
             }
 
-            int score = -Negamax(
-                board,
-                searchDepth,
-                alpha: -beta,
-                beta: -alpha,
-                isLastMoveCapture: move.CapturesMask != 0,
-                isLastMoveForced: move.ForcedMovePriority is not ForcedMovePriority.None
-            );
+            int score;
+            if (i == 0)
+            {
+                score = -Negamax(
+                    board,
+                    searchDepth,
+                    alpha: -beta,
+                    beta: -alpha,
+                    isLastMoveCapture: move.CapturesMask != 0,
+                    isLastMoveForced: move.ForcedMovePriority is not ForcedMovePriority.None
+                );
+            }
+            else
+            {
+                score = -Negamax(
+                    board,
+                    searchDepth,
+                    alpha: -(alpha + 1),
+                    beta: -alpha,
+                    isLastMoveCapture: move.CapturesMask != 0,
+                    isLastMoveForced: move.ForcedMovePriority is not ForcedMovePriority.None
+                );
+
+                if (score > alpha && score < beta)
+                {
+                    score = -Negamax(
+                        board,
+                        depth - 1,
+                        alpha: -beta,
+                        beta: -alpha,
+                        isLastMoveCapture: move.CapturesMask != 0,
+                        isLastMoveForced: move.ForcedMovePriority is not ForcedMovePriority.None
+                    );
+                }
+            }
 
             board.UndoMove(undo);
 
