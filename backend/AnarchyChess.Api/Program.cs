@@ -529,6 +529,7 @@ builder.Services.AddScoped<IChallengeRequestCreator, ChallengeRequestCreator>();
 
 #region Anarchy Bot
 builder.Services.AddSingleton<IBotService, BotService>();
+builder.Services.AddSingleton<IBotMoveRunner, BotMoveRunner>();
 builder.Services.AddSingleton<IBotNotifier, BotNotifier>();
 builder.Services.AddCodeFirstGrpcClient<IAiEngineService>(client =>
 {

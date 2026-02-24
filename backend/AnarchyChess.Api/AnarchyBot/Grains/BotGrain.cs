@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using AnarchyChess.Ai.Service.DTO;
 using AnarchyChess.Api.AnarchyBot.Errors;
 using AnarchyChess.Api.AnarchyBot.Models;
 using AnarchyChess.Api.AnarchyBot.Services;
@@ -31,6 +32,12 @@ public interface IBotGrain : IGrainWithStringKey
     Task<ErrorOr<Success>> PlayMoveAsync(
         UserId userId,
         MoveKey moveKey,
+        CancellationToken token = default
+    );
+
+    [Alias("PlayBotMoveAsync")]
+    Task PlayBotMoveAsync(
+        ErrorOr<AiEngineMoveReply> botMoveResult,
         CancellationToken token = default
     );
 
@@ -79,7 +86,7 @@ public class BotGrain : Grain, IBotGrain
     private readonly ILogger<BotGrain> _logger;
     private readonly IPersistentState<BotGrainState> _state;
     private readonly IGameCore _core;
-    private readonly IBotService _botService;
+    private readonly IBotMoveRunner _botMoveRunner;
     private readonly IBotNotifier _notifier;
     private readonly IGameArchiveService _gameArchiveService;
     private readonly IGameResultDescriber _gameResultDescriber;
@@ -90,7 +97,7 @@ public class BotGrain : Grain, IBotGrain
         ILogger<BotGrain> logger,
         [PersistentState(StateName)] IPersistentState<BotGrainState> state,
         IGameCore core,
-        IBotService botService,
+        IBotMoveRunner botMoveRunner,
         IBotNotifier notifier,
         IGameArchiveService gameArchiveService,
         IGameResultDescriber gameResultDescriber,
@@ -102,7 +109,7 @@ public class BotGrain : Grain, IBotGrain
         _logger = logger;
         _state = state;
         _core = core;
-        _botService = botService;
+        _botMoveRunner = botMoveRunner;
         _notifier = notifier;
         _gameArchiveService = gameArchiveService;
         _gameResultDescriber = gameResultDescriber;
@@ -134,7 +141,8 @@ public class BotGrain : Grain, IBotGrain
 
         if (player.Color is GameColor.Black)
         {
-            await PlayBotMoveAsync(_state.State.CurrentGame, token);
+            IReadOnlyChessBoard board = _core.GetReadOnlyBoard(_state.State.CurrentGame.Core);
+            _botMoveRunner.RunMove(board, _gameToken);
         }
 
         await _state.WriteStateAsync(token);
@@ -193,7 +201,8 @@ public class BotGrain : Grain, IBotGrain
         }
         else if (nextSideToMove == game.BotColor)
         {
-            await PlayBotMoveAsync(game, token);
+            IReadOnlyChessBoard board = _core.GetReadOnlyBoard(game.Core);
+            _botMoveRunner.RunMove(board, _gameToken);
         }
 
         await _state.WriteStateAsync(token);
@@ -220,11 +229,16 @@ public class BotGrain : Grain, IBotGrain
         return Result.Success;
     }
 
-    private async Task PlayBotMoveAsync(BotGameData game, CancellationToken token = default)
+    public async Task PlayBotMoveAsync(
+        ErrorOr<AiEngineMoveReply> botMoveResult,
+        CancellationToken token = default
+    )
     {
-        IReadOnlyChessBoard board = _core.GetReadOnlyBoard(game.Core);
+        if (!TryGetOngoingGame(out var game))
+        {
+            return;
+        }
 
-        var botMoveResult = await _botService.FindBestMoveAsync(board, token);
         if (botMoveResult.FirstError == BotErrors.BotOffline)
         {
             await EndGameAsync(_gameResultDescriber.BotOffline(game.BotColor), game, token);
@@ -279,6 +293,7 @@ public class BotGrain : Grain, IBotGrain
         {
             await EndGameAsync(moveResult.EndStatus, game, token);
         }
+        await _state.WriteStateAsync(token);
     }
 
     private async Task EndGameAsync(

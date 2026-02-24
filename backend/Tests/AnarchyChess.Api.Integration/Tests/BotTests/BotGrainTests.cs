@@ -15,12 +15,14 @@ using AnarchyChess.Api.Shared.Services;
 using AnarchyChess.Api.TestInfrastructure;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AnarchyChess.Api.TestInfrastructure.NSubtituteExtenstion;
+using AnarchyChess.Api.TestInfrastructure.Utils;
 using AnarchyChess.EngineShared;
 using AnarchyChess.EngineShared.Extensions;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
+using Orleans.TestKit;
 using Orleans.TestKit.Storage;
 
 namespace AnarchyChess.Api.Integration.Tests.BotTests;
@@ -72,11 +74,13 @@ public class BotGrainTests : BaseOrleansIntegrationTest
             ApiTestBase.Scope.ServiceProvider.GetRequiredService<IGameArchiveService>();
         var unitOfWork = ApiTestBase.Scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
+        BotMoveRunner botMoveRunner = new(_anarchyBotServiceMock, Silo.GrainFactory);
+
         Silo.ServiceProvider.AddService(_core);
         Silo.ServiceProvider.AddService(_gameResultDescriber);
         Silo.ServiceProvider.AddService(gameArchiveService);
         Silo.ServiceProvider.AddService(unitOfWork);
-        Silo.ServiceProvider.AddService(_anarchyBotServiceMock);
+        Silo.ServiceProvider.AddService<IBotMoveRunner>(botMoveRunner);
         Silo.ServiceProvider.AddService(_notifierMock);
 
         _state = Silo.StorageManager.GetStorage<BotGrainState>(BotGrain.StateName).State;
@@ -119,9 +123,7 @@ public class BotGrainTests : BaseOrleansIntegrationTest
                 },
                 options => options.Excluding(x => x.MoveHistory)
             );
-        _state
-            .CurrentGame.MoveHistory.Moves.Should()
-            .HaveCount(playerColor is GameColor.White ? 0 : 1);
+        _state.CurrentGame.MoveHistory.Moves.Should().HaveCount(0);
         _stateStats.Writes.Should().BeGreaterThan(0);
     }
 
@@ -208,6 +210,7 @@ public class BotGrainTests : BaseOrleansIntegrationTest
     {
         var grain = await Silo.CreateGrainAsync<BotGrain>(_gameToken);
         await StartGameAsync(grain, _blackPlayer);
+        await WaitForBotMoveAsync();
 
         AiEngineMoveReply secondBotMove = new(
             From: new("f1"),
@@ -216,7 +219,7 @@ public class BotGrainTests : BaseOrleansIntegrationTest
             PromotesTo: null
         );
         _anarchyBotServiceMock
-            .FindBestMoveAsync(_state.CurrentGame!.Core.Board, ApiTestBase.CT)
+            .FindBestMoveAsync(_state.CurrentGame!.Core.Board, Arg.Any<CancellationToken>())
             .Returns(secondBotMove);
         _notifierMock.ClearReceivedCalls();
 
@@ -232,27 +235,29 @@ public class BotGrainTests : BaseOrleansIntegrationTest
         var grain = await Silo.CreateGrainAsync<BotGrain>(_gameToken);
         await StartGameAsync(grain, _whitePlayer);
 
+        AiEngineMoveReply botMove1 = new(
+            From: new("g9"),
+            To: new("g7"),
+            Captures: [],
+            PromotesTo: null
+        );
+        AiEngineMoveReply botMove2 = new(
+            From: new("f9"),
+            To: new("f6"),
+            Captures: [],
+            PromotesTo: null
+        );
         _anarchyBotServiceMock
-            .FindBestMoveAsync(_state.CurrentGame!.Core.Board, ApiTestBase.CT)
-            .Returns(
-                new AiEngineMoveReply(
-                    From: new("g9"),
-                    To: new("g7"),
-                    Captures: [],
-                    PromotesTo: null
-                ),
-                new AiEngineMoveReply(
-                    From: new("f9"),
-                    To: new("f6"),
-                    Captures: [],
-                    PromotesTo: null
-                )
-            );
+            .FindBestMoveAsync(_state.CurrentGame!.Core.Board, Arg.Any<CancellationToken>())
+            .Returns(botMove1, botMove2);
+
         Move move1 = new(from: new("f2"), new("f5"), piece: new(PieceType.Queen, GameColor.White));
         Move move2 = new(from: new("e1"), new("j6"), piece: new(PieceType.Queen, GameColor.White));
         Move move3 = new(from: new("j6"), new("f10"), piece: new(PieceType.Queen, GameColor.White));
         await grain.PlayMoveAsync(_whitePlayer.UserId, new(move1), ApiTestBase.CT);
+        await AssertBotMoveAsync(botMove1);
         await grain.PlayMoveAsync(_whitePlayer.UserId, new(move2), ApiTestBase.CT);
+        await AssertBotMoveAsync(botMove2);
         await grain.PlayMoveAsync(_whitePlayer.UserId, new(move3), ApiTestBase.CT);
 
         await AssertGameEndedAsync(grain, _gameResultDescriber.KingCaptured(by: GameColor.White));
@@ -263,34 +268,36 @@ public class BotGrainTests : BaseOrleansIntegrationTest
     {
         var grain = await Silo.CreateGrainAsync<BotGrain>(_gameToken);
 
+        AiEngineMoveReply botMove1 = new(
+            From: new("f2"),
+            To: new("f5"),
+            Captures: [],
+            PromotesTo: null
+        );
+        AiEngineMoveReply botMove2 = new(
+            From: new("e1"),
+            To: new("j6"),
+            Captures: [],
+            PromotesTo: null
+        );
+        AiEngineMoveReply botMove3 = new(
+            From: new("j6"),
+            To: new("f10"),
+            Captures: [new("f10")],
+            PromotesTo: null
+        );
         _anarchyBotServiceMock
-            .FindBestMoveAsync(Arg.Any<IReadOnlyChessBoard>(), ApiTestBase.CT)
-            .Returns(
-                new AiEngineMoveReply(
-                    From: new("f2"),
-                    To: new("f5"),
-                    Captures: [],
-                    PromotesTo: null
-                ),
-                new AiEngineMoveReply(
-                    From: new("e1"),
-                    To: new("j6"),
-                    Captures: [],
-                    PromotesTo: null
-                ),
-                new AiEngineMoveReply(
-                    From: new("j6"),
-                    To: new("f10"),
-                    Captures: [new("f10")],
-                    PromotesTo: null
-                )
-            );
+            .FindBestMoveAsync(Arg.Any<IReadOnlyChessBoard>(), Arg.Any<CancellationToken>())
+            .Returns(botMove1, botMove2, botMove3);
         await StartGameAsync(grain, _blackPlayer, setMove: false);
+        await AssertBotMoveAsync(botMove1);
 
         Move move1 = new(from: new("g9"), new("g7"), piece: new(PieceType.Pawn, GameColor.Black));
         Move move2 = new(from: new("f9"), new("f6"), piece: new(PieceType.Pawn, GameColor.Black));
         await grain.PlayMoveAsync(_blackPlayer.UserId, new(move1), ApiTestBase.CT);
+        await AssertBotMoveAsync(botMove2);
         await grain.PlayMoveAsync(_blackPlayer.UserId, new(move2), ApiTestBase.CT);
+        await AssertBotMoveAsync(botMove3);
 
         await AssertGameEndedAsync(grain, _gameResultDescriber.KingCaptured(by: GameColor.White));
     }
@@ -367,34 +374,39 @@ public class BotGrainTests : BaseOrleansIntegrationTest
         if (setMove)
         {
             _anarchyBotServiceMock
-                .FindBestMoveAsync(Arg.Any<IReadOnlyChessBoard>(), ApiTestBase.CT)
+                .FindBestMoveAsync(Arg.Any<IReadOnlyChessBoard>(), Arg.Any<CancellationToken>())
                 .Returns(player.Color is GameColor.White ? _firstBlackBotMove : _firstWhiteBotMove);
         }
+        Silo.AddProbe(id => id.ToString() == _gameToken ? grain : Substitute.For<IBotGrain>());
         return grain.StartGameAsync(player ?? _player, ApiTestBase.CT);
     }
 
     private async Task AssertBotMoveAsync(AiEngineMoveReply expectedMove)
     {
-        int plyNumber = _state.CurrentGame!.MoveHistory.Moves.Count;
-        await _notifierMock
-            .Received(1)
-            .NotifyBotMadeMoveAsync(
-                _gameToken,
-                Arg.Is<MoveSnapshot>(snapshot =>
-                    snapshot.Path.FromIdx == expectedMove.From.AsIdx()
-                    && snapshot.Path.ToIdx == expectedMove.To.AsIdx()
-                    && snapshot.Path.PromotesTo == expectedMove.PromotesTo
-                    && (snapshot.Path.CapturedIdxs ?? Enumerable.Empty<byte>()).SequenceEqual(
-                        (expectedMove.Captures ?? Enumerable.Empty<AlgebraicPoint>()).Select(
-                            capture => capture.AsIdx()
-                        )
+        await Wait.UntilAsync(
+            () =>
+                _notifierMock
+                    .Received(1)
+                    .NotifyBotMadeMoveAsync(
+                        _gameToken,
+                        Arg.Is<MoveSnapshot>(snapshot =>
+                            snapshot.Path.FromIdx == expectedMove.From.AsIdx()
+                            && snapshot.Path.ToIdx == expectedMove.To.AsIdx()
+                            && snapshot.Path.PromotesTo == expectedMove.PromotesTo
+                            && (
+                                snapshot.Path.CapturedIdxs ?? Enumerable.Empty<byte>()
+                            ).SequenceEqual(
+                                (
+                                    expectedMove.Captures ?? Enumerable.Empty<AlgebraicPoint>()
+                                ).Select(capture => capture.AsIdx())
+                            )
+                        ),
+                        plyNumber: _state.CurrentGame!.MoveHistory.Moves.Count,
+                        compressedLegalMoves: Arg.Any<CompressedMoves>()
                     )
-                ),
-                plyNumber,
-                compressedLegalMoves: Arg.Any<CompressedMoves>()
-            );
+        );
 
-        MoveSnapshot lastMove = _state.CurrentGame.MoveHistory.Moves[^1];
+        MoveSnapshot lastMove = _state.CurrentGame!.MoveHistory.Moves[^1];
         lastMove.Path.FromIdx.Should().Be(expectedMove.From.AsIdx());
         lastMove.Path.ToIdx.Should().Be(expectedMove.To.AsIdx());
         lastMove.TimeLeft.Should().Be(0);
@@ -426,5 +438,16 @@ public class BotGrainTests : BaseOrleansIntegrationTest
         (await ApiTestBase.DbContext.GameArchives.FirstAsync(ApiTestBase.CT))
             .GameToken.Should()
             .Be(_gameToken);
+    }
+
+    private async Task WaitForBotMoveAsync()
+    {
+        await Wait.UntilAsync(
+            () =>
+                _notifierMock
+                    .ReceivedWithAnyArgs(1)
+                    .NotifyBotMadeMoveAsync(default, default!, default, default)
+        );
+        _notifierMock.ClearReceivedCalls();
     }
 }
