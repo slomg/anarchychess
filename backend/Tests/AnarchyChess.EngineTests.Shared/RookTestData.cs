@@ -213,6 +213,7 @@ public class RookTestData : TheoryData<PieceTestCase>
                 .GoesTo(
                     "b1",
                     captures: ["b1", "b2", "c2"],
+                    promotesTo: PieceType.Knook,
                     specialMoveType: SpecialMoveType.KnooklearFusion
                 )
                 .GoesTo("a2", "a3", "a4", "a5", "a6", "a7", "a8", "a9", "a10")
