@@ -477,6 +477,7 @@ builder.Services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
 #region Profile
 builder.Services.AddScoped<IProfileSettings, ProfileSettings>();
 builder.Services.AddScoped<IProfilePictureProvider, ProfilePictureProvider>();
+builder.Services.AddSingleton<IBotProfilePictureProvider, BotProfilePictureProvider>();
 builder.Services.AddSingleton<IValidator<ProfileEditRequest>, ProfileEditValidator>();
 builder.Services.AddSingleton<IValidator<UsernameEditRequest>, UsernameEditValidator>();
 #endregion
