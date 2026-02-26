@@ -11,7 +11,7 @@ import Card from "@/components/ui/Card";
 import ProfilePicture from "@/features/profile/components/ProfilePicture";
 
 const BotPlayOptions = () => {
-    const [selected, setSelected] = useState("Anarchy Bot");
+    const [selected, setSelected] = useState("bot:anarchybot");
     const [color, setColor] = useState<GameColor | null>(null);
     const [error, setError] = useState<string>();
 
@@ -37,7 +37,7 @@ const BotPlayOptions = () => {
                     label="Anarchy Bot"
                     userId="bot:anarchybot"
                     selected={selected}
-                    select={() => setSelected("Anarchy Bot")}
+                    select={() => setSelected("bot:anarchybot")}
                 />
 
                 <Bot
@@ -106,7 +106,7 @@ const Bot = ({
             className={clsx(
                 `outline-accent flex h-min w-min flex-col items-center gap-1
                 rounded-xl p-2`,
-                selected === label && "outline-4",
+                selected === userId && "outline-4",
                 disabled &&
                     "cursor-not-allowed brightness-75 grayscale select-none",
                 !disabled && "cursor-pointer",
