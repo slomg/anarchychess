@@ -8,6 +8,7 @@ namespace AnarchyChess.Api.AnarchyBot.Models;
 public record BotGameState(
     GamePlayer WhitePlayer,
     GamePlayer BlackPlayer,
+    GameColor BotColor,
     GameColor SideToMove,
     string InitialFen,
     IReadOnlyList<MoveSnapshot> MoveHistory,

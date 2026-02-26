@@ -357,6 +357,7 @@ public class BotGrainTests : BaseOrleansIntegrationTest
                 CountryCode: "XX",
                 Rating: 161660
             ),
+            BotColor: GameColor.Black,
             SideToMove: GameColor.White,
             InitialFen: _state.CurrentGame.InitialFen,
             MoveHistory: [],

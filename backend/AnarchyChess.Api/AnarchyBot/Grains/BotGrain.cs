@@ -334,6 +334,7 @@ public class BotGrain : Grain, IBotGrain
         new(
             WhitePlayer: game.Players.WhitePlayer,
             BlackPlayer: game.Players.BlackPlayer,
+            BotColor: game.BotColor,
             SideToMove: _core.SideToMove(game.Core),
             InitialFen: game.InitialFen,
             MoveHistory: game.MoveHistory.Moves,
