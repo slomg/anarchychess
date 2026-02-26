@@ -1,15 +1,14 @@
 "use client";
 
-import Image, { StaticImageData } from "next/image";
 import { useState } from "react";
 import clsx from "clsx";
 
-import AnarchyBotPfp from "@public/assets/bots/anarchybot.png";
 import Selector from "@/components/ui/Selector";
 import useBotMatch from "../hooks/useBotMatch";
 import Button from "@/components/ui/Button";
 import { GameColor } from "@/lib/apiClient";
 import Card from "@/components/ui/Card";
+import ProfilePicture from "@/features/profile/components/ProfilePicture";
 
 const BotPlayOptions = () => {
     const [selected, setSelected] = useState("Anarchy Bot");
@@ -33,20 +32,17 @@ const BotPlayOptions = () => {
             className="relative h-full w-full min-w-xs flex-col gap-3
                 overflow-auto lg:max-w-sm"
         >
-            <div
-                className="flex gap-4 text-center text-nowrap lg:grid
-                    lg:grid-cols-2"
-            >
+            <div className="flex flex-wrap gap-4 text-center">
                 <Bot
-                    name="Anarchy Bot"
-                    profilePicture={AnarchyBotPfp}
+                    label="Anarchy Bot"
+                    userId="bot:anarchybot"
                     selected={selected}
                     select={() => setSelected("Anarchy Bot")}
                 />
 
                 <Bot
-                    name="Coming Soon™"
-                    profilePicture={AnarchyBotPfp}
+                    label="Lobotomized Anarchy Bot"
+                    userId="bot:lobotomized-anarchybot"
                     selected={selected}
                     disabled
                 />
@@ -93,14 +89,14 @@ const BotPlayOptions = () => {
 export default BotPlayOptions;
 
 const Bot = ({
-    name,
-    profilePicture,
+    label,
+    userId,
     selected,
     select,
     disabled = false,
 }: {
-    name: string;
-    profilePicture: StaticImageData;
+    label: string;
+    userId: string;
     selected: string;
     select?: () => void;
     disabled?: boolean;
@@ -108,23 +104,17 @@ const Bot = ({
     return (
         <div
             className={clsx(
-                "outline-accent flex flex-col items-center gap-1 rounded-xl p-2",
-                selected === name && "outline-4",
+                `outline-accent flex h-min w-min flex-col items-center gap-1
+                rounded-xl p-2`,
+                selected === label && "outline-4",
                 disabled &&
                     "cursor-not-allowed brightness-75 grayscale select-none",
                 !disabled && "cursor-pointer",
             )}
             onClick={select}
         >
-            <Image
-                src={profilePicture}
-                className="rounded-md"
-                width={150}
-                height={150}
-                alt={name}
-                draggable={false}
-            />
-            <p>{name}</p>
+            <ProfilePicture userId={userId} size={100} />
+            <p className="text-balance">{label}</p>
         </div>
     );
 };
