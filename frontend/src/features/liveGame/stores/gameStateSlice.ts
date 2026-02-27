@@ -3,6 +3,7 @@ import { StateCreator } from "zustand";
 import {
     Clocks,
     DrawState,
+    GameColor,
     GamePlayer,
     GameResultData,
     PoolKey,
@@ -25,6 +26,7 @@ export interface GameStateSliceProps {
 }
 
 export interface GameStateSlice extends GameStateSliceProps {
+    getPlayerByColor(color: GameColor): GamePlayer;
     decrementDrawCooldown(): void;
     drawStateChange(drawState: DrawState): void;
     endGame(
@@ -46,6 +48,11 @@ export function createGameStateSlice(
 > {
     return (set, get, store) => ({
         ...initState,
+
+        getPlayerByColor(color) {
+            const { whitePlayer, blackPlayer } = get();
+            return color === GameColor.WHITE ? whitePlayer : blackPlayer;
+        },
 
         decrementDrawCooldown() {
             set((state) => {
