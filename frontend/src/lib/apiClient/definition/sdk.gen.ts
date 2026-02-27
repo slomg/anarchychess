@@ -127,12 +127,6 @@ import type {
     StartBotGameData,
     StartBotGameErrors,
     StartBotGameResponses,
-    TestAuthedData,
-    TestAuthedErrors,
-    TestAuthedResponses,
-    TestGuestData,
-    TestGuestErrors,
-    TestGuestResponses,
     UnblockUserData,
     UnblockUserErrors,
     UnblockUserResponses,
@@ -535,24 +529,6 @@ export const createGuestUser = <ThrowOnError extends boolean = false>(
         unknown,
         ThrowOnError
     >({ url: "/api/Auth/guest", ...options });
-
-export const testAuthed = <ThrowOnError extends boolean = false>(
-    options?: Options<TestAuthedData, ThrowOnError>,
-) =>
-    (options?.client ?? client).post<
-        TestAuthedResponses,
-        TestAuthedErrors,
-        ThrowOnError
-    >({ url: "/api/Auth/test-auth", ...options });
-
-export const testGuest = <ThrowOnError extends boolean = false>(
-    options?: Options<TestGuestData, ThrowOnError>,
-) =>
-    (options?.client ?? client).post<
-        TestGuestResponses,
-        TestGuestErrors,
-        ThrowOnError
-    >({ url: "/api/Auth/test-guest-auth", ...options });
 
 export const oAuthCallback = <ThrowOnError extends boolean = false>(
     options: Options<OAuthCallbackData, ThrowOnError>,
