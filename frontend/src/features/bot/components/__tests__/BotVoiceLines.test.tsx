@@ -1,4 +1,6 @@
+import { render, screen } from "@testing-library/react";
 import { StoreApi } from "zustand";
+import { act } from "react";
 
 import {
     ChessboardStore,
@@ -7,27 +9,25 @@ import {
 import createLiveChessStore, {
     LiveChessStore,
 } from "@/features/liveGame/stores/liveChessStore";
-
-import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
-import { EventHandlers } from "@/features/signalR/hooks/useSignalREvent";
-import { BotClientEvents, useBotEvent } from "../../hooks/useBotHub";
 import useBotVoiceLines, {
     VoiceLineContext,
 } from "../../hooks/useBotVoiceLines";
-import { render, screen } from "@testing-library/react";
+
 import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardStoreContext";
-import LiveChessStoreContext from "@/features/liveGame/contexts/liveChessContext";
-import BotVoiceLines from "../BotVoiceLines";
-import { GameColor, MoveSnapshot } from "@/lib/apiClient";
-import { act } from "react";
-import { createFakeMoveSnapshot } from "@/lib/testUtils/fakers/moveSnapshotFaker";
-import PositionHistory from "@/features/chessboard/lib/positionHistory";
-import BoardPieces from "@/features/chessboard/lib/boardPieces";
-import { createFakeBoardPieces } from "@/lib/testUtils/fakers/chessboardFakers";
+import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
 import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
+import LiveChessStoreContext from "@/features/liveGame/contexts/liveChessContext";
+import { createFakeMoveSnapshot } from "@/lib/testUtils/fakers/moveSnapshotFaker";
+import { createFakeBoardPieces } from "@/lib/testUtils/fakers/chessboardFakers";
+import { EventHandlers } from "@/features/signalR/hooks/useSignalREvent";
+import PositionHistory from "@/features/chessboard/lib/positionHistory";
+import { BotClientEvents, useBotEvent } from "../../hooks/useBotHub";
 import { decodeMovePath } from "@/features/liveGame/lib/moveDecoder";
-import constants from "@/lib/constants";
+import BoardPieces from "@/features/chessboard/lib/boardPieces";
 import { PlayerType } from "@/features/liveGame/lib/types";
+import { GameColor, MoveSnapshot } from "@/lib/apiClient";
+import BotVoiceLines from "../BotVoiceLines";
+import constants from "@/lib/constants";
 
 vi.mock("../../hooks/useBotVoiceLines");
 vi.mock("@/features/bot/hooks/useBotHub");
