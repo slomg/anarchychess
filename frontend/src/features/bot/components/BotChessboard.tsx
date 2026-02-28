@@ -29,8 +29,8 @@ import useBotMoveEmitter from "../hooks/useBotMoveEmitter";
 import useLiveBotEvents from "../hooks/useLiveBotEvents";
 import BotGameOverPopup from "./BotGameOverPopup";
 import { BotGameState } from "@/lib/apiClient";
+import BotVoiceLines from "./BotVoiceLines";
 import useConst from "@/hooks/useConst";
-import Card from "@/components/ui/Card";
 
 const BotChessboard = ({
     gameToken,
@@ -97,12 +97,15 @@ const BotChessboard = ({
                     aside={
                         <aside
                             className="grid h-full w-full min-w-xs
-                                grid-rows-[minmax(100px,2fr)_100px_200px] gap-3
-                                overflow-auto lg:max-w-sm"
+                                grid-rows-[152px_minmax(100px,2fr)_100px] gap-3
+                                lg:max-w-md"
                         >
+                            <BotVoiceLines
+                                botColor={gameState.botColor}
+                                chessboardStore={chessboardStore}
+                            />
                             <MoveHistoryTable />
                             <BotGameControlsCard />
-                            <Card></Card>
                         </aside>
                     }
                 />

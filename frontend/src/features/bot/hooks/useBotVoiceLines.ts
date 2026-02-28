@@ -10,7 +10,7 @@ export interface VoiceLineContext {
     playerType: PlayerType;
     plyNumber: number;
     evalForBot: number | null;
-    prevEvalForBot: number;
+    prevEvalForBot: number | null;
 }
 
 export interface ReactionVoiceLine {
