@@ -9,6 +9,8 @@ export interface VoiceLineContext {
     prevPieces: BoardPieces;
     playerType: PlayerType;
     plyNumber: number;
+    evalForBot: number | null;
+    prevEvalForBot: number;
 }
 
 export interface ReactionVoiceLine {
@@ -31,6 +33,7 @@ export default function useBotVoiceLines(
 
     const nextGeneralVoiceLinePlyRef = useRef<number | null>(null);
     const lastLoreLineForPlyNumberRef = useRef<number>(0);
+    const lastLineAtRef = useRef<number | null>(null);
 
     function getVoiceLine(ctx: VoiceLineContext): string | null {
         let line = pickReactionLine(ctx);
