@@ -36,18 +36,28 @@ export default function useBotVoiceLines(
     const lastLineAtRef = useRef<number | null>(null);
 
     function getVoiceLine(ctx: VoiceLineContext): string | null {
+        if (
+            lastLineAtRef.current !== null &&
+            ctx.plyNumber - lastLineAtRef.current < 2
+        ) {
+            return null;
+        }
+
         let line = pickReactionLine(ctx);
         if (line) {
+            lastLineAtRef.current = ctx.plyNumber;
             return line;
         }
 
         line = pickGeneralLine(ctx.plyNumber);
         if (line) {
+            lastLineAtRef.current = ctx.plyNumber;
             return line;
         }
 
         line = pickLoreLine(ctx.plyNumber);
         if (line) {
+            lastLineAtRef.current = ctx.plyNumber;
             return line;
         }
 

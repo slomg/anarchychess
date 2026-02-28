@@ -1,10 +1,10 @@
+import { renderHook } from "@testing-library/react";
+
 import { createFakeVoiceLineContext } from "@/lib/testUtils/fakers/voiceLineContextFaker";
 import useBotVoiceLines, {
     LoreVoiceLine,
     ReactionVoiceLine,
 } from "../useBotVoiceLines";
-
-import { renderHook } from "@testing-library/react";
 
 describe("useBotVoiceLines", () => {
     describe("Reaction Lines", () => {
@@ -122,10 +122,10 @@ describe("useBotVoiceLines", () => {
             const firstLine = result.current(
                 createFakeVoiceLineContext({ plyNumber: 100 }),
             );
-            expect(lines).toContain(firstLine!);
+            expect(lines).toContain(firstLine);
 
             const secondLineSamePly = result.current(
-                createFakeVoiceLineContext({ plyNumber: 102 }),
+                createFakeVoiceLineContext({ plyNumber: 103 }),
             );
             expect(secondLineSamePly).toBeNull();
 
@@ -254,5 +254,31 @@ describe("useBotVoiceLines", () => {
             createFakeVoiceLineContext({ plyNumber: 1 }),
         );
         expect(line).toBe("L1");
+    });
+
+    it("should return null if the last voice line was within a ply even if other lines are available", () => {
+        const reactionLines: ReactionVoiceLine[] = [
+            { condition: () => true, lines: ["R1"] },
+            { condition: () => true, lines: ["R2"] },
+        ];
+
+        const { result } = renderHook(() =>
+            useBotVoiceLines(reactionLines, [], []),
+        );
+
+        const first = result.current(
+            createFakeVoiceLineContext({ plyNumber: 1 }),
+        );
+        expect(first).not.toBeNull();
+
+        const second = result.current(
+            createFakeVoiceLineContext({ plyNumber: 2 }),
+        );
+        expect(second).toBeNull();
+
+        const third = result.current(
+            createFakeVoiceLineContext({ plyNumber: 3 }),
+        );
+        expect(third).not.toBeNull();
     });
 });
