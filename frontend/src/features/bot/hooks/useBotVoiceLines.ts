@@ -1,10 +1,18 @@
 import { useRef } from "react";
 
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
+import { PlayerType } from "@/features/liveGame/lib/types";
 import { Move } from "@/features/chessboard/lib/types";
 
+export interface VoiceLineContext {
+    move: Move;
+    prevPieces: BoardPieces;
+    playerType: PlayerType;
+    plyNumber: number;
+}
+
 export interface ReactionVoiceLine {
-    condition: (move: Move, prev: BoardPieces) => boolean;
+    condition: (ctx: VoiceLineContext) => boolean;
     line: string;
 }
 
@@ -17,29 +25,25 @@ export default function useBotVoiceLines(
     reactionVoiceLines: ReactionVoiceLine[],
     loreVoiceLines: LoreVoiceLine[],
     generalVoiceLines: string[],
-): (move: Move, prevPieces: BoardPieces, plyNumber: number) => string | null {
+): (ctx: VoiceLineContext) => string | null {
     const usedReactionLineIdxesRef = useRef<Set<number>>(new Set());
     const usedGeneralLinesIdxesRef = useRef<Set<number>>(new Set());
 
     const nextGeneralVoiceLinePlyRef = useRef<number | null>(null);
     const lastLoreLineForPlyNumberRef = useRef<number>(0);
 
-    function getVoiceLine(
-        move: Move,
-        prevPieces: BoardPieces,
-        plyNumber: number,
-    ): string | null {
-        let line = pickReactionLine(move, prevPieces);
+    function getVoiceLine(ctx: VoiceLineContext): string | null {
+        let line = pickReactionLine(ctx);
         if (line) {
             return line;
         }
 
-        line = pickGeneralLine(plyNumber);
+        line = pickGeneralLine(ctx.plyNumber);
         if (line) {
             return line;
         }
 
-        line = pickLoreLine(plyNumber);
+        line = pickLoreLine(ctx.plyNumber);
         if (line) {
             return line;
         }
@@ -47,15 +51,12 @@ export default function useBotVoiceLines(
         return null;
     }
 
-    function pickReactionLine(
-        move: Move,
-        prevPieces: BoardPieces,
-    ): string | null {
+    function pickReactionLine(ctx: VoiceLineContext): string | null {
         const availableReactionIndexes: number[] = [];
         for (let i = 0; i < reactionVoiceLines.length; i++) {
             const line = reactionVoiceLines[i];
             if (
-                line.condition(move, prevPieces) &&
+                line.condition(ctx) &&
                 !usedReactionLineIdxesRef.current.has(i)
             ) {
                 availableReactionIndexes.push(i);

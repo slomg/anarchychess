@@ -1,173 +1,189 @@
-import {
-    createFakeBoardPieces,
-    createFakeMove,
-} from "@/lib/testUtils/fakers/chessboardFakers";
+import { createFakeVoiceLineContext } from "@/lib/testUtils/fakers/voiceLineContextFaker";
 import useBotVoiceLines, {
     LoreVoiceLine,
     ReactionVoiceLine,
 } from "../useBotVoiceLines";
-import BoardPieces from "@/features/chessboard/lib/boardPieces";
-import { Move } from "@/features/chessboard/lib/types";
+
 import { renderHook } from "@testing-library/react";
 
 describe("useBotVoiceLines", () => {
-    let move: Move;
-    let prevPieces: BoardPieces;
-
-    beforeEach(() => {
-        move = createFakeMove();
-        prevPieces = createFakeBoardPieces();
-    });
-
     describe("Reaction Lines", () => {
         it("should return a valid reaction line when condition is met", () => {
-            const reactionLines: ReactionVoiceLine[] = [
+            const lines: ReactionVoiceLine[] = [
                 { condition: () => true, line: "R1" },
             ];
             const { result } = renderHook(() =>
-                useBotVoiceLines(reactionLines, [], []),
+                useBotVoiceLines(lines, [], []),
             );
-            const line = result.current(move, prevPieces, 1);
+            const line = result.current(createFakeVoiceLineContext());
             expect(line).toBe("R1");
         });
 
         it("should return null if no reaction line condition is met", () => {
-            const reactionLines: ReactionVoiceLine[] = [
+            const lines: ReactionVoiceLine[] = [
                 { condition: () => false, line: "R1" },
             ];
             const { result } = renderHook(() =>
-                useBotVoiceLines(reactionLines, [], []),
+                useBotVoiceLines(lines, [], []),
             );
-            const line = result.current(move, prevPieces, 1);
+            const line = result.current(createFakeVoiceLineContext());
             expect(line).toBeNull();
         });
 
         it("should not repeat reaction lines until all have been used", () => {
-            const reactionLines: ReactionVoiceLine[] = [
+            const lines: ReactionVoiceLine[] = [
                 { condition: () => true, line: "R1" },
                 { condition: () => true, line: "R2" },
             ];
             const { result } = renderHook(() =>
-                useBotVoiceLines(reactionLines, [], []),
+                useBotVoiceLines(lines, [], []),
             );
-            const first = result.current(move, prevPieces, 1);
-            const second = result.current(move, prevPieces, 2);
-            const third = result.current(move, prevPieces, 3);
+            const first = result.current(
+                createFakeVoiceLineContext({ plyNumber: 1 }),
+            );
+            const second = result.current(
+                createFakeVoiceLineContext({ plyNumber: 2 }),
+            );
+            const third = result.current(
+                createFakeVoiceLineContext({ plyNumber: 2 }),
+            );
             expect(first).not.toBe(second);
             expect(third).toBeNull();
+        });
+
+        it("should pass the correct context to the condition", () => {
+            const conditionMock = vi.fn();
+            const lines = [{ condition: conditionMock, line: "R1" }];
+            const { result } = renderHook(() =>
+                useBotVoiceLines(lines, [], []),
+            );
+
+            const ctx = createFakeVoiceLineContext();
+            result.current(ctx);
+
+            expect(conditionMock).toHaveBeenCalledExactlyOnceWith(ctx);
         });
     });
 
     describe("General Lines", () => {
         it("should return null on first call (interval not reached)", () => {
-            const generalLines = ["G1", "G2"];
+            const lines = ["G1", "G2"];
             const { result } = renderHook(() =>
-                useBotVoiceLines([], [], generalLines),
+                useBotVoiceLines([], [], lines),
             );
-            const line = result.current(move, prevPieces, 1);
+            const line = result.current(createFakeVoiceLineContext());
             expect(line).toBeNull();
         });
 
         it("should return a general line when ply interval is reached", () => {
-            const generalLines = ["G1", "G2"];
+            const lines = ["G1", "G2"];
             const { result } = renderHook(() =>
-                useBotVoiceLines([], [], generalLines),
+                useBotVoiceLines([], [], lines),
             );
 
-            result.current(move, prevPieces, 1);
+            result.current(createFakeVoiceLineContext({ playerType: 1 }));
 
-            const line = result.current(move, prevPieces, 100);
-            expect(generalLines).toContain(line!);
+            const line = result.current(
+                createFakeVoiceLineContext({ plyNumber: 100 }),
+            );
+            expect(lines).toContain(line!);
         });
 
         it("should reschedule the next general line after picking a line", () => {
-            const generalLines = ["G1", "G2"];
+            const lines = ["G1", "G2"];
             const { result } = renderHook(() =>
-                useBotVoiceLines([], [], generalLines),
+                useBotVoiceLines([], [], lines),
             );
 
-            expect(result.current(move, prevPieces, 1)).toBeNull();
+            expect(
+                result.current(createFakeVoiceLineContext({ plyNumber: 1 })),
+            ).toBeNull();
 
-            const firstLine = result.current(move, prevPieces, 100);
-            expect(generalLines).toContain(firstLine!);
+            const firstLine = result.current(
+                createFakeVoiceLineContext({ plyNumber: 100 }),
+            );
+            expect(lines).toContain(firstLine!);
 
-            const secondLineSamePly = result.current(move, prevPieces, 102);
+            const secondLineSamePly = result.current(
+                createFakeVoiceLineContext({ plyNumber: 102 }),
+            );
             expect(secondLineSamePly).toBeNull();
 
-            const nextLine = result.current(move, prevPieces, 200);
-            expect(generalLines).toContain(nextLine);
+            const nextLine = result.current(
+                createFakeVoiceLineContext({ plyNumber: 200 }),
+            );
+            expect(lines).toContain(nextLine);
             expect(nextLine).not.toBe(firstLine);
 
-            const final = result.current(move, prevPieces, 201);
-            expect(final).toBeNull();
-        });
-
-        it("should not repeat general lines until all have been used", () => {
-            const generalLines = ["G1", "G2"];
-            const { result } = renderHook(() =>
-                useBotVoiceLines([], [], generalLines),
+            const final = result.current(
+                createFakeVoiceLineContext({ plyNumber: 201 }),
             );
-
-            result.current(move, prevPieces, 1);
-
-            const first = result.current(move, prevPieces, 100);
-            const second = result.current(move, prevPieces, 101);
-            const third = result.current(move, prevPieces, 101);
-            expect(first).not.toBe(second);
-            expect(third).toBeNull();
+            expect(final).toBeNull();
         });
     });
 
     describe("Lore Lines", () => {
         it("should return a lore line if ply number matches", () => {
-            const loreLines: LoreVoiceLine[] = [{ onPly: 3, line: "L1" }];
+            const lines: LoreVoiceLine[] = [{ onPly: 3, line: "L1" }];
             const { result } = renderHook(() =>
-                useBotVoiceLines([], loreLines, []),
+                useBotVoiceLines([], lines, []),
             );
-            const line = result.current(move, prevPieces, 3);
+            const line = result.current(
+                createFakeVoiceLineContext({ plyNumber: 3 }),
+            );
             expect(line).toBe("L1");
         });
 
         it("should not return a lore line before its ply", () => {
-            const loreLines: LoreVoiceLine[] = [{ onPly: 5, line: "L1" }];
+            const lines: LoreVoiceLine[] = [{ onPly: 5, line: "L1" }];
             const { result } = renderHook(() =>
-                useBotVoiceLines([], loreLines, []),
+                useBotVoiceLines([], lines, []),
             );
-            const line = result.current(move, prevPieces, 3);
+            const line = result.current(
+                createFakeVoiceLineContext({ plyNumber: 3 }),
+            );
             expect(line).toBeNull();
         });
 
         it("should not repeat lore lines for previous plies", () => {
-            const loreLines: LoreVoiceLine[] = [
+            const lines: LoreVoiceLine[] = [
                 { onPly: 3, line: "L1" },
                 { onPly: 3, line: "L2" },
             ];
             const { result } = renderHook(() =>
-                useBotVoiceLines([], loreLines, []),
+                useBotVoiceLines([], lines, []),
             );
 
-            const first = result.current(move, prevPieces, 3);
-            const second = result.current(move, prevPieces, 3);
+            const first = result.current(
+                createFakeVoiceLineContext({ plyNumber: 3 }),
+            );
+            const second = result.current(
+                createFakeVoiceLineContext({ plyNumber: 3 }),
+            );
 
             expect(["L1", "L2"]).toContain(first);
             expect(second).toBeNull();
         });
 
         it("should pick only one lore line per ply even if multiple are available", () => {
-            const loreLines: LoreVoiceLine[] = [
+            const lines: LoreVoiceLine[] = [
                 { onPly: 3, line: "L1" },
                 { onPly: 3, line: "L2" },
                 { onPly: 3, line: "L3" },
             ];
 
             const { result } = renderHook(() =>
-                useBotVoiceLines([], loreLines, []),
+                useBotVoiceLines([], lines, []),
             );
 
-            const firstLine = result.current(move, prevPieces, 3);
+            const firstLine = result.current(
+                createFakeVoiceLineContext({ plyNumber: 3 }),
+            );
             expect(["L1", "L2", "L3"]).toContain(firstLine);
 
-            const secondLine = result.current(move, prevPieces, 3);
+            const secondLine = result.current(
+                createFakeVoiceLineContext({ plyNumber: 3 }),
+            );
             expect(secondLine).toBeNull();
         });
     });
@@ -182,7 +198,9 @@ describe("useBotVoiceLines", () => {
         const { result } = renderHook(() =>
             useBotVoiceLines(reactionLines, loreLines, generalLines),
         );
-        const line = result.current(move, prevPieces, 1);
+        const line = result.current(
+            createFakeVoiceLineContext({ plyNumber: 1 }),
+        );
         expect(line).toBe("R1");
     });
 
@@ -196,8 +214,10 @@ describe("useBotVoiceLines", () => {
             useBotVoiceLines(reactionLines, [], generalLines),
         );
 
-        result.current(move, prevPieces, 1);
-        const line = result.current(move, prevPieces, 100);
+        result.current(createFakeVoiceLineContext({ plyNumber: 1 }));
+        const line = result.current(
+            createFakeVoiceLineContext({ plyNumber: 100 }),
+        );
         expect(line).toBe("G1");
     });
 
@@ -209,7 +229,10 @@ describe("useBotVoiceLines", () => {
         const { result } = renderHook(() =>
             useBotVoiceLines(reactionLines, loreLines, []),
         );
-        const line = result.current(move, prevPieces, 1);
+
+        const line = result.current(
+            createFakeVoiceLineContext({ plyNumber: 1 }),
+        );
         expect(line).toBe("L1");
     });
 });
