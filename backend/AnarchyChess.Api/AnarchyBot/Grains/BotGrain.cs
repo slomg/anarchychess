@@ -285,7 +285,8 @@ public class BotGrain : Grain, IBotGrain
             _gameToken,
             moveSnapshot,
             plyNumber: game.MoveHistory.Moves.Count,
-            compressedLegalMoves: newLegalMoves
+            compressedLegalMoves: newLegalMoves,
+            evalForBot: botMove.EvalForBot
         );
 
         if (moveResult.EndStatus is not null)

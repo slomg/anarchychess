@@ -34,14 +34,16 @@ public class BotGrainTests : BaseOrleansIntegrationTest
         From: new("f2"),
         To: new("f5"),
         Captures: [],
-        PromotesTo: null
+        PromotesTo: null,
+        EvalForBot: 6969
     );
 
     private readonly AiEngineMoveReply _firstBlackBotMove = new(
         From: new("f9"),
         To: new("f6"),
         Captures: [],
-        PromotesTo: null
+        PromotesTo: null,
+        EvalForBot: 420420
     );
 
     private readonly IBotNotifier _notifierMock = Substitute.For<IBotNotifier>();
@@ -146,7 +148,8 @@ public class BotGrainTests : BaseOrleansIntegrationTest
             From: new("f9"),
             To: new("f6"),
             Captures: [],
-            PromotesTo: null
+            PromotesTo: null,
+            EvalForBot: 123
         );
         _anarchyBotServiceMock
             .FindBestMoveAsync(Arg.Any<IReadOnlyChessBoard>(), ApiTestBase.CT)
@@ -216,7 +219,8 @@ public class BotGrainTests : BaseOrleansIntegrationTest
             From: new("f1"),
             To: new("f2"),
             Captures: [],
-            PromotesTo: null
+            PromotesTo: null,
+            EvalForBot: 1
         );
         _anarchyBotServiceMock
             .FindBestMoveAsync(_state.CurrentGame!.Core.Board, Arg.Any<CancellationToken>())
@@ -239,13 +243,15 @@ public class BotGrainTests : BaseOrleansIntegrationTest
             From: new("g9"),
             To: new("g7"),
             Captures: [],
-            PromotesTo: null
+            PromotesTo: null,
+            EvalForBot: 1
         );
         AiEngineMoveReply botMove2 = new(
             From: new("f9"),
             To: new("f6"),
             Captures: [],
-            PromotesTo: null
+            PromotesTo: null,
+            EvalForBot: 2
         );
         _anarchyBotServiceMock
             .FindBestMoveAsync(_state.CurrentGame!.Core.Board, Arg.Any<CancellationToken>())
@@ -272,19 +278,22 @@ public class BotGrainTests : BaseOrleansIntegrationTest
             From: new("f2"),
             To: new("f5"),
             Captures: [],
-            PromotesTo: null
+            PromotesTo: null,
+            EvalForBot: 1
         );
         AiEngineMoveReply botMove2 = new(
             From: new("e1"),
             To: new("j6"),
             Captures: [],
-            PromotesTo: null
+            PromotesTo: null,
+            EvalForBot: 2
         );
         AiEngineMoveReply botMove3 = new(
             From: new("j6"),
             To: new("f10"),
             Captures: [new("f10")],
-            PromotesTo: null
+            PromotesTo: null,
+            EvalForBot: 3
         );
         _anarchyBotServiceMock
             .FindBestMoveAsync(Arg.Any<IReadOnlyChessBoard>(), Arg.Any<CancellationToken>())
@@ -403,7 +412,8 @@ public class BotGrainTests : BaseOrleansIntegrationTest
                             )
                         ),
                         plyNumber: _state.CurrentGame!.MoveHistory.Moves.Count,
-                        compressedLegalMoves: Arg.Any<CompressedMoves>()
+                        compressedLegalMoves: Arg.Any<CompressedMoves>(),
+                        evalForBot: expectedMove.EvalForBot
                     )
         );
 
@@ -447,7 +457,7 @@ public class BotGrainTests : BaseOrleansIntegrationTest
             () =>
                 _notifierMock
                     .ReceivedWithAnyArgs(1)
-                    .NotifyBotMadeMoveAsync(default, default!, default, default)
+                    .NotifyBotMadeMoveAsync(default, default!, default, default, default)
         );
         _notifierMock.ClearReceivedCalls();
     }

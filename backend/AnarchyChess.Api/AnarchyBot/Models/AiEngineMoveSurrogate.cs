@@ -9,7 +9,8 @@ public readonly record struct AiEngineMoveSurrogate(
     AlgebraicPoint From,
     AlgebraicPoint To,
     IReadOnlyCollection<AlgebraicPoint>? Captures,
-    PieceType? PromotesTo
+    PieceType? PromotesTo,
+    int EvalForBot
 );
 
 [RegisterConverter]
@@ -21,9 +22,16 @@ public sealed class AiEngineMoveReplySurrogateConverter
             From: surrogate.From,
             To: surrogate.To,
             Captures: surrogate.Captures,
-            PromotesTo: surrogate.PromotesTo
+            PromotesTo: surrogate.PromotesTo,
+            EvalForBot: surrogate.EvalForBot
         );
 
     public AiEngineMoveSurrogate ConvertToSurrogate(in AiEngineMoveReply value) =>
-        new(From: value.From, To: value.To, Captures: value.Captures, PromotesTo: value.PromotesTo);
+        new(
+            From: value.From,
+            To: value.To,
+            Captures: value.Captures,
+            PromotesTo: value.PromotesTo,
+            EvalForBot: value.EvalForBot
+        );
 }

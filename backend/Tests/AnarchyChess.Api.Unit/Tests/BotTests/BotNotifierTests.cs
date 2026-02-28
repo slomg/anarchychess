@@ -58,17 +58,24 @@ public class BotNotifierTests : BaseUnitTest
         var move = new MoveSnapshotFaker().Generate();
         CompressedMoves compressedLegalMoves = "test moves";
         int plyNumber = 456;
+        int evalForBot = 6969;
 
         await _notifier.NotifyBotMadeMoveAsync(
             _gameToken,
             move,
             plyNumber: plyNumber,
-            compressedLegalMoves
+            compressedLegalMoves,
+            evalForBot: evalForBot
         );
 
         await _clientGroupProxyMock
             .Received(1)
-            .BotMadeMoveAsync(move, plyNumber: plyNumber, compressedLegalMoves);
+            .BotMadeMoveAsync(
+                move,
+                plyNumber: plyNumber,
+                compressedLegalMoves,
+                evalForBot: evalForBot
+            );
     }
 
     [Fact]

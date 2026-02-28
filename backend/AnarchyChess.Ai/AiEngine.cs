@@ -5,7 +5,7 @@ namespace AnarchyChess.Ai;
 
 public interface IAiEngine
 {
-    BitMove? FindBestMove(BitBoard board, int depth);
+    (BitMove? BestMove, int EvalForBot) FindBestMove(BitBoard board, int depth);
 }
 
 public class AiEngine(
@@ -18,14 +18,14 @@ public class AiEngine(
     private readonly IEvaluator _evaluator = evaluator ?? new Evaluator();
     private readonly IMoveOrdering _moveOrdering = moveOrdering ?? new MoveOrdering();
 
-    public BitMove? FindBestMove(BitBoard board, int depth)
+    public (BitMove? BestMove, int EvalForBot) FindBestMove(BitBoard board, int depth)
     {
         BitMove[] moves = new BitMove[EngineConstants.MaxMoves];
         int moveCount = 0;
 
         _moveGenerator.Generate(board, moves, ref moveCount);
         if (moveCount == 0)
-            return null;
+            return (BestMove: null, EvalForBot: 0);
 
         _moveOrdering.SortMoves(
             board,
@@ -53,6 +53,7 @@ public class AiEngine(
         Parallel.For(
             1,
             moveCount,
+            new() { MaxDegreeOfParallelism = 4 },
             i =>
             {
                 BitMove move = moves[i];
@@ -130,6 +131,6 @@ public class AiEngine(
             $"Eval: {bestAlpha}, move count: {moveCount}, {bestMove.From} {bestMove.To}"
         );
 
-        return bestMove;
+        return (BestMove: bestMove, EvalForBot: bestAlpha);
     }
 }

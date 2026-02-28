@@ -51,7 +51,7 @@ public class AiEngineServiceTests
                 ArgEx.FluentAssert<BitBoard>(x => x.Should().BeEquivalentTo(expectedBoard)),
                 depth: AiEngineService.Depth
             )
-            .Returns(move);
+            .Returns((BestMove: move, EvalForBot: 6969));
 
         var response = await _engine.FindBestMoveAsync(
             new(pieces, IsWhiteToMove: isWhiteToMove, PrevMoveState: null),
@@ -62,7 +62,8 @@ public class AiEngineServiceTests
             From: from,
             To: to,
             Captures: [capture1, capture2],
-            PromotesTo: promotesTo
+            PromotesTo: promotesTo,
+            EvalForBot: 6969
         );
         response.Should().BeEquivalentTo(expectedReply);
     }
@@ -116,14 +117,20 @@ public class AiEngineServiceTests
                 }),
                 depth: AiEngineService.Depth
             )
-            .Returns(move);
+            .Returns((BestMove: move, EvalForBot: -6969));
 
         var response = await _engine.FindBestMoveAsync(
             new(pieces, IsWhiteToMove: true, PrevMoveState: prevMoveDto),
             TestContext.Current.CancellationToken
         );
 
-        AiEngineMoveReply expectedReply = new(From: from, To: to, Captures: [], PromotesTo: null);
+        AiEngineMoveReply expectedReply = new(
+            From: from,
+            To: to,
+            Captures: [],
+            PromotesTo: null,
+            EvalForBot: -6969
+        );
         response.Should().BeEquivalentTo(expectedReply);
     }
 
@@ -132,7 +139,7 @@ public class AiEngineServiceTests
     {
         _aiEngineMock
             .FindBestMove(Arg.Any<BitBoard>(), AiEngineService.Depth)
-            .Returns((BitMove?)null);
+            .Returns((BestMove: null, EvalForBot: 0));
 
         Func<Task> act = async () =>
             await _engine

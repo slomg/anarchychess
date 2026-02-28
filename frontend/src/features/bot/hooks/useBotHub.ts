@@ -14,6 +14,7 @@ export type BotClientEvents = {
         move: MoveSnapshot,
         plyNumber: number,
         compressedLegalMoves: string,
+        evalForBot: number,
     ];
     GameEndedAsync: [result: GameResultData];
 };

@@ -19,5 +19,6 @@ public class AiEngineMoveReplyFaker : RecordFaker<AiEngineMoveReply>
         );
         RuleFor(x => x.Captures, GameTestData.RandomPoints);
         RuleFor(x => x.PromotesTo, f => f.PickRandom<PieceType>());
+        RuleFor(x => x.EvalForBot, f => f.Random.Number(min: -10000, max: 10000));
     }
 }

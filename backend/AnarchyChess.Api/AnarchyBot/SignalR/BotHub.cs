@@ -13,7 +13,12 @@ namespace AnarchyChess.Api.AnarchyBot.SignalR;
 public interface IBotHubClient : IAnarchyChessHubClient
 {
     Task PlayerMadeMoveAsync(MoveSnapshot move, int plyNumber, bool didMoveEndGame);
-    Task BotMadeMoveAsync(MoveSnapshot move, int plyNumber, CompressedMoves compressedLegalMoves);
+    Task BotMadeMoveAsync(
+        MoveSnapshot move,
+        int plyNumber,
+        CompressedMoves compressedLegalMoves,
+        int evalForBot
+    );
     Task GameEndedAsync(GameResultData result);
 }
 

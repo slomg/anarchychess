@@ -23,14 +23,16 @@ public class AiEngineService(IAiEngine aiEngine) : IAiEngineService
             isWhiteToMove: request.IsWhiteToMove,
             prevMoveState: CreatePrevMove(request.PrevMoveState)
         );
-        BitMove? bestMove =
-            _aiEngine.FindBestMove(board, depth: Depth)
-            ?? throw new RpcException(
+        (BitMove? bestMove, int evalForBot) = _aiEngine.FindBestMove(board, depth: Depth);
+        if (bestMove is null)
+        {
+            throw new RpcException(
                 new Status(
                     StatusCode.InvalidArgument,
                     "The provided position contains no legal moves and is invalid"
                 )
             );
+        }
 
         List<AlgebraicPoint> captures = [];
         UInt128 captureMask = bestMove.Value.CapturesMask;
@@ -44,7 +46,8 @@ public class AiEngineService(IAiEngine aiEngine) : IAiEngineService
             From: AlgebraicPoint.FromIdx(bestMove.Value.From),
             To: AlgebraicPoint.FromIdx(bestMove.Value.To),
             Captures: captures,
-            PromotesTo: bestMove.Value.PromotesTo
+            PromotesTo: bestMove.Value.PromotesTo,
+            EvalForBot: evalForBot
         );
         return ValueTask.FromResult(reply);
     }

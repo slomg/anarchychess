@@ -6,5 +6,6 @@ public record AiEngineMoveReply(
     AlgebraicPoint From,
     AlgebraicPoint To,
     IReadOnlyCollection<AlgebraicPoint>? Captures,
-    PieceType? PromotesTo
+    PieceType? PromotesTo,
+    int EvalForBot
 );

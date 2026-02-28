@@ -12,7 +12,8 @@ public interface IBotNotifier
         GameToken gameToken,
         MoveSnapshot move,
         int plyNumber,
-        CompressedMoves compressedLegalMoves
+        CompressedMoves compressedLegalMoves,
+        int evalForBot
     );
 
     Task NotifyPlayerMadeMoveAsync(
@@ -45,8 +46,12 @@ public class BotNotifier(IHubContext<BotHub, IBotHubClient> hub) : IBotNotifier
         GameToken gameToken,
         MoveSnapshot move,
         int plyNumber,
-        CompressedMoves compressedLegalMoves
-    ) => _hub.Clients.Group(gameToken).BotMadeMoveAsync(move, plyNumber, compressedLegalMoves);
+        CompressedMoves compressedLegalMoves,
+        int evalForBot
+    ) =>
+        _hub
+            .Clients.Group(gameToken)
+            .BotMadeMoveAsync(move, plyNumber, compressedLegalMoves, evalForBot);
 
     public Task NotifyGameEndedAsync(GameToken gameToken, GameResultData result) =>
         _hub.Clients.Group(gameToken).GameEndedAsync(result);
