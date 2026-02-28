@@ -306,7 +306,7 @@ public class BotGrainTests : BaseOrleansIntegrationTest
         await grain.PlayMoveAsync(_blackPlayer.UserId, new(move1), ApiTestBase.CT);
         await AssertBotMoveAsync(botMove2);
         await grain.PlayMoveAsync(_blackPlayer.UserId, new(move2), ApiTestBase.CT);
-        await AssertBotMoveAsync(botMove3);
+        await AssertBotMoveAsync(botMove3, didMoveEndGame: true);
 
         await AssertGameEndedAsync(grain, _gameResultDescriber.KingCaptured(by: GameColor.White));
     }
@@ -391,7 +391,10 @@ public class BotGrainTests : BaseOrleansIntegrationTest
         return grain.StartGameAsync(player ?? _player, ApiTestBase.CT);
     }
 
-    private async Task AssertBotMoveAsync(AiEngineMoveReply expectedMove)
+    private async Task AssertBotMoveAsync(
+        AiEngineMoveReply expectedMove,
+        bool didMoveEndGame = false
+    )
     {
         await Wait.UntilAsync(
             () =>
@@ -413,7 +416,8 @@ public class BotGrainTests : BaseOrleansIntegrationTest
                         ),
                         plyNumber: _state.CurrentGame!.MoveHistory.Moves.Count,
                         compressedLegalMoves: Arg.Any<CompressedMoves>(),
-                        evalForBot: expectedMove.EvalForBot
+                        evalForBot: expectedMove.EvalForBot,
+                        didMoveEndGame: didMoveEndGame
                     )
         );
 
@@ -457,7 +461,7 @@ public class BotGrainTests : BaseOrleansIntegrationTest
             () =>
                 _notifierMock
                     .ReceivedWithAnyArgs(1)
-                    .NotifyBotMadeMoveAsync(default, default!, default, default, default)
+                    .NotifyBotMadeMoveAsync(default, default!, default, default, default, default)
         );
         _notifierMock.ClearReceivedCalls();
     }

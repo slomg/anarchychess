@@ -150,7 +150,12 @@ const BotVoiceLines = ({
         plyNumber: number,
         playerType: PlayerType,
         evalForBot: number | null,
+        didMoveEndGame: boolean,
     ) {
+        if (didMoveEndGame) {
+            return;
+        }
+
         const { positionHistory, boardDimensions } = chessboardStore.getState();
         const prevPosition = positionHistory.getPositionWithPly(plyNumber - 1);
         if (!prevPosition) {
@@ -183,11 +188,20 @@ const BotVoiceLines = ({
     useBotEvent(
         gameToken,
         "BotMadeMoveAsync",
-        (move, plyNumber, _, evalForBot) =>
-            handleMove(move, plyNumber, PlayerType.Bot, evalForBot),
+        (move, plyNumber, _, evalForBot, didMoveEndGame) =>
+            handleMove(
+                move,
+                plyNumber,
+                PlayerType.Bot,
+                evalForBot,
+                didMoveEndGame,
+            ),
     );
-    useBotEvent(gameToken, "PlayerMadeMoveAsync", (move, plyNumber) =>
-        handleMove(move, plyNumber, PlayerType.Human, null),
+    useBotEvent(
+        gameToken,
+        "PlayerMadeMoveAsync",
+        (move, plyNumber, didMoveEndGame) =>
+            handleMove(move, plyNumber, PlayerType.Human, null, didMoveEndGame),
     );
 
     const voiceBubbleRef = useRef<HTMLDivElement>(null);

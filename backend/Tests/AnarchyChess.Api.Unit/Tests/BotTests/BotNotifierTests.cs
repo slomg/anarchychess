@@ -59,13 +59,15 @@ public class BotNotifierTests : BaseUnitTest
         CompressedMoves compressedLegalMoves = "test moves";
         int plyNumber = 456;
         int evalForBot = 6969;
+        bool didMoveEndGame = true;
 
         await _notifier.NotifyBotMadeMoveAsync(
             _gameToken,
             move,
             plyNumber: plyNumber,
             compressedLegalMoves,
-            evalForBot: evalForBot
+            evalForBot: evalForBot,
+            didMoveEndGame: didMoveEndGame
         );
 
         await _clientGroupProxyMock
@@ -74,7 +76,8 @@ public class BotNotifierTests : BaseUnitTest
                 move,
                 plyNumber: plyNumber,
                 compressedLegalMoves,
-                evalForBot: evalForBot
+                evalForBot: evalForBot,
+                didMoveEndGame: didMoveEndGame
             );
     }
 

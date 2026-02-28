@@ -15,6 +15,7 @@ export type BotClientEvents = {
         plyNumber: number,
         compressedLegalMoves: string,
         evalForBot: number,
+        didMoveEndGame: boolean,
     ];
     GameEndedAsync: [result: GameResultData];
 };

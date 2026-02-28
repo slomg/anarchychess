@@ -80,18 +80,22 @@ describe("BotVoiceLine", () => {
         moveSnapshot,
         plyNumber,
         evalForBot,
+        didMoveEndGame,
     }: {
         moveSnapshot?: MoveSnapshot;
         plyNumber?: number;
         evalForBot?: number;
+        didMoveEndGame?: boolean;
     } = {}): Promise<{
         moveSnapshot: MoveSnapshot;
         plyNumber: number;
         evalForBot: number;
+        didMoveEndGame: boolean;
     }> {
         moveSnapshot ??= createFakeMoveSnapshot();
         plyNumber ??= 2;
         evalForBot ??= 6969;
+        didMoveEndGame ??= false;
 
         await act(() =>
             botEventHandlers.BotMadeMoveAsync?.(
@@ -99,10 +103,11 @@ describe("BotVoiceLine", () => {
                 plyNumber,
                 "legal moves",
                 evalForBot,
+                didMoveEndGame,
             ),
         );
 
-        return { moveSnapshot, plyNumber, evalForBot };
+        return { moveSnapshot, plyNumber, evalForBot, didMoveEndGame };
     }
 
     async function FireHumanMoveMade({
@@ -258,6 +263,28 @@ describe("BotVoiceLine", () => {
         expect(screen.getByTestId("botVoiceLine").textContent).toBe(
             "second line",
         );
+    });
+
+    it("should not set a voice line if a bot move ends the game", async () => {
+        renderComponent();
+        getVoiceLineMock.mockReturnValue("should not appear");
+
+        await FireBotMoveMade({ didMoveEndGame: true });
+        await act(() => vi.advanceTimersByTime(300));
+
+        expect(getVoiceLineMock).not.toHaveBeenCalled();
+        expect(screen.queryByTestId("botVoiceLine")).not.toBeInTheDocument();
+    });
+
+    it("should not set a voice line if a human move ends the game", async () => {
+        renderComponent();
+        getVoiceLineMock.mockReturnValue("should not appear");
+
+        await FireHumanMoveMade({ didMoveEndGame: true });
+        await act(() => vi.advanceTimersByTime(300));
+
+        expect(getVoiceLineMock).not.toHaveBeenCalled();
+        expect(screen.queryByTestId("botVoiceLine")).not.toBeInTheDocument();
     });
 
     it("should change voice line when viewing a different position", async () => {

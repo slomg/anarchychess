@@ -17,7 +17,8 @@ public interface IBotHubClient : IAnarchyChessHubClient
         MoveSnapshot move,
         int plyNumber,
         CompressedMoves compressedLegalMoves,
-        int evalForBot
+        int evalForBot,
+        bool didMoveEndGame
     );
     Task GameEndedAsync(GameResultData result);
 }
