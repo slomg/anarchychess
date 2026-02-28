@@ -10,7 +10,7 @@ describe("useBotVoiceLines", () => {
     describe("Reaction Lines", () => {
         it("should return a valid reaction line when condition is met", () => {
             const lines: ReactionVoiceLine[] = [
-                { condition: () => true, line: "R1" },
+                { condition: () => true, lines: ["R1"] },
             ];
             const { result } = renderHook(() =>
                 useBotVoiceLines(lines, [], []),
@@ -21,7 +21,7 @@ describe("useBotVoiceLines", () => {
 
         it("should return null if no reaction line condition is met", () => {
             const lines: ReactionVoiceLine[] = [
-                { condition: () => false, line: "R1" },
+                { condition: () => false, lines: ["R1"] },
             ];
             const { result } = renderHook(() =>
                 useBotVoiceLines(lines, [], []),
@@ -32,8 +32,8 @@ describe("useBotVoiceLines", () => {
 
         it("should not repeat reaction lines until all have been used", () => {
             const lines: ReactionVoiceLine[] = [
-                { condition: () => true, line: "R1" },
-                { condition: () => true, line: "R2" },
+                { condition: () => true, lines: ["R1"] },
+                { condition: () => true, lines: ["R2"] },
             ];
             const { result } = renderHook(() =>
                 useBotVoiceLines(lines, [], []),
@@ -53,7 +53,9 @@ describe("useBotVoiceLines", () => {
 
         it("should pass the correct context to the condition", () => {
             const conditionMock = vi.fn();
-            const lines = [{ condition: conditionMock, line: "R1" }];
+            const lines: ReactionVoiceLine[] = [
+                { condition: conditionMock, lines: ["R1"] },
+            ];
             const { result } = renderHook(() =>
                 useBotVoiceLines(lines, [], []),
             );
@@ -62,6 +64,24 @@ describe("useBotVoiceLines", () => {
             result.current(ctx);
 
             expect(conditionMock).toHaveBeenCalledExactlyOnceWith(ctx);
+        });
+
+        it("should pick different reaction lines randomly when multiple conditions are met", () => {
+            const lines: ReactionVoiceLine[] = [
+                { condition: () => true, lines: ["R1"] },
+                { condition: () => true, lines: ["R2"] },
+            ];
+
+            const { result } = renderHook(() =>
+                useBotVoiceLines(lines, [], []),
+            );
+            const ctx1 = createFakeVoiceLineContext({ plyNumber: 1 });
+            const ctx2 = createFakeVoiceLineContext({ plyNumber: 5 });
+
+            const first = result.current(ctx1);
+            const second = result.current(ctx2);
+
+            expect([first, second].sort()).toEqual(["R1", "R2"]);
         });
     });
 
@@ -86,7 +106,7 @@ describe("useBotVoiceLines", () => {
             const line = result.current(
                 createFakeVoiceLineContext({ plyNumber: 100 }),
             );
-            expect(lines).toContain(line!);
+            expect(lines).toContain(line);
         });
 
         it("should reschedule the next general line after picking a line", () => {
@@ -190,7 +210,7 @@ describe("useBotVoiceLines", () => {
 
     it("should prioritize reaction lines over general and lore lines", () => {
         const reactionLines: ReactionVoiceLine[] = [
-            { condition: () => true, line: "R1" },
+            { condition: () => true, lines: ["R1"] },
         ];
         const loreLines: LoreVoiceLine[] = [{ onPly: 1, line: "L1" }];
         const generalLines = ["G1"];
@@ -206,7 +226,7 @@ describe("useBotVoiceLines", () => {
 
     it("should fallback to general lines if no reaction lines trigger", () => {
         const reactionLines: ReactionVoiceLine[] = [
-            { condition: () => false, line: "R1" },
+            { condition: () => false, lines: ["R1"] },
         ];
         const generalLines = ["G1"];
 
@@ -223,7 +243,7 @@ describe("useBotVoiceLines", () => {
 
     it("should fallback to lore lines if no reaction or general lines trigger", () => {
         const reactionLines: ReactionVoiceLine[] = [
-            { condition: () => false, line: "R1" },
+            { condition: () => false, lines: ["R1"] },
         ];
         const loreLines: LoreVoiceLine[] = [{ onPly: 1, line: "L1" }];
         const { result } = renderHook(() =>

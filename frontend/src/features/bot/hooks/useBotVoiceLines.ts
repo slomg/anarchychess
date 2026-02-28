@@ -15,7 +15,7 @@ export interface VoiceLineContext {
 
 export interface ReactionVoiceLine {
     condition: (ctx: VoiceLineContext) => boolean;
-    line: string;
+    lines: string[];
 }
 
 export interface LoreVoiceLine {
@@ -74,7 +74,9 @@ export default function useBotVoiceLines(
                 Math.floor(Math.random() * availableReactionIndexes.length)
             ];
         usedReactionLineIdxesRef.current.add(randomIdx);
-        return reactionVoiceLines[randomIdx].line;
+
+        const lines = reactionVoiceLines[randomIdx].lines;
+        return lines[Math.floor(Math.random() * lines.length)];
     }
 
     function pickGeneralLine(plyNumber: number): string | null {
