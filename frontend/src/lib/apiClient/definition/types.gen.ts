@@ -492,6 +492,7 @@ export type GameSummary = {
     poolType: PoolType;
     baseSeconds: number;
     incrementSeconds: number;
+    isBotGame: boolean;
     result: GameResult;
     createdAt: string;
 };
@@ -1403,6 +1404,44 @@ export type CreateGuestUserResponses = {
 
 export type CreateGuestUserResponse =
     CreateGuestUserResponses[keyof CreateGuestUserResponses];
+
+export type TestAuthedData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: "/api/Auth/test-auth";
+};
+
+export type TestAuthedErrors = {
+    401: ApiProblemDetails;
+};
+
+export type TestAuthedError = TestAuthedErrors[keyof TestAuthedErrors];
+
+export type TestAuthedResponses = {
+    204: void;
+};
+
+export type TestAuthedResponse = TestAuthedResponses[keyof TestAuthedResponses];
+
+export type TestGuestData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: "/api/Auth/test-guest-auth";
+};
+
+export type TestGuestErrors = {
+    401: ApiProblemDetails;
+};
+
+export type TestGuestError = TestGuestErrors[keyof TestGuestErrors];
+
+export type TestGuestResponses = {
+    204: void;
+};
+
+export type TestGuestResponse = TestGuestResponses[keyof TestGuestResponses];
 
 export type OAuthCallbackData = {
     body?: never;
