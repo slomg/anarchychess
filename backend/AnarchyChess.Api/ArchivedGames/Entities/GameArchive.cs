@@ -13,6 +13,7 @@ public class GameArchive
     public required GameResult Result { get; set; }
     public required string ResultDescription { get; set; }
 
+    public required bool IsBotGame { get; set; }
     public required PoolType PoolType { get; set; }
     public required int BaseSeconds { get; set; }
     public required int IncrementSeconds { get; set; }

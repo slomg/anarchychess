@@ -26,14 +26,14 @@ public class GameArchiveServiceTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task CreateArchiveAsync_creates_and_saves_the_game_archive_correctly()
+    public async Task CreateHumanArchiveAsync_creates_and_saves_the_game_archive_correctly()
     {
         var pool = new PoolKeyFaker().Generate();
         var whitePlayer = new GamePlayerFaker(GameColor.White).Generate();
         var blackPlayer = new GamePlayerFaker(GameColor.Black).Generate();
         GameEndStatus endStatus = new(GameResult.WhiteWin, "White Won by Resignation");
 
-        var result = await _gameArchiveService.CreateArchiveAsync(
+        var result = await _gameArchiveService.CreateHumanArchiveAsync(
             _gameToken,
             pool,
             whitePlayer,
@@ -53,6 +53,7 @@ public class GameArchiveServiceTests : BaseIntegrationTest
             Result = endStatus.Result,
             ResultDescription = endStatus.ResultDescription,
 
+            IsBotGame = false,
             PoolType = pool.PoolType,
             BaseSeconds = pool.TimeControl.BaseSeconds,
             IncrementSeconds = pool.TimeControl.IncrementSeconds,
@@ -73,6 +74,21 @@ public class GameArchiveServiceTests : BaseIntegrationTest
                         .Excluding(x => x.BlackPlayerId)
                         .Excluding(x => x.BlackPlayer.Id)
             );
+    }
+
+    [Fact]
+    public async Task CreateBotArchiveAsync_sets_IsBotGame_to_true()
+    {
+        var result = await _gameArchiveService.CreateBotArchiveAsync(
+            _gameToken,
+            new PoolKeyFaker().Generate(),
+            new GamePlayerFaker(GameColor.White).Generate(),
+            new GamePlayerFaker(GameColor.Black).Generate(),
+            new(GameResult.WhiteWin, "test"),
+            CT
+        );
+
+        result.IsBotGame.Should().BeTrue();
     }
 
     [Fact]
@@ -142,6 +158,7 @@ public class GameArchiveServiceTests : BaseIntegrationTest
             PoolType: archive.PoolType,
             BaseSeconds: archive.BaseSeconds,
             IncrementSeconds: archive.IncrementSeconds,
+            IsBotGame: archive.IsBotGame,
             Result: archive.Result,
             CreatedAt: archive.CreatedAt
         );

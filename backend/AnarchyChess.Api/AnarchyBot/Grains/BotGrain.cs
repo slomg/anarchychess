@@ -316,7 +316,7 @@ public class BotGrain : Grain, IBotGrain
         );
 
         await _notifier.NotifyGameEndedAsync(_gameToken, resultData);
-        await _gameArchiveService.CreateArchiveAsync(
+        await _gameArchiveService.CreateBotArchiveAsync(
             _gameToken,
             pool: new PoolKey(
                 PoolType.Casual,

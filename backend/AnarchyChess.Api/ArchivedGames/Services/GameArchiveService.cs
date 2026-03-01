@@ -12,7 +12,15 @@ namespace AnarchyChess.Api.ArchivedGames.Services;
 
 public interface IGameArchiveService
 {
-    Task<GameArchive> CreateArchiveAsync(
+    Task<GameArchive> CreateHumanArchiveAsync(
+        GameToken gameToken,
+        PoolKey pool,
+        GamePlayer whitePlayer,
+        GamePlayer blackPlayer,
+        GameEndStatus endStatus,
+        CancellationToken token = default
+    );
+    Task<GameArchive> CreateBotArchiveAsync(
         GameToken gameToken,
         PoolKey pool,
         GamePlayer whitePlayer,
@@ -31,12 +39,49 @@ public class GameArchiveService(IGameArchiveRepository gameArchiveRepository) : 
 {
     private readonly IGameArchiveRepository _gameArchiveRepository = gameArchiveRepository;
 
-    public async Task<GameArchive> CreateArchiveAsync(
+    public Task<GameArchive> CreateHumanArchiveAsync(
         GameToken gameToken,
         PoolKey pool,
         GamePlayer whitePlayer,
         GamePlayer blackPlayer,
         GameEndStatus endStatus,
+        CancellationToken token = default
+    ) =>
+        CreateArchiveAsync(
+            gameToken,
+            pool,
+            whitePlayer,
+            blackPlayer,
+            endStatus,
+            isBotGame: false,
+            token
+        );
+
+    public Task<GameArchive> CreateBotArchiveAsync(
+        GameToken gameToken,
+        PoolKey pool,
+        GamePlayer whitePlayer,
+        GamePlayer blackPlayer,
+        GameEndStatus endStatus,
+        CancellationToken token = default
+    ) =>
+        CreateArchiveAsync(
+            gameToken,
+            pool,
+            whitePlayer,
+            blackPlayer,
+            endStatus,
+            isBotGame: true,
+            token
+        );
+
+    private async Task<GameArchive> CreateArchiveAsync(
+        GameToken gameToken,
+        PoolKey pool,
+        GamePlayer whitePlayer,
+        GamePlayer blackPlayer,
+        GameEndStatus endStatus,
+        bool isBotGame,
         CancellationToken token = default
     )
     {
@@ -48,6 +93,7 @@ public class GameArchiveService(IGameArchiveRepository gameArchiveRepository) : 
             GameToken = gameToken,
             Result = endStatus.Result,
             ResultDescription = endStatus.ResultDescription,
+            IsBotGame = isBotGame,
             WhitePlayerId = whiteArchive.Id,
             WhitePlayer = whiteArchive,
             BlackPlayerId = blackArchive.Id,
@@ -97,6 +143,7 @@ public class GameArchiveService(IGameArchiveRepository gameArchiveRepository) : 
             PoolType: archive.PoolType,
             BaseSeconds: archive.BaseSeconds,
             IncrementSeconds: archive.IncrementSeconds,
+            IsBotGame: archive.IsBotGame,
             Result: archive.Result,
             CreatedAt: archive.CreatedAt
         );

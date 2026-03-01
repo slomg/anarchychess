@@ -20,6 +20,7 @@ public class GameArchiveFaker : Faker<GameArchive>
         RuleFor(x => x.Result, f => f.PickRandom<GameResult>());
         RuleFor(x => x.ResultDescription, "some description");
 
+        RuleFor(x => x.IsBotGame, f => f.Random.Bool());
         RuleFor(x => x.PoolType, f => f.PickRandom<PoolType>());
         RuleFor(x => x.BaseSeconds, f => f.Random.Int(60, 6000));
         RuleFor(x => x.IncrementSeconds, f => f.Random.Int(1, 30));

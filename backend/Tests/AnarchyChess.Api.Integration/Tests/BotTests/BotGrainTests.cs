@@ -450,9 +450,9 @@ public class BotGrainTests : BaseOrleansIntegrationTest
         gameState.ResultData.Result.Should().Be(expectedEndStatus.Result);
         gameState.ResultData.ResultDescription.Should().Be(expectedEndStatus.ResultDescription);
 
-        (await ApiTestBase.DbContext.GameArchives.FirstAsync(ApiTestBase.CT))
-            .GameToken.Should()
-            .Be(_gameToken);
+        var inDb = await ApiTestBase.DbContext.GameArchives.FirstAsync(ApiTestBase.CT);
+        inDb.GameToken.Should().Be(_gameToken);
+        inDb.IsBotGame.Should().BeTrue();
     }
 
     private async Task WaitForBotMoveAsync()

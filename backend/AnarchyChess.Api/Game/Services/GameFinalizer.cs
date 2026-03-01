@@ -44,7 +44,7 @@ public class GameFinalizer(
         var ratingChange = await UpdateRatingAsync(state, endStatus.Result, token);
         try
         {
-            await _gameArchiveService.CreateArchiveAsync(
+            await _gameArchiveService.CreateHumanArchiveAsync(
                 gameToken,
                 pool: state.Pool,
                 whitePlayer: state.WhitePlayer,

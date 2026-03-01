@@ -72,7 +72,7 @@ public class GameFinalizerTests : BaseUnitTest
             );
         await _gameArchiveServiceMock
             .Received(1)
-            .CreateArchiveAsync(
+            .CreateHumanArchiveAsync(
                 _gameToken,
                 state.Pool,
                 whitePlayer: whitePlayer,
