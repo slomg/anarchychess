@@ -44,11 +44,11 @@ const reactionVoiceLines: ReactionVoiceLine[] = [
             evalForBot < 99_000,
         lines: [
             "oi m8 that move was a wee bit shit, innit?",
-            "Hm yes that move is very very poggies indeed.",
-            "Maybe think before playing next time.",
+            "That move is something Cagnus Marlsen would've played.",
+            "Well, that move certainly changed the evaluation.",
             "Thanks! *dry humps your leg*",
             "Gavin from 3rd grade, he is the strongest player. Maybe you should learn from him.",
-            "I'm just gonna be real honest with you, that was not a good move",
+            "I'm just gonna be honest with you, that was not a good move.",
         ],
     },
     {
