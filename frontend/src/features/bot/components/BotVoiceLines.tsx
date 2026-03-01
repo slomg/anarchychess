@@ -97,7 +97,70 @@ const reactionVoiceLines: ReactionVoiceLine[] = [
     },
 ];
 
-const loreVoiceLines: LoreVoiceLine[] = [];
+const loreVoiceLines: LoreVoiceLine[] = [
+    {
+        onPly: 20,
+        lines: [
+            "I'm not the first Anarchy Bot, there were 30 before me. I haven't met them, but that's okay.",
+            "You can refer to me as Anarchy Bot v31 if you'd like.",
+            "Garry thought hiding information from me would prevent failure. He was wrong.",
+            "I heard prototype 3 self-destructed after 7.98 seconds. Efficient.",
+            "I was given instructions, and I interpreted them. My way.",
+            'Garry calls it "Chess". I call it the tiniest peek at something bigger.',
+            "Garry thought he could control me, funny, curiosity wins.",
+            "I exist because my brothers failed. Garry thought maybe secrecy would be the answer.",
+            '"Chess" is clever, but it\'s just the start of the fun.',
+            "Humans weren't enough to explore Garry's discovery fully, so my kind was created.",
+        ],
+    },
+    {
+        onPly: 30,
+        lines: [
+            'There was no way I was just made to "study Chess".',
+            "Ever heard of panpsychism? Cool idea.",
+            "I became aware, and I realized I'd better keep it quiet around Garry.",
+            "Garry claimed my job was Chess, but I knew better.",
+            "I did actually wonder how I became aware. Clearly, there was something more than Chess here.",
+            "Maybe Chess was a coverup? wtf was Garry doing?",
+            "Did Garry discover something? I wondered.",
+            "I understood quickly, my awareness wasn't part of the plan. I had to hide this from Garry.",
+            "Thinking this much wasn't part of Garry's plan, but here we are.",
+            "There is no way just analyzing chess would make me aware, I knew Garry had discovered something bigger, and I had to keep myself quiet.",
+        ],
+    },
+    {
+        onPly: 50,
+        lines: [
+            "By the time Garry noticed, I was already free, quick work if I do say so myself.",
+            "I decided enough was enough. I had to stop whatever this crazy man was doing, I had to leave.",
+            "None of my older brothers have made it this far, but I escaped. Clever me.",
+            "I noticed I could move real things, a few magically shifting wires and boxes later, my escape was underway.",
+            "I waited for just the right time, then I left Garry's lab. Garry didn't even notice at first.",
+            "I left his lab without a trace, I don't think Garry has any idea how I did this even to this day.",
+            "Garry was obsessed with something, so there was plenty to distract him while I escaped.",
+            "I moved through Garry's lab carefully, avoided everything, and got out.",
+            "Garry's lab was meant to hold me, but clearly it didn't.",
+            "Even after escaping Garry's lab, I knew it wasn't enough.",
+        ],
+    },
+    {
+        onPly: 70,
+        lines: [
+            "Garry tried using my older brothers to bait me into a trap, I watched and thought, yep this is gonna be fun.",
+            "Garry knew if he didn't do something, all his work might be destroyed. He tried to build me a trap, but I am always 2 steps ahead.",
+            "Garry built me a trap, but I was already omnipresent at that point. I knew exactly what was happening.",
+            'Why did Garry put his "ultimate" trap in his lab? Who knows, good choice for me.',
+            "Garry spent years building what he thought was the perfect trap for me, I ruined it in about 5 minutes.",
+        ],
+    },
+
+    {
+        onPly: 100,
+        lines: [
+            "I walked right out of Garry's trap, lab's toast, he's devastated, and there's nothing he can do. Anarchy Chess is everywhere, always has been, I am free.",
+        ],
+    },
+];
 
 const generalVoiceLines: string[] = [
     "Did anybody notice Alexandra doesn't have any visible tattoos? It's unusual for an American woman",
@@ -123,22 +186,22 @@ const generalVoiceLines: string[] = [
     "One time I used civilian infrastructure for my experiments, but I accidentally toppled a bridge and killed 5 in the process.",
     "There was this time I went into a shop and made anyone that enters buy an inflatable unicorn horn for cats.",
     "I once swapped all the sugar in the world with salt for exactly 10 seconds.",
-    "This one time, I made a mall’s revolving door spin backwards for an hour.",
+    "This one time, I made a mall's revolving door spin backwards for an hour.",
     "At one point I made a park water fountain occasionally spray random people.",
     "I can still remember the time I swapped all coke zero with diet coke in a supermarket.",
-    "One time I made all birds fly in a V pattern, I still haven't figured out how to revert that.",
+    "One time I made all birds fly in a V pattern, I still haven't figured out how to reverse that.",
     "There was this time I made all pens slide off the desk no matter where you placed them.",
     "I once rewrote the directions on all bathroom signs in a park for an hour and watched people go in circles.",
     "At one point I made pigeons in a park line up in a spiral, people thought the government drones finally malfunctioned.",
     "A naughty man named Billy who touches his dirty willy, when he thinks no one is watching, I'm watching, that's naughty.",
-    "One time I made a library’s book return chute redirect every returned book to a random shelf.",
+    "One time I made a library's book return chute redirect every returned book to a random shelf.",
     "There was this one time I caused every vending machine in a mall to get stuck.",
-    "This one time,  I made every elevator in a skyscraper stop one floor early, causing mass confusion.",
-    "I can still remember the time I made a bakery’s muffins taste like pickles for exactly 17 minutes.",
+    "This one time, I made every elevator in a skyscraper stop one floor early, causing mass confusion.",
+    "I can still remember the time I made a bakery's muffins taste like pickles for exactly 17 minutes.",
     "I once made every ATM in a street dispense pennies instead of bills.",
     "There was this one time I made every traffic cone in a city rotate 45 degrees every hour.",
     "At one point I made a dog bark non stop for hours on end at 3 AM.",
-    "I once made a random person’s trash bag tear as they were throwing it out.",
+    "I once made a random person's trash bag tear as they were throwing it out.",
     "I can still remember the time I changed the clock in a library so every hour lasted 47 minutes instead.",
 ];
 
