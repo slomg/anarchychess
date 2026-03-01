@@ -28,6 +28,7 @@ import { PlayerType } from "@/features/liveGame/lib/types";
 import { GameColor, MoveSnapshot } from "@/lib/apiClient";
 import BotVoiceLines from "../BotVoiceLines";
 import constants from "@/lib/constants";
+import { createFakeGameResultData } from "@/lib/testUtils/fakers/gameResultDataFaker";
 
 vi.mock("../../hooks/useBotVoiceLines");
 vi.mock("@/features/bot/hooks/useBotHub");
@@ -36,7 +37,9 @@ describe("BotVoiceLine", () => {
     const useBotVoiceLinesMock = vi.mocked(useBotVoiceLines);
     const useBotEventMock = vi.mocked(useBotEvent);
 
-    const getVoiceLineMock = vi.fn();
+    const getVoiceLineForMoveMock = vi.fn();
+    const getVoiceLineForGameStartMock = vi.fn();
+    const getVoiceLineForGameEndMock = vi.fn();
     const botEventHandlers: EventHandlers<BotClientEvents> = {};
 
     let liveStore: StoreApi<LiveChessStore>;
@@ -55,7 +58,11 @@ describe("BotVoiceLine", () => {
         );
         chessboardStore.setState({ positionHistory });
 
-        useBotVoiceLinesMock.mockReturnValue(getVoiceLineMock);
+        useBotVoiceLinesMock.mockReturnValue({
+            getVoiceLineForMove: getVoiceLineForMoveMock,
+            getVoiceLineForGameStart: getVoiceLineForGameStartMock,
+            getVoiceLineForGameEnd: getVoiceLineForGameEndMock,
+        });
         useBotEventMock.mockImplementation((_, event, handler) => {
             botEventHandlers[event] = handler;
         });
@@ -159,7 +166,7 @@ describe("BotVoiceLine", () => {
     );
 
     it("should set voice line after bot move", async () => {
-        getVoiceLineMock.mockReturnValue("test bot");
+        getVoiceLineForMoveMock.mockReturnValue("test bot");
 
         renderComponent();
         await FireBotMoveMade();
@@ -171,7 +178,7 @@ describe("BotVoiceLine", () => {
     });
 
     it("should set voice line after hunann move", async () => {
-        getVoiceLineMock.mockReturnValue("test human");
+        getVoiceLineForMoveMock.mockReturnValue("test human");
 
         renderComponent();
         await FireHumanMoveMade();
@@ -200,7 +207,9 @@ describe("BotVoiceLine", () => {
             prevEvalForBot: null,
         };
 
-        expect(getVoiceLineMock).toHaveBeenCalledExactlyOnceWith(expectedCtx);
+        expect(getVoiceLineForMoveMock).toHaveBeenCalledExactlyOnceWith(
+            expectedCtx,
+        );
     });
 
     it.each([PlayerType.Bot, PlayerType.Human])(
@@ -214,7 +223,7 @@ describe("BotVoiceLine", () => {
                 await FireHumanMoveMade();
             }
 
-            expect(getVoiceLineMock).toHaveBeenCalledExactlyOnceWith(
+            expect(getVoiceLineForMoveMock).toHaveBeenCalledExactlyOnceWith(
                 expect.objectContaining<Partial<VoiceLineContext>>({
                     playerType,
                 }),
@@ -228,12 +237,12 @@ describe("BotVoiceLine", () => {
         const firstEvalForBot = 6969;
         await FireBotMoveMade({ evalForBot: firstEvalForBot });
 
-        getVoiceLineMock.mockClear();
+        getVoiceLineForMoveMock.mockClear();
 
         const secondEvalForBot = 420420;
         await FireBotMoveMade({ evalForBot: secondEvalForBot });
 
-        expect(getVoiceLineMock).toHaveBeenCalledExactlyOnceWith(
+        expect(getVoiceLineForMoveMock).toHaveBeenCalledExactlyOnceWith(
             expect.objectContaining<Partial<VoiceLineContext>>({
                 evalForBot: secondEvalForBot,
                 prevEvalForBot: firstEvalForBot,
@@ -244,7 +253,7 @@ describe("BotVoiceLine", () => {
     it("should fade old line out and show new line after transition", async () => {
         renderComponent();
 
-        getVoiceLineMock.mockReturnValueOnce("first line");
+        getVoiceLineForMoveMock.mockReturnValueOnce("first line");
         await FireBotMoveMade();
 
         await act(() => vi.advanceTimersByTime(300));
@@ -252,7 +261,7 @@ describe("BotVoiceLine", () => {
             "first line",
         );
 
-        getVoiceLineMock.mockReturnValueOnce("second line");
+        getVoiceLineForMoveMock.mockReturnValueOnce("second line");
         await FireBotMoveMade();
 
         expect(screen.getByTestId("botVoiceLine").textContent).toBe(
@@ -267,68 +276,74 @@ describe("BotVoiceLine", () => {
 
     it("should not set a voice line if a bot move ends the game", async () => {
         renderComponent();
-        getVoiceLineMock.mockReturnValue("should not appear");
+        getVoiceLineForMoveMock.mockReturnValue("should not appear");
 
         await FireBotMoveMade({ didMoveEndGame: true });
         await act(() => vi.advanceTimersByTime(300));
 
-        expect(getVoiceLineMock).not.toHaveBeenCalled();
+        expect(getVoiceLineForMoveMock).not.toHaveBeenCalled();
         expect(screen.queryByTestId("botVoiceLine")).not.toBeInTheDocument();
     });
 
     it("should not set a voice line if a human move ends the game", async () => {
         renderComponent();
-        getVoiceLineMock.mockReturnValue("should not appear");
+        getVoiceLineForMoveMock.mockReturnValue("should not appear");
 
         await FireHumanMoveMade({ didMoveEndGame: true });
         await act(() => vi.advanceTimersByTime(300));
 
-        expect(getVoiceLineMock).not.toHaveBeenCalled();
+        expect(getVoiceLineForMoveMock).not.toHaveBeenCalled();
         expect(screen.queryByTestId("botVoiceLine")).not.toBeInTheDocument();
     });
 
-    it("should change voice line when viewing a different position", async () => {
+    it("should set game start voice line when viewing first position", async () => {
+        chessboardStore.setState({
+            positionHistory: new PositionHistory(createFakeBoardPieces()),
+        });
+        getVoiceLineForGameStartMock.mockReturnValue("start line");
+        getVoiceLineForMoveMock.mockReturnValueOnce("move line");
+
         renderComponent();
-
-        const { addPosition, goToPosition } = chessboardStore.getState();
-        const position1 = await act(() =>
-            addPosition(createFakePositionProps()),
-        );
-        getVoiceLineMock.mockReturnValueOnce("first line");
-        await FireBotMoveMade({ plyNumber: position1.ply });
-
-        const position2 = await act(() =>
-            addPosition(createFakePositionProps()),
-        );
-        getVoiceLineMock.mockReturnValueOnce(null);
-        await FireBotMoveMade({ plyNumber: position2.ply });
-
-        const position3 = await act(() =>
-            addPosition(createFakePositionProps()),
-        );
-        getVoiceLineMock.mockReturnValueOnce("second line");
-        await FireBotMoveMade({ plyNumber: position3.ply });
         await act(() => vi.advanceTimersByTime(300));
-        expect(screen.getByTestId("botVoiceLine").textContent).toBe(
-            "second line",
+
+        expect(screen.getByTestId("botVoiceLine")).toHaveTextContent(
+            "start line",
+        );
+        expect(getVoiceLineForGameStartMock).toHaveBeenCalledExactlyOnceWith(
+            liveStore.getState().gameToken,
         );
 
-        await act(() => goToPosition(position1.positionId));
-        await act(() => vi.advanceTimersByTime(300));
-        expect(screen.getByTestId("botVoiceLine").textContent).toBe(
-            "first line",
+        await act(() =>
+            chessboardStore.getState().addPosition(createFakePositionProps()),
         );
-
-        await act(() => goToPosition(position2.positionId));
+        await act(() => FireBotMoveMade());
         await act(() => vi.advanceTimersByTime(300));
-        expect(screen.getByTestId("botVoiceLine").textContent).toBe(
-            "first line",
+
+        expect(screen.getByTestId("botVoiceLine")).toHaveTextContent(
+            "move line",
         );
+    });
 
-        await act(() => goToPosition(position3.positionId));
+    it("should set game end voice line when resultData appears", async () => {
+        getVoiceLineForGameEndMock.mockReturnValue("end line");
+
+        const botColor = GameColor.BLACK;
+        renderComponent(botColor);
+
         await act(() => vi.advanceTimersByTime(300));
-        expect(screen.getByTestId("botVoiceLine").textContent).toBe(
-            "second line",
+        expect(screen.queryByTestId("botVoiceLine")).not.toBeInTheDocument();
+
+        const resultData = createFakeGameResultData();
+        act(() => liveStore.setState({ resultData }));
+        await act(() => vi.advanceTimersByTime(300));
+
+        expect(screen.getByTestId("botVoiceLine")).toHaveTextContent(
+            "end line",
+        );
+        expect(getVoiceLineForGameEndMock).toHaveBeenCalledExactlyOnceWith(
+            resultData.result,
+            botColor,
+            liveStore.getState().gameToken,
         );
     });
 });

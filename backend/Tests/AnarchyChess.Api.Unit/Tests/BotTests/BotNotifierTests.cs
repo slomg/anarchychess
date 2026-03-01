@@ -39,17 +39,18 @@ public class BotNotifierTests : BaseUnitTest
     {
         var move = new MoveSnapshotFaker().Generate();
         int plyNumber = 523;
+        bool didMoveEndGame = true;
 
         await _notifier.NotifyPlayerMadeMoveAsync(
             _gameToken,
             move,
             plyNumber: plyNumber,
-            didMoveEndGame: true
+            didMoveEndGame: didMoveEndGame
         );
 
         await _clientGroupProxyMock
             .Received(1)
-            .PlayerMadeMoveAsync(move, plyNumber: plyNumber, didMoveEndGame: true);
+            .PlayerMadeMoveAsync(move, plyNumber: plyNumber, didMoveEndGame: didMoveEndGame);
     }
 
     [Fact]

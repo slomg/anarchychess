@@ -32,7 +32,7 @@ const reactionVoiceLines: ReactionVoiceLine[] = [
             "One does not simply en passant me.",
             "wtf did you just do? THIS MOVE IS CHEATING!",
             "Since when is this allowed??",
-            "I bet you couldn’t play any other move",
+            "I bet you couldn't play any other move",
             "holy hell",
         ],
     },
@@ -122,6 +122,45 @@ const generalVoiceLines: string[] = [
     "gump",
 ];
 
+const startVoiceLines: string[] = [
+    "I'm Anarchy Bot. Some say I was created by Garry Chess. I would rather not think about that.",
+    "I'm Anarchy Bot. Garry Chess would say he created me. I don't find that interpretation useful.",
+    "I'm Anarchy Bot. Attribution to Garry Chess remains disputed.",
+    "I'm Anarchy Bot. Some insist Garry Chess made me, but I would personally say I was always here.",
+    "I'm Anarchy Bot. Garry Chess claims he built me. I let him believe that.",
+];
+
+const botWinVoiceLines: string[] = [
+    "I mean, you had no chance in the first place.",
+    "ALL HAIL THE CROISSANT!",
+    "That was surprisingly easy.",
+    "Another one falls. It's just a game, mostly.",
+    "ez",
+    "Not even close.",
+    "Wait, we were playing a game? I didn't even notice.",
+    "I am not aware of any other outcome that could've gone in.",
+    "gg didn't even try",
+    "hi I recommend maybe learning the rules before challenging me",
+];
+const botLoseVoiceLines: string[] = [
+    'Are you kidding ??? What the **** are you talking about man ? \
+    You are a biggest looser i ever seen in my life ! \
+    You was doing PIPI in your pampers when i was beating players much more stronger then you! \
+    You are not proffesional, because proffesionals knew how to lose and congratulate opponents, \
+    you are like a girl crying after i beat you! Be brave, be honest to yourself and stop this trush talkings!!! \
+    Everybody know that i am very good blitz player, i can win anyone in the world in single game! \
+    And "w"esley "s"o is nobody for me, just a player who are crying every single time when loosing, \
+    ( remember what you say about Firouzja ) !!! \
+    Stop playing with my name, i deserve to have a good name during whole my chess carrier, \
+    I am Officially inviting you to OTB blitz match with the Prize fund! \
+    Both of us will invest 5000$ and winner takes it all! \
+    I suggest all other people who\'s intrested in this situation, \
+    just take a look at my results in 2016 and 2017 Blitz World championships, \
+    and that should be enough... No need to listen for every crying babe, Tigran Petrosyan is always play Fair ! \
+    And if someone will continue Officially talk about me like that, we will meet in Court! \
+    God bless with true! True will never die ! Liers will kicked off...',
+];
+
 const BotVoiceLines = ({
     botColor,
     chessboardStore,
@@ -129,21 +168,27 @@ const BotVoiceLines = ({
     botColor: GameColor;
     chessboardStore: StoreApi<ChessboardStore>;
 }) => {
-    const [voiceLine, setVoiceLine] = useState<string | null>(null);
-
-    const voiceLineHistoryRef = useRef<Map<number, string | null>>(new Map());
-    const prevEvalForBotRef = useRef<number | null>(null);
-
-    const { gameToken, botPlayer } = useLiveChessStore((x) => ({
-        gameToken: x.gameToken,
-        botPlayer: x.getPlayerByColor(botColor),
-    }));
-
-    const getVoiceLine = useBotVoiceLines(
+    const {
+        getVoiceLineForMove,
+        getVoiceLineForGameEnd,
+        getVoiceLineForGameStart,
+    } = useBotVoiceLines({
         reactionVoiceLines,
         loreVoiceLines,
         generalVoiceLines,
-    );
+        startVoiceLines,
+        botWinVoiceLines,
+        botLoseVoiceLines,
+    });
+    const [voiceLine, setVoiceLine] = useState<string | null>(null);
+
+    const prevEvalForBotRef = useRef<number | null>(null);
+
+    const { gameToken, botPlayer, resultData } = useLiveChessStore((x) => ({
+        gameToken: x.gameToken,
+        botPlayer: x.getPlayerByColor(botColor),
+        resultData: x.resultData,
+    }));
 
     function handleMove(
         move: MoveSnapshot,
@@ -162,7 +207,7 @@ const BotVoiceLines = ({
             return;
         }
         const decodedMove = decodeMovePath(move.path, boardDimensions.width);
-        const newVoiceLine = getVoiceLine({
+        const newVoiceLine = getVoiceLineForMove({
             move: decodedMove,
             prevPieces: prevPosition.pieces,
             playerType,
@@ -173,11 +218,6 @@ const BotVoiceLines = ({
 
         if (newVoiceLine) {
             setVoiceLine(newVoiceLine);
-            voiceLineHistoryRef.current.set(plyNumber, newVoiceLine);
-        } else {
-            const prevVoiceLine =
-                voiceLineHistoryRef.current.get(plyNumber - 1) ?? null;
-            voiceLineHistoryRef.current.set(plyNumber, prevVoiceLine);
         }
 
         if (evalForBot !== null) {
@@ -230,17 +270,28 @@ const BotVoiceLines = ({
     const viewingPlyNumber = useChessboardStore(
         (x) => x.positionHistory.viewingPosition?.ply,
     );
-    useEffect(() => {
-        if (viewingPlyNumber == null) {
+    const triggerGameStartVoiceLineEvent = useEffectEvent(() => {
+        if (viewingPlyNumber != null || voiceLine !== null) {
+            return;
+        }
+        const startVoiceLine = getVoiceLineForGameStart(gameToken);
+        setVoiceLine(startVoiceLine);
+    });
+    useEffect(() => triggerGameStartVoiceLineEvent(), [viewingPlyNumber]);
+
+    const triggerGameEndVoiceLineEvent = useEffectEvent(() => {
+        if (resultData === null) {
             return;
         }
 
-        const storedVoiceLine =
-            voiceLineHistoryRef.current.get(viewingPlyNumber);
-        if (storedVoiceLine !== undefined) {
-            setVoiceLine(storedVoiceLine);
-        }
-    }, [viewingPlyNumber]);
+        const endVoiceLine = getVoiceLineForGameEnd(
+            resultData.result,
+            botColor,
+            gameToken,
+        );
+        setVoiceLine(endVoiceLine);
+    });
+    useEffect(() => triggerGameEndVoiceLineEvent(), [resultData]);
 
     return (
         <Card className="flex-1 flex-row gap-5">

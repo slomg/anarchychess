@@ -2,20 +2,38 @@ import { renderHook } from "@testing-library/react";
 
 import { createFakeVoiceLineContext } from "@/lib/testUtils/fakers/voiceLineContextFaker";
 import useBotVoiceLines, {
+    BotVoiceLineOptions,
     LoreVoiceLine,
     ReactionVoiceLine,
 } from "../useBotVoiceLines";
+import { GameColor, GameResult } from "@/lib/apiClient";
 
 describe("useBotVoiceLines", () => {
+    function getOptions(
+        overrides?: Partial<BotVoiceLineOptions>,
+    ): BotVoiceLineOptions {
+        return {
+            reactionVoiceLines: [],
+            loreVoiceLines: [],
+            generalVoiceLines: [],
+            startVoiceLines: [],
+            botWinVoiceLines: [],
+            botLoseVoiceLines: [],
+            ...overrides,
+        };
+    }
+
     describe("Reaction Lines", () => {
         it("should return a valid reaction line when condition is met", () => {
             const lines: ReactionVoiceLine[] = [
                 { condition: () => true, lines: ["R1"] },
             ];
             const { result } = renderHook(() =>
-                useBotVoiceLines(lines, [], []),
+                useBotVoiceLines(getOptions({ reactionVoiceLines: lines })),
             );
-            const line = result.current(createFakeVoiceLineContext());
+            const line = result.current.getVoiceLineForMove(
+                createFakeVoiceLineContext(),
+            );
             expect(line).toBe("R1");
         });
 
@@ -24,9 +42,11 @@ describe("useBotVoiceLines", () => {
                 { condition: () => false, lines: ["R1"] },
             ];
             const { result } = renderHook(() =>
-                useBotVoiceLines(lines, [], []),
+                useBotVoiceLines(getOptions({ reactionVoiceLines: lines })),
             );
-            const line = result.current(createFakeVoiceLineContext());
+            const line = result.current.getVoiceLineForMove(
+                createFakeVoiceLineContext(),
+            );
             expect(line).toBeNull();
         });
 
@@ -36,15 +56,15 @@ describe("useBotVoiceLines", () => {
                 { condition: () => true, lines: ["R2"] },
             ];
             const { result } = renderHook(() =>
-                useBotVoiceLines(lines, [], []),
+                useBotVoiceLines(getOptions({ reactionVoiceLines: lines })),
             );
-            const first = result.current(
+            const first = result.current.getVoiceLineForMove(
                 createFakeVoiceLineContext({ plyNumber: 1 }),
             );
-            const second = result.current(
+            const second = result.current.getVoiceLineForMove(
                 createFakeVoiceLineContext({ plyNumber: 2 }),
             );
-            const third = result.current(
+            const third = result.current.getVoiceLineForMove(
                 createFakeVoiceLineContext({ plyNumber: 2 }),
             );
             expect(first).not.toBe(second);
@@ -57,11 +77,11 @@ describe("useBotVoiceLines", () => {
                 { condition: conditionMock, lines: ["R1"] },
             ];
             const { result } = renderHook(() =>
-                useBotVoiceLines(lines, [], []),
+                useBotVoiceLines(getOptions({ reactionVoiceLines: lines })),
             );
 
             const ctx = createFakeVoiceLineContext();
-            result.current(ctx);
+            result.current.getVoiceLineForMove(ctx);
 
             expect(conditionMock).toHaveBeenCalledExactlyOnceWith(ctx);
         });
@@ -73,13 +93,13 @@ describe("useBotVoiceLines", () => {
             ];
 
             const { result } = renderHook(() =>
-                useBotVoiceLines(lines, [], []),
+                useBotVoiceLines(getOptions({ reactionVoiceLines: lines })),
             );
             const ctx1 = createFakeVoiceLineContext({ plyNumber: 1 });
             const ctx2 = createFakeVoiceLineContext({ plyNumber: 5 });
 
-            const first = result.current(ctx1);
-            const second = result.current(ctx2);
+            const first = result.current.getVoiceLineForMove(ctx1);
+            const second = result.current.getVoiceLineForMove(ctx2);
 
             expect([first, second].sort()).toEqual(["R1", "R2"]);
         });
@@ -89,21 +109,25 @@ describe("useBotVoiceLines", () => {
         it("should return null on first call (interval not reached)", () => {
             const lines = ["G1", "G2"];
             const { result } = renderHook(() =>
-                useBotVoiceLines([], [], lines),
+                useBotVoiceLines(getOptions({ generalVoiceLines: lines })),
             );
-            const line = result.current(createFakeVoiceLineContext());
+            const line = result.current.getVoiceLineForMove(
+                createFakeVoiceLineContext(),
+            );
             expect(line).toBeNull();
         });
 
         it("should return a general line when ply interval is reached", () => {
             const lines = ["G1", "G2"];
             const { result } = renderHook(() =>
-                useBotVoiceLines([], [], lines),
+                useBotVoiceLines(getOptions({ generalVoiceLines: lines })),
             );
 
-            result.current(createFakeVoiceLineContext({ playerType: 1 }));
+            result.current.getVoiceLineForMove(
+                createFakeVoiceLineContext({ playerType: 1 }),
+            );
 
-            const line = result.current(
+            const line = result.current.getVoiceLineForMove(
                 createFakeVoiceLineContext({ plyNumber: 100 }),
             );
             expect(lines).toContain(line);
@@ -112,30 +136,32 @@ describe("useBotVoiceLines", () => {
         it("should reschedule the next general line after picking a line", () => {
             const lines = ["G1", "G2"];
             const { result } = renderHook(() =>
-                useBotVoiceLines([], [], lines),
+                useBotVoiceLines(getOptions({ generalVoiceLines: lines })),
             );
 
             expect(
-                result.current(createFakeVoiceLineContext({ plyNumber: 1 })),
+                result.current.getVoiceLineForMove(
+                    createFakeVoiceLineContext({ plyNumber: 1 }),
+                ),
             ).toBeNull();
 
-            const firstLine = result.current(
+            const firstLine = result.current.getVoiceLineForMove(
                 createFakeVoiceLineContext({ plyNumber: 100 }),
             );
             expect(lines).toContain(firstLine);
 
-            const secondLineSamePly = result.current(
+            const secondLineSamePly = result.current.getVoiceLineForMove(
                 createFakeVoiceLineContext({ plyNumber: 103 }),
             );
             expect(secondLineSamePly).toBeNull();
 
-            const nextLine = result.current(
+            const nextLine = result.current.getVoiceLineForMove(
                 createFakeVoiceLineContext({ plyNumber: 200 }),
             );
             expect(lines).toContain(nextLine);
             expect(nextLine).not.toBe(firstLine);
 
-            const final = result.current(
+            const final = result.current.getVoiceLineForMove(
                 createFakeVoiceLineContext({ plyNumber: 201 }),
             );
             expect(final).toBeNull();
@@ -146,9 +172,9 @@ describe("useBotVoiceLines", () => {
         it("should return a lore line if ply number matches", () => {
             const lines: LoreVoiceLine[] = [{ onPly: 3, line: "L1" }];
             const { result } = renderHook(() =>
-                useBotVoiceLines([], lines, []),
+                useBotVoiceLines(getOptions({ loreVoiceLines: lines })),
             );
-            const line = result.current(
+            const line = result.current.getVoiceLineForMove(
                 createFakeVoiceLineContext({ plyNumber: 3 }),
             );
             expect(line).toBe("L1");
@@ -157,9 +183,9 @@ describe("useBotVoiceLines", () => {
         it("should not return a lore line before its ply", () => {
             const lines: LoreVoiceLine[] = [{ onPly: 5, line: "L1" }];
             const { result } = renderHook(() =>
-                useBotVoiceLines([], lines, []),
+                useBotVoiceLines(getOptions({ loreVoiceLines: lines })),
             );
-            const line = result.current(
+            const line = result.current.getVoiceLineForMove(
                 createFakeVoiceLineContext({ plyNumber: 3 }),
             );
             expect(line).toBeNull();
@@ -171,13 +197,13 @@ describe("useBotVoiceLines", () => {
                 { onPly: 3, line: "L2" },
             ];
             const { result } = renderHook(() =>
-                useBotVoiceLines([], lines, []),
+                useBotVoiceLines(getOptions({ loreVoiceLines: lines })),
             );
 
-            const first = result.current(
+            const first = result.current.getVoiceLineForMove(
                 createFakeVoiceLineContext({ plyNumber: 3 }),
             );
-            const second = result.current(
+            const second = result.current.getVoiceLineForMove(
                 createFakeVoiceLineContext({ plyNumber: 3 }),
             );
 
@@ -193,18 +219,123 @@ describe("useBotVoiceLines", () => {
             ];
 
             const { result } = renderHook(() =>
-                useBotVoiceLines([], lines, []),
+                useBotVoiceLines(getOptions({ loreVoiceLines: lines })),
             );
 
-            const firstLine = result.current(
+            const firstLine = result.current.getVoiceLineForMove(
                 createFakeVoiceLineContext({ plyNumber: 3 }),
             );
             expect(["L1", "L2", "L3"]).toContain(firstLine);
 
-            const secondLine = result.current(
+            const secondLine = result.current.getVoiceLineForMove(
                 createFakeVoiceLineContext({ plyNumber: 3 }),
             );
             expect(secondLine).toBeNull();
+        });
+    });
+
+    describe("getVoiceLineForGameStart", () => {
+        it("should return a line from startVoiceLines", () => {
+            const startLines = ["start1", "start2", "start3"];
+            const { result } = renderHook(() =>
+                useBotVoiceLines(getOptions({ startVoiceLines: startLines })),
+            );
+
+            const line = result.current.getVoiceLineForGameStart("game 123");
+            expect(startLines).toContain(line);
+        });
+
+        it("should return the same line for the same game token", () => {
+            const startLines = ["Start1", "Start2", "Start3"];
+            const { result } = renderHook(() =>
+                useBotVoiceLines(getOptions({ startVoiceLines: startLines })),
+            );
+
+            const line1 = result.current.getVoiceLineForGameStart("game 123");
+            const line2 = result.current.getVoiceLineForGameStart("game 123");
+            expect(line1).toBe(line2);
+        });
+    });
+
+    describe("getVoiceLineForGameEnd", () => {
+        it("returns a bot win line when bot wins", () => {
+            const botWinLines = ["win1", "win2"];
+            const botLoseLines = ["lose1", "lose2"];
+            const { result } = renderHook(() =>
+                useBotVoiceLines(
+                    getOptions({
+                        botWinVoiceLines: botWinLines,
+                        botLoseVoiceLines: botLoseLines,
+                    }),
+                ),
+            );
+
+            const lineWhiteWin = result.current.getVoiceLineForGameEnd(
+                GameResult.WHITE_WIN,
+                GameColor.WHITE,
+                "game 1",
+            );
+            const lineBlackWin = result.current.getVoiceLineForGameEnd(
+                GameResult.BLACK_WIN,
+                GameColor.BLACK,
+                "game 2",
+            );
+
+            expect(botWinLines).toContain(lineWhiteWin);
+            expect(botWinLines).toContain(lineBlackWin);
+        });
+
+        it("returns a bot lose line when bot loses", () => {
+            const botWinLines = ["win1", "win2"];
+            const botLoseLines = ["lose1", "lose2"];
+            const { result } = renderHook(() =>
+                useBotVoiceLines(
+                    getOptions({
+                        botWinVoiceLines: botWinLines,
+                        botLoseVoiceLines: botLoseLines,
+                    }),
+                ),
+            );
+
+            const lineWhiteLose = result.current.getVoiceLineForGameEnd(
+                GameResult.BLACK_WIN,
+                GameColor.WHITE,
+                "game 1",
+            );
+            const lineBlackLose = result.current.getVoiceLineForGameEnd(
+                GameResult.WHITE_WIN,
+                GameColor.BLACK,
+                "game 2",
+            );
+
+            expect(botLoseLines).toContain(lineWhiteLose);
+            expect(botLoseLines).toContain(lineBlackLose);
+        });
+
+        it("returns the same line for the same game token and outcome", () => {
+            const botWinLines = ["win1", "win2"];
+            const botLoseLines = ["lose1", "lose2"];
+            const { result } = renderHook(() =>
+                useBotVoiceLines(
+                    getOptions({
+                        botWinVoiceLines: botWinLines,
+                        botLoseVoiceLines: botLoseLines,
+                    }),
+                ),
+            );
+
+            const line1 = result.current.getVoiceLineForGameEnd(
+                GameResult.WHITE_WIN,
+                GameColor.WHITE,
+                "game 1",
+            );
+            const line2 = result.current.getVoiceLineForGameEnd(
+                GameResult.WHITE_WIN,
+                GameColor.WHITE,
+                "game 1",
+            );
+
+            expect(line1).toBe(line2);
         });
     });
 
@@ -216,9 +347,15 @@ describe("useBotVoiceLines", () => {
         const generalLines = ["G1"];
 
         const { result } = renderHook(() =>
-            useBotVoiceLines(reactionLines, loreLines, generalLines),
+            useBotVoiceLines(
+                getOptions({
+                    reactionVoiceLines: reactionLines,
+                    loreVoiceLines: loreLines,
+                    generalVoiceLines: generalLines,
+                }),
+            ),
         );
-        const line = result.current(
+        const line = result.current.getVoiceLineForMove(
             createFakeVoiceLineContext({ plyNumber: 1 }),
         );
         expect(line).toBe("R1");
@@ -231,11 +368,18 @@ describe("useBotVoiceLines", () => {
         const generalLines = ["G1"];
 
         const { result } = renderHook(() =>
-            useBotVoiceLines(reactionLines, [], generalLines),
+            useBotVoiceLines(
+                getOptions({
+                    reactionVoiceLines: reactionLines,
+                    generalVoiceLines: generalLines,
+                }),
+            ),
         );
 
-        result.current(createFakeVoiceLineContext({ plyNumber: 1 }));
-        const line = result.current(
+        result.current.getVoiceLineForMove(
+            createFakeVoiceLineContext({ plyNumber: 1 }),
+        );
+        const line = result.current.getVoiceLineForMove(
             createFakeVoiceLineContext({ plyNumber: 100 }),
         );
         expect(line).toBe("G1");
@@ -247,10 +391,15 @@ describe("useBotVoiceLines", () => {
         ];
         const loreLines: LoreVoiceLine[] = [{ onPly: 1, line: "L1" }];
         const { result } = renderHook(() =>
-            useBotVoiceLines(reactionLines, loreLines, []),
+            useBotVoiceLines(
+                getOptions({
+                    reactionVoiceLines: reactionLines,
+                    loreVoiceLines: loreLines,
+                }),
+            ),
         );
 
-        const line = result.current(
+        const line = result.current.getVoiceLineForMove(
             createFakeVoiceLineContext({ plyNumber: 1 }),
         );
         expect(line).toBe("L1");
@@ -263,20 +412,24 @@ describe("useBotVoiceLines", () => {
         ];
 
         const { result } = renderHook(() =>
-            useBotVoiceLines(reactionLines, [], []),
+            useBotVoiceLines(
+                getOptions({
+                    reactionVoiceLines: reactionLines,
+                }),
+            ),
         );
 
-        const first = result.current(
+        const first = result.current.getVoiceLineForMove(
             createFakeVoiceLineContext({ plyNumber: 1 }),
         );
         expect(first).not.toBeNull();
 
-        const second = result.current(
+        const second = result.current.getVoiceLineForMove(
             createFakeVoiceLineContext({ plyNumber: 2 }),
         );
         expect(second).toBeNull();
 
-        const third = result.current(
+        const third = result.current.getVoiceLineForMove(
             createFakeVoiceLineContext({ plyNumber: 3 }),
         );
         expect(third).not.toBeNull();

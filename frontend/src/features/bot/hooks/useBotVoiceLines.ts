@@ -1,7 +1,9 @@
 import { useRef } from "react";
 
+import { randomItem, seededRandomItem } from "@/lib/utils/randomUtils";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
 import { PlayerType } from "@/features/liveGame/lib/types";
+import { GameColor, GameResult } from "@/lib/apiClient";
 import { Move } from "@/features/chessboard/lib/types";
 
 export interface VoiceLineContext {
@@ -23,11 +25,31 @@ export interface LoreVoiceLine {
     line: string;
 }
 
-export default function useBotVoiceLines(
-    reactionVoiceLines: ReactionVoiceLine[],
-    loreVoiceLines: LoreVoiceLine[],
-    generalVoiceLines: string[],
-): (ctx: VoiceLineContext) => string | null {
+export interface BotVoiceLineOptions {
+    reactionVoiceLines: ReactionVoiceLine[];
+    loreVoiceLines: LoreVoiceLine[];
+    generalVoiceLines: string[];
+    startVoiceLines: string[];
+    botWinVoiceLines: string[];
+    botLoseVoiceLines: string[];
+}
+
+export default function useBotVoiceLines({
+    reactionVoiceLines,
+    loreVoiceLines,
+    generalVoiceLines,
+    startVoiceLines,
+    botWinVoiceLines,
+    botLoseVoiceLines,
+}: BotVoiceLineOptions): {
+    getVoiceLineForMove(ctx: VoiceLineContext): string | null;
+    getVoiceLineForGameStart(gameToken: string): string;
+    getVoiceLineForGameEnd(
+        result: GameResult,
+        botColor: GameColor,
+        gameToken: string,
+    ): string;
+} {
     const usedReactionLineIdxesRef = useRef<Set<number>>(new Set());
     const usedGeneralLinesIdxesRef = useRef<Set<number>>(new Set());
 
@@ -35,7 +57,7 @@ export default function useBotVoiceLines(
     const lastLoreLineForPlyNumberRef = useRef<number>(0);
     const lastLineAtRef = useRef<number | null>(null);
 
-    function getVoiceLine(ctx: VoiceLineContext): string | null {
+    function getVoiceLineForMove(ctx: VoiceLineContext): string | null {
         if (
             lastLineAtRef.current !== null &&
             ctx.plyNumber - lastLineAtRef.current < 2
@@ -64,6 +86,24 @@ export default function useBotVoiceLines(
         return null;
     }
 
+    function getVoiceLineForGameStart(gameToken: string): string {
+        return seededRandomItem(startVoiceLines, gameToken);
+    }
+
+    function getVoiceLineForGameEnd(
+        result: GameResult,
+        botColor: GameColor,
+        gameToken: string,
+    ): string {
+        const botWinResult =
+            botColor === GameColor.WHITE
+                ? GameResult.WHITE_WIN
+                : GameResult.BLACK_WIN;
+        const lines =
+            result === botWinResult ? botWinVoiceLines : botLoseVoiceLines;
+        return seededRandomItem(lines, gameToken);
+    }
+
     function pickReactionLine(ctx: VoiceLineContext): string | null {
         const availableReactionIndexes: number[] = [];
         for (let i = 0; i < reactionVoiceLines.length; i++) {
@@ -79,14 +119,11 @@ export default function useBotVoiceLines(
             return null;
         }
 
-        const randomIdx =
-            availableReactionIndexes[
-                Math.floor(Math.random() * availableReactionIndexes.length)
-            ];
+        const randomIdx = randomItem(availableReactionIndexes);
         usedReactionLineIdxesRef.current.add(randomIdx);
 
         const lines = reactionVoiceLines[randomIdx].lines;
-        return lines[Math.floor(Math.random() * lines.length)];
+        return randomItem(lines);
     }
 
     function pickGeneralLine(plyNumber: number): string | null {
@@ -113,11 +150,7 @@ export default function useBotVoiceLines(
         nextGeneralVoiceLinePlyRef.current =
             plyNumber + getNextGeneralLineInterval(plyNumber);
 
-        const randomIdx =
-            availableGeneralIndexes[
-                // eslint-disable-next-line react-hooks/purity -- why tf is it complaining about that here
-                Math.floor(Math.random() * availableGeneralIndexes.length)
-            ];
+        const randomIdx = randomItem(availableGeneralIndexes);
         usedGeneralLinesIdxesRef.current.add(randomIdx);
         return generalVoiceLines[randomIdx];
     }
@@ -138,10 +171,7 @@ export default function useBotVoiceLines(
         }
 
         lastLoreLineForPlyNumberRef.current = plyNumber;
-        const randomIdx =
-            availableLoreIndexes[
-                Math.floor(Math.random() * availableLoreIndexes.length)
-            ];
+        const randomIdx = randomItem(availableLoreIndexes);
         return loreVoiceLines[randomIdx].line;
     }
 
@@ -160,5 +190,9 @@ export default function useBotVoiceLines(
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    return getVoiceLine;
+    return {
+        getVoiceLineForMove,
+        getVoiceLineForGameStart,
+        getVoiceLineForGameEnd,
+    };
 }
