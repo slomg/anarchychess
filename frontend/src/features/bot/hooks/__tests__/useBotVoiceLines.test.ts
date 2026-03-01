@@ -170,7 +170,7 @@ describe("useBotVoiceLines", () => {
 
     describe("Lore Lines", () => {
         it("should return a lore line if ply number matches", () => {
-            const lines: LoreVoiceLine[] = [{ onPly: 3, line: "L1" }];
+            const lines: LoreVoiceLine[] = [{ onPly: 3, lines: ["L1"] }];
             const { result } = renderHook(() =>
                 useBotVoiceLines(getOptions({ loreVoiceLines: lines })),
             );
@@ -181,7 +181,7 @@ describe("useBotVoiceLines", () => {
         });
 
         it("should not return a lore line before its ply", () => {
-            const lines: LoreVoiceLine[] = [{ onPly: 5, line: "L1" }];
+            const lines: LoreVoiceLine[] = [{ onPly: 5, lines: ["L1"] }];
             const { result } = renderHook(() =>
                 useBotVoiceLines(getOptions({ loreVoiceLines: lines })),
             );
@@ -192,10 +192,7 @@ describe("useBotVoiceLines", () => {
         });
 
         it("should not repeat lore lines for previous plies", () => {
-            const lines: LoreVoiceLine[] = [
-                { onPly: 3, line: "L1" },
-                { onPly: 3, line: "L2" },
-            ];
+            const lines: LoreVoiceLine[] = [{ onPly: 3, lines: ["L1", "L2"] }];
             const { result } = renderHook(() =>
                 useBotVoiceLines(getOptions({ loreVoiceLines: lines })),
             );
@@ -213,9 +210,7 @@ describe("useBotVoiceLines", () => {
 
         it("should pick only one lore line per ply even if multiple are available", () => {
             const lines: LoreVoiceLine[] = [
-                { onPly: 3, line: "L1" },
-                { onPly: 3, line: "L2" },
-                { onPly: 3, line: "L3" },
+                { onPly: 3, lines: ["L1", "L2", "L3"] },
             ];
 
             const { result } = renderHook(() =>
@@ -343,7 +338,7 @@ describe("useBotVoiceLines", () => {
         const reactionLines: ReactionVoiceLine[] = [
             { condition: () => true, lines: ["R1"] },
         ];
-        const loreLines: LoreVoiceLine[] = [{ onPly: 1, line: "L1" }];
+        const loreLines: LoreVoiceLine[] = [{ onPly: 1, lines: ["L1"] }];
         const generalLines = ["G1"];
 
         const { result } = renderHook(() =>
@@ -389,7 +384,7 @@ describe("useBotVoiceLines", () => {
         const reactionLines: ReactionVoiceLine[] = [
             { condition: () => false, lines: ["R1"] },
         ];
-        const loreLines: LoreVoiceLine[] = [{ onPly: 1, line: "L1" }];
+        const loreLines: LoreVoiceLine[] = [{ onPly: 1, lines: ["L1"] }];
         const { result } = renderHook(() =>
             useBotVoiceLines(
                 getOptions({

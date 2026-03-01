@@ -22,7 +22,7 @@ export interface ReactionVoiceLine {
 
 export interface LoreVoiceLine {
     onPly: number;
-    line: string;
+    lines: string[];
 }
 
 export interface BotVoiceLineOptions {
@@ -174,7 +174,8 @@ export default function useBotVoiceLines({
         }
 
         lastLoreLineForPlyNumberRef.current = plyNumber;
-        return loreVoiceLines[randomIdx].line;
+        const lines = loreVoiceLines[randomIdx].lines;
+        return randomItem(lines);
     }
 
     function getNextGeneralLineInterval(plyNumber: number) {
