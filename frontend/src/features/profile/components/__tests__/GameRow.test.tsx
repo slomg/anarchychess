@@ -1,10 +1,10 @@
 import { render, screen } from "@testing-library/react";
 
 import { createFakeGameSummary } from "@/lib/testUtils/fakers/gameSummaryFaker";
-import { createFakeUser } from "@/lib/testUtils/fakers/userFaker";
-
-import GameRow from "../GameRow";
 import { GameResult, GameSummary, PublicUser } from "@/lib/apiClient";
+import { createFakeUser } from "@/lib/testUtils/fakers/userFaker";
+import constants from "@/lib/constants";
+import GameRow from "../GameRow";
 
 vi.mock("@/features/lobby/components/TimeControlIconFromSeconds", () => ({
     default: ({ baseSeconds }: { baseSeconds: number }) => (
@@ -88,7 +88,7 @@ describe("GameRow", () => {
             .getAllByTestId("gameRowLink")
             .forEach((gameLink) =>
                 expect(gameLink.getAttribute("href")).toBe(
-                    `/game/${gameSummaryMock.gameToken}`,
+                    `${constants.PATHS.GAME}/${gameSummaryMock.gameToken}`,
                 ),
             );
     });
@@ -149,7 +149,7 @@ describe("GameRow", () => {
             </table>,
         );
 
-        expect(screen.getByTestId("timeControlText")).toHaveTextContent(
+        expect(screen.getByTestId("gameRowTimeControlText")).toHaveTextContent(
             `${gameSummaryMock.baseSeconds / 60}+${gameSummaryMock.incrementSeconds}`,
         );
     });
@@ -169,8 +169,53 @@ describe("GameRow", () => {
             </table>,
         );
 
-        expect(screen.getByTestId("timeControlText")).toHaveTextContent(
+        expect(screen.getByTestId("gameRowTimeControlText")).toHaveTextContent(
             `.5+${gameSummaryMock.incrementSeconds}`,
         );
+    });
+
+    it("should display bot icon for bot games", () => {
+        gameSummaryMock.isBotGame = true;
+
+        render(
+            <table>
+                <tbody>
+                    <GameRow
+                        game={gameSummaryMock}
+                        profileViewpoint={userMock}
+                        index={0}
+                    />
+                </tbody>
+            </table>,
+        );
+
+        expect(screen.getByTestId("gameRowBotIcon")).toBeInTheDocument();
+        expect(
+            screen.queryByTestId("gameRowTimeControlText"),
+        ).not.toBeInTheDocument();
+    });
+
+    it("should display the correct game link for bot games", () => {
+        gameSummaryMock.isBotGame = true;
+
+        render(
+            <table>
+                <tbody>
+                    <GameRow
+                        game={gameSummaryMock}
+                        profileViewpoint={userMock}
+                        index={0}
+                    />
+                </tbody>
+            </table>,
+        );
+
+        screen
+            .getAllByTestId("gameRowLink")
+            .forEach((gameLink) =>
+                expect(gameLink.getAttribute("href")).toBe(
+                    `${constants.PATHS.BOT}/${gameSummaryMock.gameToken}`,
+                ),
+            );
     });
 });
