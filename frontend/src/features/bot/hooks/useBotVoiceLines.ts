@@ -43,12 +43,12 @@ export default function useBotVoiceLines({
     botLoseVoiceLines,
 }: BotVoiceLineOptions): {
     getVoiceLineForMove(ctx: VoiceLineContext): string | null;
-    getVoiceLineForGameStart(gameToken: string): string;
+    getVoiceLineForGameStart(gameToken: string): string | null;
     getVoiceLineForGameEnd(
         result: GameResult,
         botColor: GameColor,
         gameToken: string,
-    ): string;
+    ): string | null;
 } {
     const usedReactionLineIdxesRef = useRef<Set<number>>(new Set());
     const usedGeneralLinesIdxesRef = useRef<Set<number>>(new Set());
@@ -86,7 +86,7 @@ export default function useBotVoiceLines({
         return null;
     }
 
-    function getVoiceLineForGameStart(gameToken: string): string {
+    function getVoiceLineForGameStart(gameToken: string): string | null {
         return seededRandomItem(startVoiceLines, gameToken);
     }
 
@@ -94,7 +94,7 @@ export default function useBotVoiceLines({
         result: GameResult,
         botColor: GameColor,
         gameToken: string,
-    ): string {
+    ): string | null {
         const botWinResult =
             botColor === GameColor.WHITE
                 ? GameResult.WHITE_WIN
@@ -115,11 +115,11 @@ export default function useBotVoiceLines({
                 availableReactionIndexes.push(i);
             }
         }
-        if (availableReactionIndexes.length === 0) {
-            return null;
-        }
 
         const randomIdx = randomItem(availableReactionIndexes);
+        if (randomIdx === null) {
+            return null;
+        }
         usedReactionLineIdxesRef.current.add(randomIdx);
 
         const lines = reactionVoiceLines[randomIdx].lines;
@@ -143,15 +143,16 @@ export default function useBotVoiceLines({
                 availableGeneralIndexes.push(i);
             }
         }
-        if (availableGeneralIndexes.length === 0) {
+
+        const randomIdx = randomItem(availableGeneralIndexes);
+        if (randomIdx === null) {
             return null;
         }
 
+        usedGeneralLinesIdxesRef.current.add(randomIdx);
         nextGeneralVoiceLinePlyRef.current =
             plyNumber + getNextGeneralLineInterval(plyNumber);
 
-        const randomIdx = randomItem(availableGeneralIndexes);
-        usedGeneralLinesIdxesRef.current.add(randomIdx);
         return generalVoiceLines[randomIdx];
     }
 
@@ -166,12 +167,13 @@ export default function useBotVoiceLines({
                 availableLoreIndexes.push(i);
             }
         }
-        if (availableLoreIndexes.length === 0) {
+
+        const randomIdx = randomItem(availableLoreIndexes);
+        if (randomIdx === null) {
             return null;
         }
 
         lastLoreLineForPlyNumberRef.current = plyNumber;
-        const randomIdx = randomItem(availableLoreIndexes);
         return loreVoiceLines[randomIdx].line;
     }
 
