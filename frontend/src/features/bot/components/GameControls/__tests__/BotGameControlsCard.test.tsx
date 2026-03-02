@@ -27,7 +27,7 @@ describe("BotGameControlsCard", () => {
             </LiveChessStoreContext.Provider>,
         );
 
-        expect(screen.getByRole("Resign")).toBeInTheDocument();
+        expect(screen.getByTitle("Resign")).toBeInTheDocument();
         expect(screen.queryByText("Play New Bot")).not.toBeInTheDocument();
     });
 

@@ -11,19 +11,15 @@ vi.mock("@/lib/apiClient/definition");
 describe("LogoutHandler", () => {
     const logoutMock = vi.mocked(logout);
 
-    it("should call logout when mounted", async () => {
-        render(<LogoutHandler />);
-        await flushMicrotasks();
+    beforeEach(() => {});
 
-        expect(logoutMock).toHaveBeenCalledOnce();
-    });
-
-    it("should navigate to the signin page after logout", async () => {
+    it("should logout and navigate to the signin page", async () => {
         const routerMock = mockRouter();
 
         render(<LogoutHandler />);
         await flushMicrotasks();
 
+        expect(logoutMock).toHaveBeenCalledOnce();
         expect(routerMock.replace).toHaveBeenCalledWith(constants.PATHS.SIGNIN);
     });
 });

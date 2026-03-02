@@ -25,6 +25,8 @@ const ProfilePicture = ({
                 minWidth: minSize,
                 minHeight: minSize,
             }}
+            data-testid="profilePicture"
+            data-userid={userId}
         >
             <Image
                 className="aspect-square rounded-md"
@@ -32,8 +34,6 @@ const ProfilePicture = ({
                 width={size}
                 height={size}
                 alt="profile picture"
-                data-testid="profilePicture"
-                data-userid={userId}
                 unoptimized
             />
         </div>
