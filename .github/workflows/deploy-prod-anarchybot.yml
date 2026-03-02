@@ -22,7 +22,7 @@ jobs:
 
             - name: Build and push container image to registry
               run: |
-                  docker build --file AnarchyChess.Ai.Service/Dockerfile . --tag anarchybot:${{ github.sha }}
+                  docker build --file backend/AnarchyChess.Ai.Service/Dockerfile backend --tag anarchybot:${{ github.sha }}
                   docker push ${{ secrets.DOCKER_USERNAME }}/anarchybot:${{ github.sha }}
 
             - name: Deploy to Azure VM
