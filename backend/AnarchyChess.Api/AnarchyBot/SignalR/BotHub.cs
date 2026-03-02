@@ -12,6 +12,7 @@ namespace AnarchyChess.Api.AnarchyBot.SignalR;
 
 public interface IBotHubClient : IAnarchyChessHubClient
 {
+    Task SyncPlyNumberAsync(int plyNumber);
     Task PlayerMadeMoveAsync(MoveSnapshot move, int plyNumber, bool didMoveEndGame);
     Task BotMadeMoveAsync(
         MoveSnapshot move,
@@ -74,5 +75,8 @@ public class BotHub(IGrainFactory grains, IBotNotifier notifier) : AnarchyChessH
         }
 
         await _notifier.JoinBotGroupAsync(gameToken, Context.ConnectionId);
+
+        var grain = _grains.GetGrain<IBotGrain>(gameToken);
+        await grain.SyncPlyNumberAsync(Context.ConnectionId);
     }
 }

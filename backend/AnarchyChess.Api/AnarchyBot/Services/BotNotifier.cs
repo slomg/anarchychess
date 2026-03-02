@@ -8,6 +8,8 @@ namespace AnarchyChess.Api.AnarchyBot.Services;
 
 public interface IBotNotifier
 {
+    Task SyncPlyNumberAsync(int plyNumber, ConnectionId connectionId);
+
     Task NotifyBotMadeMoveAsync(
         GameToken gameToken,
         MoveSnapshot move,
@@ -35,6 +37,9 @@ public interface IBotNotifier
 public class BotNotifier(IHubContext<BotHub, IBotHubClient> hub) : IBotNotifier
 {
     private readonly IHubContext<BotHub, IBotHubClient> _hub = hub;
+
+    public Task SyncPlyNumberAsync(int plyNumber, ConnectionId connectionId) =>
+        _hub.Clients.Client(connectionId).SyncPlyNumberAsync(plyNumber);
 
     public Task NotifyPlayerMadeMoveAsync(
         GameToken gameToken,

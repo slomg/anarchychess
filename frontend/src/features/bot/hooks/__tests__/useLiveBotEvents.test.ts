@@ -9,7 +9,10 @@ import { EventHandlers } from "@/features/signalR/hooks/useSignalREvent";
 import { BotClientEvents, useBotEvent } from "../useBotHub";
 import { StoreApi } from "zustand";
 import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
-import { createFakeLegalMoves } from "@/lib/testUtils/fakers/chessboardFakers";
+import {
+    createFakeBoardPieces,
+    createFakeLegalMoves,
+} from "@/lib/testUtils/fakers/chessboardFakers";
 import { act, renderHook } from "@testing-library/react";
 import useLiveBotEvents from "../useLiveBotEvents";
 import { createFakeGameResultData } from "@/lib/testUtils/fakers/gameResultDataFaker";
@@ -17,6 +20,8 @@ import { refetchBotGame } from "../../lib/botStateProcessor";
 import { createFakeMoveSnapshot } from "@/lib/testUtils/fakers/moveSnapshotFaker";
 import handleMoveUpdate from "@/features/liveGame/lib/handleMoveUpdate";
 import LegalMoves from "@/features/chessboard/lib/legalMoves";
+import PositionHistory from "@/features/chessboard/lib/positionHistory";
+import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
 
 vi.mock("@/features/bot/lib/botStateProcessor");
 vi.mock("@/features/bot/hooks/useBotHub");
@@ -39,6 +44,47 @@ describe("useLiveBotEvents", () => {
         handleMoveUpdateMock.mockResolvedValue(true);
         useBotEventMock.mockImplementation((_, event, handler) => {
             botEventHandlers[event] = handler;
+        });
+    });
+
+    describe("SyncPlyNumberAsync", () => {
+        it("should refetch the game if ply number out of sync", async () => {
+            const positionHistory = new PositionHistory(
+                createFakeBoardPieces(),
+            );
+            positionHistory.addNextPosition(createFakePositionProps());
+            positionHistory.addNextPosition(createFakePositionProps());
+            positionHistory.addNextPosition(createFakePositionProps());
+            chessboardStore.setState({ positionHistory });
+
+            renderHook(() => useLiveBotEvents(liveChessStore, chessboardStore));
+
+            await act(async () => {
+                await botEventHandlers.SyncPlyNumberAsync?.(4);
+            });
+
+            expect(refetchBotGame).toHaveBeenCalledExactlyOnceWith(
+                liveChessStore,
+                chessboardStore,
+            );
+        });
+
+        it("should not refetch if revision matches", async () => {
+            const positionHistory = new PositionHistory(
+                createFakeBoardPieces(),
+            );
+            positionHistory.addNextPosition(createFakePositionProps());
+            positionHistory.addNextPosition(createFakePositionProps());
+            positionHistory.addNextPosition(createFakePositionProps());
+            chessboardStore.setState({ positionHistory });
+
+            renderHook(() => useLiveBotEvents(liveChessStore, chessboardStore));
+
+            await act(async () => {
+                await botEventHandlers.SyncPlyNumberAsync?.(3);
+            });
+
+            expect(refetchBotGame).not.toHaveBeenCalled();
         });
     });
 

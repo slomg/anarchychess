@@ -16,6 +16,13 @@ export default function useLiveBotEvents(
     const boardDimensions = useStore(chessboardStore, (x) => x.boardDimensions);
     const gameToken = useStore(liveChessStore, (x) => x.gameToken);
 
+    useBotEvent(gameToken, "SyncPlyNumberAsync", async (plyNumber) => {
+        const { positionHistory } = chessboardStore.getState();
+        if (plyNumber !== positionHistory.mainPlyCount) {
+            refetchBotGame(liveChessStore, chessboardStore);
+        }
+    });
+
     useBotEvent(
         gameToken,
         "PlayerMadeMoveAsync",

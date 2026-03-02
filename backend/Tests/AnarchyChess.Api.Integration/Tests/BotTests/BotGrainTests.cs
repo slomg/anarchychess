@@ -11,6 +11,7 @@ using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Profile.Models;
+using AnarchyChess.Api.Shared.Models;
 using AnarchyChess.Api.Shared.Services;
 using AnarchyChess.Api.TestInfrastructure;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
@@ -87,6 +88,24 @@ public class BotGrainTests : BaseOrleansIntegrationTest
 
         _state = Silo.StorageManager.GetStorage<BotGrainState>(BotGrain.StateName).State;
         _stateStats = Silo.StorageManager.GetStorageStats(BotGrain.StateName)!;
+    }
+
+    [Fact]
+    public async Task SyncPlyNumberAsync_syncs_with_the_correct_ply_number()
+    {
+        var grain = await Silo.CreateGrainAsync<BotGrain>(_gameToken);
+        await StartGameAsync(grain);
+
+        ConnectionId connectionId = "test-connection";
+
+        await grain.PlayMoveAsync(_whitePlayer.UserId, new MoveKey(GetLegalMove()), ApiTestBase.CT);
+        await WaitForBotMoveAsync();
+
+        var result = await grain.SyncPlyNumberAsync(connectionId, ApiTestBase.CT);
+
+        result.IsError.Should().BeFalse();
+
+        await _notifierMock.Received(1).SyncPlyNumberAsync(plyNumber: 2, connectionId);
     }
 
     [Theory]

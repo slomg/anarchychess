@@ -12,6 +12,7 @@ using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.Profile.Models;
+using AnarchyChess.Api.Shared.Models;
 using AnarchyChess.Api.Shared.Services;
 using AnarchyChess.EngineShared;
 using AnarchyChess.EngineShared.Extensions;
@@ -22,6 +23,12 @@ namespace AnarchyChess.Api.AnarchyBot.Grains;
 [Alias("AnarchyChess.Api.AnarchyBot.Grains.IBotGrain")]
 public interface IBotGrain : IGrainWithStringKey
 {
+    [Alias("SyncPlyNumberAsync")]
+    Task<ErrorOr<Success>> SyncPlyNumberAsync(
+        ConnectionId connectionId,
+        CancellationToken token = default
+    );
+
     [Alias("CreateAsync")]
     Task StartGameAsync(GamePlayer player, CancellationToken token = default);
 
@@ -114,6 +121,19 @@ public class BotGrain : Grain, IBotGrain
         _gameArchiveService = gameArchiveService;
         _gameResultDescriber = gameResultDescriber;
         _unitOfWork = unitOfWork;
+    }
+
+    public async Task<ErrorOr<Success>> SyncPlyNumberAsync(
+        ConnectionId connectionId,
+        CancellationToken token = default
+    )
+    {
+        if (!TryGetCurrentGame(out var game))
+        {
+            return GameErrors.GameNotFound;
+        }
+        await _notifier.SyncPlyNumberAsync(game.MoveHistory.Moves.Count, connectionId);
+        return Result.Success;
     }
 
     public async Task StartGameAsync(GamePlayer player, CancellationToken token = default)
@@ -274,6 +294,10 @@ public class BotGrain : Grain, IBotGrain
         }
 
         var moveResult = _core.MakeMove(legalMove, game.Core);
+        if (moveResult.EndStatus is not null)
+        {
+            await EndGameAsync(moveResult.EndStatus, game, token);
+        }
 
         var moveSnapshot = game.MoveHistory.AddMove(
             nextPlayer: _core.SideToMove(game.Core),
@@ -281,6 +305,7 @@ public class BotGrain : Grain, IBotGrain
             timeLeft: 0
         );
         var newLegalMoves = _core.EncodeLegalMoves(game.Core);
+
         await _notifier.NotifyBotMadeMoveAsync(
             _gameToken,
             moveSnapshot,
@@ -290,10 +315,6 @@ public class BotGrain : Grain, IBotGrain
             didMoveEndGame: moveResult.EndStatus is not null
         );
 
-        if (moveResult.EndStatus is not null)
-        {
-            await EndGameAsync(moveResult.EndStatus, game, token);
-        }
         await _state.WriteStateAsync(token);
     }
 

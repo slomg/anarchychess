@@ -5,6 +5,7 @@ import constants from "@/lib/constants";
 import { useMemo } from "react";
 
 export type BotClientEvents = {
+    SyncPlyNumberAsync: [plyNumber: number];
     PlayerMadeMoveAsync: [
         move: MoveSnapshot,
         plyNumber: number,

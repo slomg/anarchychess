@@ -11,6 +11,7 @@ namespace AnarchyChess.Api.Unit.Tests.BotTests;
 public class BotNotifierTests : BaseUnitTest
 {
     private readonly GameToken _gameToken = "game-123";
+    private readonly ConnectionId _connId = "conn1";
 
     private readonly IHubContext<BotHub, IBotHubClient> _hubContextMock = Substitute.For<
         IHubContext<BotHub, IBotHubClient>
@@ -21,17 +22,29 @@ public class BotNotifierTests : BaseUnitTest
     private readonly IGroupManager _groupsMock = Substitute.For<IGroupManager>();
 
     private readonly IBotHubClient _clientGroupProxyMock = Substitute.For<IBotHubClient>();
+    private readonly IBotHubClient _clientConnProxyMock = Substitute.For<IBotHubClient>();
 
     private readonly BotNotifier _notifier;
 
     public BotNotifierTests()
     {
         _clientsMock.Group(_gameToken).Returns(_clientGroupProxyMock);
+        _clientsMock.Client(_connId).Returns(_clientConnProxyMock);
 
         _hubContextMock.Clients.Returns(_clientsMock);
         _hubContextMock.Groups.Returns(_groupsMock);
 
         _notifier = new(_hubContextMock);
+    }
+
+    [Fact]
+    public async Task SyncRevisionAsync_sends_revision_to_specific_connection()
+    {
+        int plyNumber = 6969;
+
+        await _notifier.SyncPlyNumberAsync(plyNumber, _connId);
+
+        await _clientConnProxyMock.Received(1).SyncPlyNumberAsync(plyNumber);
     }
 
     [Fact]
