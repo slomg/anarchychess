@@ -35,4 +35,4 @@ jobs:
                       docker pull ${{ secrets.DOCKER_USERNAME }}/anarchybot:${{ github.sha }}
                       docker stop anarchybot || true
                       docker rm anarchybot || true
-                      docker run -d --name anarchybot -p 8080:8080 --restart unless-stopped ${{ secrets.DOCKER_USERNAME }}/anarchybot:${{ github.sha }}
+                      docker run -d --name anarchybot -p 6969:6969 --restart unless-stopped ${{ secrets.DOCKER_USERNAME }}/anarchybot:${{ github.sha }}
