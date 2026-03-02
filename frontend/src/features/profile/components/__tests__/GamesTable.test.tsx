@@ -27,7 +27,7 @@ describe("GamesTable", () => {
 
     it("should render the correct table headers", () => {
         render(<GamesTable games={gamesMock} profileViewpoint={userMock} />);
-        const expectedHeaders = ["Players", "Results", "Date"];
+        const expectedHeaders = ["", "Players", "Results", "Date"];
 
         const headers = Array.from(
             screen.getByTestId("gamesTableHeader").children,

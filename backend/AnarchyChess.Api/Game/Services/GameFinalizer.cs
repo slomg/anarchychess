@@ -44,11 +44,12 @@ public class GameFinalizer(
         var ratingChange = await UpdateRatingAsync(state, endStatus.Result, token);
         try
         {
-            await _gameArchiveService.CreateArchiveAsync(
+            await _gameArchiveService.CreateHumanArchiveAsync(
                 gameToken,
-                state,
+                pool: state.Pool,
+                whitePlayer: state.WhitePlayer,
+                blackPlayer: state.BlackPlayer,
                 endStatus,
-                ratingChange,
                 token
             );
             await _unitOfWork.CompleteAsync(token);

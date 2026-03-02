@@ -12,13 +12,13 @@ const GameClock = ({ color }: { color: GameColor }) => {
         useLiveChessStore((x) => ({
             sideToMove: x.sideToMove,
             serverClockAheadByMs: x.serverClockAheadByMs,
-            clockLastUpdated: x.liveClocks.lastUpdated,
-            isFrozen: x.liveClocks.isFrozen,
+            clockLastUpdated: x.liveClocks?.lastUpdated ?? 0,
+            isFrozen: x.liveClocks?.isFrozen ?? true,
         }));
     const liveClock = useLiveChessStore((x) =>
         color === GameColor.WHITE
-            ? x.liveClocks.whiteClock
-            : x.liveClocks.blackClock,
+            ? x.liveClocks?.whiteClock
+            : x.liveClocks?.blackClock,
     );
 
     const viewingPlyNumber = useChessboardStore(
@@ -35,11 +35,11 @@ const GameClock = ({ color }: { color: GameColor }) => {
             : clockSnapshot.blackClock;
     });
 
-    const baseTimeLeftMs = snapshotTimeLeftMs ?? liveClock.timeLeftMs;
+    const baseTimeLeftMs = snapshotTimeLeftMs ?? liveClock?.timeLeftMs ?? 0;
     const [timeLeftMs, setTimeLeftMs] = useState<number>(baseTimeLeftMs);
     const [timeUntilAbandonedMs, setTimeUntilAbandonedMs] = useState<
         number | null
-    >(liveClock.timeUntilAbandonMs ?? null);
+    >(liveClock?.timeUntilAbandonMs ?? null);
 
     const playedWarningSoundRef = useRef<boolean>(false);
 
@@ -54,6 +54,10 @@ const GameClock = ({ color }: { color: GameColor }) => {
     }
 
     const updateTimeLeft = useEffectEvent(() => {
+        if (!liveClock) {
+            return;
+        }
+
         if (!isTicking) {
             setTimeUntilAbandonedMs(null);
             setTimeLeftMs(baseTimeLeftMs);
@@ -78,7 +82,7 @@ const GameClock = ({ color }: { color: GameColor }) => {
 
     useEffect(() => {
         updateTimeLeft();
-    }, [baseTimeLeftMs, liveClock.timeUntilAbandonMs, clockLastUpdated]);
+    }, [baseTimeLeftMs, liveClock?.timeUntilAbandonMs, clockLastUpdated]);
 
     useEffect(() => {
         if (!isTicking) return;
@@ -92,7 +96,7 @@ const GameClock = ({ color }: { color: GameColor }) => {
         };
     }, [
         baseTimeLeftMs,
-        liveClock.timeUntilAbandonMs,
+        liveClock?.timeUntilAbandonMs,
         clockLastUpdated,
         isTicking,
         isInTimeTrouble,
@@ -111,6 +115,10 @@ const GameClock = ({ color }: { color: GameColor }) => {
         AudioPlayer.playAudio(AudioType.LOW_TIME);
         playedWarningSoundRef.current = true;
     }, [timeLeftMs, color, viewer.playerColor, isFrozen, isInTimeTrouble]);
+
+    if (!liveClock) {
+        return null;
+    }
 
     const minutes = Math.max(0, Math.floor(timeLeftMs / 60000));
     const seconds = Math.max(0, (timeLeftMs % 60000) / 1000);

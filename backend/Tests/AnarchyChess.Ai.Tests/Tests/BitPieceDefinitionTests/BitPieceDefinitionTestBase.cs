@@ -17,14 +17,17 @@ public class BitPieceDefinitionTestBase
         Move? lastMove = testCase.PriorMoves.LastOrDefault();
         BitBoard board = BitBoard.FromPieces(
             testCase.BlockedBy,
-            isWhiteToMove: testCase.MovingPlayer is GameColor.White,
-            prevMove: lastMove is not null ? UiMoveToBitMove(lastMove) : null
+            isWhiteToMove: testCase.MovingPlayer is GameColor.White
         );
         BitBoard beforeBoard = BitBoard.FromPieces(
             testCase.BlockedBy,
-            isWhiteToMove: testCase.MovingPlayer is GameColor.White,
-            prevMove: lastMove is not null ? UiMoveToBitMove(lastMove) : null
+            isWhiteToMove: testCase.MovingPlayer is GameColor.White
         );
+        if (lastMove is not null)
+        {
+            board.MakeMove(UiMoveToBitMove(lastMove));
+            beforeBoard.MakeMove(UiMoveToBitMove(lastMove));
+        }
 
         Span<BitMove> moves = stackalloc BitMove[256];
         int moveCount = 0;

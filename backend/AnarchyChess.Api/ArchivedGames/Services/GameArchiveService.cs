@@ -3,20 +3,29 @@ using AnarchyChess.Api.ArchivedGames.Models;
 using AnarchyChess.Api.ArchivedGames.Repositories;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
+using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.Pagination.Models;
 using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Shared.Models;
-using AnarchyChess.Api.UserRating.Models;
 
 namespace AnarchyChess.Api.ArchivedGames.Services;
 
 public interface IGameArchiveService
 {
-    Task<GameArchive> CreateArchiveAsync(
+    Task<GameArchive> CreateHumanArchiveAsync(
         GameToken gameToken,
-        GameState state,
+        PoolKey pool,
+        GamePlayer whitePlayer,
+        GamePlayer blackPlayer,
         GameEndStatus endStatus,
-        RatingChange? ratingChange,
+        CancellationToken token = default
+    );
+    Task<GameArchive> CreateBotArchiveAsync(
+        GameToken gameToken,
+        PoolKey pool,
+        GamePlayer whitePlayer,
+        GamePlayer blackPlayer,
+        GameEndStatus endStatus,
         CancellationToken token = default
     );
     Task<PagedResult<GameSummaryDto>> GetPaginatedResultsAsync(
@@ -30,46 +39,68 @@ public class GameArchiveService(IGameArchiveRepository gameArchiveRepository) : 
 {
     private readonly IGameArchiveRepository _gameArchiveRepository = gameArchiveRepository;
 
-    public async Task<GameArchive> CreateArchiveAsync(
+    public Task<GameArchive> CreateHumanArchiveAsync(
         GameToken gameToken,
-        GameState state,
+        PoolKey pool,
+        GamePlayer whitePlayer,
+        GamePlayer blackPlayer,
         GameEndStatus endStatus,
-        RatingChange? ratingChange,
+        CancellationToken token = default
+    ) =>
+        CreateArchiveAsync(
+            gameToken,
+            pool,
+            whitePlayer,
+            blackPlayer,
+            endStatus,
+            isBotGame: false,
+            token
+        );
+
+    public Task<GameArchive> CreateBotArchiveAsync(
+        GameToken gameToken,
+        PoolKey pool,
+        GamePlayer whitePlayer,
+        GamePlayer blackPlayer,
+        GameEndStatus endStatus,
+        CancellationToken token = default
+    ) =>
+        CreateArchiveAsync(
+            gameToken,
+            pool,
+            whitePlayer,
+            blackPlayer,
+            endStatus,
+            isBotGame: true,
+            token
+        );
+
+    private async Task<GameArchive> CreateArchiveAsync(
+        GameToken gameToken,
+        PoolKey pool,
+        GamePlayer whitePlayer,
+        GamePlayer blackPlayer,
+        GameEndStatus endStatus,
+        bool isBotGame,
         CancellationToken token = default
     )
     {
-        var whiteArchive = CreatePlayerArchive(
-            state.WhitePlayer,
-            ratingChange?.WhiteChange,
-            state.Clocks.WhiteClock.TimeLeftMs
-        );
-        var blackArchive = CreatePlayerArchive(
-            state.BlackPlayer,
-            ratingChange?.BlackChange,
-            state.Clocks.BlackClock.TimeLeftMs
-        );
-        List<MoveArchive> moves = [];
-        for (int i = 0; i < state.MoveHistory.Count; i++)
-        {
-            var moveArchive = CreateMoveArchive(state.MoveHistory.ElementAt(i), i);
-            moves.Add(moveArchive);
-        }
+        var whiteArchive = CreatePlayerArchive(whitePlayer);
+        var blackArchive = CreatePlayerArchive(blackPlayer);
 
         GameArchive gameArchive = new()
         {
             GameToken = gameToken,
             Result = endStatus.Result,
             ResultDescription = endStatus.ResultDescription,
+            IsBotGame = isBotGame,
             WhitePlayerId = whiteArchive.Id,
             WhitePlayer = whiteArchive,
             BlackPlayerId = blackArchive.Id,
             BlackPlayer = blackArchive,
-            InitialFen = state.InitialFen,
-            Moves = moves,
-            GameSource = state.GameSource,
-            PoolType = state.Pool.PoolType,
-            BaseSeconds = state.Pool.TimeControl.BaseSeconds,
-            IncrementSeconds = state.Pool.TimeControl.IncrementSeconds,
+            PoolType = pool.PoolType,
+            BaseSeconds = pool.TimeControl.BaseSeconds,
+            IncrementSeconds = pool.TimeControl.IncrementSeconds,
         };
 
         await _gameArchiveRepository.AddArchiveAsync(gameArchive, token);
@@ -103,68 +134,25 @@ public class GameArchiveService(IGameArchiveRepository gameArchiveRepository) : 
             archive.GameToken,
             new PlayerSummaryDto(
                 UserId: archive.WhitePlayer.UserId,
-                UserName: archive.WhitePlayer.UserName,
-                Rating: archive.WhitePlayer.NewRating
+                UserName: archive.WhitePlayer.UserName
             ),
             new PlayerSummaryDto(
                 UserId: archive.BlackPlayer.UserId,
-                UserName: archive.BlackPlayer.UserName,
-                Rating: archive.BlackPlayer.NewRating
+                UserName: archive.BlackPlayer.UserName
             ),
             PoolType: archive.PoolType,
             BaseSeconds: archive.BaseSeconds,
             IncrementSeconds: archive.IncrementSeconds,
+            IsBotGame: archive.IsBotGame,
             Result: archive.Result,
             CreatedAt: archive.CreatedAt
         );
 
-    private static PlayerArchive CreatePlayerArchive(
-        GamePlayer player,
-        int? ratingChange,
-        double timeRemaining
-    ) =>
+    private static PlayerArchive CreatePlayerArchive(GamePlayer player) =>
         new()
         {
             Color = player.Color,
             UserId = player.UserId,
             UserName = player.UserName,
-            FinalTimeRemaining = timeRemaining,
-            CountryCode = player.CountryCode,
-            NewRating = player.Rating + (ratingChange ?? 0),
-            RatingChange = ratingChange,
         };
-
-    private static MoveArchive CreateMoveArchive(MoveSnapshot moveSnapshot, int moveNumber)
-    {
-        var path = moveSnapshot.Path;
-        var sideEffects =
-            path.SideEffects?.Select(x => new MoveSideEffectArchive
-            {
-                FromIdx = x.FromIdx,
-                ToIdx = x.ToIdx,
-            })
-                .ToList() ?? [];
-        var pieceSpawns =
-            path.PieceSpawns?.Select(x => new PieceSpawnArchive
-            {
-                Type = x.Type,
-                Color = x.Color,
-                PosIdx = x.PosIdx,
-            })
-                .ToList() ?? [];
-
-        return new()
-        {
-            MoveNumber = moveNumber,
-            San = moveSnapshot.San,
-            TimeLeft = moveSnapshot.TimeLeft,
-            FromIdx = path.FromIdx,
-            ToIdx = path.ToIdx,
-            Captures = path.CapturedIdxs?.ToList() ?? [],
-            Triggers = path.TriggerIdxs?.ToList() ?? [],
-            SideEffects = sideEffects,
-            PieceSpawns = pieceSpawns,
-            PromotesTo = path.PromotesTo,
-        };
-    }
 }

@@ -6,14 +6,14 @@ import useLobbyStore from "../stores/lobbyStore";
 import constants from "@/lib/constants";
 import { useLobbyEmitter, useLobbyEvent } from "./useLobbyHub";
 
-export default function useMatchmaking(pool: PoolKey): {
+export default function useMatchmaking(pool: PoolKey | null): {
     createSeek: () => Promise<void>;
     cancelSeek: () => Promise<void>;
     toggleSeek: () => Promise<void>;
     isSeeking: boolean;
 } {
     const sendLobbyEvent = useLobbyEmitter();
-    const poolKeyStr = poolKeyToStr(pool);
+    const poolKeyStr = pool !== null ? poolKeyToStr(pool) : "0-0+0";
 
     const { isSeeking, addSeek, removeSeek } = useLobbyStore((x) => ({
         isSeeking: x.seeks.has(poolKeyStr),
@@ -26,16 +26,23 @@ export default function useMatchmaking(pool: PoolKey): {
     });
 
     async function createSeek(): Promise<void> {
-        addSeek(poolKeyStr);
-        await sendSeekRequest();
+        if (pool) {
+            addSeek(poolKeyStr);
+            await sendSeekRequest();
+        }
     }
 
     async function cancelSeek(): Promise<void> {
-        await sendLobbyEvent("CancelSeekAsync", pool);
-        removeSeek(poolKeyStr);
+        if (pool) {
+            await sendLobbyEvent("CancelSeekAsync", pool);
+            removeSeek(poolKeyStr);
+        }
     }
 
     const sendSeekRequest = useCallback(async () => {
+        if (!pool) {
+            return;
+        }
         switch (pool.poolType) {
             case PoolType.RATED:
                 await sendLobbyEvent("SeekRatedAsync", pool.timeControl);

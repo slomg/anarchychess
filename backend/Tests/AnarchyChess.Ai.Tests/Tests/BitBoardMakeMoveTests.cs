@@ -451,6 +451,75 @@ public class BitBoardMakeMoveTests
         AssertNoPieceAt(board, new("a1"));
     }
 
+    [Theory]
+    [InlineData(PieceType.Pawn)]
+    [InlineData(PieceType.UnderagePawn)]
+    [InlineData(PieceType.SterilePawn)]
+    public void MakeMove_sets_en_passant_state_correctly_for_pawn_moves(PieceType pawnType)
+    {
+        BitBoard board = BitBoard.FromPieces(
+            new() { [new AlgebraicPoint("b2")] = PieceFactory.White(pawnType) },
+            isWhiteToMove: true
+        );
+
+        BitMove move = new()
+        {
+            Piece = new BitPiece() { Type = pawnType, Color = BitPieceColor.White },
+            From = new AlgebraicPoint("b2").AsIdx(),
+            To = new AlgebraicPoint("b5").AsIdx(),
+        };
+        board.MakeMove(move);
+
+        var expectedEnPassantSquare =
+            (UInt128.One << new AlgebraicPoint("b3").AsIdx())
+            | (UInt128.One << new AlgebraicPoint("b4").AsIdx());
+        board.EnPassantSquaresMask.Should().Be(expectedEnPassantSquare);
+        board.EnPassantPawnSquare.Should().Be(move.To);
+    }
+
+    [Theory]
+    [InlineData(PieceType.Pawn)]
+    [InlineData(PieceType.UnderagePawn)]
+    [InlineData(PieceType.SterilePawn)]
+    public void MakeMove_sets_en_passant_state_correctly_for_black_pawn(PieceType pawnType)
+    {
+        BitBoard board = BitBoard.FromPieces(
+            new() { [new AlgebraicPoint("c9")] = PieceFactory.Black(pawnType) },
+            isWhiteToMove: false
+        );
+
+        BitMove move = new()
+        {
+            From = new AlgebraicPoint("c9").AsIdx(),
+            To = new AlgebraicPoint("c6").AsIdx(),
+            Piece = new BitPiece() { Type = pawnType, Color = BitPieceColor.Black },
+        };
+        board.MakeMove(move);
+
+        var expectedEnPassantSquare =
+            (UInt128.One << new AlgebraicPoint("c8").AsIdx())
+            | (UInt128.One << new AlgebraicPoint("c7").AsIdx());
+        board.EnPassantSquaresMask.Should().Be(expectedEnPassantSquare);
+        board.EnPassantPawnSquare.Should().Be(move.To);
+    }
+
+    [Fact]
+    public void MakeMove_sets_LastCaptureMask()
+    {
+        BitBoard board = BitBoard.FromPieces([]);
+
+        BitMove move = new()
+        {
+            From = 1,
+            To = 2,
+            Piece = default,
+            CapturesMask = (UInt128.One << 1) | (UInt128.One << 15),
+        };
+        board.MakeMove(move);
+
+        board.LastCaptureMask.Should().Be(move.CapturesMask);
+    }
+
     private static void AssertPieceAt(
         BitBoard board,
         AlgebraicPoint point,

@@ -87,6 +87,69 @@ public class GameResultDescriberTests
         result.Should().Be(new GameEndStatus(expectedResult, expectedDescription));
     }
 
+    [Theory]
+    [InlineData(
+        GameColor.White,
+        GameResult.BlackWin,
+        "Bot tried to play an illegal move. This should NEVER happen. Please report this on the discord"
+    )]
+    [InlineData(
+        GameColor.Black,
+        GameResult.WhiteWin,
+        "Bot tried to play an illegal move. This should NEVER happen. Please report this on the discord"
+    )]
+    public void BotIllegalMove_returns_the_correct_status(
+        GameColor loser,
+        GameResult expectedResult,
+        string expectedDescription
+    )
+    {
+        var result = _describer.BotIllegalMove(loser);
+        result.Should().Be(new GameEndStatus(expectedResult, expectedDescription));
+    }
+
+    [Theory]
+    [InlineData(
+        GameColor.White,
+        GameResult.BlackWin,
+        "You were playing so bad the bot got bored and went offline"
+    )]
+    [InlineData(
+        GameColor.Black,
+        GameResult.WhiteWin,
+        "You were playing so bad the bot got bored and went offline"
+    )]
+    public void BotOffline_returns_the_correct_status(
+        GameColor loser,
+        GameResult expectedResult,
+        string expectedDescription
+    )
+    {
+        var result = _describer.BotOffline(loser);
+        result.Should().Be(new GameEndStatus(expectedResult, expectedDescription));
+    }
+
+    [Theory]
+    [InlineData(
+        GameColor.White,
+        GameResult.BlackWin,
+        "The bot failed to make a move. This should NEVER happen. Please report this on the discord"
+    )]
+    [InlineData(
+        GameColor.Black,
+        GameResult.WhiteWin,
+        "The bot failed to make a move. This should NEVER happen. Please report this on the discord"
+    )]
+    public void BotFailure_returns_the_correct_status(
+        GameColor loser,
+        GameResult expectedResult,
+        string expectedDescription
+    )
+    {
+        var result = _describer.BotFailure(loser);
+        result.Should().Be(new GameEndStatus(expectedResult, expectedDescription));
+    }
+
     [Fact]
     public void DrawByAgreement_returns_the_correct_status()
     {

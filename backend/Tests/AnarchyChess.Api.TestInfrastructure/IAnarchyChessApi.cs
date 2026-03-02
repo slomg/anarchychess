@@ -1,4 +1,5 @@
 ﻿using AnarchyChess.Api.Analysis.Models;
+using AnarchyChess.Api.AnarchyBot.Models;
 using AnarchyChess.Api.ArchivedGames.Models;
 using AnarchyChess.Api.Challenges.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
@@ -9,6 +10,7 @@ using AnarchyChess.Api.Profile.DTOs;
 using AnarchyChess.Api.Quests.DTOs;
 using AnarchyChess.Api.Shared.Models;
 using AnarchyChess.Api.UserRating.Models;
+using AnarchyChess.EngineShared;
 using Refit;
 
 namespace AnarchyChess.Api.TestInfrastructure;
@@ -181,5 +183,13 @@ public interface IAnarchyChessApi
 
     [Delete("/api/challenge/incoming")]
     Task<IApiResponse> CancelAllIncomingChallengesAsync();
+    #endregion
+
+    #region Anarchy Bot
+    [Get("/api/bot/{gameToken}")]
+    Task<IApiResponse<BotGameState>> GetBotGameAsync(string gameToken);
+
+    [Post("/api/bot/start")]
+    Task<IApiResponse<string>> StartBotGameAsync(GameColor myColor);
     #endregion
 }

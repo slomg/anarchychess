@@ -1,10 +1,9 @@
 "use client";
 
 import useLiveChessStore from "../../hooks/useLiveChessStore";
-import Card from "@/components/ui/Card";
 import LiveGameControls from "./LiveGameControls";
 import GameOverControls from "./GameOverControls";
-import { JSX } from "react";
+import Card from "@/components/ui/Card";
 
 const GameControlsCard = () => {
     const { resultData, viewer } = useLiveChessStore((state) => ({
@@ -12,16 +11,16 @@ const GameControlsCard = () => {
         resultData: state.resultData,
     }));
 
-    let ControlsComponent: JSX.Element;
-    if (viewer.playerColor === null || resultData) {
-        ControlsComponent = <GameOverControls />;
-    } else {
-        ControlsComponent = <LiveGameControls />;
-    }
+    const controlsComponent =
+        viewer.playerColor === null || resultData ? (
+            <GameOverControls />
+        ) : (
+            <LiveGameControls />
+        );
 
     return (
         <Card className="flex-row justify-center gap-2">
-            {ControlsComponent}
+            {controlsComponent}
         </Card>
     );
 };

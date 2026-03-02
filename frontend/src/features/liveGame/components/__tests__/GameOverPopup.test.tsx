@@ -1,15 +1,15 @@
 import { act, render, screen } from "@testing-library/react";
-import React from "react";
+import userEvent from "@testing-library/user-event";
+import { StoreApi } from "zustand";
 
 import createLiveChessStore, {
     LiveChessStore,
 } from "@/features/liveGame/stores/liveChessStore";
-import { GameColor, GameResult } from "@/lib/apiClient";
-import GameOverPopup from "../GameOverPopup";
-import userEvent from "@testing-library/user-event";
+
 import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
 import LiveChessStoreContext from "@/features/liveGame/contexts/liveChessContext";
-import { StoreApi } from "zustand";
+import { GameColor, GameResult } from "@/lib/apiClient";
+import GameOverPopup from "../GameOverPopup";
 
 vi.mock("@/features/lobby/hooks/useLobbyHub");
 vi.mock("@/features/liveGame/hooks/useGameHub");
@@ -150,44 +150,6 @@ describe("GameOverPopup", () => {
         expect(screen.queryByTestId("gameOverPopup")).not.toBeInTheDocument();
     });
 
-    it("should render NEW GAME and REMATCH buttons", async () => {
-        store.setState({
-            resultData: {
-                result: GameResult.WHITE_WIN,
-                resultDescription: "White Won by Resignation",
-                whiteRatingChange: 10,
-                blackRatingChange: -8,
-            },
-        });
-
-        render(
-            <LiveChessStoreContext.Provider value={store}>
-                <GameOverPopup />
-            </LiveChessStoreContext.Provider>,
-        );
-
-        expect(screen.getByText("NEW GAME")).toBeInTheDocument();
-        expect(screen.getByText("REMATCH")).toBeInTheDocument();
-    });
-
-    it("should not render rematch button when viewer is a spectator", () => {
-        store.setState({
-            viewer: { playerColor: null, userId: crypto.randomUUID() },
-            resultData: {
-                result: GameResult.WHITE_WIN,
-                resultDescription: "test",
-            },
-        });
-
-        render(
-            <LiveChessStoreContext.Provider value={store}>
-                <GameOverPopup />
-            </LiveChessStoreContext.Provider>,
-        );
-
-        expect(screen.queryByTestId("REMATCH")).not.toBeInTheDocument();
-    });
-
     it("should show 'GAME OVER' when viewer is a spectator", async () => {
         store.setState({
             viewer: { playerColor: null, userId: crypto.randomUUID() },
@@ -206,5 +168,29 @@ describe("GameOverPopup", () => {
         expect(screen.getByTestId("gameOverPopup")).toBeInTheDocument();
         expect(screen.getByText("GAME OVER")).toBeInTheDocument();
         expect(screen.getByText("Black Won on Time")).toBeInTheDocument();
+    });
+
+    it("should render custom controls when provided", async () => {
+        store.setState({
+            resultData: {
+                result: GameResult.WHITE_WIN,
+                resultDescription: "White Won",
+            },
+        });
+
+        const CustomControl = () => (
+            <button data-testid="customControl">test</button>
+        );
+
+        render(
+            <LiveChessStoreContext.Provider value={store}>
+                <GameOverPopup controls={<CustomControl />} />
+            </LiveChessStoreContext.Provider>,
+        );
+
+        expect(screen.getByTestId("gameOverPopup")).toBeInTheDocument();
+
+        expect(screen.getByTestId("customControl")).toBeInTheDocument();
+        expect(screen.getByText("test")).toBeInTheDocument();
     });
 });

@@ -28,8 +28,8 @@ jobs:
                   appSourcePath: ${{ github.workspace }}/backend
                   dockerfilePath: AnarchyChess.Api/Dockerfile
                   registryUrl: docker.io
-                  registryUsername: ${{ secrets.ANARCHYCHESSPRODCONTAINER_REGISTRY_USERNAME }}
-                  registryPassword: ${{ secrets.ANARCHYCHESSPRODCONTAINER_REGISTRY_PASSWORD }}
+                  registryUsername: ${{ secrets.DOCKER_USERNAME }}
+                  registryPassword: ${{ secrets.DOCKER_PASSWORD }}
                   containerAppName: anarchychess-prod-container
                   resourceGroup: anarchychess-prod-resource
                   imageToBuild: slomg/anarchychess-api:${{ github.sha }}

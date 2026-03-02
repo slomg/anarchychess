@@ -3,6 +3,7 @@ import { StateCreator } from "zustand";
 import {
     Clocks,
     DrawState,
+    GameColor,
     GamePlayer,
     GameResultData,
     PoolKey,
@@ -18,19 +19,20 @@ export interface GameStateSliceProps {
     blackPlayer: GamePlayer;
 
     sourceRevision: number;
-    pool: PoolKey;
+    pool: PoolKey | null;
 
     resultData: GameResultData | null;
-    drawState: DrawState;
+    drawState: DrawState | null;
 }
 
 export interface GameStateSlice extends GameStateSliceProps {
+    getPlayerByColor(color: GameColor): GamePlayer;
     decrementDrawCooldown(): void;
     drawStateChange(drawState: DrawState): void;
     endGame(
         plyNumber: number,
         resultData: GameResultData,
-        finalClocks: Clocks,
+        finalClocks?: Clocks,
     ): void;
 
     resetState(initState: LiveChessStoreProps): void;
@@ -47,16 +49,23 @@ export function createGameStateSlice(
     return (set, get, store) => ({
         ...initState,
 
+        getPlayerByColor(color) {
+            const { whitePlayer, blackPlayer } = get();
+            return color === GameColor.WHITE ? whitePlayer : blackPlayer;
+        },
+
         decrementDrawCooldown() {
             set((state) => {
-                state.drawState.whiteCooldown = Math.max(
-                    0,
-                    state.drawState.whiteCooldown - 1,
-                );
-                state.drawState.blackCooldown = Math.max(
-                    0,
-                    state.drawState.blackCooldown - 1,
-                );
+                if (state.drawState !== null) {
+                    state.drawState.whiteCooldown = Math.max(
+                        0,
+                        state.drawState.whiteCooldown - 1,
+                    );
+                    state.drawState.blackCooldown = Math.max(
+                        0,
+                        state.drawState.blackCooldown - 1,
+                    );
+                }
             });
         },
 
@@ -69,7 +78,9 @@ export function createGameStateSlice(
         endGame(plyNumber, resultData, finalClocks) {
             const { setClocks } = get();
 
-            setClocks(plyNumber, finalClocks);
+            if (finalClocks) {
+                setClocks(plyNumber, finalClocks);
+            }
             set((state) => {
                 if (state.whitePlayer.rating && resultData.whiteRatingChange)
                     state.whitePlayer.rating += resultData.whiteRatingChange;

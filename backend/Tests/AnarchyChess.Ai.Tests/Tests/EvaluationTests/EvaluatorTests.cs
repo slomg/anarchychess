@@ -60,7 +60,7 @@ public class EvaluatorTests
 
         BitBoard board = BitBoard.FromPieces(pieces, isWhiteToMove: true);
 
-        bool result = _evaluator.TryEvaluateTermination(board, out int terminationEval);
+        bool result = _evaluator.TryEvaluateTermination(board, depth: 12, out int terminationEval);
 
         result.Should().BeFalse();
         terminationEval.Should().Be(0);
@@ -76,10 +76,10 @@ public class EvaluatorTests
 
         BitBoard board = BitBoard.FromPieces(pieces, isWhiteToMove: true);
 
-        bool result = _evaluator.TryEvaluateTermination(board, out int terminationEval);
+        bool result = _evaluator.TryEvaluateTermination(board, depth: 15, out int terminationEval);
 
         result.Should().BeTrue();
-        terminationEval.Should().Be(-100_000);
+        terminationEval.Should().Be(-100_015);
     }
 
     [Fact]
@@ -92,10 +92,10 @@ public class EvaluatorTests
 
         BitBoard board = BitBoard.FromPieces(pieces, isWhiteToMove: false);
 
-        bool result = _evaluator.TryEvaluateTermination(board, out int terminationEval);
+        bool result = _evaluator.TryEvaluateTermination(board, depth: 12, out int terminationEval);
 
         result.Should().BeTrue();
-        terminationEval.Should().Be(100_000);
+        terminationEval.Should().Be(100_012);
     }
 
     [Fact]
@@ -108,10 +108,10 @@ public class EvaluatorTests
 
         BitBoard board = BitBoard.FromPieces(pieces, isWhiteToMove: true);
 
-        bool result = _evaluator.TryEvaluateTermination(board, out int terminationEval);
+        bool result = _evaluator.TryEvaluateTermination(board, depth: 6, out int terminationEval);
 
         result.Should().BeTrue();
-        terminationEval.Should().Be(100_000);
+        terminationEval.Should().Be(100_006);
     }
 
     [Fact]
@@ -123,10 +123,10 @@ public class EvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces, isWhiteToMove: false);
 
-        bool result = _evaluator.TryEvaluateTermination(board, out int terminationEval);
+        bool result = _evaluator.TryEvaluateTermination(board, depth: 3, out int terminationEval);
 
         result.Should().BeTrue();
-        terminationEval.Should().Be(-100_000);
+        terminationEval.Should().Be(-100_003);
     }
 
     [Fact]
@@ -139,7 +139,7 @@ public class EvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        bool result = _evaluator.TryEvaluateTermination(board, out int terminationEval);
+        bool result = _evaluator.TryEvaluateTermination(board, depth: 21, out int terminationEval);
 
         result.Should().BeTrue();
         terminationEval.Should().Be(0);
@@ -156,7 +156,7 @@ public class EvaluatorTests
 
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        bool result = _evaluator.TryEvaluateTermination(board, out int terminationEval);
+        bool result = _evaluator.TryEvaluateTermination(board, depth: 69, out int terminationEval);
 
         result.Should().BeTrue();
         terminationEval.Should().Be(0);

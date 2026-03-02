@@ -1,4 +1,5 @@
-﻿using AnarchyChess.Api.Shared.Models;
+﻿extern alias Api;
+using AnarchyChess.Api.Shared.Models;
 using Microsoft.Extensions.Configuration;
 
 namespace AnarchyChess.Api.TestInfrastructure.Utils;
@@ -16,7 +17,7 @@ public static class AppSettingsLoader
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", optional: true)
             .AddEnvironmentVariables()
-            .AddUserSecrets<Program>()
+            .AddUserSecrets<Api::Program>()
             .Build();
         var appSettings =
             configuration.GetSection("AppSettings").Get<AppSettings>()

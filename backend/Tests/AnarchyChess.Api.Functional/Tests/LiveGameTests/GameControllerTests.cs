@@ -118,13 +118,6 @@ public class GameControllerTests : BaseFunctionalTest
     }
 
     [Fact]
-    public async Task GetGame_returns_401_for_unauthenticated_user()
-    {
-        var response = await ApiClient.Api.GetGameAsync("anygametoken");
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-    }
-
-    [Fact]
     public async Task GetGame_returns_correct_game_after_it_is_over_when_rated()
     {
         var startGame = await GameUtils.CreateRatedGameAsync(DbContext, _gameStarter);

@@ -12,7 +12,7 @@ export interface LiveChessViewer {
 export interface GamePlaySliceProps {
     sideToMove: GameColor;
     clockSnapshotByPly: Map<number, ClockSnapshot>;
-    liveClocks: Clocks;
+    liveClocks: Clocks | null;
 
     viewer: LiveChessViewer;
 }
@@ -20,7 +20,7 @@ export interface GamePlaySliceProps {
 export interface GamePlaySlice {
     sideToMove: GameColor;
     clockSnapshotByPly: Map<number, ClockSnapshot>;
-    liveClocks: Clocks;
+    liveClocks: Clocks | null;
 
     viewer: LiveChessViewer;
     isPendingMoveAck: boolean;
@@ -29,8 +29,8 @@ export interface GamePlaySlice {
     isInteractionAllowed(): boolean;
     receiveLiveMove(
         plyNumber: number,
-        clocks: Clocks,
         sideToMove: GameColor,
+        clocks?: Clocks,
     ): void;
     markPendingMoveAck(): void;
     cancelPendingMoveAch(): void;
@@ -52,7 +52,9 @@ export function createGamePlaySlice(
 
         isPendingMoveAck: false,
         serverClockAheadByMs:
-            initState.liveClocks.serverTime - new Date().valueOf(),
+            initState.liveClocks !== null
+                ? initState.liveClocks.serverTime - new Date().valueOf()
+                : 0,
 
         isInteractionAllowed() {
             const { resultData, viewer, sideToMove } = get();
@@ -63,11 +65,13 @@ export function createGamePlaySlice(
             return isGameOver || viewer.playerColor === sideToMove;
         },
 
-        receiveLiveMove(plyNumber, clocks, sideToMove) {
+        receiveLiveMove(plyNumber, sideToMove, clocks) {
             const { decrementDrawCooldown, setClocks } = get();
 
             decrementDrawCooldown();
-            setClocks(plyNumber, clocks);
+            if (clocks) {
+                setClocks(plyNumber, clocks);
+            }
             set((state) => {
                 state.sideToMove = sideToMove;
                 state.isPendingMoveAck = false;

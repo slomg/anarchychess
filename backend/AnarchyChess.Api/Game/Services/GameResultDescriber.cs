@@ -1,6 +1,6 @@
-﻿using AnarchyChess.EngineShared.Extensions;
-using AnarchyChess.Api.GameSnapshot.Models;
+﻿using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.EngineShared;
+using AnarchyChess.EngineShared.Extensions;
 
 namespace AnarchyChess.Api.Game.Services;
 
@@ -13,11 +13,15 @@ public interface IGameResultDescriber
     GameEndStatus Overtime(GameColor by);
     GameEndStatus Aborted(GameColor by);
 
+    GameEndStatus MutualKingCapture();
     GameEndStatus DrawByAgreement();
     GameEndStatus FiftyMoves();
     GameEndStatus ThreeFold();
     GameEndStatus KingTouch();
-    GameEndStatus MutualKingCapture();
+
+    GameEndStatus BotIllegalMove(GameColor bot);
+    GameEndStatus BotOffline(GameColor bot);
+    GameEndStatus BotFailure(GameColor bot);
 }
 
 public class GameResultDescriber : IGameResultDescriber
@@ -48,6 +52,21 @@ public class GameResultDescriber : IGameResultDescriber
     public GameEndStatus KingTouch() => new(GameResult.Draw, "Draw by King Touch");
 
     public GameEndStatus MutualKingCapture() => new(GameResult.Draw, "Draw by Mutual King Capture");
+
+    public GameEndStatus BotIllegalMove(GameColor bot) =>
+        new(
+            GetResultByLoser(bot),
+            "Bot tried to play an illegal move. This should NEVER happen. Please report this on the discord"
+        );
+
+    public GameEndStatus BotOffline(GameColor bot) =>
+        new(GetResultByLoser(bot), "You were playing so bad the bot got bored and went offline");
+
+    public GameEndStatus BotFailure(GameColor bot) =>
+        new(
+            GetResultByLoser(bot),
+            "The bot failed to make a move. This should NEVER happen. Please report this on the discord"
+        );
 
     private static GameResult GetResultByLoser(GameColor loser) =>
         loser.Match(whenWhite: GameResult.BlackWin, whenBlack: GameResult.WhiteWin);

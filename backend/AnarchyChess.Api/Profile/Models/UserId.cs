@@ -18,6 +18,10 @@ public readonly record struct UserId(string Value)
 
     public static UserId Authed() => Guid.NewGuid().ToString();
 
+    public static UserId AnarchyBot() => "bot:anarchybot";
+
+    public static UserId LobotomizedAnarchyBot() => "bot:lobotomized-anarchybot";
+
     public static implicit operator string(UserId id) => id.Value;
 
     public static implicit operator UserId(string value) => new(value);
@@ -25,7 +29,8 @@ public readonly record struct UserId(string Value)
     public static implicit operator UserId?(string? value) => value is null ? null : new(value);
 
     public bool IsGuest => Value.StartsWith("guest:");
-    public bool IsAuthed => !IsGuest;
+    public bool IsBot => Value.StartsWith("bot:");
+    public bool IsAuthed => !IsGuest && !IsBot;
 
     public override string ToString() => Value;
 }

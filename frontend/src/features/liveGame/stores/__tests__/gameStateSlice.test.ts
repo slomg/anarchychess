@@ -6,7 +6,12 @@ import createLiveChessStore, {
 } from "../liveChessStore";
 
 import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
-import { DrawState, GameResult, GameResultData } from "@/lib/apiClient";
+import {
+    DrawState,
+    GameColor,
+    GameResult,
+    GameResultData,
+} from "@/lib/apiClient";
 import { createFakeDrawState } from "@/lib/testUtils/fakers/drawStateFaker";
 import { createFakeClocks } from "@/lib/testUtils/fakers/clocksFaker";
 
@@ -17,6 +22,22 @@ describe("GameStateSlice", () => {
     beforeEach(() => {
         initialProps = createFakeLiveChessStoreProps();
         store = createLiveChessStore(initialProps);
+    });
+
+    describe("getPlayerByColor", () => {
+        it.each([GameColor.WHITE, GameColor.BLACK])(
+            "should return the correct player for each color",
+            (color) => {
+                const { whitePlayer, blackPlayer, getPlayerByColor } =
+                    store.getState();
+
+                const result = getPlayerByColor(color);
+
+                expect(result).toEqual(
+                    color === GameColor.WHITE ? whitePlayer : blackPlayer,
+                );
+            },
+        );
     });
 
     describe("decrementDrawCooldown", () => {

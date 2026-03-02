@@ -201,4 +201,26 @@ describe("useMatchmaking", () => {
 
         expect(sendLobbyEvent).toHaveBeenCalledTimes(2);
     });
+
+    it("should handle null pool", async () => {
+        const { result } = renderHook(() => useMatchmaking(null));
+
+        await act(() => result.current.createSeek());
+        expect(result.current.isSeeking).toBe(false);
+        expect(sendLobbyEvent).not.toHaveBeenCalledWith(
+            "SeekRatedAsync",
+            expect.anything(),
+        );
+        expect(sendLobbyEvent).not.toHaveBeenCalledWith(
+            "SeekCasualAsync",
+            expect.anything(),
+        );
+
+        await act(() => result.current.cancelSeek());
+        expect(result.current.isSeeking).toBe(false);
+        expect(sendLobbyEvent).not.toHaveBeenCalledWith(
+            "CancelSeekAsync",
+            expect.anything(),
+        );
+    });
 });

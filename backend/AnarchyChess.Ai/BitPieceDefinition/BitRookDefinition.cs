@@ -22,6 +22,7 @@ public sealed class BitRookDefinition : IBitPieceDefinition
         );
 
         UInt128 horseyAttacks = attacks & board.BitboardFor(PieceType.Horsey, piece.Color);
+        UInt128 notPositionBit = ~(UInt128.One << position);
         while (horseyAttacks != 0)
         {
             byte toSquare = (byte)BitboardHelpers.BitScanForward(ref horseyAttacks);
@@ -29,6 +30,7 @@ public sealed class BitRookDefinition : IBitPieceDefinition
             UInt128 captures = PieceMasks.AdjacentMasks[toSquare];
             captures &= board.Occupancy;
             captures |= UInt128.One << toSquare;
+            captures &= notPositionBit;
 
             moves[moveCount++] = new BitMove()
             {

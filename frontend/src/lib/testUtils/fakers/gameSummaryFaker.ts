@@ -20,6 +20,7 @@ export function createFakeGameSummary(
         poolType: faker.helpers.arrayElement([PoolType.CASUAL, PoolType.RATED]),
         baseSeconds: faker.number.int({ min: 100, max: 1000 }),
         incrementSeconds: faker.number.int({ min: 1, max: 100 }),
+        isBotGame: false,
         result: faker.helpers.enumValue(GameResult),
         createdAt: Date.now().toLocaleString(),
         ...override,

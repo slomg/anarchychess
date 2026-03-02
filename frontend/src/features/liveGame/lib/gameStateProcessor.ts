@@ -7,7 +7,10 @@ import {
 import {
     GameColor,
     GamePlayer,
+    GameResultData,
     getGame,
+    MovePath,
+    MoveSnapshot,
     type GameState,
 } from "@/lib/apiClient";
 
@@ -26,32 +29,17 @@ export interface ProcessedGameState {
     board: ChessboardProps;
 }
 
-export function createStoreProps(
+export function processGameState(
     gameToken: string,
     viewerUserId: string,
     gameState: GameState,
 ): ProcessedGameState {
-    const positionHistory = getPositionHistory(gameState);
-    const lastPosition = positionHistory.viewingPosition;
-    const boardWidth = constants.BOARD_WIDTH;
-    const boardHeight = constants.BOARD_HEIGHT;
-    const legalMoves = decodeMovePathIntoLegalMoves({
-        paths: gameState.legalMoves,
-        boardWidth,
-    });
-
-    const viewerColor = getViewerColor(
+    const viewer = getViewer(
         gameState.whitePlayer,
         gameState.blackPlayer,
         viewerUserId,
     );
-
     const clockSnapshotByPly = getClockSnapshots(gameState);
-
-    const viewer: LiveChessViewer = {
-        userId: viewerUserId,
-        playerColor: viewerColor,
-    };
 
     const live: LiveChessStoreProps = {
         gameToken,
@@ -70,7 +58,35 @@ export function createStoreProps(
         clockSnapshotByPly,
         resultData: gameState.resultData ?? null,
     };
-    const board: ChessboardProps = {
+    const board = createChessboardProps(
+        viewer,
+        gameState.initialFen,
+        gameState.moveHistory,
+        gameState.legalMoves,
+        gameState.resultData,
+    );
+    return { live, board };
+}
+
+export function createChessboardProps(
+    viewer: LiveChessViewer,
+    initialFen: string,
+    moveHistory: MoveSnapshot[],
+    legalMovePaths: MovePath[],
+    resultData?: GameResultData | null,
+): ChessboardProps {
+    const boardWidth = constants.BOARD_WIDTH;
+    const boardHeight = constants.BOARD_HEIGHT;
+
+    const legalMoves = decodeMovePathIntoLegalMoves({
+        paths: legalMovePaths,
+        boardWidth,
+    });
+
+    const positionHistory = getPositionHistory(initialFen, moveHistory);
+    const lastPosition = positionHistory.viewingPosition;
+
+    return {
         pieces: new BoardPieces(
             lastPosition?.pieces ?? positionHistory.rootPieces,
         ),
@@ -85,12 +101,21 @@ export function createStoreProps(
         },
 
         boardDimensions: { width: boardWidth, height: boardHeight },
-        viewingFrom: viewerColor ?? GameColor.WHITE,
-        allowHistoryChanges:
-            gameState.resultData !== null && gameState.resultData !== undefined,
+        viewingFrom: viewer.playerColor ?? GameColor.WHITE,
+        allowHistoryChanges: resultData != null,
     };
+}
 
-    return { live, board };
+export function getViewer(
+    whitePlayer: GamePlayer,
+    blackPlayer: GamePlayer,
+    userId: string,
+): LiveChessViewer {
+    const viewer: LiveChessViewer = {
+        userId: userId,
+        playerColor: getViewerColor(whitePlayer, blackPlayer, userId),
+    };
+    return viewer;
 }
 
 function getViewerColor(
@@ -103,11 +128,14 @@ function getViewerColor(
     return null;
 }
 
-function getPositionHistory(gameState: GameState): PositionHistory {
-    let pieces = decodeFen(gameState.initialFen);
+function getPositionHistory(
+    initialFen: string,
+    moveHistory: MoveSnapshot[],
+): PositionHistory {
+    let pieces = decodeFen(initialFen);
 
     const positionHistory = new PositionHistory(pieces);
-    for (const moveSnapshot of gameState.moveHistory) {
+    for (const moveSnapshot of moveHistory) {
         const move = decodeMovePath(moveSnapshot.path, constants.BOARD_WIDTH);
         const { newPieces } = simulateMove(pieces, move);
 
@@ -167,7 +195,7 @@ export async function refetchGame(
         return;
     }
 
-    const { live, board } = createStoreProps(gameToken, userId, gameState);
+    const { live, board } = processGameState(gameToken, userId, gameState);
     liveChessStore.getState().resetState(live);
     chessboardStore.getState().resetState(board);
 }

@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿extern alias Api;
+using System.Net;
 using System.Text.Json;
 using AnarchyChess.Api.Infrastructure;
 using AnarchyChess.Api.Streaming;
@@ -25,7 +26,7 @@ using Testcontainers.PostgreSql;
 
 namespace AnarchyChess.Api.TestInfrastructure;
 
-public class AnarchyChessWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
+public class AnarchyChessWebApplicationFactory : WebApplicationFactory<Api::Program>, IAsyncLifetime
 {
     private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder("postgres:latest")
         .WithDatabase("anarchychess")

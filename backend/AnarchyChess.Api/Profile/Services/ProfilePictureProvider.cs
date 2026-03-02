@@ -22,14 +22,20 @@ public class ProfilePictureProvider : IProfilePictureProvider
 {
     private readonly ILogger<ProfilePictureProvider> _logger;
     private readonly IBlobStorage _storage;
+    private readonly IBotProfilePictureProvider _botProfilePictureProvider;
     private readonly byte[] _defaultProfilePicture;
 
     public const int MaxDimensionPx = 512;
 
-    public ProfilePictureProvider(ILogger<ProfilePictureProvider> logger, IBlobStorage storage)
+    public ProfilePictureProvider(
+        ILogger<ProfilePictureProvider> logger,
+        IBlobStorage storage,
+        IBotProfilePictureProvider botProfilePictureProvider
+    )
     {
         _logger = logger;
         _storage = storage;
+        _botProfilePictureProvider = botProfilePictureProvider;
 
         var defaultPfpPath = Path.Combine(
             AppContext.BaseDirectory,
@@ -109,6 +115,12 @@ public class ProfilePictureProvider : IProfilePictureProvider
         CancellationToken token = default
     )
     {
+        if (userId.IsBot)
+        {
+            return _botProfilePictureProvider.GetBotProfilePicture(userId)
+                ?? _defaultProfilePicture;
+        }
+
         if (!await _storage.ExistsAsync(GetPfpPath(userId), token))
             return _defaultProfilePicture;
 

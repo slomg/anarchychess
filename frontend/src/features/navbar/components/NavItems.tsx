@@ -2,6 +2,7 @@
 
 import {
     PlayIcon,
+    CpuChipIcon,
     Cog6ToothIcon,
     UserCircleIcon,
     BoltSlashIcon,
@@ -10,12 +11,13 @@ import {
     ArrowLeftEndOnRectangleIcon,
     BookOpenIcon,
 } from "@heroicons/react/24/outline";
+
 import { HeartIcon } from "@heroicons/react/16/solid";
 
 import Link from "next/link";
 
-import NavItem from "./NavItem";
 import constants from "@/lib/constants";
+import NavItem from "./NavItem";
 
 export const UpperNavItems = ({
     isLoggedIn,
@@ -33,6 +35,15 @@ export const UpperNavItems = ({
                 isCollapsed={isCollapsed}
             >
                 Play
+            </NavItem>
+
+            <NavItem
+                as={Link}
+                href={constants.PATHS.BOT}
+                icon={<CpuChipIcon />}
+                isCollapsed={isCollapsed}
+            >
+                Computer
             </NavItem>
 
             <NavItem

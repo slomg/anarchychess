@@ -3,7 +3,10 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using AnarchyChess.Ai.Service.Services;
 using AnarchyChess.Api.Analysis.Services;
+using AnarchyChess.Api.AnarchyBot.Services;
+using AnarchyChess.Api.AnarchyBot.SignalR;
 using AnarchyChess.Api.ArchivedGames.Repositories;
 using AnarchyChess.Api.ArchivedGames.Services;
 using AnarchyChess.Api.Auth.Errors;
@@ -66,6 +69,7 @@ using NSwag.Generation.Processors;
 using Orleans.Providers;
 using Orleans.Serialization.Serializers;
 using Orleans.Storage;
+using ProtoBuf.Grpc.ClientFactory;
 using Scalar.AspNetCore;
 using Serilog;
 
@@ -473,6 +477,7 @@ builder.Services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
 #region Profile
 builder.Services.AddScoped<IProfileSettings, ProfileSettings>();
 builder.Services.AddScoped<IProfilePictureProvider, ProfilePictureProvider>();
+builder.Services.AddSingleton<IBotProfilePictureProvider, BotProfilePictureProvider>();
 builder.Services.AddSingleton<IValidator<ProfileEditRequest>, ProfileEditValidator>();
 builder.Services.AddSingleton<IValidator<UsernameEditRequest>, UsernameEditValidator>();
 #endregion
@@ -523,6 +528,15 @@ builder.Services.AddScoped<IChallengeRequestCreator, ChallengeRequestCreator>();
 #endregion
 
 
+#region Anarchy Bot
+builder.Services.AddSingleton<IBotService, BotService>();
+builder.Services.AddSingleton<IBotMoveRunner, BotMoveRunner>();
+builder.Services.AddSingleton<IBotNotifier, BotNotifier>();
+builder.Services.AddCodeFirstGrpcClient<IAiEngineService>(client =>
+{
+    client.Address = appSettings.Bot.ServiceUrl;
+});
+#endregion
 
 builder.Services.AddSingleton<IShardRouter, ShardRouter>();
 builder.Services.AddSingleton<IRandomCodeGenerator, RandomCodeGenerator>();
@@ -576,6 +590,7 @@ app.MapHub<ChallengeHub>("/api/hub/challenge");
 app.MapHub<OpenSeekHub>("/api/hub/openseek");
 app.MapHub<LobbyHub>("/api/hub/lobby");
 app.MapHub<GameHub>("/api/hub/game");
+app.MapHub<BotHub>("/api/hub/bot");
 
 app.UseResponseCompression();
 

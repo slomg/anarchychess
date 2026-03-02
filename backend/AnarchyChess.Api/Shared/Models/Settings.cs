@@ -7,6 +7,7 @@ public class AppSettings
     public required AuthSettings Auth { get; set; }
     public required LobbySettings Lobby { get; set; }
     public required GameSettings Game { get; set; }
+    public required BotSettings Bot { get; set; }
     public required ChallengeSettings Challenge { get; set; }
 
     // Set via dotnet user-secrets
@@ -105,6 +106,11 @@ public class ChatSettings
     public TimeSpan BucketRefillRate { get; set; }
 
     public required int MaxMessageLength { get; set; }
+}
+
+public class BotSettings
+{
+    public required Uri ServiceUrl { get; set; }
 }
 
 public class JwtSettings

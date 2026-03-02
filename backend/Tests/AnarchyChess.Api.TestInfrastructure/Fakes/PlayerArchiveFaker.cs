@@ -14,9 +14,5 @@ public class PlayerArchiveFaker : Faker<PlayerArchive>
         RuleFor(x => x.UserName, f => f.Internet.UserName());
         RuleFor(x => x.UserId, f => (UserId)f.Random.Guid().ToString());
         RuleFor(x => x.Color, color);
-        RuleFor(x => x.FinalTimeRemaining, f => f.Random.Double(0, 100000));
-        RuleFor(x => x.NewRating, f => f.Random.Int(1200, 2500));
-        RuleFor(x => x.RatingChange, f => f.Random.Int(-32, 32));
-        RuleFor(x => x.CountryCode, f => f.Address.CountryCode());
     }
 }

@@ -1,91 +1,70 @@
-import { act, renderHook } from "@testing-library/react";
+import { renderHook } from "@testing-library/react";
 import { StoreApi } from "zustand";
 
 import {
     ChessboardStore,
     createChessboardStore,
 } from "@/features/chessboard/stores/chessboardStore";
-import {
-    addSidelineAnalysisMove,
-    AnalysisMoveArgs,
-} from "@/features/analysis/lib/handleAnalysisMove";
-import {
-    createFakeBoardPieces,
-    createFakeMove,
-} from "@/lib/testUtils/fakers/chessboardFakers";
 import createLiveChessStore, {
     LiveChessStore,
 } from "../../stores/liveChessStore";
 
 import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
-import BoardPieces from "@/features/chessboard/lib/boardPieces";
+import useMoveEmitterForLiveGames from "../useMoveEmitterForLiveGames";
+
 import useLiveMoveEmitter from "../useLiveMoveEmitter";
 import { useGameEmitter } from "../useGameHub";
-import { GameResult } from "@/lib/apiClient";
+import { MoveKey } from "@/features/chessboard/lib/types";
 
 vi.mock("@/features/liveGame/hooks/useGameHub");
-vi.mock("@/features/analysis/lib/handleAnalysisMove");
+vi.mock("../useMoveEmitterForLiveGames");
 
 describe("useLiveMoveEmitter", () => {
     let liveChessStore: StoreApi<LiveChessStore>;
     let chessboardStore: StoreApi<ChessboardStore>;
-    let prevPieces: BoardPieces;
 
     const sendGameEventMock = vi.fn();
-    const addSidelineAnalysisMoveMock = vi.mocked(addSidelineAnalysisMove);
+
+    const useGameEmitterMock = vi.mocked(useGameEmitter);
+    const useMoveEmitterForLiveGamesMock = vi.mocked(
+        useMoveEmitterForLiveGames,
+    );
 
     beforeEach(() => {
         liveChessStore = createLiveChessStore(createFakeLiveChessStoreProps());
         chessboardStore = createChessboardStore();
-        prevPieces = createFakeBoardPieces();
 
-        vi.mocked(useGameEmitter).mockReturnValue(sendGameEventMock);
+        useGameEmitterMock.mockReturnValue(sendGameEventMock);
     });
 
-    it("should emit move events when a piece is moved", async () => {
+    it("should call useMoveEmitterForLiveGames with a wrapped sendGameEvent", () => {
         renderHook(() => useLiveMoveEmitter(liveChessStore, chessboardStore));
 
-        const move = createFakeMove();
-        await act(() =>
-            chessboardStore
-                .getState()
-                .pieceMovementEvent.emit(move, prevPieces),
-        );
+        expect(useMoveEmitterForLiveGames).toHaveBeenCalledOnce();
+        const [, , sendMoveCallback] =
+            useMoveEmitterForLiveGamesMock.mock.calls[0];
 
-        expect(sendGameEventMock).toHaveBeenCalledExactlyOnceWith(
+        sendMoveCallback("move123" as MoveKey);
+        expect(sendGameEventMock).toHaveBeenCalledWith(
             "MovePieceAsync",
             liveChessStore.getState().gameToken,
-            move.moveKey,
+            "move123",
         );
-        expect(addSidelineAnalysisMoveMock).not.toHaveBeenCalled();
     });
 
-    it("should treat move as analysis when the game is over", async () => {
+    it("should use the gameToken from the store", () => {
+        liveChessStore.setState({ gameToken: "newToken" });
+
         renderHook(() => useLiveMoveEmitter(liveChessStore, chessboardStore));
-        const initialFen = "test initial fen";
-        liveChessStore.setState({
-            resultData: {
-                result: GameResult.WHITE_WIN,
-                resultDescription: "desc",
-            },
-            initialFen,
-        });
 
-        const move = createFakeMove();
-        await act(() =>
-            chessboardStore
-                .getState()
-                .pieceMovementEvent.emit(move, prevPieces),
+        const [, , sendMoveCallback] =
+            useMoveEmitterForLiveGamesMock.mock.calls[0];
+        sendMoveCallback("move456" as MoveKey);
+
+        expect(sendGameEventMock).toHaveBeenCalledWith(
+            "MovePieceAsync",
+            "newToken",
+            "move456",
         );
-
-        expect(addSidelineAnalysisMoveMock).toHaveBeenCalledExactlyOnceWith<
-            [AnalysisMoveArgs]
-        >({
-            chessboardStore,
-            prevPieces,
-            rootFen: initialFen,
-            move,
-        });
-        expect(sendGameEventMock).not.toHaveBeenCalled();
     });
 });

@@ -78,4 +78,8 @@ public static class ErrorCodes
     public const string ChallengeCannotAccept = "Challenge.CannotAccept";
     public const string ChallengeNotFound = "Challenge.NotFound";
     public const string ChallengeClosed = "Challenge.Closed";
+
+    public const string BotOffline = "Bot.Offline";
+    public const string BotNoMove = "Bot.NoMove";
+    public const string BotFailure = "Bot.Failure";
 }

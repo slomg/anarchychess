@@ -12,16 +12,16 @@ import BoardPieces from "@/features/chessboard/lib/boardPieces";
 import { LiveChessViewer } from "../../stores/gamePlaySlice";
 import { MoveBounds } from "@/features/chessboard/lib/types";
 import { logicalPoint } from "@/features/point/pointUtils";
-import { createStoreProps } from "../gameStateProcessor";
+import { processGameState } from "../gameStateProcessor";
 import { GameColor, GameResult } from "@/lib/apiClient";
 import constants from "@/lib/constants";
 
-describe("createStoreProps", () => {
+describe("processGameState", () => {
     it("should create correct live store props", () => {
         const gameState = createFakeGameState();
         const viewerUserId = gameState.blackPlayer.userId;
 
-        const { live } = createStoreProps(
+        const { live } = processGameState(
             "game-token",
             viewerUserId,
             gameState,
@@ -53,7 +53,7 @@ describe("createStoreProps", () => {
         const gameState = createFakeGameState();
         const viewerUserId = gameState.blackPlayer.userId;
 
-        const { board } = createStoreProps(
+        const { board } = processGameState(
             "game-token",
             viewerUserId,
             gameState,
@@ -119,7 +119,7 @@ describe("createStoreProps", () => {
             ],
         });
 
-        const { board } = createStoreProps(
+        const { board } = processGameState(
             "game-token",
             gameState.blackPlayer.userId,
             gameState,
@@ -181,7 +181,6 @@ describe("createStoreProps", () => {
                 move: move.decoded,
                 sideToMove: move.nextSideToMove,
                 fen: move.fen,
-                // clocks: move.clocks,
                 san: move.san,
             });
         }
@@ -199,7 +198,7 @@ describe("createStoreProps", () => {
 
     it("should map legal moves to the current position", () => {
         const gameState = createFakeGameState();
-        const { board } = createStoreProps(
+        const { board } = processGameState(
             "game-token",
             gameState.blackPlayer.userId,
             gameState,
@@ -218,7 +217,7 @@ describe("createStoreProps", () => {
         const gameState = createFakeGameState();
         const userId = "random user id";
 
-        const result = createStoreProps("game-token", userId, gameState);
+        const result = processGameState("game-token", userId, gameState);
 
         expect(result.live.viewer).toEqual<LiveChessViewer>({
             userId,
@@ -234,7 +233,7 @@ describe("createStoreProps", () => {
             },
         });
 
-        const result = createStoreProps(
+        const result = processGameState(
             "game-token",
             gameState.blackPlayer.userId,
             gameState,
@@ -258,7 +257,7 @@ describe("createStoreProps", () => {
         });
         gameState.pool.timeControl.baseSeconds = 300; // 5 min base
 
-        const { live } = createStoreProps(
+        const { live } = processGameState(
             "game-token",
             gameState.whitePlayer.userId,
             gameState,

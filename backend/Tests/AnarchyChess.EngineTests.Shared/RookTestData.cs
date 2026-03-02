@@ -92,6 +92,17 @@ public class RookTestData : TheoryData<PieceTestCase>
 
         Add(
             PieceTestCase
+                .From("a1", rook)
+                .WithFriendlyPieceAt("d1")
+                .WithEnemyPieceAt("e1")
+                .WithFriendlyPieceAt("a4")
+                .WithEnemyPieceAt("a5")
+                .GoesTo("a2", "a3", "b1", "c1")
+                .WithDescription("Rook at a1 with blockers")
+        );
+
+        Add(
+            PieceTestCase
                 .From("e5", rook)
                 .WithFriendlyPieceAt("e7", excludePieces: [PieceType.Horsey]) // blocks beyond e6
                 .WithFriendlyPieceAt("h5", excludePieces: [PieceType.Horsey]) // blocks beyond g5
@@ -191,6 +202,22 @@ public class RookTestData : TheoryData<PieceTestCase>
                 .GoesTo("a3", captures: ["a3"])
                 .GoesTo("a2", "b1", "c1", "d1", "e1", "f1", "g1", "h1", "i1", "j1")
                 .WithDescription("Doesn't fuse with enemy horsey")
+        );
+
+        Add(
+            PieceTestCase
+                .From("a1", rook)
+                .WithWhitePieceAt("b1", PieceType.Horsey)
+                .WithEnemyPieceAt("b2")
+                .WithEnemyPieceAt("c2")
+                .GoesTo(
+                    "b1",
+                    captures: ["b1", "b2", "c2"],
+                    promotesTo: PieceType.Knook,
+                    specialMoveType: SpecialMoveType.KnooklearFusion
+                )
+                .GoesTo("a2", "a3", "a4", "a5", "a6", "a7", "a8", "a9", "a10")
+                .WithDescription("Knooklear fusion doesn't include origin position")
         );
     }
 }

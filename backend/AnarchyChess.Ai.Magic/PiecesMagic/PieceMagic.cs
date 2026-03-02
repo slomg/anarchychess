@@ -16,14 +16,17 @@ public abstract class PieceMagic : IPieceMagic
         x += offset.X;
         y += offset.Y;
         int i = 0;
-        while (
-            x < Constants.BoardSize - 1
-            && y < Constants.BoardSize - 1
-            && x > 0
-            && y > 0
-            && i < limit
-        )
+        while (x < Constants.BoardSize && y < Constants.BoardSize && x >= 0 && y >= 0 && i < limit)
         {
+            // stop before the edge square in the direction we're sliding
+            if (
+                (offset.X != 0 && (x == 0 || x == Constants.BoardSize - 1))
+                || (offset.Y != 0 && (y == 0 || y == Constants.BoardSize - 1))
+            )
+            {
+                break;
+            }
+
             mask |= UInt128.One << (y * Constants.BoardSize + x);
             x += offset.X;
             y += offset.Y;

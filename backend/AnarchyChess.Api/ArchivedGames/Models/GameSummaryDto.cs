@@ -13,6 +13,7 @@ public record GameSummaryDto(
     PoolType PoolType,
     int BaseSeconds,
     int IncrementSeconds,
+    bool IsBotGame,
     GameResult Result,
     DateTime CreatedAt
 );

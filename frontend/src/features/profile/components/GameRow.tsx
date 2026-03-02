@@ -2,6 +2,7 @@ import {
     PlusCircleIcon,
     MinusCircleIcon,
     PauseCircleIcon,
+    CpuChipIcon,
 } from "@heroicons/react/24/outline";
 
 import Link from "next/link";
@@ -10,6 +11,7 @@ import clsx from "clsx";
 import TimeControlIconFromSeconds from "@/features/lobby/components/TimeControlIconFromSeconds";
 import { GameResult, GameSummary, PublicUser } from "@/lib/apiClient";
 import ProfileTooltip from "./ProfileTooltip";
+import constants from "@/lib/constants";
 
 const GameRow = ({
     game,
@@ -60,23 +62,38 @@ const GameRow = ({
             )}
         >
             <td className="relative">
-                <GameLink gameToken={game.gameToken} />
+                <GameLink gameToken={game.gameToken} isBot={game.isBotGame} />
+
                 <div
                     className="flex flex-col items-center justify-center gap-1
                         px-3"
                 >
-                    <TimeControlIconFromSeconds
-                        baseSeconds={game.baseSeconds}
-                        className="h-8 w-8"
-                    />
-                    <span className="text-xl" data-testid="timeControlText">
-                        {(game.baseSeconds / 60).toString().replace(/^0/, "")}+
-                        {game.incrementSeconds}
-                    </span>
+                    {game.isBotGame ? (
+                        <CpuChipIcon
+                            className="h-8 w-8"
+                            data-testid="gameRowBotIcon"
+                        />
+                    ) : (
+                        <>
+                            <TimeControlIconFromSeconds
+                                baseSeconds={game.baseSeconds}
+                                className="h-8 w-8"
+                            />
+                            <span
+                                className="text-xl"
+                                data-testid="gameRowTimeControlText"
+                            >
+                                {(game.baseSeconds / 60)
+                                    .toString()
+                                    .replace(/^0/, "")}
+                                +{game.incrementSeconds}
+                            </span>
+                        </>
+                    )}
                 </div>
             </td>
             <td className="relative flex">
-                <GameLink gameToken={game.gameToken} />
+                <GameLink gameToken={game.gameToken} isBot={game.isBotGame} />
 
                 <div className="relative flex flex-col justify-center py-4">
                     <ProfileTooltip userId={game.whitePlayer.userId}>
@@ -96,7 +113,7 @@ const GameRow = ({
             </td>
 
             <td className="relative">
-                <GameLink gameToken={game.gameToken} />
+                <GameLink gameToken={game.gameToken} isBot={game.isBotGame} />
                 <div className="flex items-center gap-3">
                     <div className="flex w-3 flex-col justify-between">
                         <span data-testid="gameRowScoreWhite">
@@ -112,7 +129,7 @@ const GameRow = ({
             </td>
 
             <td className="relative">
-                <GameLink gameToken={game.gameToken} />
+                <GameLink gameToken={game.gameToken} isBot={game.isBotGame} />
                 <span data-testid="gameRowDate">{formattedDate}</span>
             </td>
         </tr>
@@ -120,10 +137,16 @@ const GameRow = ({
 };
 export default GameRow;
 
-const GameLink = ({ gameToken }: { gameToken: string }) => (
+const GameLink = ({
+    gameToken,
+    isBot,
+}: {
+    gameToken: string;
+    isBot: boolean;
+}) => (
     <Link
         data-testid="gameRowLink"
         className="absolute inset-0"
-        href={`/game/${gameToken}`}
+        href={`${isBot ? constants.PATHS.BOT : constants.PATHS.GAME}/${gameToken}`}
     />
 );
