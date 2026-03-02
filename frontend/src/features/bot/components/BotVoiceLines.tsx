@@ -43,7 +43,7 @@ const reactionVoiceLines: ReactionVoiceLine[] = [
             evalForBot - prevEvalForBot > 300 &&
             evalForBot < 99_000,
         lines: [
-            "oi m8 that move was a wee bit shit, innit?",
+            "oi bruv that cheeky lil' move was a wee bit shit, innit?",
             "That move is something Cagnus Marlsen would've played.",
             "Well, that move certainly changed the evaluation.",
             "Thanks! *dry humps your leg*",
