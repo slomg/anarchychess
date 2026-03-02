@@ -22,6 +22,7 @@ export function createFakeBotGameState(
     return {
         whitePlayer: botColor === GameColor.WHITE ? botPlayer : player,
         blackPlayer: botColor === GameColor.BLACK ? botPlayer : player,
+        botColor,
         sideToMove: faker.helpers.enumValue(GameColor),
 
         initialFen: constants.INITIAL_FEN,
