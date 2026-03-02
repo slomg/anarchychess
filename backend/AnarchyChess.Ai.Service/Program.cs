@@ -1,10 +1,22 @@
 using AnarchyChess.Ai;
 using AnarchyChess.Ai.Evaluation;
 using AnarchyChess.Ai.Service.Services;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using ProtoBuf.Grpc.Server;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(
+        6969,
+        listenOptions =>
+        {
+            listenOptions.Protocols = HttpProtocols.Http2;
+        }
+    );
+});
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()

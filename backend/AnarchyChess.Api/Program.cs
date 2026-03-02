@@ -527,7 +527,6 @@ builder.Services.AddSingleton<IChallengeNotifier, ChallengeNotifier>();
 builder.Services.AddScoped<IChallengeRequestCreator, ChallengeRequestCreator>();
 #endregion
 
-
 #region Anarchy Bot
 builder.Services.AddSingleton<IBotService, BotService>();
 builder.Services.AddSingleton<IBotMoveRunner, BotMoveRunner>();
