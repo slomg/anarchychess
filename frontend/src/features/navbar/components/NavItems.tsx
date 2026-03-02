@@ -37,14 +37,14 @@ export const UpperNavItems = ({
                 Play
             </NavItem>
 
-            <NavItem
+            {/* <NavItem
                 as={Link}
                 href={constants.PATHS.BOT}
                 icon={<CpuChipIcon />}
                 isCollapsed={isCollapsed}
             >
                 Computer
-            </NavItem>
+            </NavItem> */}
 
             <NavItem
                 as={Link}
