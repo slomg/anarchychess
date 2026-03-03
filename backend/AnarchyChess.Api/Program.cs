@@ -621,10 +621,14 @@ builder.Services.AddScoped<IChallengeRequestCreator, ChallengeRequestCreator>();
 builder.Services.AddSingleton<IBotService, BotService>();
 builder.Services.AddSingleton<IBotMoveRunner, BotMoveRunner>();
 builder.Services.AddSingleton<IBotNotifier, BotNotifier>();
-builder.Services.AddCodeFirstGrpcClient<IAiEngineService>(client =>
-{
-    client.Address = appSettings.Bot.ServiceUrl;
-});
+builder
+    .Services.AddCodeFirstGrpcClient<IAiEngineService>(client =>
+    {
+        client.Address = appSettings.Bot.ServiceUrl;
+    })
+    .ConfigurePrimaryHttpMessageHandler(
+        () => new SocketsHttpHandler { ConnectTimeout = TimeSpan.FromSeconds(10) }
+    );
 #endregion
 
 builder.Services.AddSingleton<IShardRouter, ShardRouter>();
