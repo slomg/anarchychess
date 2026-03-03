@@ -2,7 +2,7 @@
     "profiles": {
         "AnarchyChess.Ai.Service": {
             "commandName": "Project",
-            "launchBrowser": true,
+            "launchBrowser": false,
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
             },
