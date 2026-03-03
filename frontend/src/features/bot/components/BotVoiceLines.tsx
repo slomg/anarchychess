@@ -351,7 +351,7 @@ const BotVoiceLines = ({
 
     const plyNumber = useChessboardStore((x) => x.positionHistory.mainPlyCount);
     const triggerGameStartVoiceLineEvent = useEffectEvent(() => {
-        if (plyNumber == 0) {
+        if (plyNumber === 0 || plyNumber === 1) {
             const startVoiceLine = getVoiceLineForGameStart(gameToken);
             setVoiceLine(startVoiceLine);
         }
