@@ -104,6 +104,21 @@ describe("gamePlaySlice", () => {
             const result = store.getState().isInteractionAllowed();
             expect(result).toBe(true);
         });
+
+        it("should not allow interaction if a move is pending acknowledgement", () => {
+            store.setState({
+                resultData: null,
+                viewer: {
+                    userId: "user id",
+                    playerColor: GameColor.WHITE,
+                },
+                sideToMove: GameColor.WHITE,
+                isPendingMoveAck: true,
+            });
+
+            const result = store.getState().isInteractionAllowed();
+            expect(result).toBe(false);
+        });
     });
 
     describe("receiveLiveMove", () => {

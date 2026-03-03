@@ -57,7 +57,10 @@ export function createGamePlaySlice(
                 : 0,
 
         isInteractionAllowed() {
-            const { resultData, viewer, sideToMove } = get();
+            const { resultData, viewer, sideToMove, isPendingMoveAck } = get();
+            if (isPendingMoveAck) {
+                return false;
+            }
 
             // allow interaction if the game is over (now in analysis mode)
             // or if it's our turn
