@@ -30,6 +30,6 @@ jobs:
                   registryUrl: docker.io
                   registryUsername: ${{ secrets.DOCKER_USERNAME }}
                   registryPassword: ${{ secrets.DOCKER_PASSWORD }}
-                  containerAppName: anarchychess-prod-container
+                  containerAppName: anarchychess-prod-containerapp
                   resourceGroup: anarchychess-prod-resource
                   imageToBuild: slomg/anarchychess-api:${{ github.sha }}
