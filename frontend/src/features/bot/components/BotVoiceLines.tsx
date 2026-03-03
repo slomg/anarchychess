@@ -351,11 +351,10 @@ const BotVoiceLines = ({
 
     const plyNumber = useChessboardStore((x) => x.positionHistory.mainPlyCount);
     const triggerGameStartVoiceLineEvent = useEffectEvent(() => {
-        if (plyNumber != null || voiceLine !== null) {
-            return;
+        if (plyNumber == 0) {
+            const startVoiceLine = getVoiceLineForGameStart(gameToken);
+            setVoiceLine(startVoiceLine);
         }
-        const startVoiceLine = getVoiceLineForGameStart(gameToken);
-        setVoiceLine(startVoiceLine);
     });
     useEffect(() => triggerGameStartVoiceLineEvent(), [plyNumber]);
 
