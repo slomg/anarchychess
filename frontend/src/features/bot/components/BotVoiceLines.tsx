@@ -349,17 +349,15 @@ const BotVoiceLines = ({
         return () => clearTimeout(timeout);
     }, [voiceLine]);
 
-    const viewingPlyNumber = useChessboardStore(
-        (x) => x.positionHistory.viewingPosition?.ply,
-    );
+    const plyNumber = useChessboardStore((x) => x.positionHistory.mainPlyCount);
     const triggerGameStartVoiceLineEvent = useEffectEvent(() => {
-        if (viewingPlyNumber != null || voiceLine !== null) {
+        if (plyNumber != null || voiceLine !== null) {
             return;
         }
         const startVoiceLine = getVoiceLineForGameStart(gameToken);
         setVoiceLine(startVoiceLine);
     });
-    useEffect(() => triggerGameStartVoiceLineEvent(), [viewingPlyNumber]);
+    useEffect(() => triggerGameStartVoiceLineEvent(), [plyNumber]);
 
     const triggerGameEndVoiceLineEvent = useEffectEvent(() => {
         if (resultData === null) {
