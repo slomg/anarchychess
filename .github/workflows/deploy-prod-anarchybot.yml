@@ -24,9 +24,9 @@ jobs:
               run: |
                   IMAGE=${{ secrets.DOCKER_USERNAME }}/anarchybot
 
-                  docker build --file backend/AnarchyChess.Ai.Service/Dockerfile backend --tag $IMAGE:${{ github.sha }} --tag $IMAGE:latest
-                  docker push $IMAGE:${{ github.sha }}
-                  docker push $IMAGE:latest
+                  sudo docker build --file backend/AnarchyChess.Ai.Service/Dockerfile backend --tag $IMAGE:${{ github.sha }} --tag $IMAGE:latest
+                  sudo docker push $IMAGE:${{ github.sha }}
+                  sudo docker push $IMAGE:latest
 
             - name: Deploy to Azure VM
               uses: appleboy/ssh-action@v1.2.5
@@ -35,7 +35,7 @@ jobs:
                   username: ${{ secrets.ANARCHYBOT_AZURE_VM_USER }}
                   key: ${{ secrets.ANARCHYBOT_AZURE_VM_SSH_KEY }}
                   script: |
-                      docker pull ${{ secrets.DOCKER_USERNAME }}/anarchybot:${{ github.sha }}
-                      docker stop anarchybot || true
-                      docker rm anarchybot || true
-                      docker run -d --name anarchybot -p 6969:6969 --restart unless-stopped ${{ secrets.DOCKER_USERNAME }}/anarchybot:${{ github.sha }}
+                      sudo docker pull ${{ secrets.DOCKER_USERNAME }}/anarchybot:${{ github.sha }}
+                      sudo docker stop anarchybot || true
+                      sudo docker rm anarchybot || true
+                      sudo docker run -d --name anarchybot -p 6969:6969 --restart unless-stopped ${{ secrets.DOCKER_USERNAME }}/anarchybot:${{ github.sha }}
