@@ -262,11 +262,13 @@ public class BotGrain : Grain, IBotGrain
         if (botMoveResult.FirstError == BotErrors.BotOffline)
         {
             await EndGameAsync(_gameResultDescriber.BotOffline(game.BotColor), game, token);
+            await _state.WriteStateAsync(token);
             return;
         }
         else if (botMoveResult.IsError)
         {
             await EndGameAsync(_gameResultDescriber.BotFailure(game.BotColor), game, token);
+            await _state.WriteStateAsync(token);
             return;
         }
         var botMove = botMoveResult.Value;
