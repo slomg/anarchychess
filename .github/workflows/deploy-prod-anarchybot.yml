@@ -22,8 +22,11 @@ jobs:
 
             - name: Build and push container image to registry
               run: |
-                  docker build --file backend/AnarchyChess.Ai.Service/Dockerfile backend --tag ${{ secrets.DOCKER_USERNAME }}/anarchybot:${{ github.sha }}
-                  docker push ${{ secrets.DOCKER_USERNAME }}/anarchybot:${{ github.sha }}
+                  IMAGE=${{ secrets.DOCKER_USERNAME }}/anarchybot
+
+                  docker build --file backend/AnarchyChess.Ai.Service/Dockerfile backend --tag $IMAGE:${{ github.sha }} --tag $IMAGE:latest
+                  docker push $IMAGE:${{ github.sha }}
+                  docker push $IMAGE:latest
 
             - name: Deploy to Azure VM
               uses: appleboy/ssh-action@v1.2.5
