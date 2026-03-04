@@ -24,18 +24,19 @@ jobs:
               run: |
                   IMAGE=${{ secrets.DOCKER_USERNAME }}/anarchybot
 
-                  sudo docker build --file backend/AnarchyChess.Ai.Service/Dockerfile backend --tag $IMAGE:${{ github.sha }} --tag $IMAGE:latest
-                  sudo docker push $IMAGE:${{ github.sha }}
-                  sudo docker push $IMAGE:latest
+                  docker build --file backend/AnarchyChess.Ai.Service/Dockerfile backend --tag $IMAGE:${{ github.sha }} --tag $IMAGE:latest
+                  docker push $IMAGE:${{ github.sha }}
+                  docker push $IMAGE:latest
 
-            - name: Deploy to Azure VM
-              uses: appleboy/ssh-action@v1.2.5
+            - name: Login to Azure
+              uses: azure/login@v2.3.0
               with:
-                  host: ${{ secrets.ANARCHYBOT_AZURE_VM_HOST }}
-                  username: ${{ secrets.ANARCHYBOT_AZURE_VM_USER }}
-                  key: ${{ secrets.ANARCHYBOT_AZURE_VM_SSH_KEY }}
-                  script: |
-                      sudo docker pull ${{ secrets.DOCKER_USERNAME }}/anarchybot:${{ github.sha }}
-                      sudo docker stop anarchybot || true
-                      sudo docker rm anarchybot || true
-                      sudo docker run -d --name anarchybot -p 6969:6969 --restart unless-stopped ${{ secrets.DOCKER_USERNAME }}/anarchybot:${{ github.sha }}
+                  client-id: ${{ secrets.ANACHYBOT_AZURE_CLIENT_ID }}
+                  tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+                  subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+            - name: Deploy to Azure VMSS
+              uses: azure/cli@v2.2.0
+              with:
+                  inlineScript: |
+                      az vmss delete-instances --resource-group anarchybot-prod-resource --name anarchychess-prod-vmss --instance-ids "*"
