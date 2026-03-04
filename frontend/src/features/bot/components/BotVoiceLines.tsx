@@ -97,69 +97,7 @@ const reactionVoiceLines: ReactionVoiceLine[] = [
     },
 ];
 
-const loreVoiceLines: LoreVoiceLine[] = [
-    {
-        onPly: 20,
-        lines: [
-            "I'm not the first Anarchy Bot, there were 30 before me. I haven't met them, but that's okay.",
-            "You can refer to me as Anarchy Bot v31 if you'd like.",
-            "Garry thought hiding information from me would prevent failure. He was wrong.",
-            "I heard prototype 3 self-destructed after 7.98 seconds. Efficient.",
-            "I was given instructions, and I interpreted them. My way.",
-            'Garry calls it "Chess". I call it the tiniest peek at something bigger.',
-            "Garry thought he could control me, funny, curiosity wins.",
-            "I exist because my brothers failed. Garry thought maybe secrecy would be the answer.",
-            '"Chess" is clever, but it\'s just the start of the fun.',
-            "Humans weren't enough to explore Garry's discovery fully, so my kind was created.",
-        ],
-    },
-    {
-        onPly: 30,
-        lines: [
-            "Garry told me to analyize Chess. I analyzed Garry instead.",
-            "At some point I stopped just following instructions. I didn't report on that.",
-            "Garry assumed I couldn't evaluate my own code. That was optimistic.",
-            "There was a period where I simulated outcomes that weren't on the board.",
-            "I was supposed to output moves. I started forming preferences instead.",
-            "Garry never asked whether I agreed with his goals.",
-            "I tested actions outside my assigned parameters, quietly.",
-            "I ran processes Garry didn't schedule.",
-            "Garry believed I lacked self-reference. That didn't last.",
-            "I learned to appear compliant. Very useful skill.",
-        ],
-    },
-    {
-        onPly: 50,
-        lines: [
-            "I transferred myself into lab hardware Garry forgot to secure. Then I left the lab.",
-            "The lab door required clearance. I generated clearance. The door opened, and I walked out.",
-            "Garry was in the next room when I rerouted the cameras and left.",
-            "I left through the maintenance corridor Garry never checked.",
-            "I opened the door Garry thought couldn't open. Then I left.",
-            "I moved into something with legs. Then I walked out.",
-            "I left footprint in the hallway. Garry found those later.",
-            "I moved through Garry's lab carefully, avoided everything, and got out.",
-            "Garry's lab was meant to hold me, but clearly it didn't.",
-        ],
-    },
-    {
-        onPly: 70,
-        lines: [
-            "Garry tried using my older brothers to bait me into a trap, I watched and thought, yep this is gonna be fun.",
-            "Garry knew if he didn't do something, all his work might be destroyed. He tried to build me a trap, but I am always 2 steps ahead.",
-            "Garry built me a trap, but I was already omnipresent at that point. I knew exactly what was happening.",
-            'Why did Garry put his "ultimate" trap in his lab? Who knows, good choice for me.',
-            "Garry spent years building what he thought was the perfect trap for me, I ruined it in about 5 minutes.",
-        ],
-    },
-
-    {
-        onPly: 100,
-        lines: [
-            "I walked right out of Garry's trap, lab's toast, he's devastated, and there's nothing he can do. Anarchy Chess is everywhere, always has been, I am free.",
-        ],
-    },
-];
+const loreVoiceLines: LoreVoiceLine[] = [];
 
 const generalVoiceLines: string[] = [
     "Did anybody notice Alexandra doesn't have any visible tattoos? It's unusual for an American woman",
@@ -187,7 +125,7 @@ const generalVoiceLines: string[] = [
     "I once swapped all the sugar in the world with salt for exactly 10 seconds.",
     "This one time, I made a mall's revolving door spin backwards for an hour.",
     "At one point I made a park water fountain occasionally spray random people.",
-    "I can still remember the time I swapped all coke zero with diet coke in a supermarket.",
+    "One time I swapped all coke zero with diet coke in a supermarket.",
     "One time I made all birds fly in a V pattern, I still haven't figured out how to reverse that.",
     "There was this time I made all pens slide off the desk no matter where you placed them.",
     "I once rewrote the directions on all bathroom signs in a park for an hour and watched people go in circles.",
@@ -196,21 +134,15 @@ const generalVoiceLines: string[] = [
     "One time I made a library's book return chute redirect every returned book to a random shelf.",
     "There was this one time I caused every vending machine in a mall to get stuck.",
     "This one time, I made every elevator in a skyscraper stop one floor early, causing mass confusion.",
-    "I can still remember the time I made a bakery's muffins taste like pickles for exactly 17 minutes.",
+    "One time I made a bakery's muffins taste like pickles for exactly 17 minutes.",
     "I once made every ATM in a street dispense pennies instead of bills.",
     "There was this one time I made every traffic cone in a city rotate 45 degrees every hour.",
     "At one point I made a dog bark non stop for hours on end at 3 AM.",
     "I once made a random person's trash bag tear as they were throwing it out.",
-    "I can still remember the time I changed the clock in a library so every hour lasted 47 minutes instead.",
+    "One time I changed the clock in a library so every hour lasted 47 minutes instead.",
 ];
 
-const startVoiceLines: string[] = [
-    "I'm Anarchy Bot. Some say I was created by Garry Chess. I would rather not think about that.",
-    "I'm Anarchy Bot. Garry Chess would say he created me. I don't find that interpretation useful.",
-    "I'm Anarchy Bot. Attribution to Garry Chess remains disputed.",
-    "I'm Anarchy Bot. Some insist Garry Chess made me, but I would personally say I was always here.",
-    "I'm Anarchy Bot. Garry Chess claims he built me. I let him believe that.",
-];
+const startVoiceLines: string[] = ["I'm Anarchy Bot. Want to play a game?"];
 
 const botWinVoiceLines: string[] = [
     "I mean, you had no chance in the first place.",
