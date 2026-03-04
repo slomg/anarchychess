@@ -10,6 +10,7 @@ import createLiveChessStore, {
 
 import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
 import { createNFakePositionHistory } from "@/lib/testUtils/fakers/positionHistoryFaker";
+import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
 import { createFakeMoveSnapshot } from "@/lib/testUtils/fakers/moveSnapshotFaker";
 import { createFakePiece } from "@/lib/testUtils/fakers/chessboardFakers";
 import { Clocks, GameColor, MoveSnapshot } from "@/lib/apiClient";
@@ -57,14 +58,28 @@ describe("handleMoveUpdate", () => {
         return move;
     }
 
-    function setupStandardStoresForMove() {
-        const piece = createFakePiece({
+    function setupStoresForMove(isPendingMoveAck: boolean = false) {
+        const piece = createFakePiece();
+
+        // board is after the animation, history still hasn't received animation yet
+        const boardPieces = BoardPieces.fromPieces({
+            ...piece,
+            position: isPendingMoveAck
+                ? logicalPoint({ x: 2, y: 1 })
+                : logicalPoint({ x: 1, y: 1 }),
+        });
+
+        const historyPieces = BoardPieces.fromPieces({
+            ...piece,
             position: logicalPoint({ x: 1, y: 1 }),
         });
-        chessboardStore.setState({
-            positionHistory: createNFakePositionHistory(3),
-            pieces: BoardPieces.fromPieces(piece),
-        });
+
+        const positionHistory = createNFakePositionHistory(3);
+        positionHistory.addNextPosition(
+            createFakePositionProps({ pieces: historyPieces }),
+        );
+
+        chessboardStore.setState({ positionHistory, pieces: boardPieces });
         liveChessStore.setState({
             viewer: { userId: "test id", playerColor: GameColor.WHITE },
         });
@@ -89,11 +104,13 @@ describe("handleMoveUpdate", () => {
     it.each([true, false])(
         "should only play and store the move if we are not awaiting move ack",
         async (awaitingAck) => {
-            setupStandardStoresForMove();
+            setupStoresForMove(awaitingAck);
 
-            const piecesBefore = chessboardStore.getState().pieces;
-            const positionHistoryBefore =
-                chessboardStore.getState().positionHistory;
+            const {
+                pieces: piecesBefore,
+                positionHistory: positionHistoryBefore,
+            } = chessboardStore.getState();
+
             if (awaitingAck) {
                 liveChessStore.getState().markPendingMoveAck();
             }
@@ -103,8 +120,8 @@ describe("handleMoveUpdate", () => {
             });
 
             expect(
-                chessboardStore.getState().positionHistory.totalPlyCount,
-            ).toBe(positionHistoryBefore.totalPlyCount + 1);
+                chessboardStore.getState().positionHistory.mainPlyCount,
+            ).toBe(positionHistoryBefore.mainPlyCount + 1);
 
             const piecesAfter = chessboardStore.getState().pieces;
             if (awaitingAck) {
@@ -126,7 +143,7 @@ describe("handleMoveUpdate", () => {
     );
 
     it("should go to the last position before playing the move", async () => {
-        setupStandardStoresForMove();
+        setupStoresForMove();
 
         const { goToStartPosition } = chessboardStore.getState();
         await goToStartPosition();

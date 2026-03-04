@@ -30,6 +30,7 @@ export interface HistorySlice {
     goToLatestPosition(): Promise<void>;
 
     addPosition(props: PositionProps, legalMoves?: LegalMoves): Position;
+    addLatestPosition(props: PositionProps, legalMoves?: LegalMoves): Position;
     addSidelinePosition(
         props: PositionProps,
         legalMoves?: LegalMoves,
@@ -68,34 +69,38 @@ export function createHistorySlice(
         async goToPosition(positionId) {
             const { applyMoveAnimated, updatePiecesFromPosition } = get();
 
+            let position: Position | null | undefined;
             let success: boolean | undefined;
             let isOneStepForward: boolean | undefined;
             set((state) => {
                 ({ success, isOneStepForward } =
                     state.positionHistory.goToPosition(positionId));
+                position = state.positionHistory.viewingPosition;
             });
-            const { positionHistory } = get();
-            if (!success || !positionHistory.viewingPosition) return;
 
-            if (isOneStepForward) {
-                await applyMoveAnimated(positionHistory.viewingPosition.move);
+            if (!success || !position) {
                 return;
             }
 
-            await updatePiecesFromPosition(positionHistory.viewingPosition);
+            if (isOneStepForward) {
+                await applyMoveAnimated(position.move);
+            } else {
+                await updatePiecesFromPosition(position);
+            }
         },
 
         async stepPositionForward() {
             const { applyMoveAnimated } = get();
 
             let success: boolean | undefined;
+            let position: Position | null | undefined;
             set((state) => {
                 success = state.positionHistory.stepForward();
+                position = state.positionHistory.viewingPosition;
             });
 
-            const { positionHistory } = get();
-            if (success && positionHistory.viewingPosition) {
-                await applyMoveAnimated(positionHistory.viewingPosition.move);
+            if (success && position) {
+                await applyMoveAnimated(position.move);
             }
         },
 
@@ -103,14 +108,18 @@ export function createHistorySlice(
             const { updatePiecesFromPosition, updatePieces } = get();
 
             let success: boolean | undefined;
+            let position: Position | null | undefined;
             set((state) => {
                 success = state.positionHistory.stepBackward();
+                position = state.positionHistory.viewingPosition;
             });
-            if (!success) return;
+            if (!success) {
+                return;
+            }
 
             const { positionHistory } = get();
-            if (positionHistory.viewingPosition) {
-                await updatePiecesFromPosition(positionHistory.viewingPosition);
+            if (position) {
+                await updatePiecesFromPosition(position);
             } else {
                 await updatePieces(positionHistory.rootPieces);
             }
@@ -131,20 +140,23 @@ export function createHistorySlice(
         async goToLatestPosition() {
             const { updatePiecesFromPosition, applyMoveAnimated } = get();
 
+            let position: Position | null | undefined;
             let success: boolean | undefined;
             let isOneStepForward: boolean | undefined;
             set((state) => {
                 ({ success, isOneStepForward } =
                     state.positionHistory.goToEnd());
+                position = state.positionHistory.viewingPosition;
             });
 
-            const { positionHistory } = get();
-            if (!success || !positionHistory.viewingPosition) return;
+            if (!success || !position) {
+                return;
+            }
 
             if (isOneStepForward) {
-                await applyMoveAnimated(positionHistory.viewingPosition.move);
+                await applyMoveAnimated(position.move);
             } else {
-                await updatePiecesFromPosition(positionHistory.viewingPosition);
+                await updatePiecesFromPosition(position);
             }
         },
 
@@ -160,6 +172,21 @@ export function createHistorySlice(
                 }
             });
 
+            return position!;
+        },
+
+        addLatestPosition(props, legalMoves) {
+            let position: Position;
+            set((state) => {
+                state.positionHistory.goToEnd();
+                position = state.positionHistory.addNextPosition(props);
+                if (legalMoves) {
+                    state.legalMovesByPosition.set(
+                        position.positionId,
+                        legalMoves,
+                    );
+                }
+            });
             return position!;
         },
 

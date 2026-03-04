@@ -294,6 +294,46 @@ describe("HistorySlice", () => {
         });
     });
 
+    describe("addLatestPosition", () => {
+        it("should add the position at the end", () => {
+            const positionHistoryMock = mock<PositionHistory>();
+            const newPositionProps = createFakePositionProps();
+            const newPosition = new ChildPositionNode(newPositionProps);
+            const legalMoves = createFakeLegalMoves();
+
+            positionHistoryMock.addNextPosition.mockReturnValue(newPosition);
+            positionHistoryMock.goToEnd.mockReturnValue({
+                success: true,
+                isOneStepForward: false,
+            });
+            store.setState({
+                positionHistory: positionHistoryMock,
+                legalMovesByPosition: new Map(),
+            });
+
+            const result = store
+                .getState()
+                .addLatestPosition(newPositionProps, legalMoves);
+
+            expect(result).toBe(newPosition);
+
+            expect(positionHistoryMock.goToEnd).toHaveBeenCalledOnce();
+            expect(
+                positionHistoryMock.addNextPosition,
+            ).toHaveBeenCalledExactlyOnceWith(newPositionProps);
+
+            const goToEndOrder =
+                positionHistoryMock.goToEnd.mock.invocationCallOrder[0];
+            const addNextOrder =
+                positionHistoryMock.addNextPosition.mock.invocationCallOrder[0];
+            expect(goToEndOrder).toBeLessThan(addNextOrder);
+
+            expect(store.getState().legalMovesByPosition).toEqual(
+                new Map([[result.positionId, legalMoves]]),
+            );
+        });
+    });
+
     describe("addSidelinePosition", () => {
         it("should add the new position as a slideline to positionHistory", async () => {
             const positionHistoryMock = mock<PositionHistory>();

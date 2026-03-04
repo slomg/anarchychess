@@ -6,6 +6,7 @@ import { LiveChessStore } from "../stores/liveChessStore";
 import { Clocks, MoveSnapshot } from "@/lib/apiClient";
 import { Move } from "@/features/chessboard/lib/types";
 import { decodeMovePath } from "./moveDecoder";
+import { simulateMove } from "@/features/chessboard/lib/simulateMove";
 
 export default async function handleMoveUpdate(
     liveChessStore: StoreApi<LiveChessStore>,
@@ -26,27 +27,30 @@ export default async function handleMoveUpdate(
 ): Promise<boolean> {
     const {
         positionHistory,
-        addPosition,
+        addLatestPosition,
         applyMoveAnimated,
         goToLatestPosition,
     } = chessboardStore.getState();
     const { isPendingMoveAck, receiveLiveMove } = liveChessStore.getState();
 
-    if (plyNumber - 1 !== positionHistory.mainPlyCount) {
+    if (positionHistory.mainPlyCount !== plyNumber - 1) {
         return false;
     }
+
     await goToLatestPosition();
 
     decodedMove ??= decodeMovePath(
         move.path,
         chessboardStore.getState().boardDimensions.width,
     );
+
+    let pieces = positionHistory.tail?.pieces ?? positionHistory.rootPieces;
+    pieces = simulateMove(pieces, decodedMove).newPieces;
     if (!isPendingMoveAck) {
         await applyMoveAnimated(decodedMove);
     }
 
-    const pieces = chessboardStore.getState().pieces;
-    addPosition(
+    addLatestPosition(
         {
             pieces,
             fen: move.fen,

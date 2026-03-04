@@ -30,6 +30,10 @@ export default class PositionHistory {
         return this._root.pieces;
     }
 
+    get tail(): Position | null {
+        return this._tail;
+    }
+
     get rootSubVariationByKey(): ReadonlyMap<MoveKey, Position> {
         return this._root.subVariationByKey;
     }
