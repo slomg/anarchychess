@@ -132,17 +132,6 @@ internal class SearchThread(
 
     private int Quiescence(BitBoard board, int alpha, int beta, int depth, int initialDepth)
     {
-        int standPat = _evaluator.Evaluate(board);
-
-        if (standPat >= beta)
-        {
-            return beta;
-        }
-        if (standPat > alpha)
-        {
-            alpha = standPat;
-        }
-
         if (
             _evaluator.TryEvaluateTermination(
                 board,
@@ -154,38 +143,51 @@ internal class SearchThread(
             return terminationEval;
         }
 
+        int standPat = _evaluator.Evaluate(board);
+
+        if (standPat >= beta)
+        {
+            return beta;
+        }
+        if (standPat > alpha)
+        {
+            alpha = standPat;
+        }
+
         if (depth <= 0)
         {
             return alpha;
         }
 
         Span<BitMove> moves = stackalloc BitMove[EngineConstants.MaxMoves];
-        Span<BitMove> captures = stackalloc BitMove[50];
         int moveCount = 0;
-        int captureCount = 0;
         _moveGenerator.Generate(board, moves, ref moveCount);
 
         int maxCaptureValue = 0;
+        Span<BitMove> captures = stackalloc BitMove[moveCount];
+        int captureCount = 0;
         for (int i = 0; i < moveCount; i++)
         {
             BitMove move = moves[i];
-            if (move.CapturesMask != 0)
+            if (move.CapturesMask == 0)
             {
-                UInt128 capturesMask = move.CapturesMask;
-                if (
-                    board.TryGetPieceAt(
-                        (byte)BitboardHelpers.BitScanForward(ref capturesMask),
-                        out var piece
-                    )
-                )
-                {
-                    maxCaptureValue = Math.Max(
-                        maxCaptureValue,
-                        MaterialEvaluator.GetPieceValue(piece.Value.Type)
-                    );
-                }
-                captures[captureCount++] = move;
+                continue;
             }
+
+            UInt128 capturesMask = move.CapturesMask;
+            if (
+                board.TryGetPieceAt(
+                    (byte)BitboardHelpers.BitScanForward(ref capturesMask),
+                    out var piece
+                )
+            )
+            {
+                maxCaptureValue = Math.Max(
+                    maxCaptureValue,
+                    MaterialEvaluator.GetPieceValue(piece.Value.Type)
+                );
+            }
+            captures[captureCount++] = move;
         }
 
         if (

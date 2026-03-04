@@ -53,7 +53,6 @@ public class AiEngine(
         Parallel.For(
             1,
             moveCount,
-            new() { MaxDegreeOfParallelism = 4 },
             i =>
             {
                 BitMove move = moves[i];
