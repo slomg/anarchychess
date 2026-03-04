@@ -137,7 +137,7 @@ const DailyQuestCard = ({ initialQuest }: { initialQuest: Quest }) => {
                     <ProgressBar percent={percentDone} />
 
                     <p
-                        className="text-text/70 min-w-[40px] text-center text-sm
+                        className="text-text/70 min-w-10 text-center text-sm
                             font-medium"
                         data-testid="dailyQuestProgressText"
                     >
