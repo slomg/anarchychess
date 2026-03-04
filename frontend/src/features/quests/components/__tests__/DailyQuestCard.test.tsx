@@ -8,7 +8,7 @@ import {
 } from "@/lib/apiClient";
 
 import { createFakeQuest } from "@/lib/testUtils/fakers/questFaker";
-import { mockRouter } from "@/lib/testUtils/mocks/mockRouter";
+import { mockRouter, RouterMock } from "@/lib/testUtils/mocks/mockRouter";
 import DailyQuestCard from "../DailyQuestCard";
 
 vi.mock("@/lib/apiClient/definition");
@@ -16,6 +16,12 @@ vi.mock("@/lib/apiClient/definition");
 describe("DailyQuestCard", () => {
     const replaceDailyQuestMock = vi.mocked(replaceDailyQuest);
     const collectQuestRewardMock = vi.mocked(collectQuestReward);
+
+    let routerMock: RouterMock;
+
+    beforeEach(() => {
+        routerMock = mockRouter();
+    });
 
     it("should render the fire emoji when streak > 0", () => {
         const quest = createFakeQuest({ streak: 7 });
@@ -85,7 +91,6 @@ describe("DailyQuestCard", () => {
             canReplace: false,
         });
 
-        const routerMock = mockRouter();
         replaceDailyQuestMock.mockResolvedValue({
             data: newQuest,
             response: new Response(),
@@ -160,7 +165,6 @@ describe("DailyQuestCard", () => {
             rewardCollected: false,
         });
 
-        const routerMock = mockRouter();
         collectQuestRewardMock.mockResolvedValue({
             data: quest.difficulty,
             error: undefined,
