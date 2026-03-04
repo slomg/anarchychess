@@ -234,6 +234,29 @@ describe("PositionHistory", () => {
 
             expect(result.isOneStepForward).toBe(false);
         });
+
+        it("should detect one step forward when viewingPosition is null", () => {
+            const pos1 = history.addNextPosition(createFakePositionProps());
+            history.addNextPosition(createFakePositionProps());
+            history.goToStart();
+
+            const result = history.goToPosition(pos1.positionId);
+
+            expect(result.isOneStepForward).toBe(true);
+        });
+
+        it("should not mark as one step forward from root if jumping multiple steps", () => {
+            history.addNextPosition(createFakePositionProps());
+            const pos2 = history.addNextPosition(createFakePositionProps());
+
+            history.goToStart(); // viewingPosition is at root
+
+            const result = history.goToPosition(pos2.positionId);
+
+            expect(result.success).toBe(true);
+            expect(result.isOneStepForward).toBe(false); // not the immediate next position
+            expect(history.viewingPosition).toBe(pos2);
+        });
     });
 
     describe("goToStart", () => {

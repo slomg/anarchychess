@@ -72,12 +72,12 @@ export default class PositionHistory {
         isOneStepForward: boolean;
     } {
         const node = this._byPositionId.get(positionId);
-        if (!node) return { success: false, isOneStepForward: false };
-
-        let isOneStepForward = true;
-        if (this._viewingPosition) {
-            isOneStepForward = this._viewingPosition.isPositionNext(node);
+        if (!node) {
+            return { success: false, isOneStepForward: false };
         }
+
+        const viewingPosition = this._viewingPosition ?? this._root;
+        const isOneStepForward = viewingPosition.isPositionNext(node);
 
         this._viewingPosition = node;
         return { success: true, isOneStepForward };
