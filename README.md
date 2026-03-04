@@ -18,6 +18,7 @@
 - **Social Features:** Stars, blocks, in-game chat, leaderboards, direct challenges
 - **Matchmaking:** Seek a game in any time control, all at once, rated or casual. Your seek is also displayed as an open seek, allowing players to accept it directly without having to go through the pool
 - **Daily Quests:** Complete daily quests to climb the leaderboards and build a streak
+- **Anarchy Bot:** A chess engine built from scratch. Supports playing against humans on the website with voice lines.
 
 # Screenshots
 
@@ -33,6 +34,14 @@
 - **Backend:** C# With ASP.NET Core, structured with Orleans
 - **Frontend:** Next.js + Typescript, styled with Tailwind
 - **Database & Storage:** Currently configured for PostgreSQL and Azure Blob Storage. Other SQL databases and blob storage providers can be used by installing the appropriate EF Core and FluentStorage packages.
+
+# Anarchy Bot
+
+Anarchy Bot is the AI used on Anarchy Chess, built from scratch.
+
+- **Engine:** `AnarchyChess.Ai` handles move generation, search and position evaluation using bitboards. This is a compelte rewrite of the website's backend move generation, both exist because they serve different purposes, the backend generates moves with with a lot of metadata for frontend animation while the engine needs to compute moves as fast as possible.
+- **Service:** `AnarchyChess.Ai.Service` is a thin gRPC wrapper that allows the website to request moves from the engine.
+- **Deployment:** The bot runs on a separate VM so it doesn't compete with the backend for resources, and because it can be hosted on a spot VM, which makes computation a lot cheaper.
 
 # Running Locally
 
@@ -155,6 +164,7 @@ backend/Tests
 |- AnarchyChess.Api.Integration
 |- AnarchyChess.Api.Functional
 |- AnarchyChess.Ai.Tests
+|- AnarchyChess.Ai.Service.Tests
 ```
 
 To run all backend tests:
