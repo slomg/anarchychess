@@ -1,11 +1,11 @@
-import { VoiceLineContext } from "@/features/bot/hooks/useBotVoiceLines";
+import { DialogContext } from "@/features/bot/hooks/useBotDialog";
 import { createFakeBoardPieces, createFakeMove } from "./chessboardFakers";
 import { faker } from "@faker-js/faker";
 import { PlayerType } from "@/features/liveGame/lib/types";
 
-export function createFakeVoiceLineContext(
-    overrides?: Partial<VoiceLineContext>,
-): VoiceLineContext {
+export function createFakeDialogContext(
+    overrides?: Partial<DialogContext>,
+): DialogContext {
     return {
         move: createFakeMove(),
         prevPieces: createFakeBoardPieces(),

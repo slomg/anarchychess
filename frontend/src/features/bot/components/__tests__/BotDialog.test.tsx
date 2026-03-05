@@ -9,9 +9,7 @@ import {
 import createLiveChessStore, {
     LiveChessStore,
 } from "@/features/liveGame/stores/liveChessStore";
-import useBotVoiceLines, {
-    VoiceLineContext,
-} from "../../hooks/useBotVoiceLines";
+import useBotDialog, { DialogContext } from "../../hooks/useBotDialog";
 
 import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardStoreContext";
 import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
@@ -26,20 +24,20 @@ import { decodeMovePath } from "@/features/liveGame/lib/moveDecoder";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
 import { PlayerType } from "@/features/liveGame/lib/types";
 import { GameColor, MoveSnapshot } from "@/lib/apiClient";
-import BotVoiceLines from "../BotVoiceLines";
+import BotDialog from "../BotDialog";
 import constants from "@/lib/constants";
 import { createFakeGameResultData } from "@/lib/testUtils/fakers/gameResultDataFaker";
 
-vi.mock("../../hooks/useBotVoiceLines");
+vi.mock("../../hooks/useBotDialog");
 vi.mock("@/features/bot/hooks/useBotHub");
 
-describe("BotVoiceLine", () => {
-    const useBotVoiceLinesMock = vi.mocked(useBotVoiceLines);
+describe("BotDialog", () => {
+    const useBotDialogsMock = vi.mocked(useBotDialog);
     const useBotEventMock = vi.mocked(useBotEvent);
 
-    const getVoiceLineForMoveMock = vi.fn();
-    const getVoiceLineForGameStartMock = vi.fn();
-    const getVoiceLineForGameEndMock = vi.fn();
+    const getDialogForMoveMock = vi.fn();
+    const getDialogForGameStartMock = vi.fn();
+    const getDialogForGameEndMock = vi.fn();
     const botEventHandlers: EventHandlers<BotClientEvents> = {};
 
     let liveStore: StoreApi<LiveChessStore>;
@@ -58,10 +56,10 @@ describe("BotVoiceLine", () => {
         );
         chessboardStore.setState({ positionHistory });
 
-        useBotVoiceLinesMock.mockReturnValue({
-            getVoiceLineForMove: getVoiceLineForMoveMock,
-            getVoiceLineForGameStart: getVoiceLineForGameStartMock,
-            getVoiceLineForGameEnd: getVoiceLineForGameEndMock,
+        useBotDialogsMock.mockReturnValue({
+            getDialogForMove: getDialogForMoveMock,
+            getDialogForGameStart: getDialogForGameStartMock,
+            getDialogForGameEnd: getDialogForGameEndMock,
         });
         useBotEventMock.mockImplementation((_, event, handler) => {
             botEventHandlers[event] = handler;
@@ -74,7 +72,7 @@ describe("BotVoiceLine", () => {
         return render(
             <ChessboardStoreContext.Provider value={chessboardStore}>
                 <LiveChessStoreContext.Provider value={liveStore}>
-                    <BotVoiceLines
+                    <BotDialog
                         botColor={botColor ?? GameColor.WHITE}
                         chessboardStore={chessboardStore}
                     />
@@ -159,37 +157,31 @@ describe("BotVoiceLine", () => {
                 "data-userid",
                 botPlayer.userId,
             );
-            expect(
-                screen.queryByTestId("botVoiceLine"),
-            ).not.toBeInTheDocument();
+            expect(screen.queryByTestId("botDialog")).not.toBeInTheDocument();
         },
     );
 
-    it("should set voice line after bot move", async () => {
-        getVoiceLineForMoveMock.mockReturnValue("test bot");
+    it("should set dialog after bot move", async () => {
+        getDialogForMoveMock.mockReturnValue("test bot");
 
         renderComponent();
         await FireBotMoveMade();
 
         await act(() => vi.advanceTimersByTime(300));
-        expect(screen.getByTestId("botVoiceLine")).toHaveTextContent(
-            "test bot",
-        );
+        expect(screen.getByTestId("botDialog")).toHaveTextContent("test bot");
     });
 
-    it("should set voice line after hunann move", async () => {
-        getVoiceLineForMoveMock.mockReturnValue("test human");
+    it("should set dialog after human move", async () => {
+        getDialogForMoveMock.mockReturnValue("test human");
 
         renderComponent();
         await FireHumanMoveMade();
 
         await act(() => vi.advanceTimersByTime(300));
-        expect(screen.getByTestId("botVoiceLine")).toHaveTextContent(
-            "test human",
-        );
+        expect(screen.getByTestId("botDialog")).toHaveTextContent("test human");
     });
 
-    it("should pass correct context to voice lines", async () => {
+    it("should pass correct context to dialog", async () => {
         renderComponent();
 
         const { moveSnapshot, plyNumber, evalForBot } = await FireBotMoveMade();
@@ -198,7 +190,7 @@ describe("BotVoiceLine", () => {
             moveSnapshot.path,
             constants.BOARD_WIDTH,
         );
-        const expectedCtx: VoiceLineContext = {
+        const expectedCtx: DialogContext = {
             move: expectedMove,
             prevPieces,
             plyNumber,
@@ -207,13 +199,13 @@ describe("BotVoiceLine", () => {
             prevEvalForBot: null,
         };
 
-        expect(getVoiceLineForMoveMock).toHaveBeenCalledExactlyOnceWith(
+        expect(getDialogForMoveMock).toHaveBeenCalledExactlyOnceWith(
             expectedCtx,
         );
     });
 
     it.each([PlayerType.Bot, PlayerType.Human])(
-        "should pass the correct player type to voice lines",
+        "should pass the correct player type to dialog",
         async (playerType) => {
             renderComponent();
 
@@ -223,8 +215,8 @@ describe("BotVoiceLine", () => {
                 await FireHumanMoveMade();
             }
 
-            expect(getVoiceLineForMoveMock).toHaveBeenCalledExactlyOnceWith(
-                expect.objectContaining<Partial<VoiceLineContext>>({
+            expect(getDialogForMoveMock).toHaveBeenCalledExactlyOnceWith(
+                expect.objectContaining<Partial<DialogContext>>({
                     playerType,
                 }),
             );
@@ -237,13 +229,13 @@ describe("BotVoiceLine", () => {
         const firstEvalForBot = 6969;
         await FireBotMoveMade({ evalForBot: firstEvalForBot });
 
-        getVoiceLineForMoveMock.mockClear();
+        getDialogForMoveMock.mockClear();
 
         const secondEvalForBot = 420420;
         await FireBotMoveMade({ evalForBot: secondEvalForBot });
 
-        expect(getVoiceLineForMoveMock).toHaveBeenCalledExactlyOnceWith(
-            expect.objectContaining<Partial<VoiceLineContext>>({
+        expect(getDialogForMoveMock).toHaveBeenCalledExactlyOnceWith(
+            expect.objectContaining<Partial<DialogContext>>({
                 evalForBot: secondEvalForBot,
                 prevEvalForBot: firstEvalForBot,
             }),
@@ -253,63 +245,55 @@ describe("BotVoiceLine", () => {
     it("should fade old line out and show new line after transition", async () => {
         renderComponent();
 
-        getVoiceLineForMoveMock.mockReturnValueOnce("first line");
+        getDialogForMoveMock.mockReturnValueOnce("first line");
         await FireBotMoveMade();
 
         await act(() => vi.advanceTimersByTime(300));
-        expect(screen.getByTestId("botVoiceLine").textContent).toBe(
-            "first line",
-        );
+        expect(screen.getByTestId("botDialog").textContent).toBe("first line");
 
-        getVoiceLineForMoveMock.mockReturnValueOnce("second line");
+        getDialogForMoveMock.mockReturnValueOnce("second line");
         await FireBotMoveMade();
 
-        expect(screen.getByTestId("botVoiceLine").textContent).toBe(
-            "first line",
-        );
+        expect(screen.getByTestId("botDialog").textContent).toBe("first line");
 
         await act(() => vi.advanceTimersByTime(300));
-        expect(screen.getByTestId("botVoiceLine").textContent).toBe(
-            "second line",
-        );
+        expect(screen.getByTestId("botDialog").textContent).toBe("second line");
     });
 
-    it("should not set a voice line if a bot move ends the game", async () => {
+    it("should not set a dialog if a bot move ends the game", async () => {
         renderComponent();
-        getVoiceLineForMoveMock.mockReturnValue("should not appear");
+        getDialogForMoveMock.mockReturnValue("should not appear");
 
         await FireBotMoveMade({ didMoveEndGame: true });
         await act(() => vi.advanceTimersByTime(300));
 
-        expect(getVoiceLineForMoveMock).not.toHaveBeenCalled();
-        expect(screen.queryByTestId("botVoiceLine")).not.toBeInTheDocument();
+        expect(getDialogForMoveMock).not.toHaveBeenCalled();
+        expect(screen.queryByTestId("botDialog")).not.toBeInTheDocument();
     });
 
-    it("should not set a voice line if a human move ends the game", async () => {
+    it("should not set a dialog if a human move ends the game", async () => {
         renderComponent();
-        getVoiceLineForMoveMock.mockReturnValue("should not appear");
+        getDialogForMoveMock.mockReturnValue("should not appear");
 
         await FireHumanMoveMade({ didMoveEndGame: true });
         await act(() => vi.advanceTimersByTime(300));
 
-        expect(getVoiceLineForMoveMock).not.toHaveBeenCalled();
-        expect(screen.queryByTestId("botVoiceLine")).not.toBeInTheDocument();
+        expect(getDialogForMoveMock).not.toHaveBeenCalled();
+        expect(screen.queryByTestId("botDialog")).not.toBeInTheDocument();
     });
 
-    it("should set game start voice line when viewing first position", async () => {
+    it("should set game start dialog when viewing first position", async () => {
         chessboardStore.setState({
             positionHistory: new PositionHistory(createFakeBoardPieces()),
         });
-        getVoiceLineForGameStartMock.mockReturnValue("start line");
-        getVoiceLineForMoveMock.mockReturnValueOnce("move line");
+        getDialogForGameStartMock.mockReturnValue("start line");
+        getDialogForMoveMock.mockReturnValueOnce("move line");
 
         renderComponent();
         await act(() => vi.advanceTimersByTime(300));
 
-        expect(screen.getByTestId("botVoiceLine")).toHaveTextContent(
-            "start line",
-        );
-        expect(getVoiceLineForGameStartMock).toHaveBeenCalledExactlyOnceWith(
+        expect(screen.getByTestId("botDialog")).toHaveTextContent("start line");
+        expect(getDialogForGameStartMock).toHaveBeenCalledExactlyOnceWith(
             liveStore.getState().gameToken,
         );
 
@@ -319,28 +303,24 @@ describe("BotVoiceLine", () => {
         await act(() => FireBotMoveMade());
         await act(() => vi.advanceTimersByTime(300));
 
-        expect(screen.getByTestId("botVoiceLine")).toHaveTextContent(
-            "move line",
-        );
+        expect(screen.getByTestId("botDialog")).toHaveTextContent("move line");
     });
 
-    it("should set game end voice line when resultData appears", async () => {
-        getVoiceLineForGameEndMock.mockReturnValue("end line");
+    it("should set game end dialog when resultData appears", async () => {
+        getDialogForGameEndMock.mockReturnValue("end line");
 
         const botColor = GameColor.BLACK;
         renderComponent(botColor);
 
         await act(() => vi.advanceTimersByTime(300));
-        expect(screen.queryByTestId("botVoiceLine")).not.toBeInTheDocument();
+        expect(screen.queryByTestId("botDialog")).not.toBeInTheDocument();
 
         const resultData = createFakeGameResultData();
         act(() => liveStore.setState({ resultData }));
         await act(() => vi.advanceTimersByTime(300));
 
-        expect(screen.getByTestId("botVoiceLine")).toHaveTextContent(
-            "end line",
-        );
-        expect(getVoiceLineForGameEndMock).toHaveBeenCalledExactlyOnceWith(
+        expect(screen.getByTestId("botDialog")).toHaveTextContent("end line");
+        expect(getDialogForGameEndMock).toHaveBeenCalledExactlyOnceWith(
             resultData.result,
             botColor,
             liveStore.getState().gameToken,

@@ -18,7 +18,7 @@
 - **Social Features:** Stars, blocks, in-game chat, leaderboards, direct challenges
 - **Matchmaking:** Seek a game in any time control, all at once, rated or casual. Your seek is also displayed as an open seek, allowing players to accept it directly without having to go through the pool
 - **Daily Quests:** Complete daily quests to climb the leaderboards and build a streak
-- **Anarchy Bot:** A chess engine built from scratch. Supports playing against humans on the website with voice lines.
+- **Anarchy Bot:** A chess engine built from scratch. Supports playing against humans on the website with dialog.
 
 # Screenshots
 

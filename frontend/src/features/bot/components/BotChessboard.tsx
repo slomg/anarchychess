@@ -29,7 +29,7 @@ import useBotMoveEmitter from "../hooks/useBotMoveEmitter";
 import useLiveBotEvents from "../hooks/useLiveBotEvents";
 import BotGameOverPopup from "./BotGameOverPopup";
 import { BotGameState } from "@/lib/apiClient";
-import BotVoiceLines from "./BotVoiceLines";
+import BotDialog from "./BotDialog";
 import useConst from "@/hooks/useConst";
 
 const BotChessboard = ({
@@ -100,7 +100,7 @@ const BotChessboard = ({
                                 grid-rows-[152px_minmax(100px,2fr)_100px] gap-3
                                 lg:max-w-md"
                         >
-                            <BotVoiceLines
+                            <BotDialog
                                 botColor={gameState.botColor}
                                 chessboardStore={chessboardStore}
                             />

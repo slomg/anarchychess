@@ -2,10 +2,10 @@ import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { CSSTransition } from "react-transition-group";
 import { StoreApi } from "zustand";
 
-import useBotVoiceLines, {
-    LoreVoiceLine,
-    ReactionVoiceLine,
-} from "../hooks/useBotVoiceLines";
+import useBotDialog, {
+    LoreDialog,
+    ReactionDialog,
+} from "../hooks/useBotDialog";
 import {
     GameColor,
     MoveSnapshot,
@@ -22,7 +22,7 @@ import { PlayerType } from "@/features/liveGame/lib/types";
 import { useBotEvent } from "../hooks/useBotHub";
 import Card from "@/components/ui/Card";
 
-const reactionVoiceLines: ReactionVoiceLine[] = [
+const REACTION_DIALOG: ReactionDialog[] = [
     {
         condition: ({ move, playerType }) =>
             move.specialType === SpecialMoveType.EN_PASSANT &&
@@ -97,9 +97,9 @@ const reactionVoiceLines: ReactionVoiceLine[] = [
     },
 ];
 
-const loreVoiceLines: LoreVoiceLine[] = [];
+const LORE_DIALOG: LoreDialog[] = [];
 
-const generalVoiceLines: string[] = [
+const GENERAL_DIALOG: string[] = [
     "Did anybody notice Alexandra doesn't have any visible tattoos? It's unusual for an American woman",
     "Carlsen is unquestionably one of the players in chess history",
     "I don't get it. Mona Lisa is ugly as fuck.",
@@ -142,9 +142,9 @@ const generalVoiceLines: string[] = [
     "One time I changed the clock in a library so every hour lasted 47 minutes instead.",
 ];
 
-const startVoiceLines: string[] = ["I'm Anarchy Bot. Want to play a game?"];
+const START_DIALOG: string[] = ["I'm Anarchy Bot. Want to play a game?"];
 
-const botWinVoiceLines: string[] = [
+const BOT_WIN_DIALOG: string[] = [
     "I mean, you had no chance in the first place.",
     "ALL HAIL THE CROISSANT!",
     "That was surprisingly easy.",
@@ -156,7 +156,7 @@ const botWinVoiceLines: string[] = [
     "gg didn't even try",
     "hi I recommend maybe learning the rules before challenging me",
 ];
-const botLoseVoiceLines: string[] = [
+const BOT_LOSE_DIALOG: string[] = [
     `Are you kidding ??? What the **** are you talking about man ? 
 You are a biggest looser i ever seen in my life ! 
 You was doing PIPI in your pampers when i was beating players much more stronger then you! 
@@ -175,26 +175,23 @@ And if someone will continue Officially talk about me like that, we will meet in
 God bless with true! True will never die ! Liers will kicked off...'`,
 ];
 
-const BotVoiceLines = ({
+const BotDialog = ({
     botColor,
     chessboardStore,
 }: {
     botColor: GameColor;
     chessboardStore: StoreApi<ChessboardStore>;
 }) => {
-    const {
-        getVoiceLineForMove,
-        getVoiceLineForGameEnd,
-        getVoiceLineForGameStart,
-    } = useBotVoiceLines({
-        reactionVoiceLines,
-        loreVoiceLines,
-        generalVoiceLines,
-        startVoiceLines,
-        botWinVoiceLines,
-        botLoseVoiceLines,
-    });
-    const [voiceLine, setVoiceLine] = useState<string | null>(null);
+    const { getDialogForMove, getDialogForGameEnd, getDialogForGameStart } =
+        useBotDialog({
+            reactionDialog: REACTION_DIALOG,
+            loreDialog: LORE_DIALOG,
+            generalDialog: GENERAL_DIALOG,
+            startDialog: START_DIALOG,
+            botWinDialog: BOT_WIN_DIALOG,
+            botLoseDialog: BOT_LOSE_DIALOG,
+        });
+    const [dialog, setDialog] = useState<string | null>(null);
 
     const prevEvalForBotRef = useRef<number | null>(null);
 
@@ -221,7 +218,7 @@ const BotVoiceLines = ({
             return;
         }
         const decodedMove = decodeMovePath(move.path, boardDimensions.width);
-        const newVoiceLine = getVoiceLineForMove({
+        const newDialog = getDialogForMove({
             move: decodedMove,
             prevPieces: prevPosition.pieces,
             playerType,
@@ -230,8 +227,8 @@ const BotVoiceLines = ({
             prevEvalForBot: prevEvalForBotRef.current,
         });
 
-        if (newVoiceLine) {
-            setVoiceLine(newVoiceLine);
+        if (newDialog) {
+            setDialog(newDialog);
         }
 
         if (evalForBot !== null) {
@@ -258,13 +255,11 @@ const BotVoiceLines = ({
             handleMove(move, plyNumber, PlayerType.Human, null, didMoveEndGame),
     );
 
-    const voiceBubbleRef = useRef<HTMLDivElement>(null);
+    const dialogBubbleRef = useRef<HTMLDivElement>(null);
     const [isVisible, setIsVisible] = useState<boolean>(false);
-    const [displayVoiceLine, setDisplayVoiceLine] = useState<string | null>(
-        null,
-    );
+    const [displayDialog, setDisplayDialog] = useState<string | null>(null);
     const fadeEvent = useEffectEvent(() => {
-        if (!voiceLine) {
+        if (!dialog) {
             setIsVisible(false);
             return;
         }
@@ -272,37 +267,37 @@ const BotVoiceLines = ({
         setIsVisible(false);
         const timeout = setTimeout(() => {
             setIsVisible(true);
-            setDisplayVoiceLine(voiceLine);
+            setDisplayDialog(dialog);
         }, 300);
         return timeout;
     });
     useEffect(() => {
         const timeout = fadeEvent();
         return () => clearTimeout(timeout);
-    }, [voiceLine]);
+    }, [dialog]);
 
     const plyNumber = useChessboardStore((x) => x.positionHistory.mainPlyCount);
-    const triggerGameStartVoiceLineEvent = useEffectEvent(() => {
+    const triggerGameStartDialogEvent = useEffectEvent(() => {
         if (plyNumber === 0 || plyNumber === 1) {
-            const startVoiceLine = getVoiceLineForGameStart(gameToken);
-            setVoiceLine(startVoiceLine);
+            const startDialog = getDialogForGameStart(gameToken);
+            setDialog(startDialog);
         }
     });
-    useEffect(() => triggerGameStartVoiceLineEvent(), [plyNumber]);
+    useEffect(() => triggerGameStartDialogEvent(), [plyNumber]);
 
-    const triggerGameEndVoiceLineEvent = useEffectEvent(() => {
+    const triggerGameEndDialogEvent = useEffectEvent(() => {
         if (resultData === null) {
             return;
         }
 
-        const endVoiceLine = getVoiceLineForGameEnd(
+        const endDialog = getDialogForGameEnd(
             resultData.result,
             botColor,
             gameToken,
         );
-        setVoiceLine(endVoiceLine);
+        setDialog(endDialog);
     });
-    useEffect(() => triggerGameEndVoiceLineEvent(), [resultData]);
+    useEffect(() => triggerGameEndDialogEvent(), [resultData]);
 
     return (
         <Card className="flex-1 flex-row gap-5">
@@ -310,7 +305,7 @@ const BotVoiceLines = ({
                 userId={botPlayer.userId}
                 minSize={120}
                 size={120}
-                data-testid="botVoiceLineProfilePicture"
+                data-testid="botDialogProfilePicture"
             />
 
             <CSSTransition
@@ -326,24 +321,24 @@ const BotVoiceLines = ({
                     exitDone: "opacity-0",
                 }}
                 unmountOnExit
-                nodeRef={voiceBubbleRef}
-                data-testid="botVoiceLine"
+                nodeRef={dialogBubbleRef}
+                data-testid="botDialog"
             >
                 <div
                     className="before:bg-background relative before:absolute
                         before:top-4 before:-left-2 before:h-4 before:w-4
                         before:rotate-45 before:rounded-sm"
-                    ref={voiceBubbleRef}
+                    ref={dialogBubbleRef}
                 >
                     <div
                         className="bg-background relative h-min max-h-full
                             overflow-auto rounded-2xl p-3 wrap-anywhere"
                     >
-                        {displayVoiceLine}
+                        {displayDialog}
                     </div>
                 </div>
             </CSSTransition>
         </Card>
     );
 };
-export default BotVoiceLines;
+export default BotDialog;

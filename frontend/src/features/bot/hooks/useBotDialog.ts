@@ -6,7 +6,7 @@ import { PlayerType } from "@/features/liveGame/lib/types";
 import { GameColor, GameResult } from "@/lib/apiClient";
 import { Move } from "@/features/chessboard/lib/types";
 
-export interface VoiceLineContext {
+export interface DialogContext {
     move: Move;
     prevPieces: BoardPieces;
     playerType: PlayerType;
@@ -15,36 +15,36 @@ export interface VoiceLineContext {
     prevEvalForBot: number | null;
 }
 
-export interface ReactionVoiceLine {
-    condition: (ctx: VoiceLineContext) => boolean;
+export interface ReactionDialog {
+    condition: (ctx: DialogContext) => boolean;
     lines: string[];
 }
 
-export interface LoreVoiceLine {
+export interface LoreDialog {
     onPly: number;
     lines: string[];
 }
 
-export interface BotVoiceLineOptions {
-    reactionVoiceLines: ReactionVoiceLine[];
-    loreVoiceLines: LoreVoiceLine[];
-    generalVoiceLines: string[];
-    startVoiceLines: string[];
-    botWinVoiceLines: string[];
-    botLoseVoiceLines: string[];
+export interface BotDialogOptions {
+    reactionDialog: ReactionDialog[];
+    loreDialog: LoreDialog[];
+    generalDialog: string[];
+    startDialog: string[];
+    botWinDialog: string[];
+    botLoseDialog: string[];
 }
 
-export default function useBotVoiceLines({
-    reactionVoiceLines,
-    loreVoiceLines,
-    generalVoiceLines,
-    startVoiceLines,
-    botWinVoiceLines,
-    botLoseVoiceLines,
-}: BotVoiceLineOptions): {
-    getVoiceLineForMove(ctx: VoiceLineContext): string | null;
-    getVoiceLineForGameStart(gameToken: string): string | null;
-    getVoiceLineForGameEnd(
+export default function useBotDialog({
+    reactionDialog,
+    loreDialog,
+    generalDialog,
+    startDialog,
+    botWinDialog,
+    botLoseDialog,
+}: BotDialogOptions): {
+    getDialogForMove(ctx: DialogContext): string | null;
+    getDialogForGameStart(gameToken: string): string | null;
+    getDialogForGameEnd(
         result: GameResult,
         botColor: GameColor,
         gameToken: string,
@@ -53,11 +53,11 @@ export default function useBotVoiceLines({
     const usedReactionLineIdxesRef = useRef<Set<number>>(new Set());
     const usedGeneralLinesIdxesRef = useRef<Set<number>>(new Set());
 
-    const nextGeneralVoiceLinePlyRef = useRef<number | null>(null);
+    const nextGeneralDialogPlyRef = useRef<number | null>(null);
     const lastLoreLineForPlyNumberRef = useRef<number>(0);
     const lastLineAtRef = useRef<number | null>(null);
 
-    function getVoiceLineForMove(ctx: VoiceLineContext): string | null {
+    function getDialogForMove(ctx: DialogContext): string | null {
         if (
             lastLineAtRef.current !== null &&
             ctx.plyNumber - lastLineAtRef.current < 2
@@ -86,11 +86,11 @@ export default function useBotVoiceLines({
         return null;
     }
 
-    function getVoiceLineForGameStart(gameToken: string): string | null {
-        return seededRandomItem(startVoiceLines, gameToken);
+    function getDialogForGameStart(gameToken: string): string | null {
+        return seededRandomItem(startDialog, gameToken);
     }
 
-    function getVoiceLineForGameEnd(
+    function getDialogForGameEnd(
         result: GameResult,
         botColor: GameColor,
         gameToken: string,
@@ -99,15 +99,14 @@ export default function useBotVoiceLines({
             botColor === GameColor.WHITE
                 ? GameResult.WHITE_WIN
                 : GameResult.BLACK_WIN;
-        const lines =
-            result === botWinResult ? botWinVoiceLines : botLoseVoiceLines;
+        const lines = result === botWinResult ? botWinDialog : botLoseDialog;
         return seededRandomItem(lines, gameToken);
     }
 
-    function pickReactionLine(ctx: VoiceLineContext): string | null {
+    function pickReactionLine(ctx: DialogContext): string | null {
         const availableReactionIndexes: number[] = [];
-        for (let i = 0; i < reactionVoiceLines.length; i++) {
-            const line = reactionVoiceLines[i];
+        for (let i = 0; i < reactionDialog.length; i++) {
+            const line = reactionDialog[i];
             if (
                 line.condition(ctx) &&
                 !usedReactionLineIdxesRef.current.has(i)
@@ -122,23 +121,23 @@ export default function useBotVoiceLines({
         }
         usedReactionLineIdxesRef.current.add(randomIdx);
 
-        const lines = reactionVoiceLines[randomIdx].lines;
+        const lines = reactionDialog[randomIdx].lines;
         return randomItem(lines);
     }
 
     function pickGeneralLine(plyNumber: number): string | null {
-        if (nextGeneralVoiceLinePlyRef.current === null) {
-            nextGeneralVoiceLinePlyRef.current =
+        if (nextGeneralDialogPlyRef.current === null) {
+            nextGeneralDialogPlyRef.current =
                 plyNumber + getNextGeneralLineInterval(plyNumber);
             return null;
         }
 
-        if (plyNumber < nextGeneralVoiceLinePlyRef.current) {
+        if (plyNumber < nextGeneralDialogPlyRef.current) {
             return null;
         }
 
         const availableGeneralIndexes: number[] = [];
-        for (let i = 0; i < generalVoiceLines.length; i++) {
+        for (let i = 0; i < generalDialog.length; i++) {
             if (!usedGeneralLinesIdxesRef.current.has(i)) {
                 availableGeneralIndexes.push(i);
             }
@@ -150,16 +149,16 @@ export default function useBotVoiceLines({
         }
 
         usedGeneralLinesIdxesRef.current.add(randomIdx);
-        nextGeneralVoiceLinePlyRef.current =
+        nextGeneralDialogPlyRef.current =
             plyNumber + getNextGeneralLineInterval(plyNumber);
 
-        return generalVoiceLines[randomIdx];
+        return generalDialog[randomIdx];
     }
 
     function pickLoreLine(plyNumber: number): string | null {
         const availableLoreIndexes: number[] = [];
-        for (let i = 0; i < loreVoiceLines.length; i++) {
-            const line = loreVoiceLines[i];
+        for (let i = 0; i < loreDialog.length; i++) {
+            const line = loreDialog[i];
             if (
                 line.onPly > lastLoreLineForPlyNumberRef.current &&
                 line.onPly <= plyNumber
@@ -174,7 +173,7 @@ export default function useBotVoiceLines({
         }
 
         lastLoreLineForPlyNumberRef.current = plyNumber;
-        const lines = loreVoiceLines[randomIdx].lines;
+        const lines = loreDialog[randomIdx].lines;
         return randomItem(lines);
     }
 
@@ -194,8 +193,8 @@ export default function useBotVoiceLines({
     }
 
     return {
-        getVoiceLineForMove,
-        getVoiceLineForGameStart,
-        getVoiceLineForGameEnd,
+        getDialogForMove,
+        getDialogForGameStart,
+        getDialogForGameEnd,
     };
 }
