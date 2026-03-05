@@ -156,7 +156,7 @@ dotnet ef database update
 
 ## Backend
 
-There are 4 test projects:
+There are 5 test projects:
 
 ```bash
 backend/Tests
