@@ -117,7 +117,10 @@ const MoveHistoryTable = ({ title }: { title?: React.ReactNode }) => {
     if (pendingWhiteMoveVariation) moveRows.push(pendingWhiteMoveVariation);
 
     return (
-        <Card className="relative max-h-96 w-full gap-0 p-0 lg:max-h-full">
+        <Card
+            className="relative max-h-96 w-full gap-0 overflow-hidden p-0
+                lg:max-h-full"
+        >
             {title && (
                 <div
                     className="bg-primary flex items-center justify-center gap-1

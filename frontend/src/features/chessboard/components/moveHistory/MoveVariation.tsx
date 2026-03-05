@@ -37,7 +37,7 @@ const MoveVariation = ({ variations }: { variations: readonly Position[] }) => {
         <div
             className="before:bg-text/30 relative ml-3 flex flex-col pl-4
                 select-none before:absolute before:top-0 before:bottom-5
-                before:left-0 before:w-[2px]"
+                before:left-0 before:w-0.5"
             data-testid="moveVariations"
         >
             {nodes}
@@ -62,7 +62,7 @@ const Line = ({ positions }: { positions: Position[] }) => {
     return (
         <div
             className="text-text/60 before:border-text/30 relative p-1
-                before:absolute before:top-4.5 before:left-[-14px] before:w-3
+                before:absolute before:top-4.5 before:-left-3.5 before:w-3
                 before:border-t-2"
             data-testid="lineVariation"
         >
