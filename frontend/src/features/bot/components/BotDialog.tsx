@@ -1,5 +1,5 @@
-import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { CSSTransition } from "react-transition-group";
+import { useEffect, useRef, useState } from "react";
 import { StoreApi } from "zustand";
 
 import useBotDialog, {
@@ -175,6 +175,8 @@ And if someone will continue Officially talk about me like that, we will meet in
 God bless with true! True will never die ! Liers will kicked off...'`,
 ];
 
+export const BOT_DIALOG_TYPING_SPEED_MS = 25;
+
 const BotDialog = ({
     botColor,
     chessboardStore,
@@ -200,6 +202,58 @@ const BotDialog = ({
         botPlayer: x.getPlayerByColor(botColor),
         resultData: x.resultData,
     }));
+
+    const dialogBubbleRef = useRef<HTMLDivElement>(null);
+    const [isVisible, setIsVisible] = useState<boolean>(false);
+    const [displayDialog, setDisplayDialog] = useState<string | null>(null);
+    useEffect(() => {
+        if (!dialog) {
+            setIsVisible(false);
+            return;
+        }
+
+        let typingInterval: NodeJS.Timeout;
+        setIsVisible(false);
+        setDisplayDialog(null);
+        const timeout = setTimeout(() => {
+            setIsVisible(true);
+
+            let index = 0;
+            typingInterval = setInterval(() => {
+                index++;
+                setDisplayDialog(dialog.slice(0, index));
+
+                if (index >= dialog.length) {
+                    clearInterval(typingInterval);
+                }
+            }, 25);
+        }, 300);
+        return () => {
+            clearTimeout(timeout);
+            clearInterval(typingInterval);
+        };
+    }, [dialog]);
+
+    const plyNumber = useChessboardStore((x) => x.positionHistory.mainPlyCount);
+    useEffect(() => {
+        if (plyNumber === 0 || plyNumber === 1) {
+            const startDialog = getDialogForGameStart(gameToken);
+            setDialog(startDialog);
+        }
+    }, [gameToken, getDialogForGameStart, plyNumber]);
+
+    useEffect(() => {
+        if (resultData === null) {
+            return;
+        }
+
+        const endDialog = getDialogForGameEnd(
+            resultData.result,
+            botColor,
+            gameToken,
+        );
+        setDialog(endDialog);
+    }, [botColor, gameToken, getDialogForGameEnd, resultData]);
 
     function handleMove(
         move: MoveSnapshot,
@@ -254,50 +308,6 @@ const BotDialog = ({
         (move, plyNumber, didMoveEndGame) =>
             handleMove(move, plyNumber, PlayerType.Human, null, didMoveEndGame),
     );
-
-    const dialogBubbleRef = useRef<HTMLDivElement>(null);
-    const [isVisible, setIsVisible] = useState<boolean>(false);
-    const [displayDialog, setDisplayDialog] = useState<string | null>(null);
-    const fadeEvent = useEffectEvent(() => {
-        if (!dialog) {
-            setIsVisible(false);
-            return;
-        }
-
-        setIsVisible(false);
-        const timeout = setTimeout(() => {
-            setIsVisible(true);
-            setDisplayDialog(dialog);
-        }, 300);
-        return timeout;
-    });
-    useEffect(() => {
-        const timeout = fadeEvent();
-        return () => clearTimeout(timeout);
-    }, [dialog]);
-
-    const plyNumber = useChessboardStore((x) => x.positionHistory.mainPlyCount);
-    const triggerGameStartDialogEvent = useEffectEvent(() => {
-        if (plyNumber === 0 || plyNumber === 1) {
-            const startDialog = getDialogForGameStart(gameToken);
-            setDialog(startDialog);
-        }
-    });
-    useEffect(() => triggerGameStartDialogEvent(), [plyNumber]);
-
-    const triggerGameEndDialogEvent = useEffectEvent(() => {
-        if (resultData === null) {
-            return;
-        }
-
-        const endDialog = getDialogForGameEnd(
-            resultData.result,
-            botColor,
-            gameToken,
-        );
-        setDialog(endDialog);
-    });
-    useEffect(() => triggerGameEndDialogEvent(), [resultData]);
 
     return (
         <Card className="flex-1 flex-row gap-5">

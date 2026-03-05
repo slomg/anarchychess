@@ -13,6 +13,7 @@ import useBotDialog, { DialogContext } from "../../hooks/useBotDialog";
 
 import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardStoreContext";
 import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
+import { createFakeGameResultData } from "@/lib/testUtils/fakers/gameResultDataFaker";
 import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
 import LiveChessStoreContext from "@/features/liveGame/contexts/liveChessContext";
 import { createFakeMoveSnapshot } from "@/lib/testUtils/fakers/moveSnapshotFaker";
@@ -21,12 +22,11 @@ import { EventHandlers } from "@/features/signalR/hooks/useSignalREvent";
 import PositionHistory from "@/features/chessboard/lib/positionHistory";
 import { BotClientEvents, useBotEvent } from "../../hooks/useBotHub";
 import { decodeMovePath } from "@/features/liveGame/lib/moveDecoder";
+import BotDialog, { BOT_DIALOG_TYPING_SPEED_MS } from "../BotDialog";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
 import { PlayerType } from "@/features/liveGame/lib/types";
 import { GameColor, MoveSnapshot } from "@/lib/apiClient";
-import BotDialog from "../BotDialog";
 import constants from "@/lib/constants";
-import { createFakeGameResultData } from "@/lib/testUtils/fakers/gameResultDataFaker";
 
 vi.mock("../../hooks/useBotDialog");
 vi.mock("@/features/bot/hooks/useBotHub");
@@ -81,7 +81,7 @@ describe("BotDialog", () => {
         );
     }
 
-    async function FireBotMoveMade({
+    async function fireBotMoveMade({
         moveSnapshot,
         plyNumber,
         evalForBot,
@@ -115,7 +115,7 @@ describe("BotDialog", () => {
         return { moveSnapshot, plyNumber, evalForBot, didMoveEndGame };
     }
 
-    async function FireHumanMoveMade({
+    async function fireHumanMoveMade({
         moveSnapshot,
         plyNumber,
         evalForBot,
@@ -147,9 +147,29 @@ describe("BotDialog", () => {
         return { moveSnapshot, plyNumber, evalForBot, didMoveEndGame };
     }
 
+    async function assertDialog(expectedDialog: string) {
+        await act(() =>
+            vi.advanceTimersByTime(
+                300 + expectedDialog.length * BOT_DIALOG_TYPING_SPEED_MS,
+            ),
+        );
+        expect(screen.getByTestId("botDialog")).toHaveTextContent(
+            expectedDialog,
+        );
+    }
+
+    async function assertNoDialog(fakeDialog?: string) {
+        await act(() =>
+            vi.advanceTimersByTime(
+                300 + (fakeDialog?.length ?? 0) * BOT_DIALOG_TYPING_SPEED_MS,
+            ),
+        );
+        expect(screen.queryByTestId("botDialog")).not.toBeInTheDocument();
+    }
+
     it.each([GameColor.WHITE, GameColor.BLACK])(
         "should render correctly",
-        (botColor) => {
+        async (botColor) => {
             renderComponent(botColor);
 
             const botPlayer = liveStore.getState().getPlayerByColor(botColor);
@@ -157,7 +177,7 @@ describe("BotDialog", () => {
                 "data-userid",
                 botPlayer.userId,
             );
-            expect(screen.queryByTestId("botDialog")).not.toBeInTheDocument();
+            await assertNoDialog();
         },
     );
 
@@ -165,26 +185,24 @@ describe("BotDialog", () => {
         getDialogForMoveMock.mockReturnValue("test bot");
 
         renderComponent();
-        await FireBotMoveMade();
+        await fireBotMoveMade();
 
-        await act(() => vi.advanceTimersByTime(300));
-        expect(screen.getByTestId("botDialog")).toHaveTextContent("test bot");
+        await assertDialog("test bot");
     });
 
     it("should set dialog after human move", async () => {
         getDialogForMoveMock.mockReturnValue("test human");
 
         renderComponent();
-        await FireHumanMoveMade();
+        await fireHumanMoveMade();
 
-        await act(() => vi.advanceTimersByTime(300));
-        expect(screen.getByTestId("botDialog")).toHaveTextContent("test human");
+        await assertDialog("test human");
     });
 
     it("should pass correct context to dialog", async () => {
         renderComponent();
 
-        const { moveSnapshot, plyNumber, evalForBot } = await FireBotMoveMade();
+        const { moveSnapshot, plyNumber, evalForBot } = await fireBotMoveMade();
 
         const expectedMove = decodeMovePath(
             moveSnapshot.path,
@@ -210,9 +228,9 @@ describe("BotDialog", () => {
             renderComponent();
 
             if (playerType === PlayerType.Bot) {
-                await FireBotMoveMade();
+                await fireBotMoveMade();
             } else {
-                await FireHumanMoveMade();
+                await fireHumanMoveMade();
             }
 
             expect(getDialogForMoveMock).toHaveBeenCalledExactlyOnceWith(
@@ -227,12 +245,12 @@ describe("BotDialog", () => {
         renderComponent();
 
         const firstEvalForBot = 6969;
-        await FireBotMoveMade({ evalForBot: firstEvalForBot });
+        await fireBotMoveMade({ evalForBot: firstEvalForBot });
 
         getDialogForMoveMock.mockClear();
 
         const secondEvalForBot = 420420;
-        await FireBotMoveMade({ evalForBot: secondEvalForBot });
+        await fireBotMoveMade({ evalForBot: secondEvalForBot });
 
         expect(getDialogForMoveMock).toHaveBeenCalledExactlyOnceWith(
             expect.objectContaining<Partial<DialogContext>>({
@@ -242,44 +260,57 @@ describe("BotDialog", () => {
         );
     });
 
-    it("should fade old line out and show new line after transition", async () => {
+    it("should fade in before typing starts", async () => {
+        getDialogForMoveMock.mockReturnValue("fade test");
         renderComponent();
 
-        getDialogForMoveMock.mockReturnValueOnce("first line");
-        await FireBotMoveMade();
+        await fireBotMoveMade();
+
+        expect(screen.queryByTestId("botDialog")).not.toBeInTheDocument();
+
+        await act(() =>
+            vi.advanceTimersByTime(300 + BOT_DIALOG_TYPING_SPEED_MS),
+        );
+
+        expect(screen.getByTestId("botDialog")).toHaveTextContent("f"); // first letter only
+    });
+
+    it("should type out the dialog character by character", async () => {
+        getDialogForMoveMock.mockReturnValue("typing");
+
+        renderComponent();
+        await fireBotMoveMade();
 
         await act(() => vi.advanceTimersByTime(300));
-        expect(screen.getByTestId("botDialog").textContent).toBe("first line");
 
-        getDialogForMoveMock.mockReturnValueOnce("second line");
-        await FireBotMoveMade();
+        const dialogNode = screen.getByTestId("botDialog");
 
-        expect(screen.getByTestId("botDialog").textContent).toBe("first line");
+        for (let i = 1; i <= "typing".length; i++) {
+            await act(() => vi.advanceTimersByTime(BOT_DIALOG_TYPING_SPEED_MS));
+            expect(dialogNode).toHaveTextContent("typing".slice(0, i));
+        }
 
-        await act(() => vi.advanceTimersByTime(300));
-        expect(screen.getByTestId("botDialog").textContent).toBe("second line");
+        expect(dialogNode).toHaveTextContent("typing");
     });
 
     it("should not set a dialog if a bot move ends the game", async () => {
         renderComponent();
         getDialogForMoveMock.mockReturnValue("should not appear");
 
-        await FireBotMoveMade({ didMoveEndGame: true });
-        await act(() => vi.advanceTimersByTime(300));
+        await fireBotMoveMade({ didMoveEndGame: true });
 
+        await assertNoDialog("should not appear");
         expect(getDialogForMoveMock).not.toHaveBeenCalled();
-        expect(screen.queryByTestId("botDialog")).not.toBeInTheDocument();
     });
 
     it("should not set a dialog if a human move ends the game", async () => {
         renderComponent();
         getDialogForMoveMock.mockReturnValue("should not appear");
 
-        await FireHumanMoveMade({ didMoveEndGame: true });
-        await act(() => vi.advanceTimersByTime(300));
+        await fireHumanMoveMade({ didMoveEndGame: true });
 
+        await assertNoDialog("should not appear");
         expect(getDialogForMoveMock).not.toHaveBeenCalled();
-        expect(screen.queryByTestId("botDialog")).not.toBeInTheDocument();
     });
 
     it("should set game start dialog when viewing first position", async () => {
@@ -290,9 +321,8 @@ describe("BotDialog", () => {
         getDialogForMoveMock.mockReturnValueOnce("move line");
 
         renderComponent();
-        await act(() => vi.advanceTimersByTime(300));
 
-        expect(screen.getByTestId("botDialog")).toHaveTextContent("start line");
+        await assertDialog("start line");
         expect(getDialogForGameStartMock).toHaveBeenCalledExactlyOnceWith(
             liveStore.getState().gameToken,
         );
@@ -300,10 +330,9 @@ describe("BotDialog", () => {
         await act(() =>
             chessboardStore.getState().addPosition(createFakePositionProps()),
         );
-        await act(() => FireBotMoveMade());
-        await act(() => vi.advanceTimersByTime(300));
+        await act(() => fireBotMoveMade());
 
-        expect(screen.getByTestId("botDialog")).toHaveTextContent("move line");
+        await assertDialog("move line");
     });
 
     it("should set game end dialog when resultData appears", async () => {
@@ -312,14 +341,12 @@ describe("BotDialog", () => {
         const botColor = GameColor.BLACK;
         renderComponent(botColor);
 
-        await act(() => vi.advanceTimersByTime(300));
-        expect(screen.queryByTestId("botDialog")).not.toBeInTheDocument();
+        await assertNoDialog("end line");
 
         const resultData = createFakeGameResultData();
         act(() => liveStore.setState({ resultData }));
-        await act(() => vi.advanceTimersByTime(300));
 
-        expect(screen.getByTestId("botDialog")).toHaveTextContent("end line");
+        await assertDialog("end line");
         expect(getDialogForGameEndMock).toHaveBeenCalledExactlyOnceWith(
             resultData.result,
             botColor,
