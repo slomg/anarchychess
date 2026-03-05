@@ -38,7 +38,7 @@ describe("MoveHistoryTable", () => {
         );
 
         const rows = screen.queryAllByTestId("moveRow");
-        expect(rows.length).toBe(0);
+        expect(rows).toHaveLength(0);
     });
 
     it("should render a single row when there is one move", () => {
@@ -180,7 +180,7 @@ describe("MoveHistoryTable", () => {
         );
 
         const rows = screen.getAllByTestId("moveRow");
-        expect(rows.length).toBe(2);
+        expect(rows).toHaveLength(2);
 
         expect(rows[0].className).not.toContain("bg-white/10");
         expect(rows[1].className).toContain("bg-white/10");
@@ -246,6 +246,69 @@ describe("MoveHistoryTable", () => {
 
         // jump to start
         await user.keyboard("{ArrowUp}");
+        expect(chessboardStore.getState().pieces).toEqual(rootPieces);
+    });
+
+    it("should update position using buttons", async () => {
+        const piece = createFakePiece({
+            position: logicalPoint({ x: 0, y: 0 }),
+        });
+
+        const rootPieces = BoardPieces.fromPieces(piece);
+        const position1 = createFakePositionProps({
+            pieces: BoardPieces.fromPieces({
+                ...piece,
+                position: logicalPoint({ x: 1, y: 0 }),
+            }),
+            move: createFakeMove({
+                from: logicalPoint({ x: 0, y: 0 }),
+                to: logicalPoint({ x: 1, y: 0 }),
+            }),
+        });
+        const position2 = createFakePositionProps({
+            pieces: BoardPieces.fromPieces({
+                ...piece,
+                position: logicalPoint({ x: 2, y: 0 }),
+            }),
+            move: createFakeMove({
+                from: logicalPoint({ x: 1, y: 0 }),
+                to: logicalPoint({ x: 2, y: 0 }),
+            }),
+        });
+
+        chessboardStore.setState({
+            pieces: rootPieces,
+            positionHistory: createFakePositionHistory({
+                rootPieces,
+                pos: [position1, position2],
+            }),
+        });
+
+        const user = userEvent.setup();
+        render(
+            <ChessboardStoreContext.Provider value={chessboardStore}>
+                <MoveHistoryTable />
+            </ChessboardStoreContext.Provider>,
+        );
+
+        const startButton = screen.getByTitle("Go to Start");
+        const backwardButton = screen.getByTitle("Previous Move");
+        const forwardButton = screen.getByTitle("Next Move");
+        const endButton = screen.getByTitle("Go to End");
+
+        await user.click(backwardButton);
+        expect(chessboardStore.getState().pieces).toEqual(position1.pieces);
+
+        await user.click(backwardButton);
+        expect(chessboardStore.getState().pieces).toEqual(rootPieces);
+
+        await user.click(forwardButton);
+        expect(chessboardStore.getState().pieces).toEqual(position1.pieces);
+
+        await user.click(endButton);
+        expect(chessboardStore.getState().pieces).toEqual(position2.pieces);
+
+        await user.click(startButton);
         expect(chessboardStore.getState().pieces).toEqual(rootPieces);
     });
 

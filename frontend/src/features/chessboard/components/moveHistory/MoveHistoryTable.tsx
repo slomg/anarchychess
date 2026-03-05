@@ -1,9 +1,17 @@
-import { ArrowsUpDownIcon } from "@heroicons/react/24/solid";
+import {
+    ArrowsUpDownIcon,
+    ChevronRightIcon,
+    ChevronDoubleLeftIcon,
+    ChevronDoubleRightIcon,
+    ChevronLeftIcon,
+} from "@heroicons/react/24/solid";
+
 import React, { useEffect, useRef } from "react";
 
 import { useChessboardStore } from "@/features/chessboard/hooks/useChessboard";
 import useAutoScroll from "@/hooks/useAutoScroll";
 import MoveVariation from "./MoveVariation";
+import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import MoveRow from "./MoveRow";
 
@@ -121,19 +129,37 @@ const MoveHistoryTable = ({ title }: { title?: React.ReactNode }) => {
             )}
 
             <div
-                className="h-full flex-1 overflow-x-auto"
+                className="border-primary order-1 flex gap-3 border-b p-3
+                    lg:order-2 lg:border-t lg:border-b-0"
+            >
+                <Button onClick={goToStartPosition} title="Go to Start">
+                    <ChevronDoubleLeftIcon className="h-8 w-8" />
+                </Button>
+                <Button onClick={stepPositionBackward} title="Previous Move">
+                    <ChevronLeftIcon className="h-8 w-8" />
+                </Button>
+                <Button onClick={stepPositionForward} title="Next Move">
+                    <ChevronRightIcon className="h-8 w-8" />
+                </Button>
+                <Button onClick={goToLatestPosition} title="Go to End">
+                    <ChevronDoubleRightIcon className="h-8 w-8" />
+                </Button>
+
+                <Button
+                    className="ml-auto"
+                    onClick={flipBoard}
+                    title="Flip Board"
+                >
+                    <ArrowsUpDownIcon className="h-8 w-8" />
+                </Button>
+            </div>
+
+            <div
+                className="order-2 h-full flex-1 overflow-x-auto lg:order-1"
                 ref={tableRef}
                 data-testid="moveHistoryContents"
             >
                 {moveRows}
-            </div>
-
-            <div className="absolute right-0 bottom-0 flex w-fit gap-3 p-3">
-                <ArrowsUpDownIcon
-                    className="text-secondary h-6 w-6 cursor-pointer"
-                    title="Flip Board"
-                    onClick={flipBoard}
-                />
             </div>
         </Card>
     );
