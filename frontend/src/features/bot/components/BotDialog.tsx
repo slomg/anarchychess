@@ -214,11 +214,11 @@ const BotDialog = ({
 
         let typingInterval: NodeJS.Timeout;
         setIsVisible(false);
-        setDisplayDialog(null);
         const timeout = setTimeout(() => {
+            setDisplayDialog(dialog.at(0) ?? "");
             setIsVisible(true);
 
-            let index = 0;
+            let index = 1;
             typingInterval = setInterval(() => {
                 index++;
                 setDisplayDialog(dialog.slice(0, index));
