@@ -148,9 +148,12 @@ describe("BotDialog", () => {
     }
 
     async function assertDialog(expectedDialog: string) {
+        // - BOT_DIALOG_TYPING_SPEED_MS because first letter has no delay
         await act(() =>
             vi.advanceTimersByTime(
-                300 + expectedDialog.length * BOT_DIALOG_TYPING_SPEED_MS,
+                300 +
+                    expectedDialog.length * BOT_DIALOG_TYPING_SPEED_MS -
+                    BOT_DIALOG_TYPING_SPEED_MS,
             ),
         );
         expect(screen.getByTestId("botDialog")).toHaveTextContent(
@@ -161,7 +164,9 @@ describe("BotDialog", () => {
     async function assertNoDialog(fakeDialog?: string) {
         await act(() =>
             vi.advanceTimersByTime(
-                300 + (fakeDialog?.length ?? 0) * BOT_DIALOG_TYPING_SPEED_MS,
+                300 +
+                    (fakeDialog?.length ?? 0) * BOT_DIALOG_TYPING_SPEED_MS -
+                    BOT_DIALOG_TYPING_SPEED_MS,
             ),
         );
         expect(screen.queryByTestId("botDialog")).not.toBeInTheDocument();
@@ -268,9 +273,7 @@ describe("BotDialog", () => {
 
         expect(screen.queryByTestId("botDialog")).not.toBeInTheDocument();
 
-        await act(() =>
-            vi.advanceTimersByTime(300 + BOT_DIALOG_TYPING_SPEED_MS),
-        );
+        await act(() => vi.advanceTimersByTime(300));
 
         expect(screen.getByTestId("botDialog")).toHaveTextContent("f"); // first letter only
     });
@@ -284,7 +287,7 @@ describe("BotDialog", () => {
         await act(() => vi.advanceTimersByTime(300));
 
         const dialogNode = screen.getByTestId("botDialog");
-
+        expect(dialogNode).toHaveTextContent("t");
         for (let i = 1; i <= "typing".length; i++) {
             await act(() => vi.advanceTimersByTime(BOT_DIALOG_TYPING_SPEED_MS));
             expect(dialogNode).toHaveTextContent("typing".slice(0, i));
