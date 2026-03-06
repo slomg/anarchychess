@@ -21,6 +21,7 @@ import { decodeMovePath } from "@/features/liveGame/lib/moveDecoder";
 import { PlayerType } from "@/features/liveGame/lib/types";
 import { useBotEvent } from "../hooks/useBotHub";
 import Card from "@/components/ui/Card";
+import clsx from "clsx";
 
 const REACTION_DIALOG: ReactionDialog[] = [
     {
@@ -174,7 +175,9 @@ const BotDialog = ({
             botWinDialog: BOT_WIN_DIALOG,
             botLoseDialog: BOT_LOSE_DIALOG,
         });
-    const [dialog, setDialog] = useState<string | null>(null);
+    const [dialog, setDialog] = useState<string | null>(
+        "Why does the horsey move like that? Is it afraid of straight lines? Is it gay?",
+    );
 
     const prevEvalForBotRef = useRef<number | null>(null);
 
@@ -201,7 +204,9 @@ const BotDialog = ({
 
             let index = 1;
             const typeNext = () => {
-                if (index >= dialog.length) return;
+                if (index >= dialog.length) {
+                    return;
+                }
 
                 const char = dialog[index];
                 index++;
@@ -218,7 +223,7 @@ const BotDialog = ({
         }, 300);
         return () => {
             clearTimeout(timeout);
-            clearInterval(typingInterval);
+            clearTimeout(typingInterval);
         };
     }, [dialog]);
 
@@ -320,7 +325,6 @@ const BotDialog = ({
                 }}
                 unmountOnExit
                 nodeRef={dialogBubbleRef}
-                data-testid="botDialog"
             >
                 <div
                     className="before:bg-background relative before:absolute
@@ -331,8 +335,18 @@ const BotDialog = ({
                     <div
                         className="bg-background relative h-min max-h-full
                             overflow-auto rounded-2xl p-3 wrap-anywhere"
+                        data-testid="botDialog"
                     >
-                        {displayDialog}
+                        {dialog?.split("").map((char, i) => (
+                            <span
+                                key={i}
+                                className={clsx(
+                                    i >= visibleChars && "invisible",
+                                )}
+                            >
+                                {char}
+                            </span>
+                        ))}
                     </div>
                 </div>
             </CSSTransition>
