@@ -1,6 +1,7 @@
 import { CSSTransition } from "react-transition-group";
 import { useEffect, useRef, useState } from "react";
 import { StoreApi } from "zustand";
+import clsx from "clsx";
 
 import useBotDialog, {
     LoreDialog,
@@ -21,7 +22,6 @@ import { decodeMovePath } from "@/features/liveGame/lib/moveDecoder";
 import { PlayerType } from "@/features/liveGame/lib/types";
 import { useBotEvent } from "../hooks/useBotHub";
 import Card from "@/components/ui/Card";
-import clsx from "clsx";
 
 const REACTION_DIALOG: ReactionDialog[] = [
     {
