@@ -156,6 +156,7 @@ God bless with true! True will never die ! Liers will kicked off...'`,
 ];
 
 export const BOT_DIALOG_TYPING_SPEED_MS = 25;
+export const BOT_DIALOG_PUNCTUATION_SPEED_MS = 300;
 
 const BotDialog = ({
     botColor,
@@ -185,7 +186,7 @@ const BotDialog = ({
 
     const dialogBubbleRef = useRef<HTMLDivElement>(null);
     const [isVisible, setIsVisible] = useState<boolean>(false);
-    const [displayDialog, setDisplayDialog] = useState<string | null>(null);
+    const [visibleChars, setVisibleChars] = useState(0);
     useEffect(() => {
         if (!dialog) {
             setIsVisible(false);
@@ -195,18 +196,25 @@ const BotDialog = ({
         let typingInterval: NodeJS.Timeout;
         setIsVisible(false);
         const timeout = setTimeout(() => {
-            setDisplayDialog(dialog.at(0) ?? "");
+            setVisibleChars(1);
             setIsVisible(true);
 
             let index = 1;
-            typingInterval = setInterval(() => {
-                index++;
-                setDisplayDialog(dialog.slice(0, index));
+            const typeNext = () => {
+                if (index >= dialog.length) return;
 
-                if (index >= dialog.length) {
-                    clearInterval(typingInterval);
-                }
-            }, 25);
+                const char = dialog[index];
+                index++;
+
+                setVisibleChars(index);
+
+                const delay = /[.,!?;:]/.test(char)
+                    ? BOT_DIALOG_PUNCTUATION_SPEED_MS
+                    : BOT_DIALOG_TYPING_SPEED_MS;
+                typingInterval = setTimeout(typeNext, delay);
+            };
+
+            typingInterval = setTimeout(typeNext, BOT_DIALOG_TYPING_SPEED_MS);
         }, 300);
         return () => {
             clearTimeout(timeout);

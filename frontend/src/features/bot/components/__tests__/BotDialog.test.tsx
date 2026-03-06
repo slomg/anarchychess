@@ -22,7 +22,10 @@ import { EventHandlers } from "@/features/signalR/hooks/useSignalREvent";
 import PositionHistory from "@/features/chessboard/lib/positionHistory";
 import { BotClientEvents, useBotEvent } from "../../hooks/useBotHub";
 import { decodeMovePath } from "@/features/liveGame/lib/moveDecoder";
-import BotDialog, { BOT_DIALOG_TYPING_SPEED_MS } from "../BotDialog";
+import BotDialog, {
+    BOT_DIALOG_PUNCTUATION_SPEED_MS,
+    BOT_DIALOG_TYPING_SPEED_MS,
+} from "../BotDialog";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
 import { PlayerType } from "@/features/liveGame/lib/types";
 import { GameColor, MoveSnapshot } from "@/lib/apiClient";
@@ -279,21 +282,54 @@ describe("BotDialog", () => {
     });
 
     it("should type out the dialog character by character", async () => {
-        getDialogForMoveMock.mockReturnValue("typing");
+        const dialogLine = "ab!c,de.f?g";
+        getDialogForMoveMock.mockReturnValue(dialogLine);
 
         renderComponent();
         await fireBotMoveMade();
-
         await act(() => vi.advanceTimersByTime(300));
 
         const dialogNode = screen.getByTestId("botDialog");
-        expect(dialogNode).toHaveTextContent("t");
-        for (let i = 1; i <= "typing".length; i++) {
-            await act(() => vi.advanceTimersByTime(BOT_DIALOG_TYPING_SPEED_MS));
-            expect(dialogNode).toHaveTextContent("typing".slice(0, i));
-        }
 
-        expect(dialogNode).toHaveTextContent("typing");
+        expect(dialogNode).toHaveTextContent("a");
+
+        await act(() => vi.advanceTimersByTime(BOT_DIALOG_TYPING_SPEED_MS));
+        expect(dialogNode).toHaveTextContent("b");
+
+        await act(() =>
+            vi.advanceTimersByTime(BOT_DIALOG_PUNCTUATION_SPEED_MS),
+        );
+        expect(dialogNode).toHaveTextContent("ab!");
+
+        await act(() => vi.advanceTimersByTime(BOT_DIALOG_TYPING_SPEED_MS));
+        expect(dialogNode).toHaveTextContent("ab!c");
+
+        await act(() => vi.advanceTimersByTime(BOT_DIALOG_TYPING_SPEED_MS));
+        expect(dialogNode).toHaveTextContent("ab!c,");
+
+        await act(() =>
+            vi.advanceTimersByTime(BOT_DIALOG_PUNCTUATION_SPEED_MS),
+        );
+        expect(dialogNode).toHaveTextContent("ab!c,d");
+
+        await act(() => vi.advanceTimersByTime(BOT_DIALOG_TYPING_SPEED_MS));
+        expect(dialogNode).toHaveTextContent("ab!c,de");
+
+        await act(() => vi.advanceTimersByTime(BOT_DIALOG_TYPING_SPEED_MS));
+        expect(dialogNode).toHaveTextContent("ab!c,de.");
+
+        await act(() =>
+            vi.advanceTimersByTime(BOT_DIALOG_PUNCTUATION_SPEED_MS),
+        );
+        expect(dialogNode).toHaveTextContent("ab!c,de.f");
+
+        await act(() => vi.advanceTimersByTime(BOT_DIALOG_TYPING_SPEED_MS));
+        expect(dialogNode).toHaveTextContent("ab!c,de.f?");
+
+        await act(() =>
+            vi.advanceTimersByTime(BOT_DIALOG_PUNCTUATION_SPEED_MS),
+        );
+        expect(dialogNode).toHaveTextContent("ab!c,de.f?g");
     });
 
     it("should not set a dialog if a bot move ends the game", async () => {
