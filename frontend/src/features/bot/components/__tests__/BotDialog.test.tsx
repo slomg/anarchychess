@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { StoreApi } from "zustand";
 import { act } from "react";
 
@@ -9,7 +9,10 @@ import {
 import createLiveChessStore, {
     LiveChessStore,
 } from "@/features/liveGame/stores/liveChessStore";
-import useBotDialog, { DialogContext } from "../../hooks/useBotDialog";
+import BotDialog, {
+    BOT_DIALOG_PUNCTUATION_SPEED_MS,
+    BOT_DIALOG_TYPING_SPEED_MS,
+} from "../BotDialog";
 
 import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardStoreContext";
 import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
@@ -20,12 +23,9 @@ import { createFakeMoveSnapshot } from "@/lib/testUtils/fakers/moveSnapshotFaker
 import { createFakeBoardPieces } from "@/lib/testUtils/fakers/chessboardFakers";
 import { EventHandlers } from "@/features/signalR/hooks/useSignalREvent";
 import PositionHistory from "@/features/chessboard/lib/positionHistory";
+import useBotDialog, { DialogContext } from "../../hooks/useBotDialog";
 import { BotClientEvents, useBotEvent } from "../../hooks/useBotHub";
 import { decodeMovePath } from "@/features/liveGame/lib/moveDecoder";
-import BotDialog, {
-    BOT_DIALOG_PUNCTUATION_SPEED_MS,
-    BOT_DIALOG_TYPING_SPEED_MS,
-} from "../BotDialog";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
 import { PlayerType } from "@/features/liveGame/lib/types";
 import { GameColor, MoveSnapshot } from "@/lib/apiClient";
