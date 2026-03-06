@@ -11,9 +11,6 @@ public sealed class MaterialEvaluator : IEvaluatorFunction
         int whiteScore = board.WhiteMaterialCount;
         int blackScore = board.BlackMaterialCount;
 
-        whiteScore += EvaluateKingValue(board.BitboardFor(PieceType.King, BitPieceColor.White));
-        blackScore += EvaluateKingValue(board.BitboardFor(PieceType.King, BitPieceColor.Black));
-
         UInt128 traitorRookBitboard = board.BitboardFor(
             PieceType.TraitorRook,
             BitPieceColor.Neutral
@@ -30,6 +27,7 @@ public sealed class MaterialEvaluator : IEvaluatorFunction
     public static int GetPieceValue(PieceType type) =>
         type switch
         {
+            PieceType.King => 350,
             PieceType.Queen => 1000,
             PieceType.Pawn => 100,
             PieceType.Rook => 500,
@@ -44,12 +42,6 @@ public sealed class MaterialEvaluator : IEvaluatorFunction
 
             _ => 0,
         };
-
-    private static int EvaluateKingValue(UInt128 kingBitboard)
-    {
-        int kingCount = BitboardHelpers.CountBits(kingBitboard);
-        return kingCount > 0 ? 100_000 + (kingCount * 350) : 0;
-    }
 
     private static void EvaluateTraitorRookValue(
         BitBoard board,

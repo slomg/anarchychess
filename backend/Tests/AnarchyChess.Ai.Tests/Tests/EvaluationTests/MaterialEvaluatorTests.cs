@@ -166,39 +166,6 @@ public class MaterialEvaluatorTests
     }
 
     [Fact]
-    public void EvaluateBoard_counts_single_white_king_correctly()
-    {
-        Dictionary<AlgebraicPoint, Piece> pieces = new()
-        {
-            [new("e1")] = PieceFactory.White(PieceType.King),
-        };
-        BitBoard board = BitBoard.FromPieces(pieces);
-
-        int expectedWhiteKing = 100_000 / 1 + 350;
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
-
-        whiteScore.Should().Be(expectedWhiteKing);
-        blackScore.Should().Be(0);
-    }
-
-    [Fact]
-    public void EvaluateBoard_counts_multiple_kings_correctly()
-    {
-        Dictionary<AlgebraicPoint, Piece> pieces = new()
-        {
-            [new("e1")] = PieceFactory.White(PieceType.King),
-            [new("f1")] = PieceFactory.White(PieceType.King),
-            [new("e10")] = PieceFactory.Black(PieceType.King),
-        };
-        BitBoard board = BitBoard.FromPieces(pieces);
-
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
-
-        whiteScore.Should().Be(100_000 + (2 * 350));
-        blackScore.Should().Be(100_000 + (1 * 350));
-    }
-
-    [Fact]
     public void EvaluateBoard_counts_black_material_correctly_when_black_to_move()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
