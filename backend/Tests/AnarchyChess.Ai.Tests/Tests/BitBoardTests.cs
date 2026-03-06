@@ -1,4 +1,5 @@
-﻿using AnarchyChess.Ai.Models;
+﻿using AnarchyChess.Ai.Evaluation;
+using AnarchyChess.Ai.Models;
 using AnarchyChess.Api.TestInfrastructure.Factories;
 using AnarchyChess.EngineShared;
 using AwesomeAssertions;
@@ -20,7 +21,7 @@ public class BitBoardTests
             [new AlgebraicPoint("e10")] = PieceFactory.Black(PieceType.King),
             [new AlgebraicPoint("d10")] = PieceFactory.Black(PieceType.Queen),
             [new AlgebraicPoint("a10")] = PieceFactory.Black(PieceType.Rook),
-            [new AlgebraicPoint("h10")] = PieceFactory.Black(PieceType.Rook),
+            [new AlgebraicPoint("h10")] = PieceFactory.Black(PieceType.Bishop),
 
             [new AlgebraicPoint("f4")] = PieceFactory.Neutral(PieceType.TraitorRook),
             [new AlgebraicPoint("c5")] = PieceFactory.Neutral(PieceType.TraitorRook),
@@ -61,10 +62,11 @@ public class BitBoardTests
         board
             .BitboardFor(PieceType.Rook, BitPieceColor.Black)
             .Should()
-            .Be(
-                (UInt128.One << new AlgebraicPoint("a10").AsIdx())
-                    | (UInt128.One << new AlgebraicPoint("h10").AsIdx())
-            );
+            .Be(UInt128.One << new AlgebraicPoint("a10").AsIdx());
+        board
+            .BitboardFor(PieceType.Bishop, BitPieceColor.Black)
+            .Should()
+            .Be(UInt128.One << new AlgebraicPoint("h10").AsIdx());
 
         // neutral pieces
         board
@@ -90,6 +92,7 @@ public class BitBoardTests
                 board.BitboardFor(PieceType.King, BitPieceColor.Black)
                     | board.BitboardFor(PieceType.Queen, BitPieceColor.Black)
                     | board.BitboardFor(PieceType.Rook, BitPieceColor.Black)
+                    | board.BitboardFor(PieceType.Bishop, BitPieceColor.Black)
             );
 
         board
@@ -97,6 +100,23 @@ public class BitBoardTests
             .Be(board.BitboardFor(PieceType.TraitorRook, BitPieceColor.Neutral));
 
         board.Occupancy.Should().Be(board.WhitePieces | board.BlackPieces | board.NeutralPieces);
+
+        board
+            .WhiteMaterialCount.Should()
+            .Be(
+                MaterialEvaluator.GetPieceValue(PieceType.King)
+                    + MaterialEvaluator.GetPieceValue(PieceType.Queen)
+                    + MaterialEvaluator.GetPieceValue(PieceType.Rook)
+                    + MaterialEvaluator.GetPieceValue(PieceType.Rook)
+            );
+        board
+            .BlackMaterialCount.Should()
+            .Be(
+                MaterialEvaluator.GetPieceValue(PieceType.King)
+                    + MaterialEvaluator.GetPieceValue(PieceType.Queen)
+                    + MaterialEvaluator.GetPieceValue(PieceType.Rook)
+                    + MaterialEvaluator.GetPieceValue(PieceType.Bishop)
+            );
     }
 
     [Fact]
