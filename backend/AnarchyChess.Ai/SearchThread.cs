@@ -25,7 +25,7 @@ internal class SearchThread(
         int alpha,
         int beta,
         bool isLastMoveCapture = false,
-        bool isLastMoveForced = false
+        int? depthBeforeReduce = null
     )
     {
         if (_evaluator.TryEvaluateTermination(board, depth, out int terminationEval))
@@ -36,7 +36,7 @@ internal class SearchThread(
         if (depth <= 0)
         {
             return isLastMoveCapture
-                ? Quiescence(board, alpha, beta, depth: 3, initialDepth: depth)
+                ? Quiescence(board, alpha, beta, depth: 4, initialDepth: depth)
                 : _evaluator.Evaluate(board);
         }
 
@@ -45,6 +45,11 @@ internal class SearchThread(
         _moveGenerator.Generate(board, moves, ref moveCount);
 
         bool isForced = moves[0].ForcedMovePriority is not ForcedMovePriority.None;
+        if (isForced && depthBeforeReduce is not null)
+        {
+            depth = depthBeforeReduce.Value;
+        }
+
         if (depth > EngineConstants.NullMoveReduction + 1 && !isForced)
         {
             NullMoveUndoState undo = board.MakeNullMove();
@@ -77,7 +82,7 @@ internal class SearchThread(
         {
             BitMove move = _moveOrdering.GetNextHighestMove(i, moves, scores, moveCount);
             bool isCapture = move.CapturesMask != 0;
-            bool isQuiet = !isCapture && !isForced && move.PromotesTo is null && !isLastMoveForced;
+            bool isQuiet = !isCapture && !isForced && move.PromotesTo is null;
 
             MoveUndoState undo = board.MakeMove(move);
 
@@ -94,7 +99,7 @@ internal class SearchThread(
                 alpha: -beta,
                 beta: -alpha,
                 isLastMoveCapture: isCapture,
-                isLastMoveForced: isForced
+                depthBeforeReduce: depth - 1
             );
 
             if (reduce && score > alpha)
@@ -105,7 +110,7 @@ internal class SearchThread(
                     -beta,
                     -alpha,
                     isLastMoveCapture: isCapture,
-                    isLastMoveForced: isForced
+                    depthBeforeReduce: depth - 1
                 );
             }
 
