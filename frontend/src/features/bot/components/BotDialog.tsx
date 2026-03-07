@@ -175,9 +175,7 @@ const BotDialog = ({
             botWinDialog: BOT_WIN_DIALOG,
             botLoseDialog: BOT_LOSE_DIALOG,
         });
-    const [dialog, setDialog] = useState<string | null>(
-        "Why does the horsey move like that? Is it afraid of straight lines? Is it gay?",
-    );
+    const [dialog, setDialog] = useState<string | null>(null);
 
     const prevEvalForBotRef = useRef<number | null>(null);
 
