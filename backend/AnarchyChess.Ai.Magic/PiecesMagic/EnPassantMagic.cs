@@ -45,35 +45,39 @@ public sealed class EnPassantMagic : PieceMagic
         return this;
     }
 
-    public override UInt128 GenerateMask(int x, int y)
+    public override UInt128 GenerateMask(AlgebraicPoint point)
     {
-        if (_isWhite && y != 5 && y != 6)
+        if (_isWhite && point.Y != 5 && point.Y != 6)
         {
             return 0;
         }
-        else if (!_isWhite && y != 3 && y != 4)
+        else if (!_isWhite && point.Y != 3 && point.Y != 4)
         {
             return 0;
         }
 
-        return SlideMaskToEnd(x, y, _slideOffset) | SlideMaskToEnd(x, y + _yOffset, _slideOffset);
+        return SlideMaskToEnd(_slideOffset, point) | SlideMaskToEnd(_slideOffset, point);
     }
 
-    public override UInt128 ComputeAttacks(int x, int y, UInt128 blocker)
+    public override UInt128 ComputeAttacks(AlgebraicPoint point, UInt128 blocker)
     {
         UInt128 attacks = 0;
 
-        x += _slideOffset.X;
-        y += _slideOffset.Y;
-        while (x < Constants.BoardSize && y < Constants.BoardSize && x >= 0 && y >= 0)
+        point += _slideOffset;
+        while (
+            point.X < Constants.BoardSize
+            && point.Y < Constants.BoardSize
+            && point.X >= 0
+            && point.Y >= 0
+        )
         {
-            int stepSquareIdx = y * Constants.BoardSize + x;
+            int stepSquareIdx = point.Y * Constants.BoardSize + point.X;
             if ((blocker & (UInt128.One << stepSquareIdx)) != 0)
             {
                 break;
             }
 
-            int captureSquareIdx = (y + _yOffset) * Constants.BoardSize + x;
+            int captureSquareIdx = (point.Y + _yOffset) * Constants.BoardSize + point.X;
             if ((blocker & (UInt128.One << captureSquareIdx)) == 0)
             {
                 break;
@@ -81,8 +85,7 @@ public sealed class EnPassantMagic : PieceMagic
 
             attacks |= UInt128.One << captureSquareIdx;
 
-            y += _slideOffset.Y;
-            x += _slideOffset.X;
+            point += _slideOffset;
         }
 
         return attacks;

@@ -1,9 +1,11 @@
-﻿namespace AnarchyChess.Ai.Magic.PiecesMagic;
+﻿using AnarchyChess.EngineShared;
+
+namespace AnarchyChess.Ai.Magic.PiecesMagic;
 
 public interface IPieceMagic
 {
     string Name { get; }
 
-    UInt128 GenerateMask(int x, int y);
-    UInt128 ComputeAttacks(int x, int y, UInt128 blocker);
+    UInt128 GenerateMask(AlgebraicPoint point);
+    UInt128 ComputeAttacks(AlgebraicPoint point, UInt128 blocker);
 }

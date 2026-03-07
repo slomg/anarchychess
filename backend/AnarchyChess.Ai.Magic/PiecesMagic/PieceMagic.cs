@@ -6,30 +6,38 @@ public abstract class PieceMagic : IPieceMagic
 {
     public abstract string Name { get; }
 
-    public abstract UInt128 GenerateMask(int x, int y);
-    public abstract UInt128 ComputeAttacks(int x, int y, UInt128 blocker);
+    public abstract UInt128 GenerateMask(AlgebraicPoint point);
+    public abstract UInt128 ComputeAttacks(AlgebraicPoint point, UInt128 blocker);
 
-    protected static UInt128 SlideMask(int x, int y, Offset offset, int limit = int.MaxValue)
+    protected static UInt128 SlideMask(
+        AlgebraicPoint point,
+        Offset offset,
+        int limit = int.MaxValue
+    )
     {
         UInt128 mask = 0;
 
-        x += offset.X;
-        y += offset.Y;
+        point += offset;
         int i = 0;
-        while (x < Constants.BoardSize && y < Constants.BoardSize && x >= 0 && y >= 0 && i < limit)
+        while (
+            point.X < Constants.BoardSize
+            && point.Y < Constants.BoardSize
+            && point.X >= 0
+            && point.Y >= 0
+            && i < limit
+        )
         {
             // stop before the edge square in the direction we're sliding
             if (
-                (offset.X != 0 && (x == 0 || x == Constants.BoardSize - 1))
-                || (offset.Y != 0 && (y == 0 || y == Constants.BoardSize - 1))
+                (offset.X != 0 && (point.X == 0 || point.X == Constants.BoardSize - 1))
+                || (offset.Y != 0 && (point.Y == 0 || point.Y == Constants.BoardSize - 1))
             )
             {
                 break;
             }
 
-            mask |= UInt128.One << (y * Constants.BoardSize + x);
-            x += offset.X;
-            y += offset.Y;
+            mask |= UInt128.One << (point.Y * Constants.BoardSize + point.X);
+            point += offset;
 
             i++;
         }
@@ -37,25 +45,27 @@ public abstract class PieceMagic : IPieceMagic
         return mask;
     }
 
-    protected static UInt128 SlideMaskToEnd(int x, int y, Offset offset)
+    protected static UInt128 SlideMaskToEnd(Offset offset, AlgebraicPoint point)
     {
         UInt128 mask = 0;
 
-        x += offset.X;
-        y += offset.Y;
-        while (x < Constants.BoardSize && y < Constants.BoardSize && x >= 0 && y >= 0)
+        point += offset;
+        while (
+            point.X < Constants.BoardSize
+            && point.Y < Constants.BoardSize
+            && point.X >= 0
+            && point.Y >= 0
+        )
         {
-            mask |= UInt128.One << (y * Constants.BoardSize + x);
-            x += offset.X;
-            y += offset.Y;
+            mask |= UInt128.One << (point.Y * Constants.BoardSize + point.X);
+            point += offset;
         }
 
         return mask;
     }
 
     protected static UInt128 SlideAttack(
-        int x,
-        int y,
+        AlgebraicPoint point,
         Offset offset,
         UInt128 blocker,
         int limit = int.MaxValue
@@ -63,21 +73,24 @@ public abstract class PieceMagic : IPieceMagic
     {
         UInt128 attacks = 0;
 
-        x += offset.X;
-        y += offset.Y;
+        point += offset;
         int i = 0;
-        while (x < Constants.BoardSize && y < Constants.BoardSize && x >= 0 && y >= 0 && i < limit)
+        while (
+            point.X < Constants.BoardSize
+            && point.Y < Constants.BoardSize
+            && point.X >= 0
+            && point.Y >= 0
+            && i < limit
+        )
         {
-            int squareIdx = y * Constants.BoardSize + x;
+            int squareIdx = point.Y * Constants.BoardSize + point.X;
             attacks |= UInt128.One << squareIdx;
             if ((blocker & (UInt128.One << squareIdx)) != 0)
             {
                 break;
             }
 
-            x += offset.X;
-            y += offset.Y;
-
+            point += offset;
             i++;
         }
 

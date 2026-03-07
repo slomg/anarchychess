@@ -23,8 +23,9 @@ public static class MagicGenerator
             for (int x = 0; x < Constants.BoardSize; x++)
             {
                 int squareIdx = y * Constants.BoardSize + x;
+                AlgebraicPoint point = new(X: x, Y: y);
 
-                UInt128 mask = magicPiece.GenerateMask(x, y);
+                UInt128 mask = magicPiece.GenerateMask(point);
                 table.Masks[squareIdx] = mask;
                 var blockers = GenerateBlockerSubsets(mask);
                 int shift = 128 - CountBits(mask);
@@ -39,7 +40,7 @@ public static class MagicGenerator
                 for (int subsetIndex = 0; subsetIndex < blockers.Length; subsetIndex++)
                 {
                     var blocker = blockers[subsetIndex];
-                    var attackSet = magicPiece.ComputeAttacks(x, y, blocker);
+                    var attackSet = magicPiece.ComputeAttacks(point, blocker);
                     int attackTableIndex = (int)(((blocker & mask) * magic) >> shift);
                     table.AttackTable[squareIdx][attackTableIndex] = attackSet;
                 }
