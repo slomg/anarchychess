@@ -196,6 +196,7 @@ const BotDialog = ({
 
         let typingInterval: NodeJS.Timeout;
         setIsVisible(false);
+        setVisibleChars(0);
         const timeout = setTimeout(() => {
             setVisibleChars(1);
             setIsVisible(true);
