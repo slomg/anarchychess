@@ -153,7 +153,7 @@ I suggest all other people who\'s intrested in this situation,
 just take a look at my results in 2016 and 2017 Blitz World championships, 
 and that should be enough... No need to listen for every crying babe, Tigran Petrosyan is always play Fair ! 
 And if someone will continue Officially talk about me like that, we will meet in Court! 
-God bless with true! True will never die ! Liers will kicked off...'`,
+God bless with true! True will never die ! Liers will kicked off...`,
 ];
 
 export const BOT_DIALOG_TYPING_SPEED_MS = 25;
