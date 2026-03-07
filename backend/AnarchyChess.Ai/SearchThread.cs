@@ -188,8 +188,6 @@ internal class SearchThread(
             }
 
             int captureValue = MaterialEvaluator.GetPieceValue(capturedPiece.Value.Type);
-            int pieceValue = MaterialEvaluator.GetPieceValue(move.Piece.Type);
-
             maxCaptureValue = Math.Max(maxCaptureValue, captureValue);
             if (standPat + captureValue + EngineConstants.DeltaPruningMargin < alpha)
             {
