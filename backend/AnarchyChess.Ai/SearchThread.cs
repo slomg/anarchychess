@@ -163,9 +163,9 @@ internal class SearchThread(
         int moveCount = 0;
         _moveGenerator.Generate(board, moves, ref moveCount);
 
-        int maxCaptureValue = 0;
-        Span<BitMove> captures = stackalloc BitMove[moveCount];
         int captureCount = 0;
+        Span<BitMove> captures = stackalloc BitMove[moveCount];
+        int maxCaptureValue = 0;
         for (int i = 0; i < moveCount; i++)
         {
             BitMove move = moves[i];
@@ -175,32 +175,44 @@ internal class SearchThread(
             }
 
             UInt128 capturesMask = move.CapturesMask;
-            if (
-                board.TryGetPieceAt(
-                    (byte)BitboardHelpers.BitScanForward(ref capturesMask),
-                    out var piece
-                )
-            )
+            byte firstCaptureAt = (byte)BitboardHelpers.BitScanForward(ref capturesMask);
+            BitPiece? capturedPiece = board.GetPieceAt(firstCaptureAt);
+            if (capturedPiece is null)
             {
-                maxCaptureValue = Math.Max(
-                    maxCaptureValue,
-                    MaterialEvaluator.GetPieceValue(piece.Value.Type)
-                );
+                continue;
             }
+
+            int captureValue = MaterialEvaluator.GetPieceValue(capturedPiece.Value.Type);
+            int pieceValue = MaterialEvaluator.GetPieceValue(move.Piece.Type);
+
+            maxCaptureValue = Math.Max(maxCaptureValue, captureValue);
+            if (standPat + captureValue + EngineConstants.DeltaPruningMargin < alpha)
+            {
+                continue;
+            }
+
             captures[captureCount++] = move;
         }
 
-        if (
-            standPat + maxCaptureValue < alpha
-            && moves[0].ForcedMovePriority is ForcedMovePriority.None
-        )
+        if (standPat + maxCaptureValue + EngineConstants.DeltaPruningMargin < alpha)
         {
             return alpha;
         }
 
+        Span<int> scores = stackalloc int[captureCount];
+        _moveOrdering.ScoreMoves(
+            board,
+            initialDepth,
+            _killerMoves,
+            _historyHeuristic,
+            scores,
+            captures,
+            captureCount
+        );
+
         for (int i = 0; i < captureCount; i++)
         {
-            BitMove move = captures[i];
+            BitMove move = _moveOrdering.GetNextHighestMove(i, captures, scores, captureCount);
 
             MoveUndoState undo = board.MakeMove(move);
             int score = -Quiescence(board, -beta, -alpha, depth - 1, initialDepth);

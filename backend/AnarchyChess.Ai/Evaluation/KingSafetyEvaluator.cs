@@ -9,7 +9,7 @@ public sealed class KingSafetyEvaluator : IEvaluatorFunction
     public const int PawnProtectionValue = 2;
     public const int EdgeAmplifier = 2;
 
-    public const int CenterStuckKingPenalty = 50;
+    public const int CenterStuckKingPenalty = 100;
     public const int SemiStuckKingPenalty = 20;
 
     public const float EndgameFactorThreshold = 0.8f;
