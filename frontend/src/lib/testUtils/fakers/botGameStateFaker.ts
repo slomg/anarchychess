@@ -2,7 +2,7 @@ import { faker } from "@faker-js/faker";
 
 import { invertColor, randomizeColor } from "@/lib/utils/chessUtils";
 import { createFakeMoveSnapshot } from "./moveSnapshotFaker";
-import { BotGameState, GameColor } from "@/lib/apiClient";
+import { BotGameState, BotType, GameColor } from "@/lib/apiClient";
 import { createFakeMovePath } from "./movePathFaker";
 import { createFakePlayer } from "./playerFaker";
 import constants from "@/lib/constants";
@@ -23,6 +23,7 @@ export function createFakeBotGameState(
         whitePlayer: botColor === GameColor.WHITE ? botPlayer : player,
         blackPlayer: botColor === GameColor.BLACK ? botPlayer : player,
         botColor,
+        botType: faker.helpers.enumValue(BotType),
         sideToMove: faker.helpers.enumValue(GameColor),
 
         initialFen: constants.INITIAL_FEN,
