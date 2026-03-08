@@ -31,7 +31,7 @@ public interface IBotGrain : IGrainWithStringKey
     );
 
     [Alias("CreateAsync")]
-    Task StartGameAsync(GamePlayer player, CancellationToken token = default);
+    Task StartGameAsync(GamePlayer player, BotType botType, CancellationToken token = default);
 
     [Alias("GetStateAsync")]
     Task<ErrorOr<BotGameState>> GetStateAsync(CancellationToken token = default);
@@ -63,6 +63,9 @@ public class BotGameData
     [Id(2)]
     public required GameColor BotColor { get; init; }
 
+    [Id(7)]
+    public required BotType BotType { get; init; }
+
     [Id(3)]
     public required string InitialFen { get; init; }
 
@@ -90,6 +93,8 @@ public class BotGrain : Grain, IBotGrain
 
     private readonly ILogger<BotGrain> _logger;
     private readonly IPersistentState<BotGrainState> _state;
+
+    private readonly Dictionary<BotType, IBot> _bots;
     private readonly IGameCore _core;
     private readonly IBotMoveRunner _botMoveRunner;
     private readonly IBotNotifier _notifier;
@@ -101,6 +106,7 @@ public class BotGrain : Grain, IBotGrain
     public BotGrain(
         ILogger<BotGrain> logger,
         [PersistentState(StateName)] IPersistentState<BotGrainState> state,
+        IEnumerable<IBot> bots,
         IGameCore core,
         IBotMoveRunner botMoveRunner,
         IBotNotifier notifier,
@@ -113,6 +119,8 @@ public class BotGrain : Grain, IBotGrain
 
         _logger = logger;
         _state = state;
+
+        _bots = bots.ToDictionary(x => x.Type);
         _core = core;
         _botMoveRunner = botMoveRunner;
         _notifier = notifier;
@@ -134,16 +142,16 @@ public class BotGrain : Grain, IBotGrain
         return Result.Success;
     }
 
-    public async Task StartGameAsync(GamePlayer player, CancellationToken token = default)
+    public async Task StartGameAsync(
+        GamePlayer player,
+        BotType botType,
+        CancellationToken token = default
+    )
     {
+        IBot bot = _bots[botType];
+
         GameCoreState core = new();
-        GamePlayer botPlayer = new(
-            UserId: AnarchyBot.BotId,
-            Color: player.Color.Invert(),
-            UserName: "Anarchy Bot",
-            CountryCode: "XX",
-            Rating: 161660
-        );
+        GamePlayer botPlayer = bot.CreateBotPlayer(color: player.Color.Invert());
 
         _state.State.CurrentGame = new BotGameData()
         {
@@ -153,6 +161,7 @@ public class BotGrain : Grain, IBotGrain
             ),
             HumanColor = player.Color,
             BotColor = botPlayer.Color,
+            BotType = botType,
             InitialFen = _core.StartGame(core).FullFen,
             Core = core,
         };
@@ -160,7 +169,7 @@ public class BotGrain : Grain, IBotGrain
         if (player.Color is GameColor.Black)
         {
             IReadOnlyChessBoard board = _core.GetReadOnlyBoard(_state.State.CurrentGame.Core);
-            _botMoveRunner.RunMove(board, _gameToken);
+            _botMoveRunner.RunMove(board, _gameToken, bot);
         }
 
         await _state.WriteStateAsync(token);
@@ -220,7 +229,7 @@ public class BotGrain : Grain, IBotGrain
         else if (nextSideToMove == game.BotColor)
         {
             IReadOnlyChessBoard board = _core.GetReadOnlyBoard(game.Core);
-            _botMoveRunner.RunMove(board, _gameToken);
+            _botMoveRunner.RunMove(board, _gameToken, _bots[game.BotType]);
         }
 
         await _state.WriteStateAsync(token);

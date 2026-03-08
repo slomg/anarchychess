@@ -1,21 +1,33 @@
 ﻿using AnarchyChess.Ai.Service.DTO;
+using AnarchyChess.Api.Bots.Models;
 using AnarchyChess.Api.Bots.Services;
 using AnarchyChess.Api.GameLogic;
+using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Profile.Models;
+using AnarchyChess.EngineShared;
 using ErrorOr;
 
 namespace AnarchyChess.Api.Bots.Bots;
 
 public class AnarchyBot(IBotService botService) : IBot
 {
-    private readonly IBotService _botService = botService;
-
     public static readonly UserId BotId = "bot:anarchybot";
 
-    public UserId Id => BotId;
+    public BotType Type => BotType.AnarchyBot;
+
+    private readonly IBotService _botService = botService;
 
     public Task<ErrorOr<AiEngineMove>> FindMoveAsync(
         IReadOnlyChessBoard board,
         CancellationToken token = default
     ) => _botService.FindBestMoveAsync(board, token);
+
+    public GamePlayer CreateBotPlayer(GameColor color) =>
+        new(
+            UserId: BotId,
+            Color: color,
+            UserName: "Anarchy Bot",
+            CountryCode: "XX",
+            Rating: 161660
+        );
 }

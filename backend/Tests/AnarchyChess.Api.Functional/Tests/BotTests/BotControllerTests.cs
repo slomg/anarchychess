@@ -1,5 +1,6 @@
 ﻿using AnarchyChess.Api.Bots.Bots;
 using AnarchyChess.Api.Bots.Grains;
+using AnarchyChess.Api.Bots.Models;
 using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.TestInfrastructure;
 using AnarchyChess.EngineShared;
@@ -24,7 +25,10 @@ public class BotControllerTests : BaseFunctionalTest
         var guest = UserId.Guest();
         AuthUtils.AuthenticateGuest(ApiClient, guest);
 
-        var response = await ApiClient.Api.StartBotGameAsync(myColor: GameColor.White);
+        var response = await ApiClient.Api.StartBotGameAsync(
+            myColor: GameColor.White,
+            botType: BotType.AnarchyBot
+        );
 
         response.IsSuccessful.Should().BeTrue();
         response.Content.Should().NotBeNull();
@@ -47,7 +51,10 @@ public class BotControllerTests : BaseFunctionalTest
     {
         var user = (await AuthUtils.AuthenticateAsync(ApiClient)).User;
 
-        var response = await ApiClient.Api.StartBotGameAsync(myColor: GameColor.White);
+        var response = await ApiClient.Api.StartBotGameAsync(
+            myColor: GameColor.Black,
+            botType: BotType.LobotomizedAnarchyBot
+        );
 
         response.IsSuccessful.Should().BeTrue();
         response.Content.Should().NotBeNull();
@@ -58,11 +65,11 @@ public class BotControllerTests : BaseFunctionalTest
         stateResult.IsError.Should().BeFalse();
         var state = stateResult.Value;
 
-        state.WhitePlayer.UserId.Should().Be(user.Id);
-        state.WhitePlayer.UserName.Should().Be(user.UserName);
-        state.WhitePlayer.CountryCode.Should().Be(user.CountryCode);
+        state.BlackPlayer.UserId.Should().Be(user.Id);
+        state.BlackPlayer.UserName.Should().Be(user.UserName);
+        state.BlackPlayer.CountryCode.Should().Be(user.CountryCode);
 
-        state.BlackPlayer.UserId.Should().Be(AnarchyBot.BotId);
+        state.WhitePlayer.UserId.Should().Be(LobotomizedAnarchyBot.BotId);
     }
 
     [Fact]
@@ -71,7 +78,10 @@ public class BotControllerTests : BaseFunctionalTest
         var guest = UserId.Guest();
         AuthUtils.AuthenticateGuest(ApiClient, guest);
 
-        var startResponse = await ApiClient.Api.StartBotGameAsync(myColor: GameColor.White);
+        var startResponse = await ApiClient.Api.StartBotGameAsync(
+            myColor: GameColor.White,
+            botType: BotType.AnarchyBot
+        );
         startResponse.IsSuccessful.Should().BeTrue();
         startResponse.Content.Should().NotBeNull();
         string gameToken = startResponse.Content;
