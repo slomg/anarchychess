@@ -378,7 +378,7 @@ public class BotGrainTests : BaseOrleansIntegrationTest
     public async Task GetStateAsync_returns_the_correct_state()
     {
         var grain = await Silo.CreateGrainAsync<BotGrain>(_gameToken);
-        await StartGameAsync(grain, _whitePlayer);
+        await StartGameAsync(grain, _whitePlayer, botType: BotType.LobotomizedAnarchyBot);
 
         var result = await grain.GetStateAsync(ApiTestBase.CT);
 
@@ -386,14 +386,9 @@ public class BotGrainTests : BaseOrleansIntegrationTest
         var legalMoves = _core.GetLegalMoves(_state.CurrentGame!.Core);
         BotGameState expectedState = new(
             WhitePlayer: _whitePlayer,
-            BlackPlayer: new(
-                UserId: AnarchyBot.BotId,
-                Color: GameColor.Black,
-                UserName: "Anarchy Bot",
-                CountryCode: "XX",
-                Rating: 161660
-            ),
+            BlackPlayer: _lobotomizedAnarchyBot.CreateBotPlayer(GameColor.Black),
             BotColor: GameColor.Black,
+            BotType: BotType.LobotomizedAnarchyBot,
             SideToMove: GameColor.White,
             InitialFen: _state.CurrentGame.InitialFen,
             MoveHistory: [],
