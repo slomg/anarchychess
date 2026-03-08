@@ -526,6 +526,7 @@ export type BotGameState = {
     whitePlayer: GamePlayer;
     blackPlayer: GamePlayer;
     botColor: GameColor;
+    botType: BotType;
     sideToMove: GameColor;
     initialFen: string;
     moveHistory: Array<MoveSnapshot>;

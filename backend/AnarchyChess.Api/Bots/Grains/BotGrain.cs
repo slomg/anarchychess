@@ -182,7 +182,19 @@ public class BotGrain : Grain, IBotGrain
             return Task.FromResult<ErrorOr<BotGameState>>(GameErrors.GameNotFound);
         }
 
-        return Task.FromResult<ErrorOr<BotGameState>>(GetGameState(game));
+        return Task.FromResult<ErrorOr<BotGameState>>(
+            new BotGameState(
+                WhitePlayer: game.Players.WhitePlayer,
+                BlackPlayer: game.Players.BlackPlayer,
+                BotColor: game.BotColor,
+                BotType: game.BotType,
+                SideToMove: _core.SideToMove(game.Core),
+                InitialFen: game.InitialFen,
+                MoveHistory: game.MoveHistory.Moves,
+                LegalMoves: _core.GetLegalMoves(game.Core).MovePaths,
+                ResultData: game.Result
+            )
+        );
     }
 
     public async Task<ErrorOr<Success>> PlayMoveAsync(
@@ -361,18 +373,6 @@ public class BotGrain : Grain, IBotGrain
 
         game.Result = resultData;
     }
-
-    private BotGameState GetGameState(BotGameData game) =>
-        new(
-            WhitePlayer: game.Players.WhitePlayer,
-            BlackPlayer: game.Players.BlackPlayer,
-            BotColor: game.BotColor,
-            SideToMove: _core.SideToMove(game.Core),
-            InitialFen: game.InitialFen,
-            MoveHistory: game.MoveHistory.Moves,
-            LegalMoves: _core.GetLegalMoves(game.Core).MovePaths,
-            ResultData: game.Result
-        );
 
     private bool TryGetCurrentGame([NotNullWhen(true)] out BotGameData? state)
     {

@@ -9,6 +9,7 @@ public record BotGameState(
     GamePlayer WhitePlayer,
     GamePlayer BlackPlayer,
     GameColor BotColor,
+    BotType BotType,
     GameColor SideToMove,
     string InitialFen,
     IReadOnlyList<MoveSnapshot> MoveHistory,
