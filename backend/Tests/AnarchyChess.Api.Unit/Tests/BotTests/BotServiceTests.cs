@@ -47,7 +47,8 @@ public class BotServiceTests : BaseUnitTest
                 To: lastMove.To,
                 Piece: lastMove.Piece,
                 Captures: [.. lastMove.Captures.Select(x => x.Position)]
-            )
+            ),
+            Depth: 69
         );
         _aiEngineMock
             .FindBestMoveAsync(
@@ -58,7 +59,7 @@ public class BotServiceTests : BaseUnitTest
             )
             .Returns(expectedReply);
 
-        var result = await _bot.FindBestMoveAsync(board, CT);
+        var result = await _bot.FindBestMoveAsync(board, depth: 69, CT);
 
         result.IsError.Should().BeFalse();
         result.Value.Should().Be(expectedReply);
@@ -78,7 +79,7 @@ public class BotServiceTests : BaseUnitTest
             .FindBestMoveAsync(Arg.Is<AiEngineMoveRequest>(x => x.PrevMoveState == null), CT)
             .Returns(expectedReply);
 
-        var result = await _bot.FindBestMoveAsync(chessBoard, CT);
+        var result = await _bot.FindBestMoveAsync(chessBoard, depth: 123, CT);
 
         result.IsError.Should().BeFalse();
         result.Value.Should().Be(expectedReply);
@@ -91,7 +92,7 @@ public class BotServiceTests : BaseUnitTest
             .FindBestMoveAsync(Arg.Any<AiEngineMoveRequest>(), CT)
             .ThrowsAsync(new RpcException(new Status(StatusCode.Unavailable, "unavailable")));
 
-        var result = await _bot.FindBestMoveAsync(new ChessBoard(), CT);
+        var result = await _bot.FindBestMoveAsync(new ChessBoard(), depth: 123, CT);
 
         result.IsError.Should().BeTrue();
         result.FirstError.Should().Be(BotErrors.BotOffline);
@@ -106,7 +107,7 @@ public class BotServiceTests : BaseUnitTest
                 new RpcException(new Status(StatusCode.InvalidArgument, "invalid argument"))
             );
 
-        var result = await _bot.FindBestMoveAsync(new ChessBoard(), CT);
+        var result = await _bot.FindBestMoveAsync(new ChessBoard(), depth: 123, CT);
 
         result.IsError.Should().BeTrue();
         result.FirstError.Should().Be(BotErrors.NoMoveFound);
@@ -119,7 +120,7 @@ public class BotServiceTests : BaseUnitTest
             .FindBestMoveAsync(Arg.Any<AiEngineMoveRequest>(), CT)
             .ThrowsAsync(new RpcException(new Status(StatusCode.Internal, "internal error")));
 
-        var result = await _bot.FindBestMoveAsync(new ChessBoard(), CT);
+        var result = await _bot.FindBestMoveAsync(new ChessBoard(), depth: 123, CT);
 
         result.IsError.Should().BeTrue();
         result.FirstError.Should().Be(BotErrors.BotFailure);
@@ -139,11 +140,22 @@ public class BotServiceTests : BaseUnitTest
         var expectedMoves = new AiEngineMoveFaker().Generate(3);
         var expectedReply = new EvaluateAllMovesReply(Moves: [.. expectedMoves]);
 
+        AiEngineMoveRequest expectedRequest = new(
+            Pieces: pieces,
+            IsWhiteToMove: true,
+            PrevMoveState: null,
+            Depth: 16
+        );
         _aiEngineMock
-            .EvaluateAllMovesAsync(Arg.Any<AiEngineMoveRequest>(), CT)
+            .EvaluateAllMovesAsync(
+                ArgEx.FluentAssert<AiEngineMoveRequest>(x =>
+                    x.Should().BeEquivalentTo(expectedRequest)
+                ),
+                CT
+            )
             .Returns(expectedReply);
 
-        var result = await _bot.EvaluateAllMovesAsync(board, CT);
+        var result = await _bot.EvaluateAllMovesAsync(board, depth: 16, CT);
 
         result.IsError.Should().BeFalse();
         result.Value.Should().BeEquivalentTo(expectedMoves);
@@ -156,7 +168,7 @@ public class BotServiceTests : BaseUnitTest
             .EvaluateAllMovesAsync(Arg.Any<AiEngineMoveRequest>(), CT)
             .ThrowsAsync(new RpcException(new Status(StatusCode.Unavailable, "unavailable")));
 
-        var result = await _bot.EvaluateAllMovesAsync(new ChessBoard(), CT);
+        var result = await _bot.EvaluateAllMovesAsync(new ChessBoard(), 123, CT);
 
         result.IsError.Should().BeTrue();
         result.FirstError.Should().Be(BotErrors.BotOffline);
@@ -171,7 +183,7 @@ public class BotServiceTests : BaseUnitTest
                 new RpcException(new Status(StatusCode.InvalidArgument, "invalid argument"))
             );
 
-        var result = await _bot.EvaluateAllMovesAsync(new ChessBoard(), CT);
+        var result = await _bot.EvaluateAllMovesAsync(new ChessBoard(), 123, CT);
 
         result.IsError.Should().BeTrue();
         result.FirstError.Should().Be(BotErrors.NoMoveFound);
@@ -184,7 +196,7 @@ public class BotServiceTests : BaseUnitTest
             .EvaluateAllMovesAsync(Arg.Any<AiEngineMoveRequest>(), CT)
             .ThrowsAsync(new RpcException(new Status(StatusCode.Internal, "internal error")));
 
-        var result = await _bot.EvaluateAllMovesAsync(new ChessBoard(), CT);
+        var result = await _bot.EvaluateAllMovesAsync(new ChessBoard(), 123, CT);
 
         result.IsError.Should().BeTrue();
         result.FirstError.Should().Be(BotErrors.BotFailure);

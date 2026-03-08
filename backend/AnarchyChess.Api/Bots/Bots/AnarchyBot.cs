@@ -12,6 +12,7 @@ namespace AnarchyChess.Api.Bots.Bots;
 public class AnarchyBot(IBotService botService) : IBot
 {
     public static readonly UserId BotId = "bot:anarchybot";
+    private const int Depth = 8;
 
     public BotType Type => BotType.AnarchyBot;
 
@@ -20,7 +21,7 @@ public class AnarchyBot(IBotService botService) : IBot
     public Task<ErrorOr<AiEngineMove>> FindMoveAsync(
         IReadOnlyChessBoard board,
         CancellationToken token = default
-    ) => _botService.FindBestMoveAsync(board, token);
+    ) => _botService.FindBestMoveAsync(board, depth: Depth, token);
 
     public GamePlayer CreateBotPlayer(GameColor color) =>
         new(

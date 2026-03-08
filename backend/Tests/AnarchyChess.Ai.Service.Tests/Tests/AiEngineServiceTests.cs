@@ -44,17 +44,18 @@ public class AiEngineServiceTests
             [new("h7")] = PieceFactory.Black(),
         };
         bool isWhiteToMove = true;
+        int depth = 69;
 
         BitBoard expectedBoard = BitBoard.FromPieces(pieces, isWhiteToMove: isWhiteToMove);
         _aiEngineMock
             .FindBestMove(
                 ArgEx.FluentAssert<BitBoard>(x => x.Should().BeEquivalentTo(expectedBoard)),
-                depth: AiEngineService.Depth
+                depth: depth
             )
             .Returns((BestMove: move, EvalForBot: 6969));
 
         var response = await _engine.FindBestMoveAsync(
-            new(pieces, IsWhiteToMove: isWhiteToMove, PrevMoveState: null),
+            new(pieces, IsWhiteToMove: isWhiteToMove, PrevMoveState: null, Depth: depth),
             TestContext.Current.CancellationToken
         );
 
@@ -115,12 +116,12 @@ public class AiEngineServiceTests
                                 | (UInt128.One << prevCapture2.AsIdx())
                         );
                 }),
-                depth: AiEngineService.Depth
+                depth: 123
             )
             .Returns((BestMove: move, EvalForBot: -6969));
 
         var response = await _engine.FindBestMoveAsync(
-            new(pieces, IsWhiteToMove: true, PrevMoveState: prevMoveDto),
+            new(pieces, IsWhiteToMove: true, PrevMoveState: prevMoveDto, Depth: 123),
             TestContext.Current.CancellationToken
         );
 
@@ -138,12 +139,14 @@ public class AiEngineServiceTests
     public async Task FindBestMoveAsync_throws_when_no_move_is_found()
     {
         _aiEngineMock
-            .FindBestMove(Arg.Any<BitBoard>(), AiEngineService.Depth)
+            .FindBestMove(Arg.Any<BitBoard>(), depth: 123)
             .Returns((BestMove: null, EvalForBot: 0));
 
         Func<Task> act = async () =>
             await _engine
-                .FindBestMoveAsync(new(Pieces: [], IsWhiteToMove: true, PrevMoveState: null))
+                .FindBestMoveAsync(
+                    new(Pieces: [], IsWhiteToMove: true, PrevMoveState: null, Depth: 123)
+                )
                 .AsTask();
 
         var ex = await act.Should().ThrowAsync<RpcException>();
@@ -190,12 +193,12 @@ public class AiEngineServiceTests
         _aiEngineMock
             .EvaluateAllMoves(
                 ArgEx.FluentAssert<BitBoard>(x => x.Should().BeEquivalentTo(expectedBoard)),
-                depth: AiEngineService.Depth
+                depth: 69
             )
             .Returns(engineMoves);
 
         var response = await _engine.EvaluateAllMovesAsync(
-            new(pieces, IsWhiteToMove: true, PrevMoveState: null),
+            new(pieces, IsWhiteToMove: true, PrevMoveState: null, Depth: 69),
             TestContext.Current.CancellationToken
         );
 
@@ -211,12 +214,12 @@ public class AiEngineServiceTests
     [Fact]
     public async Task EvaluateAllMovesAsync_throws_when_no_moves_are_found()
     {
-        _aiEngineMock.EvaluateAllMoves(Arg.Any<BitBoard>(), AiEngineService.Depth).Returns([]);
+        _aiEngineMock.EvaluateAllMoves(Arg.Any<BitBoard>(), depth: 123).Returns([]);
 
         Func<Task> act = async () =>
             await _engine
                 .EvaluateAllMovesAsync(
-                    new(Pieces: [], IsWhiteToMove: true, PrevMoveState: null),
+                    new(Pieces: [], IsWhiteToMove: true, PrevMoveState: null, Depth: 123),
                     TestContext.Current.CancellationToken
                 )
                 .AsTask();

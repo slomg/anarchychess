@@ -5,5 +5,6 @@ namespace AnarchyChess.Ai.Service.DTO;
 public record AiEngineMoveRequest(
     Dictionary<AlgebraicPoint, Piece> Pieces,
     bool IsWhiteToMove,
-    PrevMoveStateDto? PrevMoveState
+    PrevMoveStateDto? PrevMoveState,
+    int Depth
 );

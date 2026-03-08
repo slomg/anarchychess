@@ -14,10 +14,12 @@ public interface IBotService
     Task<bool> CheckHealthAsync(CancellationToken token = default);
     Task<ErrorOr<AiEngineMove[]>> EvaluateAllMovesAsync(
         IReadOnlyChessBoard board,
+        int depth,
         CancellationToken token = default
     );
     Task<ErrorOr<AiEngineMove>> FindBestMoveAsync(
         IReadOnlyChessBoard board,
+        int depth,
         CancellationToken token = default
     );
 }
@@ -29,6 +31,7 @@ public class BotService(ILogger<BotService> logger, IAiEngineService aiEngineSer
 
     public async Task<ErrorOr<AiEngineMove>> FindBestMoveAsync(
         IReadOnlyChessBoard board,
+        int depth,
         CancellationToken token = default
     )
     {
@@ -36,7 +39,8 @@ public class BotService(ILogger<BotService> logger, IAiEngineService aiEngineSer
         AiEngineMoveRequest request = new(
             Pieces: board.EnumeratePieces().ToDictionary(),
             IsWhiteToMove: board.SideToMove is GameColor.White,
-            prevMove
+            prevMove,
+            Depth: depth
         );
 
         AiEngineMove bestMove;
@@ -65,6 +69,7 @@ public class BotService(ILogger<BotService> logger, IAiEngineService aiEngineSer
 
     public async Task<ErrorOr<AiEngineMove[]>> EvaluateAllMovesAsync(
         IReadOnlyChessBoard board,
+        int depth,
         CancellationToken token = default
     )
     {
@@ -72,7 +77,8 @@ public class BotService(ILogger<BotService> logger, IAiEngineService aiEngineSer
         AiEngineMoveRequest request = new(
             Pieces: board.EnumeratePieces().ToDictionary(),
             IsWhiteToMove: board.SideToMove is GameColor.White,
-            prevMove
+            prevMove,
+            Depth: depth
         );
 
         EvaluateAllMovesReply reply;

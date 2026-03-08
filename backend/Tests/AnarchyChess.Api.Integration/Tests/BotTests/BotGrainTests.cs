@@ -179,7 +179,7 @@ public class BotGrainTests : BaseOrleansIntegrationTest
             EvalForBot: 123
         );
         _botServiceMock
-            .FindBestMoveAsync(Arg.Any<IReadOnlyChessBoard>(), ApiTestBase.CT)
+            .FindBestMoveAsync(Arg.Any<IReadOnlyChessBoard>(), Arg.Any<int>(), ApiTestBase.CT)
             .Returns(botMove);
 
         await grain.StartGameAsync(_whitePlayer, botType: BotType.AnarchyBot, ApiTestBase.CT);
@@ -250,7 +250,11 @@ public class BotGrainTests : BaseOrleansIntegrationTest
             EvalForBot: 1
         );
         _botServiceMock
-            .FindBestMoveAsync(_state.CurrentGame!.Core.Board, Arg.Any<CancellationToken>())
+            .FindBestMoveAsync(
+                _state.CurrentGame!.Core.Board,
+                Arg.Any<int>(),
+                Arg.Any<CancellationToken>()
+            )
             .Returns(secondBotMove);
         _notifierMock.ClearReceivedCalls();
 
@@ -281,7 +285,11 @@ public class BotGrainTests : BaseOrleansIntegrationTest
             EvalForBot: 2
         );
         _botServiceMock
-            .FindBestMoveAsync(_state.CurrentGame!.Core.Board, Arg.Any<CancellationToken>())
+            .FindBestMoveAsync(
+                _state.CurrentGame!.Core.Board,
+                Arg.Any<int>(),
+                Arg.Any<CancellationToken>()
+            )
             .Returns(botMove1, botMove2);
 
         Move move1 = new(from: new("f2"), new("f5"), piece: new(PieceType.Queen, GameColor.White));
@@ -323,7 +331,11 @@ public class BotGrainTests : BaseOrleansIntegrationTest
             EvalForBot: 3
         );
         _botServiceMock
-            .FindBestMoveAsync(Arg.Any<IReadOnlyChessBoard>(), Arg.Any<CancellationToken>())
+            .FindBestMoveAsync(
+                Arg.Any<IReadOnlyChessBoard>(),
+                Arg.Any<int>(),
+                Arg.Any<CancellationToken>()
+            )
             .Returns(botMove1, botMove2, botMove3);
         await StartGameAsync(grain, _blackPlayer, setMove: false);
         await AssertBotMoveAsync(botMove1);
@@ -411,7 +423,11 @@ public class BotGrainTests : BaseOrleansIntegrationTest
         if (setMove)
         {
             _botServiceMock
-                .FindBestMoveAsync(Arg.Any<IReadOnlyChessBoard>(), Arg.Any<CancellationToken>())
+                .FindBestMoveAsync(
+                    Arg.Any<IReadOnlyChessBoard>(),
+                    Arg.Any<int>(),
+                    Arg.Any<CancellationToken>()
+                )
                 .Returns(player.Color is GameColor.White ? _firstBlackBotMove : _firstWhiteBotMove);
         }
         Silo.AddProbe(id => id.ToString() == _gameToken ? grain : Substitute.For<IBotGrain>());

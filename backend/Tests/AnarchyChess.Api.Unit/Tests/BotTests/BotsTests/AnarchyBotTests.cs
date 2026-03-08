@@ -30,7 +30,7 @@ public class AnarchyBotTests
         );
         AiEngineMove move = new AiEngineMoveFaker().Generate();
         _botServiceMock
-            .FindBestMoveAsync(board, TestContext.Current.CancellationToken)
+            .FindBestMoveAsync(board, depth: 8, TestContext.Current.CancellationToken)
             .Returns(move);
 
         var result = await _bot.FindMoveAsync(board, TestContext.Current.CancellationToken);

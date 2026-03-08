@@ -11,8 +11,6 @@ public class AiEngineService(IAiEngine aiEngine) : IAiEngineService
 {
     private readonly IAiEngine _aiEngine = aiEngine;
 
-    public const int Depth = 8;
-
     public ValueTask<AiEngineMove> FindBestMoveAsync(
         AiEngineMoveRequest request,
         CancellationToken token = default
@@ -23,7 +21,7 @@ public class AiEngineService(IAiEngine aiEngine) : IAiEngineService
             isWhiteToMove: request.IsWhiteToMove,
             prevMoveState: CreatePrevMove(request.PrevMoveState)
         );
-        (BitMove? bestMove, int evalForBot) = _aiEngine.FindBestMove(board, depth: Depth);
+        (BitMove? bestMove, int evalForBot) = _aiEngine.FindBestMove(board, depth: request.Depth);
         if (bestMove is null)
         {
             throw new RpcException(
@@ -47,7 +45,7 @@ public class AiEngineService(IAiEngine aiEngine) : IAiEngineService
             isWhiteToMove: request.IsWhiteToMove,
             prevMoveState: CreatePrevMove(request.PrevMoveState)
         );
-        MoveEvaluation[] moves = _aiEngine.EvaluateAllMoves(board, depth: Depth);
+        MoveEvaluation[] moves = _aiEngine.EvaluateAllMoves(board, depth: request.Depth);
         if (moves.Length == 0)
         {
             throw new RpcException(
