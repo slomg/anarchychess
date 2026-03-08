@@ -1,17 +1,28 @@
-import { checkBotHealth, GameColor, startBotGame } from "@/lib/apiClient";
+import {
+    BotType,
+    checkBotHealth,
+    GameColor,
+    startBotGame,
+} from "@/lib/apiClient";
 import constants from "@/lib/constants";
 import { randomizeColor } from "@/lib/utils/chessUtils";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function useBotMatch(): {
-    matchBotGame: (color: GameColor | null) => Promise<boolean>;
+    matchBotGame: (
+        color: GameColor | null,
+        botType: BotType,
+    ) => Promise<boolean>;
     isMatching: boolean;
 } {
     const router = useRouter();
     const [isMatching, setIsMatching] = useState(false);
 
-    async function matchBotGame(color: GameColor | null): Promise<boolean> {
+    async function matchBotGame(
+        color: GameColor | null,
+        botType: BotType,
+    ): Promise<boolean> {
         setIsMatching(true);
 
         try {
@@ -22,7 +33,7 @@ export default function useBotMatch(): {
 
             const myColor = color ?? randomizeColor();
             const { error, data: gameToken } = await startBotGame({
-                query: { myColor },
+                query: { myColor, botType },
             });
 
             if (error || !gameToken) {

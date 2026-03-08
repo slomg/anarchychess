@@ -1,8 +1,14 @@
 import { renderHook } from "@testing-library/react";
 import { act } from "react";
 
+import {
+    BotType,
+    checkBotHealth,
+    GameColor,
+    startBotGame,
+} from "@/lib/apiClient";
+
 import { mockRouter, RouterMock } from "@/lib/testUtils/mocks/mockRouter";
-import { checkBotHealth, GameColor, startBotGame } from "@/lib/apiClient";
 import { randomizeColor } from "@/lib/utils/chessUtils";
 import useBotMatch from "../useBotMatch";
 import constants from "@/lib/constants";
@@ -32,8 +38,6 @@ describe("useBotMatch", () => {
             response: new Response(),
         });
         randomizeColorMock.mockReturnValue(GameColor.WHITE);
-
-        vi.clearAllMocks();
     });
 
     it("should match a game and navigate to it when bot is healthy", async () => {
@@ -41,13 +45,19 @@ describe("useBotMatch", () => {
         let success: boolean | undefined;
 
         await act(async () => {
-            success = await result.current.matchBotGame(GameColor.BLACK);
+            success = await result.current.matchBotGame(
+                GameColor.BLACK,
+                BotType.LOBOTOMIZED_ANARCHY_BOT,
+            );
         });
 
         expect(success).toBe(true);
         expect(checkBotHealthMock).toHaveBeenCalledOnce();
         expect(startBotGameMock).toHaveBeenCalledExactlyOnceWith({
-            query: { myColor: GameColor.BLACK },
+            query: {
+                myColor: GameColor.BLACK,
+                botType: BotType.LOBOTOMIZED_ANARCHY_BOT,
+            },
         });
         expect(routerMock.push).toHaveBeenCalledExactlyOnceWith(
             `${constants.PATHS.BOT}/${fakeGameToken}`,
@@ -59,11 +69,11 @@ describe("useBotMatch", () => {
         randomizeColorMock.mockReturnValueOnce(GameColor.BLACK);
 
         await act(async () => {
-            await result.current.matchBotGame(null);
+            await result.current.matchBotGame(null, BotType.ANARCHY_BOT);
         });
 
         expect(startBotGameMock).toHaveBeenCalledExactlyOnceWith({
-            query: { myColor: GameColor.BLACK },
+            query: { myColor: GameColor.BLACK, botType: BotType.ANARCHY_BOT },
         });
     });
 
@@ -78,7 +88,10 @@ describe("useBotMatch", () => {
         let success: boolean | undefined;
 
         await act(async () => {
-            success = await result.current.matchBotGame(GameColor.WHITE);
+            success = await result.current.matchBotGame(
+                GameColor.WHITE,
+                BotType.ANARCHY_BOT,
+            );
         });
 
         expect(success).toBe(false);
@@ -99,7 +112,10 @@ describe("useBotMatch", () => {
         let success: boolean | undefined;
 
         await act(async () => {
-            success = await result.current.matchBotGame(GameColor.WHITE);
+            success = await result.current.matchBotGame(
+                GameColor.WHITE,
+                BotType.ANARCHY_BOT,
+            );
         });
 
         expect(success).toBe(false);
