@@ -31,7 +31,7 @@ namespace AnarchyChess.Api.Integration.Tests.BotTests;
 public class BotGrainTests : BaseOrleansIntegrationTest
 {
     private readonly GameToken _gameToken = "testtoken";
-    private readonly AiEngineMoveReply _firstWhiteBotMove = new(
+    private readonly AiEngineMove _firstWhiteBotMove = new(
         From: new("f2"),
         To: new("f5"),
         Captures: [],
@@ -39,7 +39,7 @@ public class BotGrainTests : BaseOrleansIntegrationTest
         EvalForBot: 6969
     );
 
-    private readonly AiEngineMoveReply _firstBlackBotMove = new(
+    private readonly AiEngineMove _firstBlackBotMove = new(
         From: new("f9"),
         To: new("f6"),
         Captures: [],
@@ -163,7 +163,7 @@ public class BotGrainTests : BaseOrleansIntegrationTest
     {
         var grain = await Silo.CreateGrainAsync<BotGrain>(_gameToken);
 
-        AiEngineMoveReply botMove = new(
+        AiEngineMove botMove = new(
             From: new("f9"),
             To: new("f6"),
             Captures: [],
@@ -234,7 +234,7 @@ public class BotGrainTests : BaseOrleansIntegrationTest
         await StartGameAsync(grain, _blackPlayer);
         await WaitForBotMoveAsync();
 
-        AiEngineMoveReply secondBotMove = new(
+        AiEngineMove secondBotMove = new(
             From: new("f1"),
             To: new("f2"),
             Captures: [],
@@ -258,14 +258,14 @@ public class BotGrainTests : BaseOrleansIntegrationTest
         var grain = await Silo.CreateGrainAsync<BotGrain>(_gameToken);
         await StartGameAsync(grain, _whitePlayer);
 
-        AiEngineMoveReply botMove1 = new(
+        AiEngineMove botMove1 = new(
             From: new("g9"),
             To: new("g7"),
             Captures: [],
             PromotesTo: null,
             EvalForBot: 1
         );
-        AiEngineMoveReply botMove2 = new(
+        AiEngineMove botMove2 = new(
             From: new("f9"),
             To: new("f6"),
             Captures: [],
@@ -293,21 +293,21 @@ public class BotGrainTests : BaseOrleansIntegrationTest
     {
         var grain = await Silo.CreateGrainAsync<BotGrain>(_gameToken);
 
-        AiEngineMoveReply botMove1 = new(
+        AiEngineMove botMove1 = new(
             From: new("f2"),
             To: new("f5"),
             Captures: [],
             PromotesTo: null,
             EvalForBot: 1
         );
-        AiEngineMoveReply botMove2 = new(
+        AiEngineMove botMove2 = new(
             From: new("e1"),
             To: new("j6"),
             Captures: [],
             PromotesTo: null,
             EvalForBot: 2
         );
-        AiEngineMoveReply botMove3 = new(
+        AiEngineMove botMove3 = new(
             From: new("j6"),
             To: new("f10"),
             Captures: [new("f10")],
@@ -410,10 +410,7 @@ public class BotGrainTests : BaseOrleansIntegrationTest
         return grain.StartGameAsync(player ?? _player, ApiTestBase.CT);
     }
 
-    private async Task AssertBotMoveAsync(
-        AiEngineMoveReply expectedMove,
-        bool didMoveEndGame = false
-    )
+    private async Task AssertBotMoveAsync(AiEngineMove expectedMove, bool didMoveEndGame = false)
     {
         await Wait.UntilAsync(
             () =>

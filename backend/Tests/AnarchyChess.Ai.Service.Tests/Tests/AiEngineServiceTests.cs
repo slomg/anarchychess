@@ -58,7 +58,7 @@ public class AiEngineServiceTests
             TestContext.Current.CancellationToken
         );
 
-        AiEngineMoveReply expectedReply = new(
+        AiEngineMove expectedReply = new(
             From: from,
             To: to,
             Captures: [capture1, capture2],
@@ -124,7 +124,7 @@ public class AiEngineServiceTests
             TestContext.Current.CancellationToken
         );
 
-        AiEngineMoveReply expectedReply = new(
+        AiEngineMove expectedReply = new(
             From: from,
             To: to,
             Captures: [],

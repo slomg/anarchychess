@@ -12,7 +12,7 @@ namespace AnarchyChess.Api.AnarchyBot.Services;
 public interface IBotService
 {
     Task<bool> CheckHealthAsync(CancellationToken token = default);
-    Task<ErrorOr<AiEngineMoveReply>> FindBestMoveAsync(
+    Task<ErrorOr<AiEngineMove>> FindBestMoveAsync(
         IReadOnlyChessBoard board,
         CancellationToken token = default
     );
@@ -23,7 +23,7 @@ public class BotService(ILogger<BotService> logger, IAiEngineService aiEngineSer
     private readonly ILogger<BotService> _logger = logger;
     private readonly IAiEngineService _aiEngineService = aiEngineService;
 
-    public async Task<ErrorOr<AiEngineMoveReply>> FindBestMoveAsync(
+    public async Task<ErrorOr<AiEngineMove>> FindBestMoveAsync(
         IReadOnlyChessBoard board,
         CancellationToken token = default
     )
@@ -35,7 +35,7 @@ public class BotService(ILogger<BotService> logger, IAiEngineService aiEngineSer
             prevMove
         );
 
-        AiEngineMoveReply bestMove;
+        AiEngineMove bestMove;
         try
         {
             bestMove = await _aiEngineService.FindBestMoveAsync(request, token);

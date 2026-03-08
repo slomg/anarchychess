@@ -14,10 +14,9 @@ public readonly record struct AiEngineMoveSurrogate(
 );
 
 [RegisterConverter]
-public sealed class AiEngineMoveReplySurrogateConverter
-    : IConverter<AiEngineMoveReply, AiEngineMoveSurrogate>
+public sealed class AiEngineMoveSurrogateConverter : IConverter<AiEngineMove, AiEngineMoveSurrogate>
 {
-    public AiEngineMoveReply ConvertFromSurrogate(in AiEngineMoveSurrogate surrogate) =>
+    public AiEngineMove ConvertFromSurrogate(in AiEngineMoveSurrogate surrogate) =>
         new(
             From: surrogate.From,
             To: surrogate.To,
@@ -26,7 +25,7 @@ public sealed class AiEngineMoveReplySurrogateConverter
             EvalForBot: surrogate.EvalForBot
         );
 
-    public AiEngineMoveSurrogate ConvertToSurrogate(in AiEngineMoveReply value) =>
+    public AiEngineMoveSurrogate ConvertToSurrogate(in AiEngineMove value) =>
         new(
             From: value.From,
             To: value.To,

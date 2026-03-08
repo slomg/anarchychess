@@ -13,7 +13,7 @@ public class AiEngineService(IAiEngine aiEngine) : IAiEngineService
 
     public const int Depth = 8;
 
-    public ValueTask<AiEngineMoveReply> FindBestMoveAsync(
+    public ValueTask<AiEngineMove> FindBestMoveAsync(
         AiEngineMoveRequest request,
         CancellationToken token = default
     )
@@ -42,7 +42,7 @@ public class AiEngineService(IAiEngine aiEngine) : IAiEngineService
             captures.Add(AlgebraicPoint.FromIdx(captureSquare));
         }
 
-        AiEngineMoveReply reply = new(
+        AiEngineMove reply = new(
             From: AlgebraicPoint.FromIdx(bestMove.Value.From),
             To: AlgebraicPoint.FromIdx(bestMove.Value.To),
             Captures: captures,

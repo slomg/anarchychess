@@ -33,7 +33,7 @@ public class BotMoveRunnerTests
         ChessBoard board = new(
             new Dictionary<AlgebraicPoint, Piece>() { [new("a1")] = PieceFactory.White() }
         );
-        var expectedMove = new AiEngineMoveReplyFaker().Generate();
+        var expectedMove = new AiEngineMoveFaker().Generate();
         _botServiceMock
             .FindBestMoveAsync(board, Arg.Any<CancellationToken>())
             .Returns(expectedMove);

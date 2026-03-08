@@ -2,7 +2,7 @@
 
 namespace AnarchyChess.Ai.Service.DTO;
 
-public record AiEngineMoveReply(
+public record AiEngineMove(
     AlgebraicPoint From,
     AlgebraicPoint To,
     IReadOnlyCollection<AlgebraicPoint>? Captures,

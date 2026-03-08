@@ -4,9 +4,9 @@ using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Api.TestInfrastructure.Fakes;
 
-public class AiEngineMoveReplyFaker : RecordFaker<AiEngineMoveReply>
+public class AiEngineMoveFaker : RecordFaker<AiEngineMove>
 {
-    public AiEngineMoveReplyFaker()
+    public AiEngineMoveFaker()
     {
         StrictMode(true);
         RuleFor(

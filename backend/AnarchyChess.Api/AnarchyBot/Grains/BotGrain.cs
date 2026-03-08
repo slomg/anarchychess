@@ -43,10 +43,7 @@ public interface IBotGrain : IGrainWithStringKey
     );
 
     [Alias("PlayBotMoveAsync")]
-    Task PlayBotMoveAsync(
-        ErrorOr<AiEngineMoveReply> botMoveResult,
-        CancellationToken token = default
-    );
+    Task PlayBotMoveAsync(ErrorOr<AiEngineMove> botMoveResult, CancellationToken token = default);
 
     [Alias("ResignAsync")]
     Task<ErrorOr<Success>> ResignAsync(UserId userId, CancellationToken token = default);
@@ -250,7 +247,7 @@ public class BotGrain : Grain, IBotGrain
     }
 
     public async Task PlayBotMoveAsync(
-        ErrorOr<AiEngineMoveReply> botMoveResult,
+        ErrorOr<AiEngineMove> botMoveResult,
         CancellationToken token = default
     )
     {
