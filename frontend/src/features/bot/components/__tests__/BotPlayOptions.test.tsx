@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 
 import useBotMatch from "../../hooks/useBotMatch";
 import BotPlayOptions from "../BotPlayOptions";
-import { GameColor } from "@/lib/apiClient";
+import { BotType, GameColor } from "@/lib/apiClient";
 
 vi.mock("../../hooks/useBotMatch");
 
@@ -41,8 +41,28 @@ describe("BotPlayOptions", () => {
         );
     });
 
+    it.each([
+        [BotType.ANARCHY_BOT, "Anarchy Bot"],
+        [BotType.LOBOTOMIZED_ANARCHY_BOT, "Lobotomized Anarchy Bot"],
+    ])(
+        "should start the game with the correct bot type",
+        async (botType, botName) => {
+            const user = userEvent.setup();
+            render(<BotPlayOptions />);
+
+            await user.click(screen.getByText(botName));
+
+            await user.click(screen.getByTestId("botPlayOptionsStartButton"));
+
+            expect(matchBotGameMock).toHaveBeenCalledExactlyOnceWith(
+                expect.toBeOneOf([null, GameColor.WHITE, GameColor.BLACK]),
+                botType,
+            );
+        },
+    );
+
     it.each([GameColor.WHITE, GameColor.BLACK, null])(
-        "should allow selecting color and pass it to startBotGame",
+        "should start the game with the correct color",
         async (color) => {
             const user = userEvent.setup();
             render(<BotPlayOptions />);
@@ -52,7 +72,10 @@ describe("BotPlayOptions", () => {
 
             await user.click(screen.getByTestId("botPlayOptionsStartButton"));
 
-            expect(matchBotGameMock).toHaveBeenCalledExactlyOnceWith(color);
+            expect(matchBotGameMock).toHaveBeenCalledExactlyOnceWith(
+                color,
+                expect.anything(),
+            );
         },
     );
 });
