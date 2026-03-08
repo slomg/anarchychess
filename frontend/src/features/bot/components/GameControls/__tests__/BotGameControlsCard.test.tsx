@@ -2,7 +2,7 @@ import LiveChessStoreContext from "@/features/liveGame/contexts/liveChessContext
 import createLiveChessStore, {
     LiveChessStore,
 } from "@/features/liveGame/stores/liveChessStore";
-import { GameColor } from "@/lib/apiClient";
+import { BotType, GameColor } from "@/lib/apiClient";
 import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
 import { render, screen } from "@testing-library/react";
 import { StoreApi } from "zustand";
@@ -23,7 +23,7 @@ describe("BotGameControlsCard", () => {
     it("should render live controls if viewer is playing and the game is ongoing", () => {
         render(
             <LiveChessStoreContext.Provider value={store}>
-                <BotGameControlsCard />
+                <BotGameControlsCard botType={BotType.ANARCHY_BOT} />
             </LiveChessStoreContext.Provider>,
         );
 
@@ -36,7 +36,7 @@ describe("BotGameControlsCard", () => {
 
         render(
             <LiveChessStoreContext.Provider value={store}>
-                <BotGameControlsCard />
+                <BotGameControlsCard botType={BotType.ANARCHY_BOT} />
             </LiveChessStoreContext.Provider>,
         );
 
@@ -49,7 +49,7 @@ describe("BotGameControlsCard", () => {
 
         render(
             <LiveChessStoreContext.Provider value={store}>
-                <BotGameControlsCard />
+                <BotGameControlsCard botType={BotType.ANARCHY_BOT} />
             </LiveChessStoreContext.Provider>,
         );
 
