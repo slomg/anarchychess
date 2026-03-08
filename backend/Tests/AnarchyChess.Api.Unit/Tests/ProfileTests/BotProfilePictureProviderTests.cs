@@ -1,4 +1,5 @@
-﻿using AnarchyChess.Api.Profile.Models;
+﻿using AnarchyChess.Api.Bots.Bots;
+using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Profile.Services;
 using AwesomeAssertions;
 
@@ -11,7 +12,7 @@ public class BotProfilePictureProviderTests
     [Fact]
     public void GetBotProfilePicture_returns_bytes_for_bot()
     {
-        var result = _provider.GetBotProfilePicture(UserId.AnarchyBot());
+        var result = _provider.GetBotProfilePicture(AnarchyBot.BotId);
 
         result.Should().NotBeNullOrEmpty();
     }
@@ -19,8 +20,8 @@ public class BotProfilePictureProviderTests
     [Fact]
     public void GetBotProfilePicture_returns_a_different_profile_picture_for_each_bot()
     {
-        var result1 = _provider.GetBotProfilePicture(UserId.AnarchyBot());
-        var result2 = _provider.GetBotProfilePicture(UserId.LobotomizedAnarchyBot());
+        var result1 = _provider.GetBotProfilePicture(AnarchyBot.BotId);
+        var result2 = _provider.GetBotProfilePicture(LobotomizedAnarchyBot.BotId);
 
         result1.Should().NotBeNullOrEmpty();
         result2.Should().NotBeNullOrEmpty();

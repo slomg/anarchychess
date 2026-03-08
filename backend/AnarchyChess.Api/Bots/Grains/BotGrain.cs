@@ -1,9 +1,10 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using AnarchyChess.Ai.Service.DTO;
+using AnarchyChess.Api.ArchivedGames.Services;
+using AnarchyChess.Api.Bots.Bots;
 using AnarchyChess.Api.Bots.Errors;
 using AnarchyChess.Api.Bots.Models;
 using AnarchyChess.Api.Bots.Services;
-using AnarchyChess.Api.ArchivedGames.Services;
 using AnarchyChess.Api.Game.Errors;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
@@ -137,7 +138,7 @@ public class BotGrain : Grain, IBotGrain
     {
         GameCoreState core = new();
         GamePlayer botPlayer = new(
-            UserId: UserId.AnarchyBot(),
+            UserId: AnarchyBot.BotId,
             Color: player.Color.Invert(),
             UserName: "Anarchy Bot",
             CountryCode: "XX",

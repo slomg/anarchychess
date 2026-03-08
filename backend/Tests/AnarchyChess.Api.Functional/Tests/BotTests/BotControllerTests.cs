@@ -1,4 +1,5 @@
-﻿using AnarchyChess.Api.Bots.Grains;
+﻿using AnarchyChess.Api.Bots.Bots;
+using AnarchyChess.Api.Bots.Grains;
 using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.TestInfrastructure;
 using AnarchyChess.EngineShared;
@@ -38,7 +39,7 @@ public class BotControllerTests : BaseFunctionalTest
         state.WhitePlayer.UserName.Should().Be("Guest");
         state.WhitePlayer.CountryCode.Should().Be("XX");
 
-        state.BlackPlayer.UserId.Should().Be(UserId.AnarchyBot());
+        state.BlackPlayer.UserId.Should().Be(AnarchyBot.BotId);
     }
 
     [Fact]
@@ -61,7 +62,7 @@ public class BotControllerTests : BaseFunctionalTest
         state.WhitePlayer.UserName.Should().Be(user.UserName);
         state.WhitePlayer.CountryCode.Should().Be(user.CountryCode);
 
-        state.BlackPlayer.UserId.Should().Be(UserId.AnarchyBot());
+        state.BlackPlayer.UserId.Should().Be(AnarchyBot.BotId);
     }
 
     [Fact]

@@ -1,4 +1,5 @@
-﻿using AnarchyChess.Api.Profile.Models;
+﻿using AnarchyChess.Api.Bots.Bots;
+using AnarchyChess.Api.Profile.Models;
 
 namespace AnarchyChess.Api.Profile.Services;
 
@@ -17,8 +18,8 @@ public class BotProfilePictureProvider : IBotProfilePictureProvider
 
     private readonly Dictionary<UserId, byte[]> _botIdToPicture = new()
     {
-        [UserId.AnarchyBot()] = LoadProfilePicture("anarchybot.webp"),
-        [UserId.LobotomizedAnarchyBot()] = LoadProfilePicture("lobotomized-anarchybot.webp"),
+        [AnarchyBot.BotId] = LoadProfilePicture("anarchybot.webp"),
+        [LobotomizedAnarchyBot.BotId] = LoadProfilePicture("lobotomized-anarchybot.webp"),
     };
 
     private static byte[] LoadProfilePicture(string name)

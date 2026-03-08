@@ -5,14 +5,15 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using AnarchyChess.Ai.Service.Services;
 using AnarchyChess.Api.Analysis.Services;
-using AnarchyChess.Api.Bots.Services;
-using AnarchyChess.Api.Bots.SignalR;
 using AnarchyChess.Api.ArchivedGames.Repositories;
 using AnarchyChess.Api.ArchivedGames.Services;
 using AnarchyChess.Api.Auth.Errors;
 using AnarchyChess.Api.Auth.OAuthAuthenticators;
 using AnarchyChess.Api.Auth.Repositories;
 using AnarchyChess.Api.Auth.Services;
+using AnarchyChess.Api.Bots.Bots;
+using AnarchyChess.Api.Bots.Services;
+using AnarchyChess.Api.Bots.SignalR;
 using AnarchyChess.Api.Challenges.Services;
 using AnarchyChess.Api.Challenges.SignalR;
 using AnarchyChess.Api.CountryCodes.Services;
@@ -621,6 +622,10 @@ builder.Services.AddScoped<IChallengeRequestCreator, ChallengeRequestCreator>();
 builder.Services.AddSingleton<IBotService, BotService>();
 builder.Services.AddSingleton<IBotMoveRunner, BotMoveRunner>();
 builder.Services.AddSingleton<IBotNotifier, BotNotifier>();
+
+builder.Services.AddSingleton<IBot, AnarchyBot>();
+builder.Services.AddSingleton<IBot, LobotomizedAnarchyBot>();
+
 builder
     .Services.AddCodeFirstGrpcClient<IAiEngineService>(client =>
     {

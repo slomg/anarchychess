@@ -1,8 +1,9 @@
 ﻿using AnarchyChess.Ai.Service.DTO;
+using AnarchyChess.Api.ArchivedGames.Services;
+using AnarchyChess.Api.Bots.Bots;
 using AnarchyChess.Api.Bots.Grains;
 using AnarchyChess.Api.Bots.Models;
 using AnarchyChess.Api.Bots.Services;
-using AnarchyChess.Api.ArchivedGames.Services;
 using AnarchyChess.Api.Game.Errors;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.SanNotation;
@@ -10,7 +11,6 @@ using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
-using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Shared.Models;
 using AnarchyChess.Api.Shared.Services;
 using AnarchyChess.Api.TestInfrastructure;
@@ -120,7 +120,7 @@ public class BotGrainTests : BaseOrleansIntegrationTest
 
         _state.CurrentGame.Should().NotBeNull();
         GamePlayer botPlayer = new(
-            UserId: UserId.AnarchyBot(),
+            UserId: AnarchyBot.BotId,
             Color: playerColor.Invert(),
             UserName: "Anarchy Bot",
             CountryCode: "XX",
@@ -379,7 +379,7 @@ public class BotGrainTests : BaseOrleansIntegrationTest
         BotGameState expectedState = new(
             WhitePlayer: _whitePlayer,
             BlackPlayer: new(
-                UserId: UserId.AnarchyBot(),
+                UserId: AnarchyBot.BotId,
                 Color: GameColor.Black,
                 UserName: "Anarchy Bot",
                 CountryCode: "XX",
