@@ -11,6 +11,9 @@ public interface IAiEngineService
         AiEngineMoveRequest request,
         CancellationToken token = default
     );
+
+    [Operation]
+    ValueTask<EvaluateAllMovesReply> EvaluateAllMovesAsync(
         AiEngineMoveRequest request,
         CancellationToken token = default
     );

@@ -154,6 +154,81 @@ public class AiEngineServiceTests
     }
 
     [Fact]
+    public async Task EvaluateAllMovesAsync_returns_expected_moves()
+    {
+        AlgebraicPoint from1 = new("a1");
+        AlgebraicPoint to1 = new("b2");
+        AlgebraicPoint capture1 = new("c3");
+        BitMove move1 = new()
+        {
+            From = from1.AsIdx(),
+            To = to1.AsIdx(),
+            Piece = new() { Type = PieceType.Rook, Color = BitPieceColor.White },
+            CapturesMask = UInt128.One << capture1.AsIdx(),
+        };
+
+        AlgebraicPoint from2 = new("d4");
+        AlgebraicPoint to2 = new("e5");
+        BitMove move2 = new()
+        {
+            From = from2.AsIdx(),
+            To = to2.AsIdx(),
+            Piece = new() { Type = PieceType.Pawn, Color = BitPieceColor.White },
+            CapturesMask = 0,
+            PromotesTo = PieceType.Queen,
+        };
+
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new("a1")] = PieceFactory.White(),
+            [new("d4")] = PieceFactory.White(PieceType.Pawn),
+        };
+
+        BitBoard expectedBoard = BitBoard.FromPieces(pieces);
+
+        MoveEvaluation[] engineMoves = [new(move1, 100), new(move2, -50)];
+        _aiEngineMock
+            .EvaluateAllMoves(
+                ArgEx.FluentAssert<BitBoard>(x => x.Should().BeEquivalentTo(expectedBoard)),
+                depth: AiEngineService.Depth
+            )
+            .Returns(engineMoves);
+
+        var response = await _engine.EvaluateAllMovesAsync(
+            new(pieces, IsWhiteToMove: true, PrevMoveState: null),
+            TestContext.Current.CancellationToken
+        );
+
+        List<AiEngineMove> expected =
+        [
+            new(From: from1, To: to1, Captures: [capture1], PromotesTo: null, EvalForBot: 100),
+            new(From: from2, To: to2, Captures: [], PromotesTo: PieceType.Queen, EvalForBot: -50),
+        ];
+
+        response.Moves.Should().BeEquivalentTo(expected);
+    }
+
+    [Fact]
+    public async Task EvaluateAllMovesAsync_throws_when_no_moves_are_found()
+    {
+        _aiEngineMock.EvaluateAllMoves(Arg.Any<BitBoard>(), AiEngineService.Depth).Returns([]);
+
+        Func<Task> act = async () =>
+            await _engine
+                .EvaluateAllMovesAsync(
+                    new(Pieces: [], IsWhiteToMove: true, PrevMoveState: null),
+                    TestContext.Current.CancellationToken
+                )
+                .AsTask();
+
+        var ex = await act.Should().ThrowAsync<RpcException>();
+
+        ex.Which.StatusCode.Should().Be(StatusCode.InvalidArgument);
+        ex.Which.Status.Detail.Should()
+            .Be("The provided position contains no legal moves and is invalid");
+    }
+
+    [Fact]
     public async Task CheckHealthAsync_returns_true()
     {
         var result = await _engine.CheckHealthAsync(TestContext.Current.CancellationToken);

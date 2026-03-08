@@ -34,26 +34,60 @@ public class AiEngineService(IAiEngine aiEngine) : IAiEngineService
             );
         }
 
+        return ValueTask.FromResult(CreateAiEngineMove(bestMove.Value, evalForBot));
+    }
+
+    public ValueTask<EvaluateAllMovesReply> EvaluateAllMovesAsync(
+        AiEngineMoveRequest request,
+        CancellationToken token = default
+    )
+    {
+        BitBoard board = BitBoard.FromPieces(
+            request.Pieces,
+            isWhiteToMove: request.IsWhiteToMove,
+            prevMoveState: CreatePrevMove(request.PrevMoveState)
+        );
+        MoveEvaluation[] moves = _aiEngine.EvaluateAllMoves(board, depth: Depth);
+        if (moves.Length == 0)
+        {
+            throw new RpcException(
+                new Status(
+                    StatusCode.InvalidArgument,
+                    "The provided position contains no legal moves and is invalid"
+                )
+            );
+        }
+
+        List<AiEngineMove> engineMoves =
+        [
+            .. moves.Select(evaluation =>
+                CreateAiEngineMove(evaluation.Move, evaluation.EvalForBot)
+            ),
+        ];
+        return ValueTask.FromResult(new EvaluateAllMovesReply(engineMoves));
+    }
+
+    public ValueTask<HealthReply> CheckHealthAsync(CancellationToken token = default) =>
+        ValueTask.FromResult(new HealthReply(IsHealthy: true));
+
+    private static AiEngineMove CreateAiEngineMove(BitMove bitMove, int evalForBot)
+    {
         List<AlgebraicPoint> captures = [];
-        UInt128 captureMask = bestMove.Value.CapturesMask;
+        UInt128 captureMask = bitMove.CapturesMask;
         while (captureMask != 0)
         {
             byte captureSquare = (byte)BitboardHelpers.BitScanForward(ref captureMask);
             captures.Add(AlgebraicPoint.FromIdx(captureSquare));
         }
 
-        AiEngineMove reply = new(
-            From: AlgebraicPoint.FromIdx(bestMove.Value.From),
-            To: AlgebraicPoint.FromIdx(bestMove.Value.To),
+        return new(
+            From: AlgebraicPoint.FromIdx(bitMove.From),
+            To: AlgebraicPoint.FromIdx(bitMove.To),
             Captures: captures,
-            PromotesTo: bestMove.Value.PromotesTo,
+            PromotesTo: bitMove.PromotesTo,
             EvalForBot: evalForBot
         );
-        return ValueTask.FromResult(reply);
     }
-
-    public ValueTask<HealthReply> CheckHealthAsync(CancellationToken token = default) =>
-        ValueTask.FromResult(new HealthReply(IsHealthy: true));
 
     private static PrevMoveState? CreatePrevMove(PrevMoveStateDto? prevMoveState)
     {

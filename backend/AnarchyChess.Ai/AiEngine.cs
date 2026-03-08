@@ -5,6 +5,7 @@ namespace AnarchyChess.Ai;
 
 public interface IAiEngine
 {
+    MoveEvaluation[] EvaluateAllMoves(BitBoard board, int depth);
     (BitMove? BestMove, int EvalForBot) FindBestMove(BitBoard board, int depth);
 }
 
@@ -25,7 +26,9 @@ public class AiEngine(
 
         _moveGenerator.Generate(board, moves, ref moveCount);
         if (moveCount == 0)
+        {
             return (BestMove: null, EvalForBot: 0);
+        }
 
         _moveOrdering.SortMoves(
             board,
@@ -85,6 +88,7 @@ public class AiEngine(
                     scores[i] = int.MinValue;
                 }
 
+                // maybe I'll add this someday
                 //int score = 0;
                 //for (int iterativeDepth = 1; iterativeDepth <= depth - 1; iterativeDepth++)
                 //{
@@ -132,5 +136,42 @@ public class AiEngine(
         );
 
         return (BestMove: bestMove, EvalForBot: bestAlpha);
+    }
+
+    public MoveEvaluation[] EvaluateAllMoves(BitBoard board, int depth)
+    {
+        BitMove[] moves = new BitMove[EngineConstants.MaxMoves];
+        int moveCount = 0;
+
+        _moveGenerator.Generate(board, moves, ref moveCount);
+        if (moveCount == 0)
+        {
+            return [];
+        }
+
+        MoveEvaluation[] moveScores = new MoveEvaluation[moveCount];
+        Parallel.For(
+            0,
+            moveCount,
+            new() { MaxDegreeOfParallelism = 4 },
+            i =>
+            {
+                BitMove move = moves[i];
+                BitBoard boardCopy = new(board);
+                boardCopy.MakeMove(move);
+
+                SearchThread search = new(_moveGenerator, _evaluator, _moveOrdering, depth);
+
+                int score = -search.Negamax(
+                    boardCopy,
+                    depth - 1,
+                    alpha: EngineConstants.AlphaStart,
+                    beta: EngineConstants.BetaStart
+                );
+                moveScores[i] = new MoveEvaluation(move, score);
+            }
+        );
+
+        return moveScores;
     }
 }
