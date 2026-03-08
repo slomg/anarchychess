@@ -533,6 +533,17 @@ export type BotGameState = {
     resultData?: GameResultData | null;
 };
 
+export enum BotType {
+    /**
+     * AnarchyBot
+     */
+    ANARCHY_BOT = 0,
+    /**
+     * LobotomizedAnarchyBot
+     */
+    LOBOTOMIZED_ANARCHY_BOT = 1,
+}
+
 export type RootAnalysisPosition = {
     fen: string;
     legalMoves: Array<MovePath>;
@@ -1358,6 +1369,64 @@ export type CancelAllIncomingChallengesResponses = {
 export type CancelAllIncomingChallengesResponse =
     CancelAllIncomingChallengesResponses[keyof CancelAllIncomingChallengesResponses];
 
+export type GetBotGameData = {
+    body?: never;
+    path: {
+        gameToken: string;
+    };
+    query?: never;
+    url: "/api/Bot/{gameToken}";
+};
+
+export type GetBotGameErrors = {
+    404: ApiProblemDetails;
+};
+
+export type GetBotGameError = GetBotGameErrors[keyof GetBotGameErrors];
+
+export type GetBotGameResponses = {
+    200: BotGameState;
+};
+
+export type GetBotGameResponse = GetBotGameResponses[keyof GetBotGameResponses];
+
+export type StartBotGameData = {
+    body?: never;
+    path?: never;
+    query?: {
+        myColor?: GameColor;
+        botType?: BotType;
+    };
+    url: "/api/Bot/start";
+};
+
+export type StartBotGameErrors = {
+    401: ApiProblemDetails;
+};
+
+export type StartBotGameError = StartBotGameErrors[keyof StartBotGameErrors];
+
+export type StartBotGameResponses = {
+    200: string;
+};
+
+export type StartBotGameResponse =
+    StartBotGameResponses[keyof StartBotGameResponses];
+
+export type CheckBotHealthData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: "/api/Bot/health";
+};
+
+export type CheckBotHealthResponses = {
+    200: boolean;
+};
+
+export type CheckBotHealthResponse =
+    CheckBotHealthResponses[keyof CheckBotHealthResponses];
+
 export type RefreshData = {
     body?: never;
     path?: never;
@@ -1467,63 +1536,6 @@ export type SignInOAuthData = {
     query?: never;
     url: "/api/OAuth/signin/{provider}";
 };
-
-export type GetBotGameData = {
-    body?: never;
-    path: {
-        gameToken: string;
-    };
-    query?: never;
-    url: "/api/Bot/{gameToken}";
-};
-
-export type GetBotGameErrors = {
-    404: ApiProblemDetails;
-};
-
-export type GetBotGameError = GetBotGameErrors[keyof GetBotGameErrors];
-
-export type GetBotGameResponses = {
-    200: BotGameState;
-};
-
-export type GetBotGameResponse = GetBotGameResponses[keyof GetBotGameResponses];
-
-export type StartBotGameData = {
-    body?: never;
-    path?: never;
-    query?: {
-        myColor?: GameColor;
-    };
-    url: "/api/Bot/start";
-};
-
-export type StartBotGameErrors = {
-    401: ApiProblemDetails;
-};
-
-export type StartBotGameError = StartBotGameErrors[keyof StartBotGameErrors];
-
-export type StartBotGameResponses = {
-    200: string;
-};
-
-export type StartBotGameResponse =
-    StartBotGameResponses[keyof StartBotGameResponses];
-
-export type CheckBotHealthData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: "/api/Bot/health";
-};
-
-export type CheckBotHealthResponses = {
-    200: boolean;
-};
-
-export type CheckBotHealthResponse =
-    CheckBotHealthResponses[keyof CheckBotHealthResponses];
 
 export type GetInitialAnalysisPositionData = {
     body?: never;
