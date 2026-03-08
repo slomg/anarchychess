@@ -58,7 +58,7 @@ public class AiEngineService(IAiEngine aiEngine) : IAiEngineService
             );
         }
 
-        List<AiEngineMove> engineMoves =
+        AiEngineMove[] engineMoves =
         [
             .. moves.Select(evaluation =>
                 CreateAiEngineMove(evaluation.Move, evaluation.EvalForBot)

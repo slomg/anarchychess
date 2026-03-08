@@ -126,6 +126,71 @@ public class BotServiceTests : BaseUnitTest
     }
 
     [Fact]
+    public async Task EvaluateAllMovesAsync_returns_moves_correctly()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new("e2")] = PieceFactory.White(PieceType.Pawn),
+            [new("d7")] = PieceFactory.Black(PieceType.Pawn),
+        };
+
+        ChessBoard board = new(pieces);
+
+        var expectedMoves = new AiEngineMoveFaker().Generate(3);
+        var expectedReply = new EvaluateAllMovesReply(Moves: [.. expectedMoves]);
+
+        _aiEngineMock
+            .EvaluateAllMovesAsync(Arg.Any<AiEngineMoveRequest>(), CT)
+            .Returns(expectedReply);
+
+        var result = await _bot.EvaluateAllMovesAsync(board, CT);
+
+        result.IsError.Should().BeFalse();
+        result.Value.Should().BeEquivalentTo(expectedMoves);
+    }
+
+    [Fact]
+    public async Task EvaluateAllMovesAsync_returns_BotOffline_on_unavailable_status()
+    {
+        _aiEngineMock
+            .EvaluateAllMovesAsync(Arg.Any<AiEngineMoveRequest>(), CT)
+            .ThrowsAsync(new RpcException(new Status(StatusCode.Unavailable, "unavailable")));
+
+        var result = await _bot.EvaluateAllMovesAsync(new ChessBoard(), CT);
+
+        result.IsError.Should().BeTrue();
+        result.FirstError.Should().Be(BotErrors.BotOffline);
+    }
+
+    [Fact]
+    public async Task EvaluateAllMovesAsync_returns_NoMoveFound_on_invalid_argument_status()
+    {
+        _aiEngineMock
+            .EvaluateAllMovesAsync(Arg.Any<AiEngineMoveRequest>(), CT)
+            .ThrowsAsync(
+                new RpcException(new Status(StatusCode.InvalidArgument, "invalid argument"))
+            );
+
+        var result = await _bot.EvaluateAllMovesAsync(new ChessBoard(), CT);
+
+        result.IsError.Should().BeTrue();
+        result.FirstError.Should().Be(BotErrors.NoMoveFound);
+    }
+
+    [Fact]
+    public async Task EvaluateAllMovesAsync_returns_BotFailure_for_other_rpc_exceptions()
+    {
+        _aiEngineMock
+            .EvaluateAllMovesAsync(Arg.Any<AiEngineMoveRequest>(), CT)
+            .ThrowsAsync(new RpcException(new Status(StatusCode.Internal, "internal error")));
+
+        var result = await _bot.EvaluateAllMovesAsync(new ChessBoard(), CT);
+
+        result.IsError.Should().BeTrue();
+        result.FirstError.Should().Be(BotErrors.BotFailure);
+    }
+
+    [Fact]
     public async Task CheckHealthAsync_returns_true_when_ai_engine_is_healthy()
     {
         _aiEngineMock.CheckHealthAsync(CT).Returns(new HealthReply(IsHealthy: true));

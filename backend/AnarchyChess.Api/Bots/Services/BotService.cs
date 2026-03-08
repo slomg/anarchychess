@@ -12,6 +12,10 @@ namespace AnarchyChess.Api.Bots.Services;
 public interface IBotService
 {
     Task<bool> CheckHealthAsync(CancellationToken token = default);
+    Task<ErrorOr<AiEngineMove[]>> EvaluateAllMovesAsync(
+        IReadOnlyChessBoard board,
+        CancellationToken token = default
+    );
     Task<ErrorOr<AiEngineMove>> FindBestMoveAsync(
         IReadOnlyChessBoard board,
         CancellationToken token = default
@@ -42,7 +46,7 @@ public class BotService(ILogger<BotService> logger, IAiEngineService aiEngineSer
         }
         catch (RpcException ex)
         {
-            _logger.LogWarning("Error when trying to get anarchy bot move: {Ex}", ex);
+            _logger.LogWarning("Error when trying to get best bot move: {Ex}", ex);
             if (ex.StatusCode is StatusCode.Unavailable)
             {
                 return BotErrors.BotOffline;
@@ -57,6 +61,42 @@ public class BotService(ILogger<BotService> logger, IAiEngineService aiEngineSer
             }
         }
         return bestMove;
+    }
+
+    public async Task<ErrorOr<AiEngineMove[]>> EvaluateAllMovesAsync(
+        IReadOnlyChessBoard board,
+        CancellationToken token = default
+    )
+    {
+        PrevMoveStateDto? prevMove = GetPrevMoveState(board);
+        AiEngineMoveRequest request = new(
+            Pieces: board.EnumeratePieces().ToDictionary(),
+            IsWhiteToMove: board.SideToMove is GameColor.White,
+            prevMove
+        );
+
+        EvaluateAllMovesReply reply;
+        try
+        {
+            reply = await _aiEngineService.EvaluateAllMovesAsync(request, token);
+        }
+        catch (RpcException ex)
+        {
+            _logger.LogWarning("Error when trying to evaluate all bot moves: {Ex}", ex);
+            if (ex.StatusCode is StatusCode.Unavailable)
+            {
+                return BotErrors.BotOffline;
+            }
+            else if (ex.StatusCode is StatusCode.InvalidArgument)
+            {
+                return BotErrors.NoMoveFound;
+            }
+            else
+            {
+                return BotErrors.BotFailure;
+            }
+        }
+        return reply.Moves;
     }
 
     public async Task<bool> CheckHealthAsync(CancellationToken token = default)
