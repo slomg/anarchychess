@@ -1,5 +1,5 @@
 ﻿using AnarchyChess.Api.Analysis.Models;
-using AnarchyChess.Api.AnarchyBot.Models;
+using AnarchyChess.Api.Bots.Models;
 using AnarchyChess.Api.ArchivedGames.Models;
 using AnarchyChess.Api.Challenges.Models;
 using AnarchyChess.Api.GameSnapshot.Models;

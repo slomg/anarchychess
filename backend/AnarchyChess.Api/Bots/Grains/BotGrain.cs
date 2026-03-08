@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using AnarchyChess.Ai.Service.DTO;
-using AnarchyChess.Api.AnarchyBot.Errors;
-using AnarchyChess.Api.AnarchyBot.Models;
-using AnarchyChess.Api.AnarchyBot.Services;
+using AnarchyChess.Api.Bots.Errors;
+using AnarchyChess.Api.Bots.Models;
+using AnarchyChess.Api.Bots.Services;
 using AnarchyChess.Api.ArchivedGames.Services;
 using AnarchyChess.Api.Game.Errors;
 using AnarchyChess.Api.Game.Models;
@@ -18,9 +18,9 @@ using AnarchyChess.EngineShared;
 using AnarchyChess.EngineShared.Extensions;
 using ErrorOr;
 
-namespace AnarchyChess.Api.AnarchyBot.Grains;
+namespace AnarchyChess.Api.Bots.Grains;
 
-[Alias("AnarchyChess.Api.AnarchyBot.Grains.IBotGrain")]
+[Alias("AnarchyChess.Api.Bots.Grains.IBotGrain")]
 public interface IBotGrain : IGrainWithStringKey
 {
     [Alias("SyncPlyNumberAsync")]
@@ -50,7 +50,7 @@ public interface IBotGrain : IGrainWithStringKey
 }
 
 [GenerateSerializer]
-[Alias("AnarchyChess.Api.AnarchyBot.Grains.BotGameData")]
+[Alias("AnarchyChess.Api.Bots.Grains.BotGameData")]
 public class BotGameData
 {
     [Id(0)]
@@ -76,7 +76,7 @@ public class BotGameData
 }
 
 [GenerateSerializer]
-[Alias("AnarchyChess.Api.AnarchyBot.Grains.BotGrainState")]
+[Alias("AnarchyChess.Api.Bots.Grains.BotGrainState")]
 public class BotGrainState
 {
     [Id(0)]

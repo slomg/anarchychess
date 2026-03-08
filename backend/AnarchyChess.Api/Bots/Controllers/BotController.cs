@@ -1,6 +1,6 @@
-﻿using AnarchyChess.Api.AnarchyBot.Grains;
-using AnarchyChess.Api.AnarchyBot.Models;
-using AnarchyChess.Api.AnarchyBot.Services;
+﻿using AnarchyChess.Api.Bots.Grains;
+using AnarchyChess.Api.Bots.Models;
+using AnarchyChess.Api.Bots.Services;
 using AnarchyChess.Api.Auth.Services;
 using AnarchyChess.Api.ErrorHandling.Extensions;
 using AnarchyChess.Api.ErrorHandling.Infrastructure;
@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AnarchyChess.Api.AnarchyBot.Controllers;
+namespace AnarchyChess.Api.Bots.Controllers;
 
 [ApiController]
 [Route("/api/[controller]")]

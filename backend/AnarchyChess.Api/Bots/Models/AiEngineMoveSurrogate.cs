@@ -1,10 +1,10 @@
 ﻿using AnarchyChess.Ai.Service.DTO;
 using AnarchyChess.EngineShared;
 
-namespace AnarchyChess.Api.AnarchyBot.Models;
+namespace AnarchyChess.Api.Bots.Models;
 
 [GenerateSerializer]
-[Alias("AnarchyChess.Api.AnarchyBot.Models.AiEngineMoveSurrogate")]
+[Alias("AnarchyChess.Api.Bots.Models.AiEngineMoveSurrogate")]
 public readonly record struct AiEngineMoveSurrogate(
     AlgebraicPoint From,
     AlgebraicPoint To,

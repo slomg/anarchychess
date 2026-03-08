@@ -1,7 +1,7 @@
 ﻿using AnarchyChess.Ai.Service.DTO;
-using AnarchyChess.Api.AnarchyBot.Grains;
-using AnarchyChess.Api.AnarchyBot.Models;
-using AnarchyChess.Api.AnarchyBot.Services;
+using AnarchyChess.Api.Bots.Grains;
+using AnarchyChess.Api.Bots.Models;
+using AnarchyChess.Api.Bots.Services;
 using AnarchyChess.Api.ArchivedGames.Services;
 using AnarchyChess.Api.Game.Errors;
 using AnarchyChess.Api.Game.Models;

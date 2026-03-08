@@ -1,4 +1,4 @@
-﻿using AnarchyChess.Api.AnarchyBot.Grains;
+﻿using AnarchyChess.Api.Bots.Grains;
 using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.TestInfrastructure;
 using AnarchyChess.EngineShared;

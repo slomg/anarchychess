@@ -1,8 +1,8 @@
-﻿using AnarchyChess.Api.AnarchyBot.Grains;
+﻿using AnarchyChess.Api.Bots.Grains;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.GameLogic;
 
-namespace AnarchyChess.Api.AnarchyBot.Services;
+namespace AnarchyChess.Api.Bots.Services;
 
 public interface IBotMoveRunner
 {

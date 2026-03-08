@@ -1,5 +1,5 @@
-﻿using AnarchyChess.Api.AnarchyBot.Grains;
-using AnarchyChess.Api.AnarchyBot.Services;
+﻿using AnarchyChess.Api.Bots.Grains;
+using AnarchyChess.Api.Bots.Services;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.TestInfrastructure.Factories;

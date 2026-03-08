@@ -1,7 +1,7 @@
 ﻿using AnarchyChess.Api.ErrorHandling.Infrastructure;
 using ErrorOr;
 
-namespace AnarchyChess.Api.AnarchyBot.Errors;
+namespace AnarchyChess.Api.Bots.Errors;
 
 public static class BotErrors
 {

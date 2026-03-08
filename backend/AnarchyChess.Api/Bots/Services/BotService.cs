@@ -1,13 +1,13 @@
 ﻿using AnarchyChess.Ai.Service.DTO;
 using AnarchyChess.Ai.Service.Services;
-using AnarchyChess.Api.AnarchyBot.Errors;
+using AnarchyChess.Api.Bots.Errors;
 using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.EngineShared;
 using ErrorOr;
 using Grpc.Core;
 
-namespace AnarchyChess.Api.AnarchyBot.Services;
+namespace AnarchyChess.Api.Bots.Services;
 
 public interface IBotService
 {

@@ -1,10 +1,10 @@
-﻿using AnarchyChess.Api.AnarchyBot.SignalR;
+﻿using AnarchyChess.Api.Bots.SignalR;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Shared.Models;
 using Microsoft.AspNetCore.SignalR;
 
-namespace AnarchyChess.Api.AnarchyBot.Services;
+namespace AnarchyChess.Api.Bots.Services;
 
 public interface IBotNotifier
 {

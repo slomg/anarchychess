@@ -1,5 +1,5 @@
-﻿using AnarchyChess.Api.AnarchyBot.Services;
-using AnarchyChess.Api.AnarchyBot.SignalR;
+﻿using AnarchyChess.Api.Bots.Services;
+using AnarchyChess.Api.Bots.SignalR;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Shared.Models;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
