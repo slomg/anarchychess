@@ -50,9 +50,6 @@ public class BotProfilePictureProviderTests
         result.Should().Be(DateTimeOffset.MinValue);
     }
 
-    public static IEnumerable<TheoryDataRow<UserId>> BotUserIdsData =>
-        [new(UserId.AnarchyBot()), new(UserId.LobotomizedAnarchyBot())];
-
     public static IEnumerable<TheoryDataRow<UserId, string>> BotData =>
         [
             new(UserId.AnarchyBot(), Path.Combine(_baseDirectory, "anarchybot.webp")),
