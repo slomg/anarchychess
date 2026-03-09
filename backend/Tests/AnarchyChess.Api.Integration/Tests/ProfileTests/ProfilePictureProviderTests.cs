@@ -1,4 +1,5 @@
-﻿using AnarchyChess.Api.Profile.Errors;
+﻿using AnarchyChess.Api.Bots.Bots;
+using AnarchyChess.Api.Profile.Errors;
 using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Profile.Services;
 using AnarchyChess.Api.TestInfrastructure;
@@ -13,6 +14,8 @@ namespace AnarchyChess.Api.Integration.Tests.ProfileTests;
 public class ProfilePictureProviderTests : BaseIntegrationTest
 {
     private readonly IProfilePictureProvider _profilePictureProvider;
+
+    private readonly IBotProfilePictureProvider _botProfilePictureProvider;
     private readonly IBlobStorage _storage;
     private readonly UserId _userId;
 
@@ -21,6 +24,9 @@ public class ProfilePictureProviderTests : BaseIntegrationTest
     {
         _profilePictureProvider =
             Scope.ServiceProvider.GetRequiredService<IProfilePictureProvider>();
+
+        _botProfilePictureProvider =
+            Scope.ServiceProvider.GetRequiredService<IBotProfilePictureProvider>();
         _storage = Scope.ServiceProvider.GetRequiredService<IBlobStorage>();
 
         _userId = Guid.NewGuid().ToString();
@@ -104,7 +110,7 @@ public class ProfilePictureProviderTests : BaseIntegrationTest
 
         var bytes = await _profilePictureProvider.GetProfilePictureAsync(_userId, CT);
 
-        bytes.Should().BeEquivalentTo(expectedDefault);
+        bytes.Should().Equal(expectedDefault);
     }
 
     [Fact]
@@ -130,6 +136,17 @@ public class ProfilePictureProviderTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task GetProfilePictureAsync_returns_bot_picture()
+    {
+        UserId botId = AnarchyBot.BotId;
+
+        var result = await _profilePictureProvider.GetProfilePictureAsync(botId, CT);
+
+        var expectedResult = _botProfilePictureProvider.GetBotProfilePictureBytes(botId);
+        result.Should().Equal(expectedResult);
+    }
+
+    [Fact]
     public async Task GetLastModifiedAsync_returns_value_after_upload()
     {
         using var stream = ImageUtils.CreateTestImageStream();
@@ -140,11 +157,27 @@ public class ProfilePictureProviderTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task GetLastModifiedAsync_returns_MinValue_if_no_picture_uploaded()
+    public async Task GetLastModifiedAsync_returns_default_profile_picture_last_modified_if_no_picture_uploaded()
     {
         var lastModified = await _profilePictureProvider.GetLastModifiedAsync(_userId, CT);
 
-        lastModified.Should().Be(DateTimeOffset.MinValue);
+        DateTimeOffset expectedDefault = File.GetLastWriteTimeUtc(
+            Path.Combine(AppContext.BaseDirectory, "Data", "defaultProfilePicture.webp")
+        );
+        lastModified.Should().Be(expectedDefault);
+    }
+
+    [Fact]
+    public async Task GetLastModifiedAsync_returns_bot_last_modified()
+    {
+        UserId botId = AnarchyBot.BotId;
+
+        var botLastModified = await _profilePictureProvider.GetLastModifiedAsync(botId, CT);
+
+        var expectedLastModified = _botProfilePictureProvider.GetBotProfilePictureLastModified(
+            botId
+        );
+        botLastModified.Should().Be(expectedLastModified);
     }
 
     [Fact]

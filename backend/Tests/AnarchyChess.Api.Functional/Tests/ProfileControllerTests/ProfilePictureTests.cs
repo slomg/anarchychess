@@ -43,7 +43,11 @@ public class ProfilePictureTests(AnarchyChessWebApplicationFactory factory)
         var getResponse = await ApiClient.Api.GetProfilePictureAsync(user.Id);
         getResponse.IsSuccessful.Should().BeTrue();
 
-        getResponse.Headers.ETag?.Tag.Should().Be("\"0\"");
+        var defaultBytes = await File.ReadAllBytesAsync(
+            Path.Combine(AppContext.BaseDirectory, "Data", "defaultProfilePicture.webp"),
+            CT
+        );
+        getResponse.Content.ToByteArray().Should().Equal(defaultBytes);
     }
 
     [Fact]

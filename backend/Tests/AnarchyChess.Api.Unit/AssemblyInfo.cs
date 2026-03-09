@@ -1,4 +1,5 @@
 ﻿using AnarchyChess.Api.GameSnapshot.Models;
+using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.TestInfrastructure.Serializers;
 using AnarchyChess.EngineShared;
 using Xunit.Sdk;
@@ -13,6 +14,12 @@ using Xunit.Sdk;
     typeof(JsonXUnitSerializer<Offset>),
     typeof(Offset),
     typeof(IEnumerable<Offset>)
+)]
+
+[assembly: RegisterXunitSerializer(
+    typeof(JsonXUnitSerializer<UserId>),
+    typeof(UserId),
+    typeof(IEnumerable<UserId>)
 )]
 
 [assembly: RegisterXunitSerializer(

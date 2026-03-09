@@ -44,10 +44,7 @@ const BotPlayOptions = () => {
                     selected={selectedBotType === BotType.ANARCHY_BOT}
                     select={() => setSelectedBotType(BotType.ANARCHY_BOT)}
                 />
-            </div>
 
-            <div className="flex flex-col gap-2">
-                <h2 className="text-lg">Coming Soon</h2>
                 <Bot
                     label="Lobotomized Anarchy Bot"
                     userId="bot:lobotomized-anarchybot"

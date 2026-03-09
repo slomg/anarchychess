@@ -60,10 +60,10 @@
     <None Update="Data\adjectives.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\bot\anarchybot.webp">
+    <None Update="Data\Bots\anarchybot.webp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Data\bot\lobotomized-anarchybot.webp">
+    <None Update="Data\Bots\lobotomized-anarchybot.webp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Data\defaultProfilePicture.webp">

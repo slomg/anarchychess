@@ -9,38 +9,57 @@ public class BotProfilePictureProviderTests
 {
     private readonly BotProfilePictureProvider _provider = new();
 
-    [Fact]
-    public void GetBotProfilePicture_returns_bytes_for_bot()
+    private static readonly string _baseDirectory = Path.Combine(
+        AppContext.BaseDirectory,
+        "Data",
+        "Bots"
+    );
+
+    [Theory]
+    [MemberData(nameof(BotData))]
+    public void GetBotProfilePicture_returns_bytes_for_bot(UserId botId, string path)
     {
-        var result = _provider.GetBotProfilePicture(AnarchyBot.BotId);
+        var result = _provider.GetBotProfilePictureBytes(botId);
 
-        result.Should().NotBeNullOrEmpty();
-    }
-
-    [Fact]
-    public void GetBotProfilePicture_returns_a_different_profile_picture_for_each_bot()
-    {
-        var result1 = _provider.GetBotProfilePicture(AnarchyBot.BotId);
-        var result2 = _provider.GetBotProfilePicture(LobotomizedAnarchyBot.BotId);
-
-        result1.Should().NotBeNullOrEmpty();
-        result2.Should().NotBeNullOrEmpty();
-        result1.Should().NotBeEquivalentTo(result2);
-    }
-
-    [Fact]
-    public void GetBotProfilePicture_returns_null_for_non_bots()
-    {
-        var result = _provider.GetBotProfilePicture(UserId.Authed());
-
-        result.Should().BeNull();
+        byte[] expectedResult = File.ReadAllBytes(path);
+        result.Should().Equal(expectedResult);
     }
 
     [Fact]
     public void GetBotProfilePicture_returns_none_for_unknown_bot()
     {
-        var result = _provider.GetBotProfilePicture("bot:test");
+        var result = _provider.GetBotProfilePictureBytes("bot:test");
 
         result.Should().BeNull();
     }
+
+    [Theory]
+    [MemberData(nameof(BotData))]
+    public void GetBotProfilePictureLastModified_returns_expected_value(UserId botId, string path)
+    {
+        var result = _provider.GetBotProfilePictureLastModified(botId);
+
+        DateTimeOffset expectedResult = File.GetLastWriteTimeUtc(path);
+        result.Should().Be(expectedResult);
+    }
+
+    [Fact]
+    public void GetBotProfilePictureLastModified_returns_min_value_for_unknown_bot()
+    {
+        var result = _provider.GetBotProfilePictureLastModified("bot:test");
+
+        result.Should().Be(DateTimeOffset.MinValue);
+    }
+
+    public static IEnumerable<TheoryDataRow<UserId>> BotUserIdsData =>
+        [new(AnarchyBot.BotId), new(LobotomizedAnarchyBot.BotId)];
+
+    public static IEnumerable<TheoryDataRow<UserId, string>> BotData =>
+        [
+            new(AnarchyBot.BotId, Path.Combine(_baseDirectory, "anarchybot.webp")),
+            new(
+                LobotomizedAnarchyBot.BotId,
+                Path.Combine(_baseDirectory, "lobotomized-anarchybot.webp")
+            ),
+        ];
 }
