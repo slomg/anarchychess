@@ -4,36 +4,38 @@ namespace AnarchyChess.Api.Profile.Services;
 
 public interface IBotProfilePictureProvider
 {
-    byte[]? GetBotProfilePicture(UserId userId);
+    byte[]? GetBotProfilePictureBytes(UserId userId);
+    DateTimeOffset GetBotProfilePictureLastModified(UserId userId);
 }
+
+public record BotProfilePicture(byte[] ImageBytes, DateTimeOffset LastModified);
 
 public class BotProfilePictureProvider : IBotProfilePictureProvider
 {
     private static readonly string _baseDirectory = Path.Combine(
         AppContext.BaseDirectory,
         "Data",
-        "bot"
+        "Bots"
     );
 
-    private readonly Dictionary<UserId, byte[]> _botIdToPicture = new()
+    private readonly Dictionary<UserId, BotProfilePicture> _botIdToPicture = new()
     {
         [UserId.AnarchyBot()] = LoadProfilePicture("anarchybot.webp"),
         [UserId.LobotomizedAnarchyBot()] = LoadProfilePicture("lobotomized-anarchybot.webp"),
     };
 
-    private static byte[] LoadProfilePicture(string name)
+    private static BotProfilePicture LoadProfilePicture(string name)
     {
         string path = Path.Combine(_baseDirectory, name);
-        return File.ReadAllBytes(path);
+        byte[] bytes = File.ReadAllBytes(path);
+        DateTimeOffset lastModified = File.GetLastWriteTimeUtc(path);
+
+        return new(ImageBytes: bytes, LastModified: lastModified);
     }
 
-    public byte[]? GetBotProfilePicture(UserId userId)
-    {
-        if (!userId.IsBot)
-        {
-            return null;
-        }
+    public byte[]? GetBotProfilePictureBytes(UserId userId) =>
+        _botIdToPicture.GetValueOrDefault(userId)?.ImageBytes;
 
-        return _botIdToPicture.GetValueOrDefault(userId);
-    }
+    public DateTimeOffset GetBotProfilePictureLastModified(UserId userId) =>
+        _botIdToPicture.GetValueOrDefault(userId)?.LastModified ?? DateTimeOffset.MinValue;
 }

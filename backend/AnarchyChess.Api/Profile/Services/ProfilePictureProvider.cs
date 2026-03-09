@@ -24,6 +24,7 @@ public class ProfilePictureProvider : IProfilePictureProvider
     private readonly IBlobStorage _storage;
     private readonly IBotProfilePictureProvider _botProfilePictureProvider;
     private readonly byte[] _defaultProfilePicture;
+    private readonly DateTimeOffset _defaultProfilePictureLastModified;
 
     public const int MaxDimensionPx = 512;
 
@@ -43,6 +44,7 @@ public class ProfilePictureProvider : IProfilePictureProvider
             "defaultProfilePicture.webp"
         );
         _defaultProfilePicture = File.ReadAllBytes(defaultPfpPath);
+        _defaultProfilePictureLastModified = File.GetLastWriteTimeUtc(defaultPfpPath);
     }
 
     private static string GetPfpPath(UserId userId) => $"profile-pictures/{userId}";
@@ -119,12 +121,14 @@ public class ProfilePictureProvider : IProfilePictureProvider
     {
         if (userId.IsBot)
         {
-            return _botProfilePictureProvider.GetBotProfilePicture(userId)
+            return _botProfilePictureProvider.GetBotProfilePictureBytes(userId)
                 ?? _defaultProfilePicture;
         }
 
         if (!await _storage.ExistsAsync(GetPfpPath(userId), token))
+        {
             return _defaultProfilePicture;
+        }
 
         var bytes = await _storage.ReadBytesAsync(GetPfpPath(userId), token);
         return bytes is null || bytes.Length == 0 ? _defaultProfilePicture : bytes;
@@ -135,8 +139,15 @@ public class ProfilePictureProvider : IProfilePictureProvider
         CancellationToken token = default
     )
     {
+        if (userId.IsBot)
+        {
+            return _botProfilePictureProvider.GetBotProfilePictureLastModified(userId);
+        }
+
         if (!await _storage.ExistsAsync(GetPfpPath(userId), token))
-            return DateTimeOffset.MinValue;
+        {
+            return _defaultProfilePictureLastModified;
+        }
 
         var blob = await _storage.GetBlobAsync(GetPfpPath(userId), token);
         return blob.LastModificationTime ?? DateTimeOffset.MinValue;
