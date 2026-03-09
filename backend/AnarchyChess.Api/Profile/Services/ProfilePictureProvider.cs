@@ -75,17 +75,19 @@ public class ProfilePictureProvider : IProfilePictureProvider
             );
             return ProfileErrors.InvalidProfilePicture;
         }
+        using SKBitmap bpm = original;
 
-        int width = original.Width;
-        int height = original.Height;
+        int width = bpm.Width;
+        int height = bpm.Height;
 
         // resize to fit in MaxDimensionPx
         float scale = Math.Min(1, (float)MaxDimensionPx / Math.Max(width, height));
         int scaledWidth = (int)(width * scale);
         int scaledHeight = (int)(height * scale);
-        using var resized =
-            original.Resize(new SKImageInfo(scaledWidth, scaledHeight), SKSamplingOptions.Default)
-            ?? original;
+        using var resized = bpm.Resize(
+            new SKImageInfo(scaledWidth, scaledHeight),
+            SKSamplingOptions.Default
+        );
 
         // make the image a square that is <= MaxDimensionPx
         int squareSize = Math.Min(MaxDimensionPx, Math.Max(scaledWidth, scaledHeight));
