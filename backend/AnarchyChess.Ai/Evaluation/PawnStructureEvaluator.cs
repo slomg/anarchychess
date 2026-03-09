@@ -8,7 +8,7 @@ public sealed class PawnStructureEvaluator : IEvaluatorFunction
 {
     public const int DoubledPenalty = 12;
     public const int IsolatedPenalty = 18;
-    public const int BackwardsPenalty = 10;
+    public const int BackwardsPenalty = 20;
     public const int PassedBonus = 35;
 
     public (int WhiteScore, int BlackScore) Evaluate(BitBoard board, float endgameFactor)
