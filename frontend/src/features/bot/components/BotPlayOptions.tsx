@@ -3,13 +3,13 @@
 import { useState } from "react";
 import clsx from "clsx";
 
+import ProfilePicture from "@/features/profile/components/ProfilePicture";
 import Selector from "@/components/ui/Selector";
 import useBotMatch from "../hooks/useBotMatch";
 import Button from "@/components/ui/Button";
 import { BotType, GameColor } from "@/lib/apiClient";
-import Card from "@/components/ui/Card";
-import ProfilePicture from "@/features/profile/components/ProfilePicture";
 import useLocalPref from "@/hooks/useLocalPref";
+import Card from "@/components/ui/Card";
 import constants from "@/lib/constants";
 
 const BotPlayOptions = () => {
@@ -34,17 +34,20 @@ const BotPlayOptions = () => {
 
     return (
         <Card
-            className="relative h-full w-full min-w-xs flex-col gap-3
+            className="relative h-full w-full min-w-xs flex-col gap-5
                 overflow-auto lg:max-w-sm"
         >
-            <div className="flex flex-wrap gap-4 text-center">
+            <div className="flex flex-wrap gap-4">
                 <Bot
                     label="Anarchy Bot"
                     userId="bot:anarchybot"
                     selected={selectedBotType === BotType.ANARCHY_BOT}
                     select={() => setSelectedBotType(BotType.ANARCHY_BOT)}
                 />
+            </div>
 
+            <div className="flex flex-col gap-2">
+                <h2 className="text-lg">Coming Soon</h2>
                 <Bot
                     label="Lobotomized Anarchy Bot"
                     userId="bot:lobotomized-anarchybot"
@@ -113,7 +116,7 @@ const Bot = ({
     return (
         <div
             className={clsx(
-                "flex h-min w-min flex-col items-center gap-1 rounded-xl p-2",
+                "flex h-min w-min flex-col items-center gap-1 rounded-xl",
                 disabled &&
                     "cursor-not-allowed brightness-75 grayscale select-none",
                 !disabled && "cursor-pointer",
@@ -122,12 +125,12 @@ const Bot = ({
         >
             <ProfilePicture
                 className={clsx(
-                    selected && "outline-accent rounded-md outline-4",
+                    selected && "border-secondary rounded-xl border-3 p-1",
                 )}
                 userId={userId}
-                size={100}
+                size={104}
             />
-            <p className="text-balance">{label}</p>
+            <p className="text-center text-balance">{label}</p>
         </div>
     );
 };
