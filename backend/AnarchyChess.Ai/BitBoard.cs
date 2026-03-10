@@ -128,11 +128,11 @@ public partial class BitBoard
 
             if (piece.Color is GameColor.White)
             {
-                whiteScore += MaterialEvaluator.GetPieceValue(piece.Type);
+                whiteScore += MaterialValue.GetPieceValue(piece.Type);
             }
             else if (piece.Color is GameColor.Black)
             {
-                blackScore += MaterialEvaluator.GetPieceValue(piece.Type);
+                blackScore += MaterialValue.GetPieceValue(piece.Type);
             }
         }
 
@@ -335,11 +335,11 @@ public partial class BitBoard
         {
             case BitPieceColor.White:
                 WhitePieces |= mask;
-                WhiteMaterialCount += MaterialEvaluator.GetPieceValue(pieceType);
+                WhiteMaterialCount += MaterialValue.GetPieceValue(pieceType);
                 break;
             case BitPieceColor.Black:
                 BlackPieces |= mask;
-                BlackMaterialCount += MaterialEvaluator.GetPieceValue(pieceType);
+                BlackMaterialCount += MaterialValue.GetPieceValue(pieceType);
                 break;
             case BitPieceColor.Neutral:
                 NeutralPieces |= mask;
@@ -380,11 +380,11 @@ public partial class BitBoard
         {
             case BitPieceColor.White:
                 WhitePieces &= inverseMask;
-                WhiteMaterialCount -= MaterialEvaluator.GetPieceValue(pieceType);
+                WhiteMaterialCount -= MaterialValue.GetPieceValue(pieceType);
                 break;
             case BitPieceColor.Black:
                 BlackPieces &= inverseMask;
-                BlackMaterialCount -= MaterialEvaluator.GetPieceValue(pieceType);
+                BlackMaterialCount -= MaterialValue.GetPieceValue(pieceType);
                 break;
             case BitPieceColor.Neutral:
                 NeutralPieces &= inverseMask;

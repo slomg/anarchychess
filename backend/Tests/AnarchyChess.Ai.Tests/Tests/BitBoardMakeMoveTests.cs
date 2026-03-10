@@ -1,5 +1,4 @@
-﻿using AnarchyChess.Ai.Evaluation;
-using AnarchyChess.Ai.Models;
+﻿using AnarchyChess.Ai.Models;
 using AnarchyChess.Api.TestInfrastructure.Factories;
 using AnarchyChess.EngineShared;
 using AwesomeAssertions;
@@ -119,7 +118,7 @@ public class BitBoardMakeMoveTests
         AssertNoPieceAt(board, new("d10"));
         AssertNoPieceAt(board, new("e8"));
 
-        board.BlackMaterialCount.Should().Be(MaterialEvaluator.GetPieceValue(PieceType.Rook)); // only black rook left
+        board.BlackMaterialCount.Should().Be(MaterialValue.GetPieceValue(PieceType.Rook)); // only black rook left
 
         board.HasMoved.Should().Be(UInt128.One << move.To);
         board.WhitePieces.Should().Be(UInt128.One << move.To);
@@ -153,8 +152,8 @@ public class BitBoardMakeMoveTests
             .WhiteMaterialCount.Should()
             .Be(
                 initialWhiteMaterial
-                    - MaterialEvaluator.GetPieceValue(PieceType.Pawn)
-                    + MaterialEvaluator.GetPieceValue(PieceType.Queen)
+                    - MaterialValue.GetPieceValue(PieceType.Pawn)
+                    + MaterialValue.GetPieceValue(PieceType.Queen)
             );
 
         board.BitboardFor(PieceType.Pawn, BitPieceColor.White).Should().Be(0);
@@ -186,8 +185,8 @@ public class BitBoardMakeMoveTests
             .BlackMaterialCount.Should()
             .Be(
                 initialBlackMaterial
-                    - MaterialEvaluator.GetPieceValue(PieceType.Pawn)
-                    + MaterialEvaluator.GetPieceValue(PieceType.Queen)
+                    - MaterialValue.GetPieceValue(PieceType.Pawn)
+                    + MaterialValue.GetPieceValue(PieceType.Queen)
             );
     }
 

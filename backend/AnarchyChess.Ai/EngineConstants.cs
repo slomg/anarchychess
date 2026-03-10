@@ -12,7 +12,7 @@ public static class EngineConstants
     public const int MaxMoves = 256;
     public const int MaxDepth = 32;
 
-    public static readonly int DeltaPruningMargin = MaterialEvaluator.GetPieceValue(PieceType.Pawn);
+    public static readonly int DeltaPruningMargin = MaterialValue.GetPieceValue(PieceType.Pawn);
 
     public static readonly int[,] LmrTable = CreateLMR();
 
