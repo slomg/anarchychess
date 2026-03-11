@@ -1,4 +1,5 @@
 ﻿using AnarchyChess.Api.Bots.Bots;
+using AnarchyChess.Api.Bots.Errors;
 using AnarchyChess.Api.Bots.Grains;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.GameLogic;
@@ -7,22 +8,36 @@ namespace AnarchyChess.Api.Bots.Services;
 
 public interface IBotMoveRunner
 {
-    void RunMove(IReadOnlyChessBoard board, GameToken gameToken, IBot bot);
+    void RunMove(IReadOnlyChessBoard board, int lastEval, GameToken gameToken, IBot bot);
 }
 
-public class BotMoveRunner(IGrainFactory grains) : IBotMoveRunner
+public class BotMoveRunner(ILogger<BotMoveRunner> logger, IGrainFactory grains) : IBotMoveRunner
 {
+    private readonly ILogger<BotMoveRunner> _logger = logger;
     private readonly IGrainFactory _grains = grains;
 
-    public void RunMove(IReadOnlyChessBoard board, GameToken gameToken, IBot bot)
+    public void RunMove(IReadOnlyChessBoard board, int lastEval, GameToken gameToken, IBot bot)
     {
-        Task.Run(() => ExecuteMoveAsync(board, gameToken, bot));
+        _ = ExecuteMoveAsync(board, lastEval, gameToken, bot);
     }
 
-    private async Task ExecuteMoveAsync(IReadOnlyChessBoard board, GameToken gameToken, IBot bot)
+    private async Task ExecuteMoveAsync(
+        IReadOnlyChessBoard board,
+        int lastEval,
+        GameToken gameToken,
+        IBot bot
+    )
     {
-        var botMoveResult = await bot.FindMoveAsync(board);
         var grain = _grains.GetGrain<IBotGrain>(gameToken);
-        await grain.PlayBotMoveAsync(botMoveResult);
+        try
+        {
+            var botMoveResult = await bot.FindMoveAsync(board, lastEval);
+            await grain.PlayBotMoveAsync(botMoveResult);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error playing bot move in {GameToken}", gameToken);
+            await grain.PlayBotMoveAsync(BotErrors.BotFailure);
+        }
     }
 }

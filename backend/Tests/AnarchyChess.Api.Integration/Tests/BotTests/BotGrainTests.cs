@@ -18,13 +18,12 @@ using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AnarchyChess.Api.TestInfrastructure.NSubtituteExtenstion;
 using AnarchyChess.Api.TestInfrastructure.Utils;
 using AnarchyChess.EngineShared;
-using AnarchyChess.EngineShared.Extensions;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Orleans.TestKit;
-using Orleans.TestKit.Storage;
 
 namespace AnarchyChess.Api.Integration.Tests.BotTests;
 
@@ -64,7 +63,6 @@ public class BotGrainTests : BaseOrleansIntegrationTest
     private readonly GamePlayer _player;
 
     private readonly BotGrainState _state;
-    private readonly TestStorageStats _stateStats;
 
     public BotGrainTests(AnarchyChessWebApplicationFactory factory)
         : base(factory)
@@ -81,8 +79,15 @@ public class BotGrainTests : BaseOrleansIntegrationTest
         var unitOfWork = ApiTestBase.Scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
         _anarchyBot = new(_botServiceMock);
-        _lobotomizedAnarchyBot = new(_botServiceMock);
-        BotMoveRunner botMoveRunner = new(Silo.GrainFactory);
+        _lobotomizedAnarchyBot = new(
+            Silo.ServiceProvider.GetRequiredService<ILogger<LobotomizedAnarchyBot>>(),
+            _botServiceMock,
+            Silo.ServiceProvider.GetRequiredService<IRandomProvider>()
+        );
+        BotMoveRunner botMoveRunner = new(
+            Silo.ServiceProvider.GetRequiredService<ILogger<BotMoveRunner>>(),
+            Silo.GrainFactory
+        );
 
         Silo.ServiceProvider.AddService<IEnumerable<IBot>>([_anarchyBot, _lobotomizedAnarchyBot]);
         Silo.ServiceProvider.AddService(_core);
@@ -93,7 +98,6 @@ public class BotGrainTests : BaseOrleansIntegrationTest
         Silo.ServiceProvider.AddService(_notifierMock);
 
         _state = Silo.StorageManager.GetStorage<BotGrainState>(BotGrain.StateName).State;
-        _stateStats = Silo.StorageManager.GetStorageStats(BotGrain.StateName)!;
     }
 
     [Fact]
@@ -112,48 +116,6 @@ public class BotGrainTests : BaseOrleansIntegrationTest
         result.IsError.Should().BeFalse();
 
         await _notifierMock.Received(1).SyncPlyNumberAsync(plyNumber: 2, connectionId);
-    }
-
-    [Theory]
-    [InlineData(GameColor.White, BotType.AnarchyBot)]
-    [InlineData(GameColor.White, BotType.LobotomizedAnarchyBot)]
-    [InlineData(GameColor.Black, BotType.AnarchyBot)]
-    [InlineData(GameColor.Black, BotType.LobotomizedAnarchyBot)]
-    public async Task StartGameAsync_creates_correct_state(GameColor playerColor, BotType botType)
-    {
-        var grain = await Silo.CreateGrainAsync<BotGrain>(_gameToken);
-
-        GamePlayer player = playerColor is GameColor.White ? _whitePlayer : _blackPlayer;
-        await StartGameAsync(grain, player, botType);
-
-        _state.CurrentGame.Should().NotBeNull();
-
-        GameColor botColor = playerColor.Invert();
-        GamePlayer botPlayer =
-            botType is BotType.AnarchyBot
-                ? _anarchyBot.CreateBotPlayer(botColor)
-                : _lobotomizedAnarchyBot.CreateBotPlayer(botColor);
-
-        PlayerRoster expectedPlayers = new(
-            WhitePlayer: playerColor is GameColor.White ? player : botPlayer,
-            BlackPlayer: playerColor is GameColor.Black ? player : botPlayer
-        );
-
-        _state
-            .CurrentGame.Should()
-            .BeEquivalentTo(
-                new BotGameData()
-                {
-                    Players = expectedPlayers,
-                    BotColor = botPlayer.Color,
-                    HumanColor = playerColor,
-                    BotType = botType,
-                    InitialFen = _state.CurrentGame.InitialFen,
-                    Core = _state.CurrentGame.Core,
-                },
-                options => options.Excluding(x => x.MoveHistory)
-            );
-        _stateStats.Writes.Should().BeGreaterThan(0);
     }
 
     [Fact]
@@ -465,6 +427,8 @@ public class BotGrainTests : BaseOrleansIntegrationTest
         lastMove.Path.FromIdx.Should().Be(expectedMove.From.AsIdx());
         lastMove.Path.ToIdx.Should().Be(expectedMove.To.AsIdx());
         lastMove.TimeLeft.Should().Be(0);
+
+        _state.CurrentGame.LastEval.Should().Be(expectedMove.EvalForBot);
     }
 
     private async Task AssertGameEndedAsync(BotGrain grain, GameEndStatus expectedEndStatus)

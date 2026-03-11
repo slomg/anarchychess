@@ -12,6 +12,7 @@ public interface IBot
     BotType Type { get; }
     Task<ErrorOr<AiEngineMove>> FindMoveAsync(
         IReadOnlyChessBoard board,
+        int lastEval,
         CancellationToken token = default
     );
     GamePlayer CreateBotPlayer(GameColor color);

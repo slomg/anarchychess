@@ -21,7 +21,7 @@ namespace AnarchyChess.Api.Unit.Tests.LiveGameTests;
 
 public class GameGrainTests : BaseGrainTest
 {
-    private const string TestGameToken = "testtoken";
+    private readonly GameToken _gameToken = "testtoken";
 
     private readonly PoolKey _pool = new(PoolType.Rated, new(600, 5));
     private readonly GamePlayer _whitePlayer = new GamePlayerFaker(GameColor.White).Generate();
@@ -89,7 +89,7 @@ public class GameGrainTests : BaseGrainTest
             .Returns(timeLeft);
         _clockMock.Create(_pool.TimeControl).Returns(_expectedClockState);
 
-        var grain = await Silo.CreateGrainAsync<GameGrain>(TestGameToken);
+        var grain = await Silo.CreateGrainAsync<GameGrain>(_gameToken);
         Silo.TimerRegistry.NumberOfActiveTimers.Should().Be(0);
 
         await StartGameAsync(grain, expectedGameData.GameSource);
@@ -116,7 +116,7 @@ public class GameGrainTests : BaseGrainTest
         whiteStartedStreamProbe.VerifySend(x =>
             x.Game
                 == new OngoingGame(
-                    TestGameToken,
+                    _gameToken,
                     _pool,
                     Opponent: new(UserId: _blackPlayer.UserId, UserName: _blackPlayer.UserName)
                 )
@@ -125,7 +125,7 @@ public class GameGrainTests : BaseGrainTest
         blackStartedStreamProbe.VerifySend(x =>
             x.Game
                 == new OngoingGame(
-                    TestGameToken,
+                    _gameToken,
                     _pool,
                     Opponent: new(UserId: _whitePlayer.UserId, UserName: _whitePlayer.UserName)
                 )
@@ -138,7 +138,7 @@ public class GameGrainTests : BaseGrainTest
     [Fact]
     public async Task ReceiveReminder_does_nothing_when_game_is_not_over()
     {
-        var grain = await Silo.CreateGrainAsync<GameGrain>(TestGameToken);
+        var grain = await Silo.CreateGrainAsync<GameGrain>(_gameToken);
         await StartGameAsync(grain);
         Silo.TimerRegistry.Mock.Reset();
 
@@ -155,7 +155,7 @@ public class GameGrainTests : BaseGrainTest
     [Fact]
     public async Task ReceiveReminder_unregisters_itself_when_game_is_over()
     {
-        var grain = await Silo.CreateGrainAsync<GameGrain>(TestGameToken);
+        var grain = await Silo.CreateGrainAsync<GameGrain>(_gameToken);
         await StartGameAsync(grain);
         Silo.TimerRegistry.Mock.Reset();
 
@@ -177,7 +177,7 @@ public class GameGrainTests : BaseGrainTest
     [Fact]
     public async Task OnActivateAsync_restarts_timer_when_game_is_not_over()
     {
-        var grain = await Silo.CreateGrainAsync<GameGrain>(TestGameToken);
+        var grain = await Silo.CreateGrainAsync<GameGrain>(_gameToken);
         await StartGameAsync(grain);
         Silo.TimerRegistry.Mock.Reset();
 
@@ -202,7 +202,7 @@ public class GameGrainTests : BaseGrainTest
     [Fact]
     public async Task OnActivateAsync_doesnt_restart_timer_when_game_is_over()
     {
-        var grain = await Silo.CreateGrainAsync<GameGrain>(TestGameToken);
+        var grain = await Silo.CreateGrainAsync<GameGrain>(_gameToken);
         await StartGameAsync(grain);
         Silo.TimerRegistry.Mock.Reset();
 
@@ -228,7 +228,7 @@ public class GameGrainTests : BaseGrainTest
     [Fact]
     public async Task OnActivateAsync_doesnt_restart_timer_when_game_doesnt_exist()
     {
-        var grain = await Silo.CreateGrainAsync<GameGrain>(TestGameToken);
+        var grain = await Silo.CreateGrainAsync<GameGrain>(_gameToken);
 
         await Silo.DeactivateAsync(grain, cancellationToken: CT);
         await grain.OnActivateAsync(CT);
@@ -325,7 +325,7 @@ public class GameGrainTests : BaseGrainTest
         Func<GameGrain, Task<ErrorOr<T>>> callback
     )
     {
-        var grain = await Silo.CreateGrainAsync<GameGrain>(TestGameToken);
+        var grain = await Silo.CreateGrainAsync<GameGrain>(_gameToken);
         await StartGameAsync(grain);
 
         var result = await callback(grain);
@@ -338,7 +338,7 @@ public class GameGrainTests : BaseGrainTest
         Func<GameGrain, Task<ErrorOr<T>>> callback
     )
     {
-        var grain = await Silo.CreateGrainAsync<GameGrain>(TestGameToken);
+        var grain = await Silo.CreateGrainAsync<GameGrain>(_gameToken);
 
         var result = await callback(grain);
 
@@ -348,7 +348,7 @@ public class GameGrainTests : BaseGrainTest
 
     private async Task AssertRejectsForGameOverAsync<T>(Func<GameGrain, Task<ErrorOr<T>>> callback)
     {
-        var grain = await Silo.CreateGrainAsync<GameGrain>(TestGameToken);
+        var grain = await Silo.CreateGrainAsync<GameGrain>(_gameToken);
         await StartGameAsync(grain);
         _state.CurrentGame!.Result = new GameResultDataFaker().Generate();
 

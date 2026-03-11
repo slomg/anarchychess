@@ -20,6 +20,7 @@ public class AnarchyBot(IBotService botService) : IBot
 
     public Task<ErrorOr<AiEngineMove>> FindMoveAsync(
         IReadOnlyChessBoard board,
+        int lastEval,
         CancellationToken token = default
     ) => _botService.FindBestMoveAsync(board, depth: Depth, token);
 

@@ -33,7 +33,11 @@ public class AnarchyBotTests
             .FindBestMoveAsync(board, depth: 8, TestContext.Current.CancellationToken)
             .Returns(move);
 
-        var result = await _bot.FindMoveAsync(board, TestContext.Current.CancellationToken);
+        var result = await _bot.FindMoveAsync(
+            board,
+            lastEval: 0,
+            TestContext.Current.CancellationToken
+        );
 
         result.IsError.Should().BeFalse();
         result.Value.Should().BeEquivalentTo(move);

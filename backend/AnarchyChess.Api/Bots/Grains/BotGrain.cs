@@ -66,6 +66,9 @@ public class BotGameData
     [Id(7)]
     public required BotType BotType { get; init; }
 
+    [Id(8)]
+    public int LastEval { get; set; }
+
     [Id(3)]
     public required string InitialFen { get; init; }
 
@@ -169,7 +172,7 @@ public class BotGrain : Grain, IBotGrain
         if (player.Color is GameColor.Black)
         {
             IReadOnlyChessBoard board = _core.GetReadOnlyBoard(_state.State.CurrentGame.Core);
-            _botMoveRunner.RunMove(board, _gameToken, bot);
+            _botMoveRunner.RunMove(board, lastEval: 0, _gameToken, bot);
         }
 
         await _state.WriteStateAsync(token);
@@ -241,7 +244,7 @@ public class BotGrain : Grain, IBotGrain
         else if (nextSideToMove == game.BotColor)
         {
             IReadOnlyChessBoard board = _core.GetReadOnlyBoard(game.Core);
-            _botMoveRunner.RunMove(board, _gameToken, _bots[game.BotType]);
+            _botMoveRunner.RunMove(board, lastEval: game.LastEval, _gameToken, _bots[game.BotType]);
         }
 
         await _state.WriteStateAsync(token);
@@ -335,6 +338,8 @@ public class BotGrain : Grain, IBotGrain
             evalForBot: botMove.EvalForBot,
             didMoveEndGame: moveResult.EndStatus is not null
         );
+
+        game.LastEval = botMove.EvalForBot;
 
         await _state.WriteStateAsync(token);
     }
