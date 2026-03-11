@@ -24,7 +24,6 @@ public readonly record struct CandidateBotMove(
 );
 
 public class LobotomizedAnarchyBot(
-    ILogger<LobotomizedAnarchyBot> logger,
     IBotService botService,
     IRandomProvider randomProvider,
     ILegalMoveCalculator legalMoveCalculator
@@ -52,7 +51,6 @@ public class LobotomizedAnarchyBot(
 
     public BotType Type => BotType.LobotomizedAnarchyBot;
 
-    private readonly ILogger<LobotomizedAnarchyBot> _logger = logger;
     private readonly IBotService _botService = botService;
     private readonly IRandomProvider _randomProvider = randomProvider;
     private readonly ILegalMoveCalculator _legalMoveCalculator = legalMoveCalculator;
@@ -95,7 +93,6 @@ public class LobotomizedAnarchyBot(
                 )
                 .OrderByDescending(x => x.Move.EvalForBot),
         ];
-        _logger.LogInformation("MOVE COUNT {Count}", moves.Count);
 
         (List<CandidateBotMove> missableCheckmates, List<CandidateBotMove> nonCheckmates) =
             TakeWhilePrefix(
@@ -120,10 +117,8 @@ public class LobotomizedAnarchyBot(
                     return false;
                 }
             );
-        _logger.LogInformation("MISSABLE CHECKMATE {Checkmate}", missableCheckmates);
         if (missableCheckmates.Count > 0 && _randomProvider.NextDouble() < CheckmateChance)
         {
-            _logger.LogInformation("PLAYING CHECKMATE");
             return Softmax(missableCheckmates, board);
         }
 
@@ -142,10 +137,8 @@ public class LobotomizedAnarchyBot(
             return Softmax(moves, board);
         }
 
-        _logger.LogInformation("TACTICS: {Tactics}", tactics);
         if (tactics.Count > 0 && _randomProvider.NextDouble() < CalcTacticChance(tactics.Count))
         {
-            _logger.LogInformation("PLAYING TACTIC");
             return Softmax(tactics, board);
         }
 
@@ -155,7 +148,6 @@ public class LobotomizedAnarchyBot(
         );
         if (nonBlunders.Count == 0 && tactics.Count > 0)
         {
-            _logger.LogInformation("PLAYING TACTIC BECAUSE NO NON BLUNDERS");
             return Softmax(tactics, board);
         }
 
@@ -174,7 +166,6 @@ public class LobotomizedAnarchyBot(
 
         if (nonBlunders.Count > 0 && nonBlunderRecapturesCount == nonBlunders.Count)
         {
-            _logger.LogInformation("PLAYING NON BLUNDER");
             return Softmax(nonBlunders, board);
         }
 
@@ -185,11 +176,9 @@ public class LobotomizedAnarchyBot(
             && _randomProvider.NextDouble() < BlunderChance
         )
         {
-            _logger.LogInformation("PLAYING BLUNDER");
             return Softmax(nonStupidBlunders, board);
         }
 
-        _logger.LogInformation("PLAYING NON TACTICS");
         return Softmax(nonTactics, board);
     }
 
@@ -242,18 +231,6 @@ public class LobotomizedAnarchyBot(
         {
             playabilityEval -= MultiStepMovePenalty;
         }
-
-        _logger.LogInformation(
-            "move: {Move}, is hang: {IsHang}, is capturing hanging: {IsCapturingHanging}, depth 2 eval: {Depth2Eval}, last eval: {LastEval}, causes forced move: {CausesForcedMove}, is recapture: {IsRecapture}, playability eval: {PlayabilityEval}",
-            move,
-            isHang,
-            isCapturingHanging,
-            depth2Eval,
-            lastEval,
-            causesForcedMove,
-            isRecapture,
-            playabilityEval
-        );
 
         return new CandidateBotMove(
             move,
