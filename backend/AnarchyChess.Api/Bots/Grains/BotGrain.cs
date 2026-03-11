@@ -156,7 +156,7 @@ public class BotGrain : Grain, IBotGrain
         GameCoreState core = new();
         GamePlayer botPlayer = bot.CreateBotPlayer(color: player.Color.Invert());
 
-        _state.State.CurrentGame = new BotGameData()
+        BotGameData game = new()
         {
             Players = new(
                 WhitePlayer: player.Color is GameColor.White ? player : botPlayer,
@@ -168,11 +168,13 @@ public class BotGrain : Grain, IBotGrain
             InitialFen = _core.StartGame(core).FullFen,
             Core = core,
         };
+        _state.State.CurrentGame = game;
 
         if (player.Color is GameColor.Black)
         {
-            IReadOnlyChessBoard board = _core.GetReadOnlyBoard(_state.State.CurrentGame.Core);
-            _botMoveRunner.RunMove(board, lastEval: 0, _gameToken, bot);
+            IReadOnlyChessBoard board = _core.GetReadOnlyBoard(game.Core);
+            LegalMoveSet legalMoves = _core.GetLegalMoves(game.Core);
+            _botMoveRunner.RunMove(board, lastEval: 0, legalMoves, _gameToken, bot);
         }
 
         await _state.WriteStateAsync(token);
@@ -244,7 +246,13 @@ public class BotGrain : Grain, IBotGrain
         else if (nextSideToMove == game.BotColor)
         {
             IReadOnlyChessBoard board = _core.GetReadOnlyBoard(game.Core);
-            _botMoveRunner.RunMove(board, lastEval: game.LastEval, _gameToken, _bots[game.BotType]);
+            _botMoveRunner.RunMove(
+                board,
+                lastEval: game.LastEval,
+                _core.GetLegalMoves(game.Core),
+                _gameToken,
+                _bots[game.BotType]
+            );
         }
 
         await _state.WriteStateAsync(token);
@@ -296,16 +304,7 @@ public class BotGrain : Grain, IBotGrain
         var botMove = botMoveResult.Value;
 
         LegalMoveSet legalMoves = _core.GetLegalMoves(game.Core);
-        Move? legalMove = legalMoves.AllMoves.FirstOrDefault(move =>
-        {
-            HashSet<AlgebraicPoint> moveCaptures = [.. move.Captures.Select(c => c.Position)];
-            HashSet<AlgebraicPoint> botCaptures = botMove.Captures?.ToHashSet() ?? [];
-
-            return move.From == botMove.From
-                && move.To == botMove.To
-                && move.PromotesTo == botMove.PromotesTo
-                && moveCaptures.SetEquals(botCaptures);
-        });
+        Move? legalMove = legalMoves.FindBotMove(botMove);
         if (legalMove is null)
         {
             _logger.LogError(

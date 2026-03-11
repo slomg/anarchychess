@@ -1,6 +1,7 @@
 ﻿using AnarchyChess.Ai.Service.DTO;
 using AnarchyChess.Api.Bots.Models;
 using AnarchyChess.Api.Bots.Services;
+using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Profile.Models;
@@ -21,6 +22,7 @@ public class AnarchyBot(IBotService botService) : IBot
     public Task<ErrorOr<AiEngineMove>> FindMoveAsync(
         IReadOnlyChessBoard board,
         int lastEval,
+        LegalMoveSet legalMoves,
         CancellationToken token = default
     ) => _botService.FindBestMoveAsync(board, depth: Depth, token);
 

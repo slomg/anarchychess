@@ -1,6 +1,7 @@
 ﻿using AnarchyChess.Ai.Service.DTO;
 using AnarchyChess.Api.Bots.Bots;
 using AnarchyChess.Api.Bots.Services;
+using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.TestInfrastructure.Factories;
@@ -29,6 +30,7 @@ public class AnarchyBotTests
             new Dictionary<AlgebraicPoint, Piece>() { [new("b5")] = PieceFactory.White() }
         );
         AiEngineMove move = new AiEngineMoveFaker().Generate();
+        LegalMoveSet legalMoves = new LegalMoveSetFaker().Generate();
         _botServiceMock
             .FindBestMoveAsync(board, depth: 8, TestContext.Current.CancellationToken)
             .Returns(move);
@@ -36,6 +38,7 @@ public class AnarchyBotTests
         var result = await _bot.FindMoveAsync(
             board,
             lastEval: 0,
+            legalMoves,
             TestContext.Current.CancellationToken
         );
 
