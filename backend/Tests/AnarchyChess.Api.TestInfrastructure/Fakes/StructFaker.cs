@@ -27,18 +27,25 @@ public class StructFaker<T>
         return this;
     }
 
-    static StructSetter<T, TProp> CreateSetter<TProp>(MemberInfo member)
+    private static StructSetter<T, TProp> CreateSetter<TProp>(MemberInfo member)
     {
         var obj = Expression.Parameter(typeof(T).MakeByRefType(), "obj");
         var value = Expression.Parameter(typeof(TProp), "value");
 
-        Expression body = member switch
+        Expression memberAccess = member switch
         {
-            PropertyInfo p => Expression.Assign(Expression.Property(obj, p), value),
-            FieldInfo f => Expression.Assign(Expression.Field(obj, f), value),
+            PropertyInfo p => Expression.Property(obj, p),
+            FieldInfo f => Expression.Field(obj, f),
             _ => throw new NotSupportedException(),
         };
 
+        Expression valueToAssign = value;
+        if (value.Type != memberAccess.Type)
+        {
+            valueToAssign = Expression.Convert(value, memberAccess.Type);
+        }
+
+        Expression body = Expression.Assign(memberAccess, valueToAssign);
         return Expression.Lambda<StructSetter<T, TProp>>(body, obj, value).Compile();
     }
 
@@ -47,9 +54,14 @@ public class StructFaker<T>
         Func<Faker, T, TProp> valueFactory
     )
     {
-        var member =
-            (property.Body as MemberExpression)?.Member
-            ?? throw new ArgumentException("Expression must be member access");
+        MemberExpression memberExpr = property.Body switch
+        {
+            MemberExpression m => m,
+            UnaryExpression u when u.NodeType == ExpressionType.Convert
+                && u.Operand is MemberExpression m => m,
+            _ => throw new ArgumentException("Expression must be a member access")
+        };
+        MemberInfo member = memberExpr.Member;
 
         if (!_setterCache.TryGetValue(member, out var del))
         {
