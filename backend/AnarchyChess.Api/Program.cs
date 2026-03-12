@@ -625,6 +625,7 @@ builder.Services.AddScoped<IChallengeRequestCreator, ChallengeRequestCreator>();
 builder.Services.AddSingleton<IBotService, BotService>();
 builder.Services.AddSingleton<IBotMoveRunner, BotMoveRunner>();
 builder.Services.AddSingleton<IBotNotifier, BotNotifier>();
+builder.Services.AddSingleton<IBitMoveGenerator, BitMoveGenerator>();
 
 builder.Services.AddSingleton<IBot, AnarchyBot>();
 builder.Services.AddSingleton<IBot, LobotomizedAnarchyBot>();
