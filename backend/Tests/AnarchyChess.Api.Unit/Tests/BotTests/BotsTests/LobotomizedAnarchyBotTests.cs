@@ -5,7 +5,6 @@ using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Shared.Services;
 using AnarchyChess.EngineShared;
 using AwesomeAssertions;
-using Microsoft.Extensions.Logging;
 using NSubstitute;
 
 namespace AnarchyChess.Api.Unit.Tests.BotTests.BotsTests;
@@ -19,7 +18,6 @@ public class LobotomizedAnarchyBotTests
     public LobotomizedAnarchyBotTests()
     {
         _bot = new(
-            Substitute.For<ILogger<LobotomizedAnarchyBot>>(),
             _botServiceMock,
             Substitute.For<IRandomProvider>(),
             Substitute.For<ILegalMoveCalculator>()

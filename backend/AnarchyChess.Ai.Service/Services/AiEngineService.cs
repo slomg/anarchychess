@@ -1,4 +1,3 @@
-using AnarchyChess.Ai.Helpers;
 using AnarchyChess.Ai.Models;
 using AnarchyChess.Ai.Service.DTO;
 using AnarchyChess.EngineShared;
@@ -11,7 +10,7 @@ public class AiEngineService(IAiEngine aiEngine) : IAiEngineService
 {
     private readonly IAiEngine _aiEngine = aiEngine;
 
-    public ValueTask<AiEngineMove> FindBestMoveAsync(
+    public ValueTask<MoveEvaluation> FindBestMoveAsync(
         AiEngineMoveRequest request,
         CancellationToken token = default
     )
@@ -32,7 +31,7 @@ public class AiEngineService(IAiEngine aiEngine) : IAiEngineService
             );
         }
 
-        return ValueTask.FromResult(CreateAiEngineMove(bestMove.Value, evalForBot));
+        return ValueTask.FromResult(new MoveEvaluation(bestMove.Value, evalForBot));
     }
 
     public ValueTask<EvaluateAllMovesReply> EvaluateAllMovesAsync(
@@ -56,36 +55,11 @@ public class AiEngineService(IAiEngine aiEngine) : IAiEngineService
             );
         }
 
-        AiEngineMove[] engineMoves =
-        [
-            .. moves.Select(evaluation =>
-                CreateAiEngineMove(evaluation.Move, evaluation.EvalForBot)
-            ),
-        ];
-        return ValueTask.FromResult(new EvaluateAllMovesReply(engineMoves));
+        return ValueTask.FromResult(new EvaluateAllMovesReply(moves));
     }
 
     public ValueTask<HealthReply> CheckHealthAsync(CancellationToken token = default) =>
         ValueTask.FromResult(new HealthReply(IsHealthy: true));
-
-    private static AiEngineMove CreateAiEngineMove(BitMove bitMove, int evalForBot)
-    {
-        List<AlgebraicPoint> captures = [];
-        UInt128 captureMask = bitMove.CapturesMask;
-        while (captureMask != 0)
-        {
-            byte captureSquare = (byte)BitboardHelpers.BitScanForward(ref captureMask);
-            captures.Add(AlgebraicPoint.FromIdx(captureSquare));
-        }
-
-        return new(
-            From: AlgebraicPoint.FromIdx(bitMove.From),
-            To: AlgebraicPoint.FromIdx(bitMove.To),
-            Captures: captures,
-            PromotesTo: bitMove.PromotesTo,
-            EvalForBot: evalForBot
-        );
-    }
 
     private static PrevMoveState? CreatePrevMove(PrevMoveStateDto? prevMoveState)
     {

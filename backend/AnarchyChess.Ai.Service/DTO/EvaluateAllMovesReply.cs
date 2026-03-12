@@ -1,3 +1,5 @@
-﻿namespace AnarchyChess.Ai.Service.DTO;
+﻿using AnarchyChess.Ai.Models;
 
-public record EvaluateAllMovesReply(AiEngineMove[] Moves);
+namespace AnarchyChess.Ai.Service.DTO;
+
+public record EvaluateAllMovesReply(MoveEvaluation[] Moves);

@@ -62,9 +62,6 @@ public class BotGrainTests : BaseGrainTest
         ChessBoard board = new(GameConstants.StartingPosition);
         _coreMock.GetReadOnlyBoard(Arg.Any<GameCoreState>()).Returns(board);
 
-        LegalMoveSet legalMoves = new LegalMoveSetFaker().Generate();
-        _coreMock.GetLegalMoves(Arg.Any<GameCoreState>()).Returns(legalMoves);
-
         GamePlayer player = playerColor is GameColor.White ? _whitePlayer : _blackPlayer;
         await grain.StartGameAsync(player, botType, CT);
 
@@ -92,7 +89,7 @@ public class BotGrainTests : BaseGrainTest
 
         if (playerColor is GameColor.Black)
         {
-            _botMoveRunnerMock.Received(1).RunMove(board, lastEval: 0, legalMoves, _gameToken, bot);
+            _botMoveRunnerMock.Received(1).RunMove(board, lastEval: 0, _gameToken, bot);
         }
     }
 }

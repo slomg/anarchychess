@@ -1,4 +1,5 @@
-﻿using AnarchyChess.Ai.Service.DTO;
+﻿using AnarchyChess.Ai.Models;
+using AnarchyChess.Ai.Service.DTO;
 using AnarchyChess.Ai.Service.Services;
 using AnarchyChess.Api.Bots.Errors;
 using AnarchyChess.Api.GameLogic;
@@ -12,12 +13,12 @@ namespace AnarchyChess.Api.Bots.Services;
 public interface IBotService
 {
     Task<bool> CheckHealthAsync(CancellationToken token = default);
-    Task<ErrorOr<AiEngineMove[]>> EvaluateAllMovesAsync(
+    Task<ErrorOr<MoveEvaluation[]>> EvaluateAllMovesAsync(
         IReadOnlyChessBoard board,
         int depth,
         CancellationToken token = default
     );
-    Task<ErrorOr<AiEngineMove>> FindBestMoveAsync(
+    Task<ErrorOr<MoveEvaluation>> FindBestMoveAsync(
         IReadOnlyChessBoard board,
         int depth,
         CancellationToken token = default
@@ -29,7 +30,7 @@ public class BotService(ILogger<BotService> logger, IAiEngineService aiEngineSer
     private readonly ILogger<BotService> _logger = logger;
     private readonly IAiEngineService _aiEngineService = aiEngineService;
 
-    public async Task<ErrorOr<AiEngineMove>> FindBestMoveAsync(
+    public async Task<ErrorOr<MoveEvaluation>> FindBestMoveAsync(
         IReadOnlyChessBoard board,
         int depth,
         CancellationToken token = default
@@ -43,7 +44,7 @@ public class BotService(ILogger<BotService> logger, IAiEngineService aiEngineSer
             Depth: depth
         );
 
-        AiEngineMove bestMove;
+        MoveEvaluation bestMove;
         try
         {
             bestMove = await _aiEngineService.FindBestMoveAsync(request, token);
@@ -67,7 +68,7 @@ public class BotService(ILogger<BotService> logger, IAiEngineService aiEngineSer
         return bestMove;
     }
 
-    public async Task<ErrorOr<AiEngineMove[]>> EvaluateAllMovesAsync(
+    public async Task<ErrorOr<MoveEvaluation[]>> EvaluateAllMovesAsync(
         IReadOnlyChessBoard board,
         int depth,
         CancellationToken token = default

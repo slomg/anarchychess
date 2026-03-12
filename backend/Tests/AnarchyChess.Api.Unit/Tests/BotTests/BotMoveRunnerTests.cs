@@ -35,21 +35,18 @@ public class BotMoveRunnerTests
         ChessBoard board = new(
             new Dictionary<AlgebraicPoint, Piece>() { [new("a1")] = PieceFactory.White() }
         );
-        LegalMoveSet legalMoves = new LegalMoveSetFaker().Generate();
         int lastEval = 6969;
 
-        var expectedMove = new AiEngineMoveFaker().Generate();
+        var expectedMove = new MoveEvaluationFaker().Generate();
         _botMock
-            .FindMoveAsync(board, lastEval: lastEval, legalMoves, CancellationToken.None)
+            .FindMoveAsync(board, lastEval: lastEval, CancellationToken.None)
             .Returns(expectedMove);
 
-        _runner.RunMove(board, lastEval: lastEval, legalMoves, _testGameToken, _botMock);
+        _runner.RunMove(board, lastEval: lastEval, _testGameToken, _botMock);
 
         await Wait.UntilAsync(() => _botMock.ReceivedCalls().Any());
 
-        await _botMock
-            .Received(1)
-            .FindMoveAsync(board, lastEval, legalMoves, CancellationToken.None);
+        await _botMock.Received(1).FindMoveAsync(board, lastEval, CancellationToken.None);
         await _botGrainMock
             .Received(1)
             .PlayBotMoveAsync(expectedMove, Arg.Any<CancellationToken>());

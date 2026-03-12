@@ -1,4 +1,5 @@
-﻿using AnarchyChess.Ai.Service.DTO;
+﻿using AnarchyChess.Ai.Models;
+using AnarchyChess.Ai.Service.DTO;
 using ProtoBuf.Grpc.Configuration;
 
 namespace AnarchyChess.Ai.Service.Services;
@@ -7,7 +8,7 @@ namespace AnarchyChess.Ai.Service.Services;
 public interface IAiEngineService
 {
     [Operation]
-    ValueTask<AiEngineMove> FindBestMoveAsync(
+    ValueTask<MoveEvaluation> FindBestMoveAsync(
         AiEngineMoveRequest request,
         CancellationToken token = default
     );

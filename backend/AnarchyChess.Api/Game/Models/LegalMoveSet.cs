@@ -1,7 +1,6 @@
-﻿using AnarchyChess.Ai.Service.DTO;
+﻿using AnarchyChess.Ai.Models;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
-using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Api.Game.Models;
 
@@ -17,15 +16,18 @@ public record LegalMoveSet(
     public LegalMoveSet()
         : this(MoveMap: new Dictionary<MoveKey, Move>(), MovePaths: []) { }
 
-    public Move? FindBotMove(AiEngineMove botMove) =>
+    public Move? FindBotMove(BitMove botMove) =>
         AllMoves.FirstOrDefault(move =>
         {
-            HashSet<AlgebraicPoint> moveCaptures = [.. move.Captures.Select(c => c.Position)];
-            HashSet<AlgebraicPoint> botCaptures = botMove.Captures?.ToHashSet() ?? [];
+            UInt128 moveCaptureMask = 0;
+            foreach (var capture in move.Captures)
+            {
+                moveCaptureMask |= UInt128.One << capture.Position.AsIdx();
+            }
 
-            return move.From == botMove.From
-                && move.To == botMove.To
+            return move.From.AsIdx() == botMove.From
+                && move.To.AsIdx() == botMove.To
                 && move.PromotesTo == botMove.PromotesTo
-                && moveCaptures.SetEquals(botCaptures);
+                && moveCaptureMask == botMove.CapturesMask;
         });
 }

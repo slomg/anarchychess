@@ -1,6 +1,5 @@
-﻿using AnarchyChess.Ai.Service.DTO;
+﻿using AnarchyChess.Ai.Models;
 using AnarchyChess.Api.Bots.Models;
-using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.EngineShared;
@@ -11,10 +10,9 @@ namespace AnarchyChess.Api.Bots.Bots;
 public interface IBot
 {
     BotType Type { get; }
-    Task<ErrorOr<AiEngineMove>> FindMoveAsync(
+    Task<ErrorOr<MoveEvaluation>> FindMoveAsync(
         IReadOnlyChessBoard board,
         int lastEval,
-        LegalMoveSet legalMoves,
         CancellationToken token = default
     );
     GamePlayer CreateBotPlayer(GameColor color);

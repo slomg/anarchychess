@@ -1,3 +1,6 @@
-﻿namespace AnarchyChess.Ai.Models;
+﻿using ProtoBuf;
 
-public readonly record struct MoveEvaluation(BitMove Move, int EvalForBot);
+namespace AnarchyChess.Ai.Models;
+
+[ProtoContract]
+public record MoveEvaluation(BitMove Move, int EvalForBot);

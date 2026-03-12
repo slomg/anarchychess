@@ -59,13 +59,7 @@ public class AiEngineServiceTests
             TestContext.Current.CancellationToken
         );
 
-        AiEngineMove expectedReply = new(
-            From: from,
-            To: to,
-            Captures: [capture1, capture2],
-            PromotesTo: promotesTo,
-            EvalForBot: 6969
-        );
+        MoveEvaluation expectedReply = new(move, EvalForBot: 6969);
         response.Should().BeEquivalentTo(expectedReply);
     }
 
@@ -125,13 +119,7 @@ public class AiEngineServiceTests
             TestContext.Current.CancellationToken
         );
 
-        AiEngineMove expectedReply = new(
-            From: from,
-            To: to,
-            Captures: [],
-            PromotesTo: null,
-            EvalForBot: -6969
-        );
+        MoveEvaluation expectedReply = new(move, EvalForBot: -6969);
         response.Should().BeEquivalentTo(expectedReply);
     }
 
@@ -202,12 +190,7 @@ public class AiEngineServiceTests
             TestContext.Current.CancellationToken
         );
 
-        List<AiEngineMove> expected =
-        [
-            new(From: from1, To: to1, Captures: [capture1], PromotesTo: null, EvalForBot: 100),
-            new(From: from2, To: to2, Captures: [], PromotesTo: PieceType.Queen, EvalForBot: -50),
-        ];
-
+        List<MoveEvaluation> expected = [new(move1, EvalForBot: 100), new(move2, EvalForBot: -50)];
         response.Moves.Should().BeEquivalentTo(expected);
     }
 

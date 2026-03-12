@@ -1,4 +1,4 @@
-﻿using AnarchyChess.Ai.Service.DTO;
+﻿using AnarchyChess.Ai.Models;
 using AnarchyChess.Api.ArchivedGames.Services;
 using AnarchyChess.Api.Bots.Bots;
 using AnarchyChess.Api.Bots.Grains;
@@ -30,19 +30,23 @@ namespace AnarchyChess.Api.Integration.Tests.BotTests;
 public class BotGrainTests : BaseOrleansIntegrationTest
 {
     private readonly GameToken _gameToken = "testtoken";
-    private readonly AiEngineMove _firstWhiteBotMove = new(
-        From: new("f2"),
-        To: new("f5"),
-        Captures: [],
-        PromotesTo: null,
+    private readonly MoveEvaluation _firstWhiteBotMove = new(
+        Move: new()
+        {
+            From = new AlgebraicPoint("f2").AsIdx(),
+            To = new AlgebraicPoint("f5").AsIdx(),
+            Piece = new() { Type = PieceType.Pawn, Color = BitPieceColor.White },
+        },
         EvalForBot: 6969
     );
 
-    private readonly AiEngineMove _firstBlackBotMove = new(
-        From: new("f9"),
-        To: new("f6"),
-        Captures: [],
-        PromotesTo: null,
+    private readonly MoveEvaluation _firstBlackBotMove = new(
+        Move: new()
+        {
+            From = new AlgebraicPoint("f9").AsIdx(),
+            To = new AlgebraicPoint("f6").AsIdx(),
+            Piece = new() { Type = PieceType.Pawn, Color = BitPieceColor.Black },
+        },
         EvalForBot: 420420
     );
 
@@ -80,7 +84,6 @@ public class BotGrainTests : BaseOrleansIntegrationTest
 
         _anarchyBot = new(_botServiceMock);
         _lobotomizedAnarchyBot = new(
-            Silo.ServiceProvider.GetRequiredService<ILogger<LobotomizedAnarchyBot>>(),
             _botServiceMock,
             Silo.ServiceProvider.GetRequiredService<IRandomProvider>(),
             Silo.ServiceProvider.GetRequiredService<ILegalMoveCalculator>()
@@ -134,16 +137,9 @@ public class BotGrainTests : BaseOrleansIntegrationTest
     {
         var grain = await Silo.CreateGrainAsync<BotGrain>(_gameToken);
 
-        AiEngineMove botMove = new(
-            From: new("f9"),
-            To: new("f6"),
-            Captures: [],
-            PromotesTo: null,
-            EvalForBot: 123
-        );
         _botServiceMock
             .FindBestMoveAsync(Arg.Any<IReadOnlyChessBoard>(), Arg.Any<int>(), ApiTestBase.CT)
-            .Returns(botMove);
+            .Returns(_firstBlackBotMove);
 
         await grain.StartGameAsync(_whitePlayer, botType: BotType.AnarchyBot, ApiTestBase.CT);
 
@@ -205,11 +201,13 @@ public class BotGrainTests : BaseOrleansIntegrationTest
         await StartGameAsync(grain, _blackPlayer);
         await WaitForBotMoveAsync();
 
-        AiEngineMove secondBotMove = new(
-            From: new("f1"),
-            To: new("f2"),
-            Captures: [],
-            PromotesTo: null,
+        MoveEvaluation secondBotMove = new(
+            Move: new()
+            {
+                From = new AlgebraicPoint("f1").AsIdx(),
+                To = new AlgebraicPoint("f2").AsIdx(),
+                Piece = new() { Type = PieceType.Pawn, Color = BitPieceColor.White },
+            },
             EvalForBot: 1
         );
         _botServiceMock
@@ -233,20 +231,25 @@ public class BotGrainTests : BaseOrleansIntegrationTest
         var grain = await Silo.CreateGrainAsync<BotGrain>(_gameToken);
         await StartGameAsync(grain, _whitePlayer);
 
-        AiEngineMove botMove1 = new(
-            From: new("g9"),
-            To: new("g7"),
-            Captures: [],
-            PromotesTo: null,
+        MoveEvaluation botMove1 = new(
+            Move: new()
+            {
+                From = new AlgebraicPoint("g9").AsIdx(),
+                To = new AlgebraicPoint("g7").AsIdx(),
+                Piece = new() { Type = PieceType.Pawn, Color = BitPieceColor.Black },
+            },
             EvalForBot: 1
         );
-        AiEngineMove botMove2 = new(
-            From: new("f9"),
-            To: new("f6"),
-            Captures: [],
-            PromotesTo: null,
-            EvalForBot: 2
+        MoveEvaluation botMove2 = new(
+            Move: new()
+            {
+                From = new AlgebraicPoint("f9").AsIdx(),
+                To = new AlgebraicPoint("f6").AsIdx(),
+                Piece = new() { Type = PieceType.Pawn, Color = BitPieceColor.Black },
+            },
+            EvalForBot: 1
         );
+
         _botServiceMock
             .FindBestMoveAsync(
                 _state.CurrentGame!.Core.Board,
@@ -272,27 +275,35 @@ public class BotGrainTests : BaseOrleansIntegrationTest
     {
         var grain = await Silo.CreateGrainAsync<BotGrain>(_gameToken);
 
-        AiEngineMove botMove1 = new(
-            From: new("f2"),
-            To: new("f5"),
-            Captures: [],
-            PromotesTo: null,
+        MoveEvaluation botMove1 = new(
+            Move: new()
+            {
+                From = new AlgebraicPoint("f2").AsIdx(),
+                To = new AlgebraicPoint("f5").AsIdx(),
+                Piece = new() { Type = PieceType.Pawn, Color = BitPieceColor.White },
+            },
             EvalForBot: 1
         );
-        AiEngineMove botMove2 = new(
-            From: new("e1"),
-            To: new("j6"),
-            Captures: [],
-            PromotesTo: null,
+        MoveEvaluation botMove2 = new(
+            Move: new()
+            {
+                From = new AlgebraicPoint("e1").AsIdx(),
+                To = new AlgebraicPoint("j6").AsIdx(),
+                Piece = new() { Type = PieceType.Pawn, Color = BitPieceColor.White },
+            },
             EvalForBot: 2
         );
-        AiEngineMove botMove3 = new(
-            From: new("j6"),
-            To: new("f10"),
-            Captures: [new("f10")],
-            PromotesTo: null,
+        MoveEvaluation botMove3 = new(
+            Move: new()
+            {
+                From = new AlgebraicPoint("j6").AsIdx(),
+                To = new AlgebraicPoint("f10").AsIdx(),
+                Piece = new() { Type = PieceType.Pawn, Color = BitPieceColor.White },
+                CapturesMask = UInt128.One << new AlgebraicPoint("f10").AsIdx(),
+            },
             EvalForBot: 3
         );
+
         _botServiceMock
             .FindBestMoveAsync(
                 Arg.Any<IReadOnlyChessBoard>(),
@@ -397,7 +408,7 @@ public class BotGrainTests : BaseOrleansIntegrationTest
         return grain.StartGameAsync(player ?? _player, botType, ApiTestBase.CT);
     }
 
-    private async Task AssertBotMoveAsync(AiEngineMove expectedMove, bool didMoveEndGame = false)
+    private async Task AssertBotMoveAsync(MoveEvaluation expectedMove, bool didMoveEndGame = false)
     {
         await Wait.UntilAsync(
             () =>
@@ -406,16 +417,7 @@ public class BotGrainTests : BaseOrleansIntegrationTest
                     .NotifyBotMadeMoveAsync(
                         _gameToken,
                         Arg.Is<MoveSnapshot>(snapshot =>
-                            snapshot.Path.FromIdx == expectedMove.From.AsIdx()
-                            && snapshot.Path.ToIdx == expectedMove.To.AsIdx()
-                            && snapshot.Path.PromotesTo == expectedMove.PromotesTo
-                            && (
-                                snapshot.Path.CapturedIdxs ?? Enumerable.Empty<byte>()
-                            ).SequenceEqual(
-                                (
-                                    expectedMove.Captures ?? Enumerable.Empty<AlgebraicPoint>()
-                                ).Select(capture => capture.AsIdx())
-                            )
+                            SnapshotMatchesMove(expectedMove, snapshot)
                         ),
                         plyNumber: _state.CurrentGame!.MoveHistory.Moves.Count,
                         compressedLegalMoves: Arg.Any<CompressedMoves>(),
@@ -425,11 +427,25 @@ public class BotGrainTests : BaseOrleansIntegrationTest
         );
 
         MoveSnapshot lastMove = _state.CurrentGame!.MoveHistory.Moves[^1];
-        lastMove.Path.FromIdx.Should().Be(expectedMove.From.AsIdx());
-        lastMove.Path.ToIdx.Should().Be(expectedMove.To.AsIdx());
+        lastMove.Path.FromIdx.Should().Be(expectedMove.Move.From);
+        lastMove.Path.ToIdx.Should().Be(expectedMove.Move.To);
         lastMove.TimeLeft.Should().Be(0);
 
         _state.CurrentGame.LastEval.Should().Be(expectedMove.EvalForBot);
+    }
+
+    private static bool SnapshotMatchesMove(MoveEvaluation expectedMove, MoveSnapshot snapshot)
+    {
+        UInt128 snapshotCaptureMask = 0;
+        foreach (var capture in snapshot.Path.CapturedIdxs ?? [])
+        {
+            snapshotCaptureMask |= UInt128.One << capture;
+        }
+
+        return snapshot.Path.FromIdx == expectedMove.Move.From
+            && snapshot.Path.ToIdx == expectedMove.Move.To
+            && snapshot.Path.PromotesTo == expectedMove.Move.PromotesTo
+            && snapshotCaptureMask == expectedMove.Move.CapturesMask;
     }
 
     private async Task AssertGameEndedAsync(BotGrain grain, GameEndStatus expectedEndStatus)

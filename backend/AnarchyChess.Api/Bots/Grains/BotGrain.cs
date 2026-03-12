@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using AnarchyChess.Ai.Service.DTO;
+using AnarchyChess.Ai.Models;
 using AnarchyChess.Api.ArchivedGames.Services;
 using AnarchyChess.Api.Bots.Bots;
 using AnarchyChess.Api.Bots.Errors;
@@ -44,7 +44,7 @@ public interface IBotGrain : IGrainWithStringKey
     );
 
     [Alias("PlayBotMoveAsync")]
-    Task PlayBotMoveAsync(ErrorOr<AiEngineMove> botMoveResult, CancellationToken token = default);
+    Task PlayBotMoveAsync(ErrorOr<MoveEvaluation> botMoveResult, CancellationToken token = default);
 
     [Alias("ResignAsync")]
     Task<ErrorOr<Success>> ResignAsync(UserId userId, CancellationToken token = default);
@@ -173,8 +173,7 @@ public class BotGrain : Grain, IBotGrain
         if (player.Color is GameColor.Black)
         {
             IReadOnlyChessBoard board = _core.GetReadOnlyBoard(game.Core);
-            LegalMoveSet legalMoves = _core.GetLegalMoves(game.Core);
-            _botMoveRunner.RunMove(board, lastEval: 0, legalMoves, _gameToken, bot);
+            _botMoveRunner.RunMove(board, lastEval: 0, _gameToken, bot);
         }
 
         await _state.WriteStateAsync(token);
@@ -246,13 +245,7 @@ public class BotGrain : Grain, IBotGrain
         else if (nextSideToMove == game.BotColor)
         {
             IReadOnlyChessBoard board = _core.GetReadOnlyBoard(game.Core);
-            _botMoveRunner.RunMove(
-                board,
-                lastEval: game.LastEval,
-                _core.GetLegalMoves(game.Core),
-                _gameToken,
-                _bots[game.BotType]
-            );
+            _botMoveRunner.RunMove(board, lastEval: game.LastEval, _gameToken, _bots[game.BotType]);
         }
 
         await _state.WriteStateAsync(token);
@@ -280,7 +273,7 @@ public class BotGrain : Grain, IBotGrain
     }
 
     public async Task PlayBotMoveAsync(
-        ErrorOr<AiEngineMove> botMoveResult,
+        ErrorOr<MoveEvaluation> botMoveResult,
         CancellationToken token = default
     )
     {
@@ -304,7 +297,7 @@ public class BotGrain : Grain, IBotGrain
         var botMove = botMoveResult.Value;
 
         LegalMoveSet legalMoves = _core.GetLegalMoves(game.Core);
-        Move? legalMove = legalMoves.FindBotMove(botMove);
+        Move? legalMove = legalMoves.FindBotMove(botMove.Move);
         if (legalMove is null)
         {
             _logger.LogError(

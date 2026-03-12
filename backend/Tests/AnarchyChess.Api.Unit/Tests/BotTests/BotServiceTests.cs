@@ -38,7 +38,7 @@ public class BotServiceTests : BaseUnitTest
         Move lastMove = MoveFaker.Capture(GameColor.White, [PieceType.Antiqueen, PieceType.Knook]);
         ChessBoard board = new(pieces, moves: [lastMove]);
 
-        var expectedReply = new AiEngineMoveFaker().Generate();
+        var expectedReply = new MoveEvaluationFaker().Generate();
         AiEngineMoveRequest expectedRequest = new(
             Pieces: pieces,
             IsWhiteToMove: true,
@@ -74,7 +74,7 @@ public class BotServiceTests : BaseUnitTest
         };
         ChessBoard chessBoard = new(pieces);
 
-        var expectedReply = new AiEngineMoveFaker().Generate();
+        var expectedReply = new MoveEvaluationFaker().Generate();
         _aiEngineMock
             .FindBestMoveAsync(Arg.Is<AiEngineMoveRequest>(x => x.PrevMoveState == null), CT)
             .Returns(expectedReply);
@@ -137,7 +137,7 @@ public class BotServiceTests : BaseUnitTest
 
         ChessBoard board = new(pieces);
 
-        var expectedMoves = new AiEngineMoveFaker().Generate(3);
+        var expectedMoves = new MoveEvaluationFaker().Generate(3);
         var expectedReply = new EvaluateAllMovesReply(Moves: [.. expectedMoves]);
 
         AiEngineMoveRequest expectedRequest = new(

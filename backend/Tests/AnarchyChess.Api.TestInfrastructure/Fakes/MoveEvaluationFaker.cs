@@ -2,7 +2,7 @@
 
 namespace AnarchyChess.Api.TestInfrastructure.Fakes;
 
-public class MoveEvaluationFaker : StructFaker<MoveEvaluation>
+public class MoveEvaluationFaker : RecordFaker<MoveEvaluation>
 {
     public MoveEvaluationFaker()
     {
