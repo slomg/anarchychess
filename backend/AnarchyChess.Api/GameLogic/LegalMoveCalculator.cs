@@ -13,15 +13,12 @@ public interface ILegalMoveCalculator
         IReadOnlyChessBoard board,
         AlgebraicPoint position
     );
-    bool HasForcedMoves(IReadOnlyChessBoard board);
 }
 
 public class LegalMoveCalculator : ILegalMoveCalculator
 {
     private readonly Dictionary<PieceType, IPieceDefinition> _pieceDefinitions = [];
     private readonly IEnumerable<IForeveRule> _foreverRules;
-
-    private readonly List<PieceType> _piecesWithForced = [PieceType.Bishop, PieceType.Pawn];
 
     public LegalMoveCalculator(
         IEnumerable<IPieceDefinition> pieceDefinitions,
@@ -82,24 +79,5 @@ public class LegalMoveCalculator : ILegalMoveCalculator
                 yield return move;
             }
         }
-    }
-
-    public bool HasForcedMoves(IReadOnlyChessBoard board)
-    {
-        foreach (var pieceType in _piecesWithForced)
-        {
-            foreach (var piece in board.GetAllPiecesWith(pieceType, board.SideToMove))
-            {
-                foreach (var move in CalculateLegalMovesForPiece(board, piece.Position))
-                {
-                    if (move.ForcedPriority is not ForcedMovePriority.None)
-                    {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
     }
 }
