@@ -3,6 +3,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using AnarchyChess.Ai;
 using AnarchyChess.Ai.Service.Services;
 using AnarchyChess.Api.Analysis.Services;
 using AnarchyChess.Api.ArchivedGames.Repositories;
@@ -97,10 +98,6 @@ var appSettings =
 
 builder
     .Services.AddControllers()
-    .ConfigureApiBehaviorOptions(options =>
-    {
-        options.SuppressModelStateInvalidFilter = true; // optional, if model binding causes issues
-    })
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
@@ -695,7 +692,6 @@ app.MapHub<GameHub>("/api/hub/game");
 app.MapHub<BotHub>("/api/hub/bot");
 
 app.UseResponseCompression();
-app.UseDeveloperExceptionPage(); // shows full exception in dev
 
 try
 {
