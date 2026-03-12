@@ -1,8 +1,10 @@
 using AnarchyChess.Ai;
 using AnarchyChess.Ai.Evaluation;
+using AnarchyChess.Ai.Service.DTO;
 using AnarchyChess.Ai.Service.Services;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using ProtoBuf.Grpc.Server;
+using ProtoBuf.Meta;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -43,6 +45,10 @@ builder.Services.AddSingleton<IEvaluatorFunction, MobilityEvaluator>();
 builder.Services.AddSingleton<IEvaluatorFunction, PawnSpaceEvaluator>();
 builder.Services.AddSingleton<IEvaluatorFunction, PawnStructureEvaluator>();
 builder.Services.AddSingleton<IEvaluatorFunction, KingEndgameActivityEvaluator>();
+
+RuntimeTypeModel
+    .Default.Add<UInt128>(applyDefaultBehaviour: false)
+    .SetSurrogate(typeof(UInt128Surrogate));
 
 builder.Services.AddCodeFirstGrpc();
 

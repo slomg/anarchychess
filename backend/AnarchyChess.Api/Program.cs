@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using AnarchyChess.Ai;
+using AnarchyChess.Ai.Service.DTO;
 using AnarchyChess.Ai.Service.Services;
 using AnarchyChess.Api.Analysis.Services;
 using AnarchyChess.Api.ArchivedGames.Repositories;
@@ -75,6 +76,7 @@ using Orleans.Providers;
 using Orleans.Serialization.Serializers;
 using Orleans.Storage;
 using ProtoBuf.Grpc.ClientFactory;
+using ProtoBuf.Meta;
 using Scalar.AspNetCore;
 using Serilog;
 using static OpenIddict.Abstractions.OpenIddictConstants;
@@ -645,6 +647,10 @@ builder.Services.AddSingleton<IValidator<PaginationQuery>, PaginationValidator>(
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
+
+RuntimeTypeModel
+    .Default.Add<UInt128>(applyDefaultBehaviour: false)
+    .SetSurrogate(typeof(UInt128Surrogate));
 
 var app = builder.Build();
 
