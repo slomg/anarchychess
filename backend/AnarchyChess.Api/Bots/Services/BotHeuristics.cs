@@ -98,7 +98,15 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
 
     public bool IsHang(BitMove move, BitBoard boardAfterMove)
     {
-        UInt128 ourPieces = boardAfterMove.BitboardForFriendOf(move.Piece.Color);
+        BitPieceColor ourSide = boardAfterMove.IsWhiteToMove
+            ? BitPieceColor.Black
+            : BitPieceColor.White;
+        UInt128 ourPieces = boardAfterMove.BitboardForFriendOf(ourSide);
+
+        Span<BitMove> opponentMoves = stackalloc BitMove[EngineConstants.MaxMoves];
+        int moveCount = 0;
+        _bitMoveGenerator.Generate(boardAfterMove, opponentMoves, ref moveCount);
+
         while (ourPieces != 0)
         {
             byte position = (byte)BitboardHelpers.BitScanForward(ref ourPieces);
@@ -110,10 +118,22 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
                 continue;
             }
 
-            int seeValue = See(position, capturingPiece: piece.Value.Type, boardAfterMove);
-            if (seeValue > 90)
+            UInt128 positionBit = UInt128.One << position;
+            for (int i = 0; i < moveCount; i++)
             {
-                return true;
+                BitMove opponentMove = opponentMoves[i];
+                if ((opponentMove.CapturesMask & positionBit) == 0)
+                {
+                    continue;
+                }
+
+                MoveUndoState undo = boardAfterMove.MakeMove(opponentMove);
+                int seeValue = See(position, capturingPiece: piece.Value.Type, boardAfterMove);
+                boardAfterMove.UndoMove(undo);
+                if (seeValue > 90)
+                {
+                    return true;
+                }
             }
         }
 
