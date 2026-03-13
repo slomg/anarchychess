@@ -84,6 +84,7 @@ public class LobotomizedAnarchyBot(
                 .Value.Select((move, i) => ScoreMove(move, board, bitboard, endgameFactor))
                 .OrderByDescending(x => x.MoveEval.EvalForBot),
         ];
+        _logger.LogInformation("Last eval: {LastEval}", lastEval);
 
         (List<CandidateBotMove> missableCheckmates, List<CandidateBotMove> nonCheckmates) =
             TakeWhilePrefix(
