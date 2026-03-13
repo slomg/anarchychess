@@ -99,15 +99,49 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
 
     public bool CausesForcedMove(BitMove move, BitBoard boardAfterMove)
     {
-        Span<BitMove> moves = stackalloc BitMove[EngineConstants.MaxMoves];
+        Span<BitMove> opponentMoves = stackalloc BitMove[EngineConstants.MaxMoves];
         int moveCount = 0;
-        _bitMoveGenerator.Generate(boardAfterMove, moves, ref moveCount);
-        if (moveCount == 0)
+        _bitMoveGenerator.Generate(boardAfterMove, opponentMoves, ref moveCount);
+        if (opponentMoves[0].ForcedMovePriority is not ForcedMovePriority.None)
+        {
+            return true;
+        }
+
+        if (move.CapturesMask == 0)
         {
             return false;
         }
 
-        return moves[0].ForcedMovePriority is not ForcedMovePriority.None;
+        UInt128 positionBit = UInt128.One << move.To;
+        Span<BitMove> opponentResponseMoves = stackalloc BitMove[EngineConstants.MaxMoves];
+        for (int i = 0; i < moveCount; i++)
+        {
+            BitMove opponentMove = opponentMoves[i];
+            if ((opponentMove.CapturesMask & positionBit) == 0)
+            {
+                continue;
+            }
+
+            MoveUndoState undo = boardAfterMove.MakeMove(opponentMove);
+            NullMoveUndoState nullUndo = boardAfterMove.MakeNullMove();
+
+            int opponentResponseMoveCount = 0;
+            _bitMoveGenerator.Generate(
+                boardAfterMove,
+                opponentResponseMoves,
+                ref opponentResponseMoveCount
+            );
+
+            boardAfterMove.UndoNullMove(nullUndo);
+            boardAfterMove.UndoMove(undo);
+
+            if (opponentResponseMoves[0].ForcedMovePriority is not ForcedMovePriority.None)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public bool IsHang(BitMove move, BitBoard boardAfterMove)
