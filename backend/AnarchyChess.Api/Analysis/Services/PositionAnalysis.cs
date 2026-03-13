@@ -1,6 +1,4 @@
 ﻿using AnarchyChess.Api.Analysis.Models;
-using AnarchyChess.Api.Bots.Bots;
-using AnarchyChess.Api.Bots.Models;
 using AnarchyChess.Api.Game.Errors;
 using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.GameSnapshot.Models;
@@ -18,14 +16,12 @@ public interface IPositionAnalysis
 public class PositionAnalysis(
     IFenDecoder fenDecoder,
     IPlayableMoveProvider playableMoveProvider,
-    IEnumerable<IBot> bots,
     IGameCore gameCore
 ) : IPositionAnalysis
 {
     private readonly IFenDecoder _fenDecoder = fenDecoder;
     private readonly IPlayableMoveProvider _playableMoveProvider = playableMoveProvider;
     private readonly IGameCore _core = gameCore;
-    private readonly Dictionary<BotType, IBot> _bots = bots.ToDictionary(x => x.Type);
 
     public RootAnalysisPosition GetInitialPosition()
     {
@@ -73,7 +69,6 @@ public class PositionAnalysis(
         var board = boardResult.Value;
 
         var legalMoves = _playableMoveProvider.CalculateAllPlayableMoves(board);
-        _bots[BotType.LobotomizedAnarchyBot].FindMoveAsync(board, 0);
 
         return legalMoves.MovePaths.ToErrorOr();
     }
