@@ -144,7 +144,7 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
                 MoveUndoState undo = boardAfterMove.MakeMove(opponentMove);
                 int seeValue = See(position, capturingPiece: piece.Value.Type, boardAfterMove);
                 boardAfterMove.UndoMove(undo);
-                if (seeValue > 90)
+                if (seeValue < 90)
                 {
                     return true;
                 }
@@ -174,7 +174,7 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
             }
 
             int seeValue = See(position, capturingPiece.Value.Type, boardAfterMove);
-            if (seeValue > 90)
+            if (seeValue == 0)
             {
                 return true;
             }
