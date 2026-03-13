@@ -318,7 +318,7 @@ public class LobotomizedAnarchyBot(
 
     private static double GetTemperature(IReadOnlyChessBoard board, float endgameFactor)
     {
-        if (board.Moves.Count <= 10)
+        if (board.Moves.Count <= 20)
         {
             return OpeningTemperature;
         }
