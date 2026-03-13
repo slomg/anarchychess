@@ -191,10 +191,7 @@ public class LobotomizedAnarchyBot(
             moveEval.Move,
             boardAfterMove
         );
-        bool isRecapture =
-            board.Moves.Count > 0
-            && board.Moves[^1].Captures.Count > 0
-            && moveEval.Move.To == board.Moves[^1].To.AsIdx();
+        bool isRecapture = _botHeuristics.IsRecapture(move, board);
         bool losesKingCastling = _botHeuristics.LosesKingCastlingRight(
             moveEval.Move,
             boardBeforeMove

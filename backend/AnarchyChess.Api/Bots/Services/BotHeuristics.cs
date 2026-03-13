@@ -2,6 +2,7 @@
 using AnarchyChess.Ai.Helpers;
 using AnarchyChess.Ai.MagicTables;
 using AnarchyChess.Ai.Models;
+using AnarchyChess.Api.GameLogic;
 using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Api.Bots.Services;
@@ -13,6 +14,7 @@ public interface IBotHeuristics
     bool IsCapturingOpponentHang(BitMove move, BitBoard boardAfterMove);
     bool IsHang(BitMove move, BitBoard boardAfterMove);
     bool IsMultiStep(BitMove move, BitBoard boardBeforeMove);
+    bool IsRecapture(BitMove move, IReadOnlyChessBoard board);
     bool LosesKingCastlingRight(BitMove move, BitBoard board);
     bool LosesRookCastlingRight(BitMove move, BitBoard board);
 }
@@ -27,6 +29,11 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
             .OrderBy(MaterialValue.GetPieceValue)
             .Where(x => MaterialValue.GetPieceValue(x) > 0),
     ];
+
+    public bool IsRecapture(BitMove move, IReadOnlyChessBoard board) =>
+        board.Moves.Count > 0
+        && board.Moves[^1].Captures.Count > 0
+        && move.To == board.Moves[^1].To.AsIdx();
 
     public bool IsBackwards(BitMove move)
     {
