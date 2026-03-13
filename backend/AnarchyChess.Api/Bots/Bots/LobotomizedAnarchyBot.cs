@@ -88,7 +88,7 @@ public class LobotomizedAnarchyBot(
         _logger.LogInformation("Last eval: {LastEval}", lastEval);
 
         (List<CandidateBotMove> missableCheckmates, List<CandidateBotMove> nonCheckmates) =
-            TakeWhilePrefix(
+            OrderInto(
                 moves,
                 move =>
                 {
@@ -116,7 +116,7 @@ public class LobotomizedAnarchyBot(
             return Softmax(missableCheckmates, board, endgameFactor);
         }
 
-        (List<CandidateBotMove> tactics, List<CandidateBotMove> nonTactics) = TakeWhilePrefix(
+        (List<CandidateBotMove> tactics, List<CandidateBotMove> nonTactics) = OrderInto(
             nonCheckmates,
             move =>
                 move.MoveEval.EvalForBot - lastEval > TacticalThreshold
@@ -134,7 +134,7 @@ public class LobotomizedAnarchyBot(
             return tactic;
         }
 
-        (List<CandidateBotMove> nonBlunders, List<CandidateBotMove> blunders) = TakeWhilePrefix(
+        (List<CandidateBotMove> nonBlunders, List<CandidateBotMove> blunders) = OrderInto(
             nonTactics,
             move => move.MoveEval.EvalForBot - lastEval > DrasticallyBadMoveThreshold
         );
@@ -278,29 +278,27 @@ public class LobotomizedAnarchyBot(
         );
     }
 
-    private static (List<T> head, List<T> tail) TakeWhilePrefix<T>(
+    private static (List<T> match, List<T> fail) OrderInto<T>(
         IEnumerable<T> source,
         Func<T, bool> predicate
     )
     {
-        List<T> head = [];
-        List<T> tail = [];
-        bool inHead = true;
+        List<T> match = [];
+        List<T> fail = [];
 
         foreach (var item in source)
         {
-            if (inHead && predicate(item))
+            if (predicate(item))
             {
-                head.Add(item);
+                match.Add(item);
             }
             else
             {
-                inHead = false;
-                tail.Add(item);
+                fail.Add(item);
             }
         }
 
-        return (head, tail);
+        return (match, fail);
     }
 
     private MoveEvaluation Softmax(
@@ -390,9 +388,15 @@ public class LobotomizedAnarchyBot(
         var (complexTactics, simpleTactics) = SortTactics(tactics);
         bool playSimple = _randomProvider.NextDouble() < SimpleTacticChance;
 
+        if (playSimple && simpleTactics.Count == 0)
+        {
+            _logger.LogInformation("playing complex tactic");
+            return Softmax(complexTactics, board, endgameFactor);
+        }
+
         if (playSimple)
         {
-            _logger.LogInformation("playing simple tactic");
+            _logger.LogInformation("playing complex tactic");
         }
         else
         {
