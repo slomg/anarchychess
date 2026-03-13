@@ -135,85 +135,55 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
 
     public bool IsHang(BitMove move, BotHeuristicContext context)
     {
-        BitPieceColor ourSide = context.BitboardAfterMove.IsWhiteToMove
-            ? BitPieceColor.Black
-            : BitPieceColor.White;
-        UInt128 ourPieces = context.BitboardAfterMove.BitboardForFriendOf(ourSide);
-
-        while (ourPieces != 0)
+        for (int i = 0; i < context.OpponentMoveCount; i++)
         {
-            byte position = (byte)BitboardHelpers.BitScanForward(ref ourPieces);
-            if (
-                !context.BitboardAfterMove.TryGetPieceAt(position, out var piece)
-                || MaterialValue.GetPieceValue(piece.Value.Type) < 300
-            )
-            {
-                continue;
-            }
-
-            UInt128 positionBit = UInt128.One << position;
-            for (int i = 0; i < context.OpponentMoveCount; i++)
-            {
-                BitMove opponentMove = context.OpponentMoves[i];
-                if ((opponentMove.CapturesMask & positionBit) == 0)
-                {
-                    continue;
-                }
-
-                MoveUndoState undo = context.BitboardAfterMove.MakeMove(opponentMove);
-                int seeValue = See(
-                    position,
-                    capturingPiece: piece.Value.Type,
-                    context.BitboardAfterMove
-                );
-                context.BitboardAfterMove.UndoMove(undo);
-                if (seeValue < 90)
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    public bool IsCapturingOpponentHang(BitMove move, BotHeuristicContext context)
-    {
-        if (move.CapturesMask == 0)
-        {
-            return false;
-        }
-
-        UInt128 capturesMask = move.CapturesMask;
-        while (capturesMask != 0)
-        {
-            byte position = (byte)BitboardHelpers.BitScanForward(ref capturesMask);
-            if (
-                !context.BitboardAfterMove.TryGetPieceAt(position, out var capturingPiece)
-                || MaterialValue.GetPieceValue(capturingPiece.Value.Type) < 300
-            )
-            {
-                continue;
-            }
-
-            int seeValue = See(position, capturingPiece.Value.Type, context.BitboardAfterMove);
-            if (seeValue == 0)
+            if (SeeCapture(context.OpponentMoves[i], context.BitboardAfterMove) > 90)
             {
                 return true;
             }
         }
-
         return false;
+    }
+
+    public bool IsCapturingOpponentHang(BitMove move, BotHeuristicContext context) =>
+        SeeCapture(move, context.Bitboard) > 90;
+
+    private int SeeCapture(BitMove move, BitBoard board)
+    {
+        UInt128 capturesMask = move.CapturesMask;
+        if (capturesMask == 0)
+        {
+            return 0;
+        }
+
+        if (MaterialValue.GetPieceValue(move.Piece.Type) < 300)
+        {
+            return 0;
+        }
+
+        byte capturePosition = (byte)BitboardHelpers.BitScanForward(ref capturesMask);
+        if (!board.TryGetPieceAt(capturePosition, out var capturedPiece))
+        {
+            return 0;
+        }
+
+        MoveUndoState undo = board.MakeMove(move);
+        int value =
+            MaterialValue.GetPieceValue(capturedPiece.Value.Type)
+            - See(move.To, move.Piece.Type, board);
+        board.UndoMove(undo);
+        return value;
     }
 
     private int See(byte position, PieceType capturingPiece, BitBoard board)
     {
         UInt128 positionBit = UInt128.One << position;
         BitPieceColor sideToMove = board.IsWhiteToMove ? BitPieceColor.White : BitPieceColor.Black;
+
         int kingCount = CountKings(sideToMove, board);
         if (kingCount <= 1 && capturingPiece is PieceType.King)
         {
-            return 0;
+            return 100_000;
         }
 
         int capturingValue = MaterialValue.GetPieceValue(capturingPiece);
