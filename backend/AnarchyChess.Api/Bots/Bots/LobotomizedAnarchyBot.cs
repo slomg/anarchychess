@@ -35,7 +35,7 @@ public class LobotomizedAnarchyBot(
 
     private const int Depth = 6;
     private const double OpeningTemperature = 10;
-    private const double MiddleGameTemperature = 30;
+    private const double MiddleGameTemperature = 20;
     private const double EndGameTemperature = 10;
 
     private const int TacticalThreshold = 150;
@@ -321,7 +321,7 @@ public class LobotomizedAnarchyBot(
         }
 
         double temperature =
-            (MiddleGameTemperature * endgameFactor) + (EndGameTemperature * (1 - endgameFactor));
+            (MiddleGameTemperature * (1 - endgameFactor)) + (EndGameTemperature * endgameFactor);
         return temperature;
     }
 
