@@ -12,6 +12,7 @@ public interface IBotHeuristics
     bool CausesForcedMove(BitMove move, BotHeuristicContext context);
     bool IsBackwards(BitMove move);
     bool IsCapturingOpponentHang(BitMove move, BotHeuristicContext context);
+    bool IsEdge(BitMove move);
     bool IsHang(BitMove move, BotHeuristicContext context);
     bool IsMultiStep(BitMove move, BotHeuristicContext context);
     bool IsRecapture(BitMove move, BotHeuristicContext context);
@@ -30,6 +31,12 @@ public record BotHeuristicContext(
 public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
 {
     private readonly IBitMoveGenerator _bitMoveGenerator = bitMoveGenerator;
+
+    public bool IsEdge(BitMove move)
+    {
+        int toX = move.To % 10;
+        return toX == 0 || toX == 9;
+    }
 
     public bool IsRecapture(BitMove move, BotHeuristicContext context) =>
         context.Board.Moves.Count > 0

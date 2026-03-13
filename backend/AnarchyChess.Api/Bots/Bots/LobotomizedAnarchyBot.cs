@@ -48,13 +48,13 @@ public class LobotomizedAnarchyBot(
     private const double CheckmateChance = 0.3;
 
     private const int HangPenalty = 300;
-    private const int BetaDecayPenalty = 300;
     private const int OpponentHangBonus = 100;
     private const int CausesForcedMovePenalty = 300;
     private const int MultiStepMovePenalty = 300;
     private const int LosesRookCastlingRightPenalty = 20;
     private const int LosesKingCastlingRightPenalty = 30;
     private const int BackwardsPenalty = 30;
+    private const int EdgePenalty = 30;
 
     public BotType Type => BotType.LobotomizedAnarchyBot;
 
@@ -202,13 +202,9 @@ public class LobotomizedAnarchyBot(
         bool losesKingCastling = _botHeuristics.LosesKingCastlingRight(moveEval.Move, context);
         bool losesRookCastling = _botHeuristics.LosesRookCastlingRight(moveEval.Move, context);
         bool isBackwards = _botHeuristics.IsBackwards(moveEval.Move);
+        bool isEdge = _botHeuristics.IsEdge(moveEval.Move);
 
         int playabilityEval = moveEval.EvalForBot;
-
-        if (moveEval.Move.SpecialMoveType is SpecialMoveType.RadioactiveBetaDecay)
-        {
-            playabilityEval -= BetaDecayPenalty;
-        }
 
         if (isHang)
         {
@@ -243,6 +239,11 @@ public class LobotomizedAnarchyBot(
         if (isBackwards)
         {
             playabilityEval -= BackwardsPenalty;
+        }
+
+        if (isEdge)
+        {
+            playabilityEval -= EdgePenalty;
         }
 
         _logger.LogInformation(
