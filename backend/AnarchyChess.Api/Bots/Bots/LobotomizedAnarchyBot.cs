@@ -144,23 +144,17 @@ public class LobotomizedAnarchyBot(
             return SoftmaxTactics(tactics, board, endgameFactor);
         }
 
-        int nonBlunderRecapturesCount = 0;
-        foreach (var move in nonBlunders)
+        (List<CandidateBotMove> obviousMoves, _) = OrderInto(
+            nonBlunders,
+            move =>
+                (move.IsCapturingHanging || move.IsRecapture)
+                && !move.CausesForcedMove
+                && !move.IsMultiStep
+        );
+        if (obviousMoves.Count > 0)
         {
-            if (move.IsRecapture)
-            {
-                nonBlunderRecapturesCount++;
-            }
-            else
-            {
-                break;
-            }
-        }
-
-        if (nonBlunders.Count > 0 && nonBlunderRecapturesCount == nonBlunders.Count)
-        {
-            _logger.LogInformation("playing non blunder");
-            return Softmax(nonBlunders, board, endgameFactor);
+            _logger.LogInformation("playing obvious move");
+            return Softmax(obviousMoves, board, endgameFactor);
         }
 
         List<CandidateBotMove> nonStupidBlunders = [.. blunders.Where(move => !move.IsHang)];
