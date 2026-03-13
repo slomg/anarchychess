@@ -213,7 +213,7 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
         int kingCount = CountKings(sideToMove, board);
         if (kingCount <= 1 && capturingPiece is PieceType.King)
         {
-            return 100_000;
+            return 0;
         }
 
         int capturingValue = MaterialValue.GetPieceValue(capturingPiece);
