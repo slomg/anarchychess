@@ -156,21 +156,20 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
             return 0;
         }
 
-        if (MaterialValue.GetPieceValue(move.Piece.Type) < 300)
-        {
-            return 0;
-        }
-
         byte capturePosition = (byte)BitboardHelpers.BitScanForward(ref capturesMask);
         if (!board.TryGetPieceAt(capturePosition, out var capturedPiece))
         {
             return 0;
         }
 
+        int capturedPieceValue = MaterialValue.GetPieceValue(capturedPiece.Value.Type);
+        if (capturedPieceValue < 300)
+        {
+            return 0;
+        }
+
         MoveUndoState undo = board.MakeMove(move);
-        int value =
-            MaterialValue.GetPieceValue(capturedPiece.Value.Type)
-            - See(move.To, move.Piece.Type, board);
+        int value = capturedPieceValue - See(move.To, move.Piece.Type, board);
         board.UndoMove(undo);
         return value;
     }
