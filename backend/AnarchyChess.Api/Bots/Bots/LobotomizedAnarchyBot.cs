@@ -33,8 +33,8 @@ public class LobotomizedAnarchyBot(
     public static readonly UserId BotId = "bot:lobotomized-anarchybot";
 
     private const int Depth = 6;
-    private const double OpeningTemperature = 5;
-    private const double MiddleGameTemperature = 10;
+    private const double OpeningTemperature = 10;
+    private const double MiddleGameTemperature = 30;
     private const double EndGameTemperature = 1;
 
     private const int TacticalThreshold = 150;
@@ -43,7 +43,7 @@ public class LobotomizedAnarchyBot(
     private const double BlunderChance = 0.08;
     private const double TacticChance = 0.15;
     private const double TacticChancePerMoveBonus = 0.01;
-    private const double SimpleTacticChance = 0.8;
+    private const double SimpleTacticChance = 0.9;
     private const double CheckmateChance = 0.3;
 
     private const int HangPenalty = 300;
@@ -52,6 +52,7 @@ public class LobotomizedAnarchyBot(
     private const int MultiStepMovePenalty = 300;
     private const int LosesRookCastlingRightPenalty = 20;
     private const int LosesKingCastlingRightPenalty = 30;
+    private const int BackwardsPenalty = 30;
 
     public BotType Type => BotType.LobotomizedAnarchyBot;
 
@@ -202,6 +203,7 @@ public class LobotomizedAnarchyBot(
             moveEval.Move,
             boardBeforeMove
         );
+        bool isBackwards = _botHeuristics.IsBackwards(moveEval.Move);
 
         int playabilityEval = moveEval.EvalForBot;
 
@@ -235,8 +237,13 @@ public class LobotomizedAnarchyBot(
             playabilityEval -= (int)(LosesRookCastlingRightPenalty * (1 - endgameFactor));
         }
 
+        if (isBackwards)
+        {
+            playabilityEval -= BackwardsPenalty;
+        }
+
         _logger.LogInformation(
-            "from: {From}, to: {To}, candidate: {Candidate}",
+            "from: {From}, to: {To}, candidate: {Candidate}, is backwards: {IsBackwards}",
             AlgebraicPoint.FromIdx(moveEval.Move.From),
             AlgebraicPoint.FromIdx(moveEval.Move.To),
             new CandidateBotMove(
@@ -247,7 +254,8 @@ public class LobotomizedAnarchyBot(
                 CausesForcedMove: causesForcedMove,
                 IsMultiStep: isMultiStep,
                 PlayabilityEval: playabilityEval
-            )
+            ),
+            isBackwards
         );
 
         return new CandidateBotMove(

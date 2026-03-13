@@ -9,6 +9,7 @@ namespace AnarchyChess.Api.Bots.Services;
 public interface IBotHeuristics
 {
     bool CausesForcedMove(BitMove move, BitBoard boardAfterMove);
+    bool IsBackwards(BitMove move);
     bool IsCapturingOpponentHang(BitMove move, BitBoard boardAfterMove);
     bool IsHang(BitMove move, BitBoard boardAfterMove);
     bool IsMultiStep(BitMove move, BitBoard boardBeforeMove);
@@ -26,6 +27,19 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
             .OrderBy(MaterialValue.GetPieceValue)
             .Where(x => MaterialValue.GetPieceValue(x) > 0),
     ];
+
+    public bool IsBackwards(BitMove move)
+    {
+        if (move.Piece.Color is BitPieceColor.Neutral)
+        {
+            return false;
+        }
+
+        int backwardsDirection = move.Piece.Color is BitPieceColor.White ? 1 : -1;
+        int fromY = move.From / 10;
+        int toY = move.To / 10;
+        return (fromY - toY) * backwardsDirection > 0;
+    }
 
     public bool IsMultiStep(BitMove move, BitBoard boardBeforeMove)
     {
