@@ -47,6 +47,7 @@ public class LobotomizedAnarchyBot(
     private const double SimpleTacticChance = 0.9;
     private const double CheckmateChance = 0.3;
 
+    private const int BetaDecayPenalty = 300;
     private const int OpponentHangBonus = 100;
     private const int CausesForcedMovePenalty = 300;
     private const int MultiStepMovePenalty = 300;
@@ -209,9 +210,11 @@ public class LobotomizedAnarchyBot(
 
         int playabilityEval = moveEval.EvalForBot;
 
-        if (isHang)
+        playabilityEval -= hangLoss;
+
+        if (moveEval.Move.SpecialMoveType is SpecialMoveType.RadioactiveBetaDecay)
         {
-            playabilityEval -= HangPenalty;
+            playabilityEval -= BetaDecayPenalty;
         }
 
         if (isCapturingHanging && !causesForcedMove)
