@@ -31,13 +31,6 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
 {
     private readonly IBitMoveGenerator _bitMoveGenerator = bitMoveGenerator;
 
-    private readonly PieceType[] _seePiecesByValue =
-    [
-        .. Enum.GetValues<PieceType>()
-            .OrderBy(MaterialValue.GetPieceValue)
-            .Where(x => MaterialValue.GetPieceValue(x) > 0 && x is not PieceType.King),
-    ];
-
     public bool IsRecapture(BitMove move, BotHeuristicContext context) =>
         context.Board.Moves.Count > 0
         && context.Board.Moves[^1].Captures.Count > 0
@@ -135,9 +128,21 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
 
     public bool IsHang(BitMove move, BotHeuristicContext context)
     {
+        int exchangeValue = SeeCapture(move, context.Bitboard);
+        bool isWinningExchange = exchangeValue > 90;
+        exchangeValue = Math.Max(90, exchangeValue);
+
+        UInt128 positionBit = UInt128.One << move.To;
         for (int i = 0; i < context.OpponentMoveCount; i++)
         {
-            if (SeeCapture(context.OpponentMoves[i], context.BitboardAfterMove) > 90)
+            BitMove opponentMove = context.OpponentMoves[i];
+            //we already know this exchance is winning, so we don't need to check it again
+            if (isWinningExchange && (opponentMove.CapturesMask & positionBit) != 0)
+            {
+                continue;
+            }
+
+            if (SeeCapture(opponentMove, context.BitboardAfterMove) > exchangeValue)
             {
                 return true;
             }
@@ -188,67 +193,58 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
                 ? 100_000
                 : MaterialValue.GetPieceValue(capturedByPiece);
 
-        List<PieceType> pieces = [.. _seePiecesByValue];
         int opponentKingValue =
             CountKings(opponentColor, board) <= 1
                 ? 100_000
                 : MaterialValue.GetPieceValue(PieceType.King);
-        int insertKingIdx = pieces.FindIndex(x =>
-            MaterialValue.GetPieceValue(x) < opponentKingValue
-        );
-        if (insertKingIdx == -1)
-        {
-            pieces.Add(PieceType.King);
-        }
-        else
-        {
-            pieces.Insert(insertKingIdx, PieceType.King);
-        }
 
         Span<BitMove> moves = stackalloc BitMove[EngineConstants.MaxMoves];
-        foreach (var pieceType in pieces)
+        int moveCount = 0;
+        _bitMoveGenerator.Generate(board, moves, ref moveCount);
+
+        BitMove? lowestAttack = null;
+        int lowestAttackerValue = int.MaxValue;
+        for (int i = 0; i < moveCount; i++)
         {
-            int pieceValue = MaterialValue.GetPieceValue(pieceType);
-
-            UInt128 bitboard = board.BitboardFor(pieceType, sideToMove);
-            while (bitboard != 0)
+            BitMove move = moves[i];
+            if ((move.CapturesMask & positionBit) == 0)
             {
-                byte piecePosition = (byte)BitboardHelpers.BitScanForward(ref bitboard);
+                continue;
+            }
 
-                int moveCount = 0;
-                _bitMoveGenerator.GenerateForPiece(
-                    board,
-                    piecePosition,
-                    new() { Type = pieceType, Color = sideToMove },
-                    moves,
-                    ref moveCount
-                );
+            if (CheckMultiStep(move, board))
+            {
+                continue;
+            }
 
-                for (int i = 0; i < moveCount; i++)
-                {
-                    BitMove move = moves[i];
-                    if ((move.CapturesMask & positionBit) == 0)
-                    {
-                        continue;
-                    }
-
-                    if (CheckMultiStep(move, board))
-                    {
-                        continue;
-                    }
-
-                    MoveUndoState undo = board.MakeMove(move);
-                    int value = Math.Max(
-                        0,
-                        capturedByPieceValue
-                            - See(position: move.To, capturedByPiece: pieceType, board)
-                    );
-                    board.UndoMove(undo);
-                    return value;
-                }
+            int attackerValue =
+                move.Piece.Type is PieceType.King
+                    ? opponentKingValue
+                    : MaterialValue.GetPieceValue(move.Piece.Type);
+            if (attackerValue < lowestAttackerValue)
+            {
+                lowestAttackerValue = attackerValue;
+                lowestAttack = move;
             }
         }
-        return 0;
+
+        if (lowestAttack is null)
+        {
+            return 0;
+        }
+
+        MoveUndoState undo = board.MakeMove(lowestAttack.Value);
+        int value = Math.Max(
+            0,
+            capturedByPieceValue
+                - See(
+                    position: lowestAttack.Value.To,
+                    capturedByPiece: lowestAttack.Value.Piece.Type,
+                    board
+                )
+        );
+        board.UndoMove(undo);
+        return value;
     }
 
     private static int CountKings(BitPieceColor color, BitBoard board) =>
