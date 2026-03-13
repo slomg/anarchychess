@@ -625,6 +625,7 @@ builder.Services.AddScoped<IChallengeRequestCreator, ChallengeRequestCreator>();
 builder.Services.AddSingleton<IBotService, BotService>();
 builder.Services.AddSingleton<IBotMoveRunner, BotMoveRunner>();
 builder.Services.AddSingleton<IBotNotifier, BotNotifier>();
+builder.Services.AddSingleton<IBotHeuristics, BotHeuristics>();
 builder.Services.AddSingleton<IBitMoveGenerator, BitMoveGenerator>();
 
 builder.Services.AddSingleton<IBot, AnarchyBot>();
@@ -635,8 +636,8 @@ builder
     {
         client.Address = appSettings.Bot.ServiceUrl;
     })
-    .ConfigurePrimaryHttpMessageHandler(
-        () => new SocketsHttpHandler { ConnectTimeout = TimeSpan.FromSeconds(10) }
+    .ConfigurePrimaryHttpMessageHandler(() =>
+        new SocketsHttpHandler { ConnectTimeout = TimeSpan.FromSeconds(10) }
     );
 #endregion
 

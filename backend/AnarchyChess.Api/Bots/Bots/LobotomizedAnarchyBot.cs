@@ -1,4 +1,7 @@
-﻿using AnarchyChess.Ai.Models;
+﻿using System.Diagnostics.CodeAnalysis;
+using AnarchyChess.Ai;
+using AnarchyChess.Ai.Evaluation;
+using AnarchyChess.Ai.Models;
 using AnarchyChess.Api.Bots.Models;
 using AnarchyChess.Api.Bots.Services;
 using AnarchyChess.Api.GameLogic;
@@ -16,20 +19,23 @@ public readonly record struct CandidateBotMove(
     bool IsCapturingHanging,
     bool IsRecapture,
     bool CausesForcedMove,
+    bool IsMultiStep,
     int PlayabilityEval
 );
 
 public class LobotomizedAnarchyBot(
+    ILogger<LobotomizedAnarchyBot> logger,
     IBotService botService,
     IRandomProvider randomProvider,
-    ILegalMoveCalculator legalMoveCalculator
+    IBotHeuristics botHeuristics
 ) : IBot
 {
     public static readonly UserId BotId = "bot:lobotomized-anarchybot";
 
     private const int Depth = 6;
     private const double OpeningTemperature = 5;
-    private const double Temperature = 20;
+    private const double MiddleGameTemperature = 10;
+    private const double EndGameTemperature = 1;
 
     private const int TacticalThreshold = 150;
     private const int DrasticallyBadMoveThreshold = -200;
@@ -37,306 +43,368 @@ public class LobotomizedAnarchyBot(
     private const double BlunderChance = 0.08;
     private const double TacticChance = 0.15;
     private const double TacticChancePerMoveBonus = 0.01;
+    private const double SimpleTacticChance = 0.8;
     private const double CheckmateChance = 0.3;
 
-    private const int PawnPenaltyForLanding = 100;
     private const int HangPenalty = 300;
     private const int OpponentHangBonus = 100;
     private const int CausesForcedMovePenalty = 300;
     private const int MultiStepMovePenalty = 300;
+    private const int LosesRookCastlingRightPenalty = 20;
+    private const int LosesKingCastlingRightPenalty = 30;
 
     public BotType Type => BotType.LobotomizedAnarchyBot;
 
+    private readonly ILogger<LobotomizedAnarchyBot> _logger = logger;
     private readonly IBotService _botService = botService;
     private readonly IRandomProvider _randomProvider = randomProvider;
-    private readonly ILegalMoveCalculator _legalMoveCalculator = legalMoveCalculator;
+    private readonly IBotHeuristics _botHeuristics = botHeuristics;
 
-    //public async Task<ErrorOr<MoveEvaluation>> FindMoveAsync(
-    //    IReadOnlyChessBoard board,
-    //    int lastEval,
-    //    CancellationToken token = default
-    //)
-    //{
-    //    var evaluationResult = await _botService.EvaluateAllMovesAsync(board, depth: Depth, token);
-    //    if (evaluationResult.IsError)
-    //    {
-    //        return evaluationResult.Errors;
-    //    }
-
-    //    var depth2EvaluationResult = await _botService.EvaluateAllMovesAsync(
-    //        board,
-    //        depth: 2,
-    //        token
-    //    );
-    //    if (depth2EvaluationResult.IsError)
-    //    {
-    //        return depth2EvaluationResult.Errors;
-    //    }
-
-    //    List<CandidateBotMove> moves =
-    //    [
-    //        .. evaluationResult
-    //            .Value.Select(
-    //                (move, i) =>
-    //                    ScoreMove(
-    //                        move,
-    //                        lastEval: lastEval,
-    //                        depth2Eval: depth2EvaluationResult.Value[i].EvalForBot,
-    //                        board
-    //                    )
-    //            )
-    //            .OrderByDescending(x => x.MoveEval.EvalForBot),
-    //    ];
-
-    //    (List<CandidateBotMove> missableCheckmates, List<CandidateBotMove> nonCheckmates) =
-    //        TakeWhilePrefix(
-    //            moves,
-    //            move =>
-    //            {
-    //                bool isCheckmate = move.MoveEval.EvalForBot >= 100_000;
-    //                if (!isCheckmate)
-    //                {
-    //                    return false;
-    //                }
-
-    //                if (move.CausesForcedMove)
-    //                {
-    //                    return true;
-    //                }
-    //                if (!move.IsRecapture && !move.IsCapturingHanging)
-    //                {
-    //                    return true;
-    //                }
-
-    //                return false;
-    //            }
-    //        );
-    //    if (missableCheckmates.Count > 0 && _randomProvider.NextDouble() < CheckmateChance)
-    //    {
-    //        return Softmax(missableCheckmates, board);
-    //    }
-
-    //    (List<CandidateBotMove> tactics, List<CandidateBotMove> nonTactics) = TakeWhilePrefix(
-    //        nonCheckmates,
-    //        move =>
-    //            move.MoveEval.EvalForBot - lastEval > TacticalThreshold
-    //            && (
-    //                !move.IsCapturingHanging
-    //                || move.CausesForcedMove
-    //                || move.BoardMove.IntermediateSquares.Count > 0
-    //            )
-    //    );
-    //    if (tactics.Count == moves.Count)
-    //    {
-    //        return Softmax(moves, board);
-    //    }
-
-    //    if (tactics.Count > 0 && _randomProvider.NextDouble() < CalcTacticChance(tactics.Count))
-    //    {
-    //        return Softmax(tactics, board);
-    //    }
-
-    //    (List<CandidateBotMove> nonBlunders, List<CandidateBotMove> blunders) = TakeWhilePrefix(
-    //        nonTactics,
-    //        move => move.MoveEval.EvalForBot - lastEval > DrasticallyBadMoveThreshold
-    //    );
-    //    if (nonBlunders.Count == 0 && tactics.Count > 0)
-    //    {
-    //        return Softmax(tactics, board);
-    //    }
-
-    //    int nonBlunderRecapturesCount = 0;
-    //    foreach (var move in nonBlunders)
-    //    {
-    //        if (move.IsRecapture)
-    //        {
-    //            nonBlunderRecapturesCount++;
-    //        }
-    //        else
-    //        {
-    //            break;
-    //        }
-    //    }
-
-    //    if (nonBlunders.Count > 0 && nonBlunderRecapturesCount == nonBlunders.Count)
-    //    {
-    //        return Softmax(nonBlunders, board);
-    //    }
-
-    //    List<CandidateBotMove> nonStupidBlunders = [.. blunders.Where(move => !move.IsHang)];
-    //    if (
-    //        board.Moves.Count > 10
-    //        && nonStupidBlunders.Count > 0
-    //        && _randomProvider.NextDouble() < BlunderChance
-    //    )
-    //    {
-    //        return Softmax(nonStupidBlunders, board);
-    //    }
-
-    //    return Softmax(nonTactics, board);
-    //}
-
-    //private static CandidateBotMove ScoreMove(
-    //    MoveEvaluation moveEval,
-    //    int lastEval,
-    //    int depth2Eval,
-    //    IReadOnlyChessBoard board
-    //)
-    //{
-    //    bool isHang = IsHang(moveEval, depth2Eval: depth2Eval, lastEval: lastEval);
-    //    bool causesForcedMove = CausesForcedMove(boardMove, board);
-    //    bool isCapturingHanging = IsCapturingOpponentHang(
-    //        moveEval,
-    //        depth2Eval: depth2Eval,
-    //        lastEval: lastEval
-    //    );
-    //    bool isRecapture =
-    //        board.Moves.Count > 0
-    //        && board.Moves[^1].Captures.Count > 0
-    //        && moveEval.Move.To == board.Moves[^1].To.AsIdx();
-
-    //    int playabilityEval = moveEval.EvalForBot;
-    //    if (isHang)
-    //    {
-    //        playabilityEval -= HangPenalty;
-    //    }
-
-    //    if (isCapturingHanging && !causesForcedMove)
-    //    {
-    //        playabilityEval += OpponentHangBonus;
-    //    }
-
-    //    if (causesForcedMove)
-    //    {
-    //        playabilityEval -= CausesForcedMovePenalty;
-    //    }
-
-    //    if (moveEval.Move.Piece.Type is PieceType.Pawn)
-    //    {
-    //        playabilityEval -= PawnPenaltyForLanding;
-    //    }
-
-    //    if (boardMove.IntermediateSquares.Count > 0)
-    //    {
-    //        playabilityEval -= MultiStepMovePenalty;
-    //    }
-
-    //    return new CandidateBotMove(
-    //        moveEval,
-    //        IsHang: isHang,
-    //        IsCapturingHanging: isCapturingHanging,
-    //        IsRecapture: isRecapture,
-    //        CausesForcedMove: causesForcedMove,
-    //        PlayabilityEval: playabilityEval
-    //    );
-    //}
-
-    //private static (List<T> head, List<T> tail) TakeWhilePrefix<T>(
-    //    IEnumerable<T> source,
-    //    Func<T, bool> predicate
-    //)
-    //{
-    //    List<T> head = [];
-    //    List<T> tail = [];
-    //    bool inHead = true;
-
-    //    foreach (var item in source)
-    //    {
-    //        if (inHead && predicate(item))
-    //        {
-    //            head.Add(item);
-    //        }
-    //        else
-    //        {
-    //            inHead = false;
-    //            tail.Add(item);
-    //        }
-    //    }
-
-    //    return (head, tail);
-    //}
-
-    //private MoveEvaluation Softmax(List<CandidateBotMove> moves, IReadOnlyChessBoard board)
-    //{
-    //    double temperature = board.Moves.Count <= 10 ? OpeningTemperature : Temperature;
-
-    //    double max = moves.Max(x => x.PlayabilityEval);
-    //    double[] expScores =
-    //    [
-    //        .. moves.Select(x => Math.Exp((x.PlayabilityEval - max) / temperature)),
-    //    ];
-    //    double sumExp = expScores.Sum();
-    //    double[] probabilities = [.. expScores.Select(x => x / sumExp)];
-
-    //    double threshold = _randomProvider.NextDouble();
-    //    double cum = 0; // hehe
-    //    int selectedIdx = moves.Count - 1;
-
-    //    for (int i = 0; i < moves.Count; i++)
-    //    {
-    //        cum += probabilities[i];
-    //        if (cum >= threshold)
-    //        {
-    //            selectedIdx = i;
-    //            break;
-    //        }
-    //    }
-    //    return moves[selectedIdx].MoveEval;
-    //}
-
-    //private static double CalcTacticChance(int numOfTactics) =>
-    //    Math.Min(1, TacticChance + TacticChancePerMoveBonus * numOfTactics);
-
-    //private static bool IsHang(MoveEvaluation moveEval, int depth2Eval, int lastEval)
-    //{
-    //    int pieceValueMargin = 150;
-    //    if (lastEval - depth2Eval < pieceValueMargin)
-    //    {
-    //        return false;
-    //    }
-
-    //    return lastEval - moveEval.EvalForBot >= pieceValueMargin;
-    //}
-
-    //private bool CausesForcedMove(Move boardMove, IReadOnlyChessBoard board)
-    //{
-    //    ChessBoard boardCopy = new(board);
-    //    boardCopy.PlayMove(boardMove);
-    //    return _legalMoveCalculator.HasForcedMoves(boardCopy);
-    //}
-
-    //private static bool IsCapturingOpponentHang(
-    //    MoveEvaluation moveEval,
-    //    int depth2Eval,
-    //    int lastEval
-    //)
-    //{
-    //    if (moveEval.Captures is null || moveEval.Captures.Count == 0)
-    //    {
-    //        return false;
-    //    }
-
-    //    if (depth2Eval >= 100_000)
-    //    {
-    //        return true;
-    //    }
-
-    //    int pieceValueMargin = 150;
-    //    if (depth2Eval - lastEval < pieceValueMargin)
-    //    {
-    //        return false;
-    //    }
-
-    //    return moveEval.EvalForBot - lastEval >= pieceValueMargin;
-    //}
-
-    public Task<ErrorOr<MoveEvaluation>> FindMoveAsync(
+    public async Task<ErrorOr<MoveEvaluation>> FindMoveAsync(
         IReadOnlyChessBoard board,
         int lastEval,
         CancellationToken token = default
     )
     {
-        throw new NotImplementedException();
+        var evaluationResult = await _botService.EvaluateAllMovesAsync(board, depth: Depth, token);
+        if (evaluationResult.IsError)
+        {
+            return evaluationResult.Errors;
+        }
+
+        BitBoard bitboard = _botService.ConvertBoardToBit(board);
+        float endgameFactor = EndgameFactorCalculator.EndgameFactor(bitboard);
+
+        List<CandidateBotMove> moves =
+        [
+            .. evaluationResult
+                .Value.Select((move, i) => ScoreMove(move, board, bitboard, endgameFactor))
+                .OrderByDescending(x => x.MoveEval.EvalForBot),
+        ];
+
+        (List<CandidateBotMove> missableCheckmates, List<CandidateBotMove> nonCheckmates) =
+            TakeWhilePrefix(
+                moves,
+                move =>
+                {
+                    bool isCheckmate = move.MoveEval.EvalForBot >= 100_000;
+                    if (!isCheckmate)
+                    {
+                        return false;
+                    }
+
+                    if (move.CausesForcedMove)
+                    {
+                        return true;
+                    }
+                    if (!move.IsRecapture && !move.IsCapturingHanging)
+                    {
+                        return true;
+                    }
+
+                    return false;
+                }
+            );
+        if (missableCheckmates.Count > 0 && _randomProvider.NextDouble() < CheckmateChance)
+        {
+            _logger.LogInformation("playing missable checkmate");
+            return Softmax(missableCheckmates, board, endgameFactor);
+        }
+
+        (List<CandidateBotMove> tactics, List<CandidateBotMove> nonTactics) = TakeWhilePrefix(
+            nonCheckmates,
+            move =>
+                move.MoveEval.EvalForBot - lastEval > TacticalThreshold
+                && (!move.IsCapturingHanging || move.CausesForcedMove || move.IsMultiStep)
+        );
+        if (tactics.Count == moves.Count)
+        {
+            _logger.LogInformation("playing tactic because no other move");
+            return SoftmaxTactics(moves, board, endgameFactor);
+        }
+
+        if (TrySoftmaxTactics(tactics, board, endgameFactor, out var tactic))
+        {
+            _logger.LogInformation("playing tactic");
+            return tactic;
+        }
+
+        (List<CandidateBotMove> nonBlunders, List<CandidateBotMove> blunders) = TakeWhilePrefix(
+            nonTactics,
+            move => move.MoveEval.EvalForBot - lastEval > DrasticallyBadMoveThreshold
+        );
+        if (nonBlunders.Count == 0 && tactics.Count > 0)
+        {
+            _logger.LogInformation("playing tactic because no non blunders");
+            return SoftmaxTactics(tactics, board, endgameFactor);
+        }
+
+        int nonBlunderRecapturesCount = 0;
+        foreach (var move in nonBlunders)
+        {
+            if (move.IsRecapture)
+            {
+                nonBlunderRecapturesCount++;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        if (nonBlunders.Count > 0 && nonBlunderRecapturesCount == nonBlunders.Count)
+        {
+            _logger.LogInformation("playing non blunder");
+            return Softmax(nonBlunders, board, endgameFactor);
+        }
+
+        List<CandidateBotMove> nonStupidBlunders = [.. blunders.Where(move => !move.IsHang)];
+        if (
+            board.Moves.Count > 10
+            && nonStupidBlunders.Count > 0
+            && _randomProvider.NextDouble() < BlunderChance
+        )
+        {
+            _logger.LogInformation("playing blunder");
+            return Softmax(nonStupidBlunders, board, endgameFactor);
+        }
+
+        _logger.LogInformation("playing non tactic");
+        return Softmax(nonTactics, board, endgameFactor);
+    }
+
+    private CandidateBotMove ScoreMove(
+        MoveEvaluation moveEval,
+        IReadOnlyChessBoard board,
+        BitBoard boardBeforeMove,
+        float endgameFactor
+    )
+    {
+        BitBoard boardAfterMove = new(boardBeforeMove);
+        boardAfterMove.MakeMove(moveEval.Move);
+
+        bool isMultiStep = _botHeuristics.IsMultiStep(moveEval.Move, boardBeforeMove);
+        bool isHang = _botHeuristics.IsHang(moveEval.Move, boardAfterMove);
+        bool causesForcedMove = _botHeuristics.CausesForcedMove(moveEval.Move, boardAfterMove);
+        bool isCapturingHanging = _botHeuristics.IsCapturingOpponentHang(
+            moveEval.Move,
+            boardAfterMove
+        );
+        bool isRecapture =
+            board.Moves.Count > 0
+            && board.Moves[^1].Captures.Count > 0
+            && moveEval.Move.To == board.Moves[^1].To.AsIdx();
+        bool losesKingCastling = _botHeuristics.LosesKingCastlingRight(
+            moveEval.Move,
+            boardBeforeMove
+        );
+        bool losesRookCastling = _botHeuristics.LosesRookCastlingRight(
+            moveEval.Move,
+            boardBeforeMove
+        );
+
+        int playabilityEval = moveEval.EvalForBot;
+
+        if (isHang)
+        {
+            playabilityEval -= HangPenalty;
+        }
+
+        if (isCapturingHanging && !causesForcedMove)
+        {
+            playabilityEval += OpponentHangBonus;
+        }
+
+        if (causesForcedMove)
+        {
+            playabilityEval -= CausesForcedMovePenalty;
+        }
+
+        if (isMultiStep && !isRecapture)
+        {
+            playabilityEval -= MultiStepMovePenalty;
+        }
+
+        if (losesKingCastling)
+        {
+            playabilityEval -= (int)(LosesKingCastlingRightPenalty * (1 - endgameFactor));
+        }
+
+        if (losesRookCastling)
+        {
+            playabilityEval -= (int)(LosesRookCastlingRightPenalty * (1 - endgameFactor));
+        }
+
+        _logger.LogInformation(
+            "from: {From}, to: {To}, candidate: {Candidate}",
+            AlgebraicPoint.FromIdx(moveEval.Move.From),
+            AlgebraicPoint.FromIdx(moveEval.Move.To),
+            new CandidateBotMove(
+                moveEval,
+                IsHang: isHang,
+                IsCapturingHanging: isCapturingHanging,
+                IsRecapture: isRecapture,
+                CausesForcedMove: causesForcedMove,
+                IsMultiStep: isMultiStep,
+                PlayabilityEval: playabilityEval
+            )
+        );
+
+        return new CandidateBotMove(
+            moveEval,
+            IsHang: isHang,
+            IsCapturingHanging: isCapturingHanging,
+            IsRecapture: isRecapture,
+            CausesForcedMove: causesForcedMove,
+            IsMultiStep: isMultiStep,
+            PlayabilityEval: playabilityEval
+        );
+    }
+
+    private static (List<T> head, List<T> tail) TakeWhilePrefix<T>(
+        IEnumerable<T> source,
+        Func<T, bool> predicate
+    )
+    {
+        List<T> head = [];
+        List<T> tail = [];
+        bool inHead = true;
+
+        foreach (var item in source)
+        {
+            if (inHead && predicate(item))
+            {
+                head.Add(item);
+            }
+            else
+            {
+                inHead = false;
+                tail.Add(item);
+            }
+        }
+
+        return (head, tail);
+    }
+
+    private MoveEvaluation Softmax(
+        List<CandidateBotMove> moves,
+        IReadOnlyChessBoard board,
+        float endgameFactor
+    )
+    {
+        double temperature = GetTemperature(board, endgameFactor);
+        var result = _randomProvider.Softmax(moves, x => x.PlayabilityEval, temperature).MoveEval;
+        _logger.LogInformation(
+            "TEMPERATURE: {Tempterature}, FROM: {From}, TO: {To}",
+            temperature,
+            result.Move.From,
+            result.Move.To
+        );
+        return result;
+    }
+
+    private static double GetTemperature(IReadOnlyChessBoard board, float endgameFactor)
+    {
+        if (board.Moves.Count <= 10)
+        {
+            return OpeningTemperature;
+        }
+
+        double temperature =
+            (MiddleGameTemperature * endgameFactor) + (EndGameTemperature * (1 - endgameFactor));
+        return temperature;
+    }
+
+    private bool TrySoftmaxTactics(
+        List<CandidateBotMove> tactics,
+        IReadOnlyChessBoard board,
+        float endgameFactor,
+        [NotNullWhen(true)] out MoveEvaluation? result
+    )
+    {
+        result = null;
+        if (tactics.Count == 0)
+        {
+            return false;
+        }
+
+        if (
+            _randomProvider.NextDouble()
+            < Math.Min(1, TacticChance + TacticChancePerMoveBonus * tactics.Count)
+        )
+        {
+            return false;
+        }
+
+        var (complexTactics, simpleTactics) = SortTactics(tactics);
+        if (complexTactics.Count == 0)
+        {
+            _logger.LogInformation("playing simple tactic");
+            result = Softmax(simpleTactics, board, endgameFactor);
+            return true;
+        }
+
+        bool playSimple = _randomProvider.NextDouble() < SimpleTacticChance;
+        if (simpleTactics.Count == 0 && playSimple)
+        {
+            return false;
+        }
+
+        if (playSimple)
+        {
+            _logger.LogInformation("playing simple tactic");
+            result = Softmax(simpleTactics, board, endgameFactor);
+            return true;
+        }
+        else
+        {
+            _logger.LogInformation("playing complex tactic");
+            result = Softmax(complexTactics, board, endgameFactor);
+            return true;
+        }
+    }
+
+    private MoveEvaluation SoftmaxTactics(
+        List<CandidateBotMove> tactics,
+        IReadOnlyChessBoard board,
+        float endgameFactor
+    )
+    {
+        var (complexTactics, simpleTactics) = SortTactics(tactics);
+        bool playSimple = _randomProvider.NextDouble() < SimpleTacticChance;
+
+        if (playSimple)
+        {
+            _logger.LogInformation("playing simple tactic");
+        }
+        else
+        {
+            _logger.LogInformation("playing complex tactic");
+        }
+
+        return playSimple
+            ? Softmax(simpleTactics, board, endgameFactor)
+            : Softmax(complexTactics, board, endgameFactor);
+    }
+
+    private static (List<CandidateBotMove> complex, List<CandidateBotMove> simple) SortTactics(
+        List<CandidateBotMove> tactics
+    )
+    {
+        List<CandidateBotMove> complexTactics = [];
+        List<CandidateBotMove> simpleTactics = [];
+        foreach (CandidateBotMove move in tactics)
+        {
+            if (move.CausesForcedMove || move.IsMultiStep)
+            {
+                complexTactics.Add(move);
+            }
+            else
+            {
+                simpleTactics.Add(move);
+            }
+        }
+        return (complexTactics, simpleTactics);
     }
 
     public GamePlayer CreateBotPlayer(GameColor color) =>

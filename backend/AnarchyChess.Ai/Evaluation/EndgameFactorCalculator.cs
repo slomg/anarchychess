@@ -4,16 +4,11 @@ using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai.Evaluation;
 
-public interface IEndgameFactorCalculator
-{
-    float EndgameFactor(BitBoard board);
-}
-
-public sealed class EndgameFactorCalculator : IEndgameFactorCalculator
+public static class EndgameFactorCalculator
 {
     public const int MaxPhase = 17;
 
-    public float EndgameFactor(BitBoard board)
+    public static float EndgameFactor(BitBoard board)
     {
         float queenCount = BitboardHelpers.CountBits(
             board.BitboardFor(PieceType.Queen, BitPieceColor.White)
