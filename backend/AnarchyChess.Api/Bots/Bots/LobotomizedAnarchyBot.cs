@@ -47,6 +47,7 @@ public class LobotomizedAnarchyBot(
     private const double SimpleTacticChance = 0.9;
     private const double CheckmateChance = 0.3;
 
+    private const int HangPenalty = 300;
     private const int BetaDecayPenalty = 300;
     private const int OpponentHangBonus = 100;
     private const int CausesForcedMovePenalty = 300;
@@ -200,7 +201,7 @@ public class LobotomizedAnarchyBot(
         );
 
         bool isMultiStep = _botHeuristics.IsMultiStep(moveEval.Move, context);
-        int hangLoss = _botHeuristics.HangLoss(moveEval.Move, context);
+        bool isHang = _botHeuristics.IsHang(moveEval.Move, context);
         bool causesForcedMove = _botHeuristics.CausesForcedMove(moveEval.Move, context);
         bool isCapturingHanging = _botHeuristics.IsCapturingOpponentHang(moveEval.Move, context);
         bool isRecapture = _botHeuristics.IsRecapture(moveEval.Move, context);
@@ -210,11 +211,14 @@ public class LobotomizedAnarchyBot(
 
         int playabilityEval = moveEval.EvalForBot;
 
-        playabilityEval -= hangLoss;
-
         if (moveEval.Move.SpecialMoveType is SpecialMoveType.RadioactiveBetaDecay)
         {
             playabilityEval -= BetaDecayPenalty;
+        }
+
+        if (isHang)
+        {
+            playabilityEval -= HangPenalty;
         }
 
         if (isCapturingHanging && !causesForcedMove)
@@ -253,7 +257,7 @@ public class LobotomizedAnarchyBot(
             AlgebraicPoint.FromIdx(moveEval.Move.To),
             new CandidateBotMove(
                 moveEval,
-                IsHang: hangLoss > 0,
+                IsHang: isHang,
                 IsCapturingHanging: isCapturingHanging,
                 IsRecapture: isRecapture,
                 CausesForcedMove: causesForcedMove,
@@ -265,7 +269,7 @@ public class LobotomizedAnarchyBot(
 
         return new CandidateBotMove(
             moveEval,
-            IsHang: hangLoss > 0,
+            IsHang: isHang,
             IsCapturingHanging: isCapturingHanging,
             IsRecapture: isRecapture,
             CausesForcedMove: causesForcedMove,

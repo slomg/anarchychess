@@ -12,7 +12,7 @@ public interface IBotHeuristics
     bool CausesForcedMove(BitMove move, BotHeuristicContext context);
     bool IsBackwards(BitMove move);
     bool IsCapturingOpponentHang(BitMove move, BotHeuristicContext context);
-    int HangLoss(BitMove move, BotHeuristicContext context);
+    bool IsHang(BitMove move, BotHeuristicContext context);
     bool IsMultiStep(BitMove move, BotHeuristicContext context);
     bool IsRecapture(BitMove move, BotHeuristicContext context);
     bool LosesKingCastlingRight(BitMove move, BotHeuristicContext context);
@@ -126,7 +126,7 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
         return false;
     }
 
-    public int HangLoss(BitMove move, BotHeuristicContext context)
+    public bool IsHang(BitMove move, BotHeuristicContext context)
     {
         int exchangeValue = SeeCapture(move, context.Bitboard);
         bool isWinningExchange = exchangeValue > 90;
@@ -142,13 +142,12 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
                 continue;
             }
 
-            int see = SeeCapture(opponentMove, context.BitboardAfterMove);
-            if (see > exchangeValue)
+            if (SeeCapture(opponentMove, context.BitboardAfterMove) > exchangeValue)
             {
-                return see;
+                return true;
             }
         }
-        return 0;
+        return false;
     }
 
     public bool IsCapturingOpponentHang(BitMove move, BotHeuristicContext context) =>
