@@ -31,11 +31,11 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
 {
     private readonly IBitMoveGenerator _bitMoveGenerator = bitMoveGenerator;
 
-    private readonly PieceType[] _piecesByValue =
+    private readonly PieceType[] _seePiecesByValue =
     [
         .. Enum.GetValues<PieceType>()
             .OrderBy(MaterialValue.GetPieceValue)
-            .Where(x => MaterialValue.GetPieceValue(x) > 0),
+            .Where(x => MaterialValue.GetPieceValue(x) > 0 && x is not PieceType.King),
     ];
 
     public bool IsRecapture(BitMove move, BotHeuristicContext context) =>
@@ -174,21 +174,39 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
         return value;
     }
 
-    private int See(byte position, PieceType capturingPiece, BitBoard board)
+    private int See(byte position, PieceType capturedByPiece, BitBoard board)
     {
         UInt128 positionBit = UInt128.One << position;
         BitPieceColor sideToMove = board.IsWhiteToMove ? BitPieceColor.White : BitPieceColor.Black;
+        BitPieceColor opponentColor = board.IsWhiteToMove
+            ? BitPieceColor.Black
+            : BitPieceColor.White;
 
         int kingCount = CountKings(sideToMove, board);
-        if (kingCount <= 1 && capturingPiece is PieceType.King)
+        int capturedByPieceValue =
+            kingCount <= 1 && capturedByPiece is PieceType.King
+                ? 100_000
+                : MaterialValue.GetPieceValue(capturedByPiece);
+
+        List<PieceType> pieces = [.. _seePiecesByValue];
+        int opponentKingValue =
+            CountKings(opponentColor, board) <= 1
+                ? 100_000
+                : MaterialValue.GetPieceValue(PieceType.King);
+        int insertKingIdx = pieces.FindIndex(x =>
+            MaterialValue.GetPieceValue(x) < opponentKingValue
+        );
+        if (insertKingIdx == -1)
         {
-            return 100_000;
+            pieces.Add(PieceType.King);
+        }
+        else
+        {
+            pieces.Insert(insertKingIdx, PieceType.King);
         }
 
-        int capturingValue = MaterialValue.GetPieceValue(capturingPiece);
-
         Span<BitMove> moves = stackalloc BitMove[EngineConstants.MaxMoves];
-        foreach (var pieceType in _piecesByValue)
+        foreach (var pieceType in pieces)
         {
             int pieceValue = MaterialValue.GetPieceValue(pieceType);
 
@@ -222,7 +240,8 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
                     MoveUndoState undo = board.MakeMove(move);
                     int value = Math.Max(
                         0,
-                        capturingValue - See(position: move.To, capturingPiece: pieceType, board)
+                        capturedByPieceValue
+                            - See(position: move.To, capturedByPiece: pieceType, board)
                     );
                     board.UndoMove(undo);
                     return value;
