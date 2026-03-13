@@ -9,15 +9,23 @@ namespace AnarchyChess.Api.Bots.Services;
 
 public interface IBotHeuristics
 {
-    bool CausesForcedMove(BitMove move, BitBoard boardAfterMove);
+    bool CausesForcedMove(BitMove move, BotHeuristicContext context);
     bool IsBackwards(BitMove move);
-    bool IsCapturingOpponentHang(BitMove move, BitBoard boardAfterMove);
-    bool IsHang(BitMove move, BitBoard boardAfterMove);
-    bool IsMultiStep(BitMove move, BitBoard boardBeforeMove);
-    bool IsRecapture(BitMove move, IReadOnlyChessBoard board);
-    bool LosesKingCastlingRight(BitMove move, BitBoard board);
-    bool LosesRookCastlingRight(BitMove move, BitBoard board);
+    bool IsCapturingOpponentHang(BitMove move, BotHeuristicContext context);
+    bool IsHang(BitMove move, BotHeuristicContext context);
+    bool IsMultiStep(BitMove move, BotHeuristicContext context);
+    bool IsRecapture(BitMove move, BotHeuristicContext context);
+    bool LosesKingCastlingRight(BitMove move, BotHeuristicContext context);
+    bool LosesRookCastlingRight(BitMove move, BotHeuristicContext context);
 }
+
+public record BotHeuristicContext(
+    IReadOnlyChessBoard Board,
+    BitBoard Bitboard,
+    BitBoard BitboardAfterMove,
+    BitMove[] OpponentMoves,
+    int OpponentMoveCount
+);
 
 public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
 {
@@ -30,10 +38,10 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
             .Where(x => MaterialValue.GetPieceValue(x) > 0),
     ];
 
-    public bool IsRecapture(BitMove move, IReadOnlyChessBoard board) =>
-        board.Moves.Count > 0
-        && board.Moves[^1].Captures.Count > 0
-        && move.To == board.Moves[^1].To.AsIdx();
+    public bool IsRecapture(BitMove move, BotHeuristicContext context) =>
+        context.Board.Moves.Count > 0
+        && context.Board.Moves[^1].Captures.Count > 0
+        && move.To == context.Board.Moves[^1].To.AsIdx();
 
     public bool IsBackwards(BitMove move)
     {
@@ -48,40 +56,17 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
         return (fromY - toY) * backwardsDirection > 0;
     }
 
-    public bool IsMultiStep(BitMove move, BitBoard boardBeforeMove)
-    {
-        switch (move.Piece.Type)
-        {
-            case PieceType.Bishop:
-                UInt128 bishopAttacks = MagicLibrary.GetAttacks(
-                    MagicLibrary.BishopTable,
-                    move.From,
-                    boardBeforeMove.Occupancy
-                );
-                return (bishopAttacks & (UInt128.One << move.To)) == 0;
-            case PieceType.Checker:
-                if (BitboardHelpers.CountBits(move.CapturesMask) > 1)
-                {
-                    return true;
-                }
+    public bool IsMultiStep(BitMove move, BotHeuristicContext context) =>
+        CheckMultiStep(move, context.Bitboard);
 
-                UInt128 checkerAttacks =
-                    PieceMasks.SingleCheckerJumpMasks[move.From]
-                    | PieceMasks.AdjacentMasks[move.From];
-                return (checkerAttacks & (UInt128.One << move.To)) == 0;
-            default:
-                return false;
-        }
-    }
-
-    public bool LosesKingCastlingRight(BitMove move, BitBoard board)
+    public bool LosesKingCastlingRight(BitMove move, BotHeuristicContext context)
     {
         if (move.Piece.Type is not PieceType.King)
         {
             return false;
         }
 
-        if (board.HasPieceMoved(move.From))
+        if (context.Bitboard.HasPieceMoved(move.From))
         {
             return false;
         }
@@ -89,14 +74,14 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
         return true;
     }
 
-    public bool LosesRookCastlingRight(BitMove move, BitBoard board)
+    public bool LosesRookCastlingRight(BitMove move, BotHeuristicContext context)
     {
         if (move.Piece.Type is not PieceType.Rook)
         {
             return false;
         }
 
-        if (board.HasPieceMoved(move.From))
+        if (context.Bitboard.HasPieceMoved(move.From))
         {
             return false;
         }
@@ -104,12 +89,9 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
         return true;
     }
 
-    public bool CausesForcedMove(BitMove move, BitBoard boardAfterMove)
+    public bool CausesForcedMove(BitMove move, BotHeuristicContext context)
     {
-        Span<BitMove> opponentMoves = stackalloc BitMove[EngineConstants.MaxMoves];
-        int moveCount = 0;
-        _bitMoveGenerator.Generate(boardAfterMove, opponentMoves, ref moveCount);
-        if (opponentMoves[0].ForcedMovePriority is not ForcedMovePriority.None)
+        if (context.OpponentMoves[0].ForcedMovePriority is not ForcedMovePriority.None)
         {
             return true;
         }
@@ -121,26 +103,26 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
 
         UInt128 positionBit = UInt128.One << move.To;
         Span<BitMove> opponentResponseMoves = stackalloc BitMove[EngineConstants.MaxMoves];
-        for (int i = 0; i < moveCount; i++)
+        for (int i = 0; i < context.OpponentMoveCount; i++)
         {
-            BitMove opponentMove = opponentMoves[i];
+            BitMove opponentMove = context.OpponentMoves[i];
             if ((opponentMove.CapturesMask & positionBit) == 0)
             {
                 continue;
             }
 
-            MoveUndoState undo = boardAfterMove.MakeMove(opponentMove);
-            NullMoveUndoState nullUndo = boardAfterMove.MakeNullMove();
+            MoveUndoState undo = context.BitboardAfterMove.MakeMove(opponentMove);
+            NullMoveUndoState nullUndo = context.BitboardAfterMove.MakeNullMove();
 
             int opponentResponseMoveCount = 0;
             _bitMoveGenerator.Generate(
-                boardAfterMove,
+                context.BitboardAfterMove,
                 opponentResponseMoves,
                 ref opponentResponseMoveCount
             );
 
-            boardAfterMove.UndoNullMove(nullUndo);
-            boardAfterMove.UndoMove(undo);
+            context.BitboardAfterMove.UndoNullMove(nullUndo);
+            context.BitboardAfterMove.UndoMove(undo);
 
             if (opponentResponseMoves[0].ForcedMovePriority is not ForcedMovePriority.None)
             {
@@ -151,22 +133,18 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
         return false;
     }
 
-    public bool IsHang(BitMove move, BitBoard boardAfterMove)
+    public bool IsHang(BitMove move, BotHeuristicContext context)
     {
-        BitPieceColor ourSide = boardAfterMove.IsWhiteToMove
+        BitPieceColor ourSide = context.BitboardAfterMove.IsWhiteToMove
             ? BitPieceColor.Black
             : BitPieceColor.White;
-        UInt128 ourPieces = boardAfterMove.BitboardForFriendOf(ourSide);
-
-        Span<BitMove> opponentMoves = stackalloc BitMove[EngineConstants.MaxMoves];
-        int moveCount = 0;
-        _bitMoveGenerator.Generate(boardAfterMove, opponentMoves, ref moveCount);
+        UInt128 ourPieces = context.BitboardAfterMove.BitboardForFriendOf(ourSide);
 
         while (ourPieces != 0)
         {
             byte position = (byte)BitboardHelpers.BitScanForward(ref ourPieces);
             if (
-                !boardAfterMove.TryGetPieceAt(position, out var piece)
+                !context.BitboardAfterMove.TryGetPieceAt(position, out var piece)
                 || MaterialValue.GetPieceValue(piece.Value.Type) < 300
             )
             {
@@ -174,17 +152,21 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
             }
 
             UInt128 positionBit = UInt128.One << position;
-            for (int i = 0; i < moveCount; i++)
+            for (int i = 0; i < context.OpponentMoveCount; i++)
             {
-                BitMove opponentMove = opponentMoves[i];
+                BitMove opponentMove = context.OpponentMoves[i];
                 if ((opponentMove.CapturesMask & positionBit) == 0)
                 {
                     continue;
                 }
 
-                MoveUndoState undo = boardAfterMove.MakeMove(opponentMove);
-                int seeValue = See(position, capturingPiece: piece.Value.Type, boardAfterMove);
-                boardAfterMove.UndoMove(undo);
+                MoveUndoState undo = context.BitboardAfterMove.MakeMove(opponentMove);
+                int seeValue = See(
+                    position,
+                    capturingPiece: piece.Value.Type,
+                    context.BitboardAfterMove
+                );
+                context.BitboardAfterMove.UndoMove(undo);
                 if (seeValue < 90)
                 {
                     return true;
@@ -195,7 +177,7 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
         return false;
     }
 
-    public bool IsCapturingOpponentHang(BitMove move, BitBoard boardAfterMove)
+    public bool IsCapturingOpponentHang(BitMove move, BotHeuristicContext context)
     {
         if (move.CapturesMask == 0)
         {
@@ -207,14 +189,14 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
         {
             byte position = (byte)BitboardHelpers.BitScanForward(ref capturesMask);
             if (
-                !boardAfterMove.TryGetPieceAt(position, out var capturingPiece)
+                !context.BitboardAfterMove.TryGetPieceAt(position, out var capturingPiece)
                 || MaterialValue.GetPieceValue(capturingPiece.Value.Type) < 300
             )
             {
                 continue;
             }
 
-            int seeValue = See(position, capturingPiece.Value.Type, boardAfterMove);
+            int seeValue = See(position, capturingPiece.Value.Type, context.BitboardAfterMove);
             if (seeValue == 0)
             {
                 return true;
@@ -263,7 +245,7 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
                         continue;
                     }
 
-                    if (IsMultiStep(move, board))
+                    if (CheckMultiStep(move, board))
                     {
                         continue;
                     }
@@ -283,4 +265,30 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
 
     private static int CountKings(BitPieceColor color, BitBoard board) =>
         BitboardHelpers.CountBits(board.BitboardFor(PieceType.King, color));
+
+    private static bool CheckMultiStep(BitMove move, BitBoard board)
+    {
+        switch (move.Piece.Type)
+        {
+            case PieceType.Bishop:
+                UInt128 bishopAttacks = MagicLibrary.GetAttacks(
+                    MagicLibrary.BishopTable,
+                    move.From,
+                    board.Occupancy
+                );
+                return (bishopAttacks & (UInt128.One << move.To)) == 0;
+            case PieceType.Checker:
+                if (BitboardHelpers.CountBits(move.CapturesMask) > 1)
+                {
+                    return true;
+                }
+
+                UInt128 checkerAttacks =
+                    PieceMasks.SingleCheckerJumpMasks[move.From]
+                    | PieceMasks.AdjacentMasks[move.From];
+                return (checkerAttacks & (UInt128.One << move.To)) == 0;
+            default:
+                return false;
+        }
+    }
 }

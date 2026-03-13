@@ -27,7 +27,8 @@ public class LobotomizedAnarchyBot(
     ILogger<LobotomizedAnarchyBot> logger,
     IBotService botService,
     IRandomProvider randomProvider,
-    IBotHeuristics botHeuristics
+    IBotHeuristics botHeuristics,
+    IBitMoveGenerator bitMoveGenerator
 ) : IBot
 {
     public static readonly UserId BotId = "bot:lobotomized-anarchybot";
@@ -60,6 +61,7 @@ public class LobotomizedAnarchyBot(
     private readonly IBotService _botService = botService;
     private readonly IRandomProvider _randomProvider = randomProvider;
     private readonly IBotHeuristics _botHeuristics = botHeuristics;
+    private readonly IBitMoveGenerator _bitMoveGenerator = bitMoveGenerator;
 
     public async Task<ErrorOr<MoveEvaluation>> FindMoveAsync(
         IReadOnlyChessBoard board,
@@ -177,29 +179,32 @@ public class LobotomizedAnarchyBot(
     private CandidateBotMove ScoreMove(
         MoveEvaluation moveEval,
         IReadOnlyChessBoard board,
-        BitBoard boardBeforeMove,
+        BitBoard bitboard,
         float endgameFactor
     )
     {
-        BitBoard boardAfterMove = new(boardBeforeMove);
-        boardAfterMove.MakeMove(moveEval.Move);
+        BitBoard bitboardAfterMove = new(bitboard);
+        bitboardAfterMove.MakeMove(moveEval.Move);
 
-        bool isMultiStep = _botHeuristics.IsMultiStep(moveEval.Move, boardBeforeMove);
-        bool isHang = _botHeuristics.IsHang(moveEval.Move, boardAfterMove);
-        bool causesForcedMove = _botHeuristics.CausesForcedMove(moveEval.Move, boardAfterMove);
-        bool isCapturingHanging = _botHeuristics.IsCapturingOpponentHang(
-            moveEval.Move,
-            boardAfterMove
+        BitMove[] opponentMoves = new BitMove[EngineConstants.MaxMoves];
+        int opponentMoveCount = 0;
+        _bitMoveGenerator.Generate(bitboardAfterMove, opponentMoves, ref opponentMoveCount);
+
+        BotHeuristicContext context = new(
+            Board: board,
+            Bitboard: bitboard,
+            BitboardAfterMove: bitboardAfterMove,
+            OpponentMoves: opponentMoves,
+            OpponentMoveCount: opponentMoveCount
         );
-        bool isRecapture = _botHeuristics.IsRecapture(moveEval.Move, board);
-        bool losesKingCastling = _botHeuristics.LosesKingCastlingRight(
-            moveEval.Move,
-            boardBeforeMove
-        );
-        bool losesRookCastling = _botHeuristics.LosesRookCastlingRight(
-            moveEval.Move,
-            boardBeforeMove
-        );
+
+        bool isMultiStep = _botHeuristics.IsMultiStep(moveEval.Move, context);
+        bool isHang = _botHeuristics.IsHang(moveEval.Move, context);
+        bool causesForcedMove = _botHeuristics.CausesForcedMove(moveEval.Move, context);
+        bool isCapturingHanging = _botHeuristics.IsCapturingOpponentHang(moveEval.Move, context);
+        bool isRecapture = _botHeuristics.IsRecapture(moveEval.Move, context);
+        bool losesKingCastling = _botHeuristics.LosesKingCastlingRight(moveEval.Move, context);
+        bool losesRookCastling = _botHeuristics.LosesRookCastlingRight(moveEval.Move, context);
         bool isBackwards = _botHeuristics.IsBackwards(moveEval.Move);
 
         int playabilityEval = moveEval.EvalForBot;
