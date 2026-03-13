@@ -158,7 +158,7 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
     }
 
     public bool IsCapturingOpponentHang(BitMove move, BotHeuristicContext context) =>
-        ((UInt128.One << move.To) & move.CapturesMask) == 0
+        ((UInt128.One << move.From) & move.CapturesMask) == 0
         && SeeCapture(move, context.Bitboard) > 90;
 
     private int SeeCapture(BitMove move, BitBoard board)
