@@ -55,6 +55,7 @@ public class LobotomizedAnarchyBot(
     private const int LosesKingCastlingRightPenalty = 30;
     private const int BackwardsPenalty = 30;
     private const int EdgePenalty = 30;
+    private const int BetaDecayPenalty = 300;
 
     public BotType Type => BotType.LobotomizedAnarchyBot;
 
@@ -244,6 +245,11 @@ public class LobotomizedAnarchyBot(
         if (isEdge)
         {
             playabilityEval -= EdgePenalty;
+        }
+
+        if (moveEval.Move.SpecialMoveType is SpecialMoveType.RadioactiveBetaDecay)
+        {
+            playabilityEval -= BetaDecayPenalty;
         }
 
         _logger.LogInformation(
