@@ -33,26 +33,26 @@ public class LobotomizedAnarchyBot(
 {
     public static readonly UserId BotId = "bot:lobotomized-anarchybot";
 
-    private const int Depth = 6;
+    private const int Depth = 4;
     private const double OpeningTemperature = 10;
     private const double MiddleGameTemperature = 20;
     private const double EndGameTemperature = 10;
 
-    private const int TacticalThreshold = 150;
+    private const int TacticalThreshold = 100;
     private const int DrasticallyBadMoveThreshold = -200;
 
     private const double BlunderChance = 0.08;
     private const double TacticChance = 0.15;
     private const double TacticChancePerMoveBonus = 0.01;
     private const double SimpleTacticChance = 0.9;
-    private const double CheckmateChance = 0.3;
+    private const double CheckmateChance = 0.1;
 
     private const int HangPenalty = 300;
-    private const int OpponentHangBonus = 100;
+    private const int OpponentHangBonus = 50;
     private const int CausesForcedMovePenalty = 300;
     private const int MultiStepMovePenalty = 300;
     private const int LosesRookCastlingRightPenalty = 20;
-    private const int LosesKingCastlingRightPenalty = 30;
+    private const int LosesKingCastlingRightPenalty = 300;
     private const int BackwardsPenalty = 30;
     private const int EdgePenalty = 30;
     private const int BetaDecayPenalty = 300;
@@ -161,15 +161,15 @@ public class LobotomizedAnarchyBot(
             return Softmax(obviousMoves, board, endgameFactor);
         }
 
-        List<CandidateBotMove> nonStupidBlunders = [.. blunders.Where(move => !move.IsHang)];
+        List<CandidateBotMove> safeBlunders = [.. blunders.Where(move => !move.IsHang)];
         if (
             board.Moves.Count > 10
-            && nonStupidBlunders.Count > 0
+            && safeBlunders.Count > 0
             && _randomProvider.NextDouble() < BlunderChance
         )
         {
             _logger.LogInformation("playing blunder");
-            return Softmax(nonStupidBlunders, board, endgameFactor);
+            return Softmax(safeBlunders, board, endgameFactor);
         }
 
         if (nonBlunders.Count > 0)
@@ -414,7 +414,7 @@ public class LobotomizedAnarchyBot(
 
         if (playSimple)
         {
-            _logger.LogInformation("playing complex tactic");
+            _logger.LogInformation("playing simple tactic");
         }
         else
         {
