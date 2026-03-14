@@ -150,8 +150,11 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
     public bool IsHang(BitMove move, BotHeuristicContext context)
     {
         int exchangeValue = SeeCapture(move, context.Bitboard);
-        bool isWinningExchange = exchangeValue > 90;
-        exchangeValue = Math.Max(90, exchangeValue);
+        if (exchangeValue < 0)
+        {
+            return true;
+        }
+        bool isWinningExchange = exchangeValue > 0;
 
         UInt128 positionBit = UInt128.One << move.To;
         for (int i = 0; i < context.OpponentMoveCount; i++)
@@ -182,23 +185,49 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
             return 0;
         }
 
-        int captureValue = GetCaptureValue(move, board);
-        if (captureValue < 300)
+        UInt128 whiteOwnedTraitorRooks = FindOwnedTraitorRooks(board, isWhiteToMove: true);
+        UInt128 blackOwnedTraitorRooks = FindOwnedTraitorRooks(board, isWhiteToMove: false);
+        int captureValue = GetCaptureValue(
+            move,
+            board,
+            whiteOwnedTraitorRooks,
+            blackOwnedTraitorRooks
+        );
+
+        whiteOwnedTraitorRooks &= ~move.CapturesMask;
+        blackOwnedTraitorRooks &= ~move.CapturesMask;
+        if (move.Piece.Type is PieceType.TraitorRook && move.Piece.Color is BitPieceColor.White)
         {
-            return 0;
+            whiteOwnedTraitorRooks &= ~(UInt128.One << move.From);
+            whiteOwnedTraitorRooks |= UInt128.One << move.To;
+        }
+        else if (
+            move.Piece.Type is PieceType.TraitorRook
+            && move.Piece.Color is BitPieceColor.Black
+        )
+        {
+            blackOwnedTraitorRooks &= ~(UInt128.One << move.From);
+            blackOwnedTraitorRooks |= UInt128.One << move.To;
         }
 
         MoveUndoState undo = board.MakeMove(move);
-        int value = captureValue - See(move.To, move.Piece.Type, board);
+        int value =
+            captureValue
+            - See(move.To, move.Piece, board, whiteOwnedTraitorRooks, blackOwnedTraitorRooks);
         board.UndoMove(undo);
         return value;
     }
 
-    private int See(byte position, PieceType capturedByPiece, BitBoard board)
+    private int See(
+        byte position,
+        BitPiece capturedByPiece,
+        BitBoard board,
+        UInt128 whiteOwnedTraitorRooks,
+        UInt128 blackOwnedTraitorRooks
+    )
     {
         UInt128 positionBit = UInt128.One << position;
-        BitPieceColor sideToMove = board.IsWhiteToMove ? BitPieceColor.White : BitPieceColor.Black;
-        int capturedByPieceValue = GetRelativeValue(capturedByPiece, sideToMove, board);
+        int capturedByPieceValue = GetRelativeValue(capturedByPiece, board);
 
         Span<BitMove> moves = stackalloc BitMove[EngineConstants.MaxMoves];
         int moveCount = 0;
@@ -220,8 +249,13 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
                 continue;
             }
 
-            int attackerValue = GetRelativeValue(move.Piece.Type, move.Piece.Color, board);
-            int captureValue = GetCaptureValue(move, board);
+            int attackerValue = GetRelativeValue(move.Piece, board);
+            int captureValue = GetCaptureValue(
+                move,
+                board,
+                whiteOwnedTraitorRooks,
+                blackOwnedTraitorRooks
+            );
             int netGainScore = captureValue - attackerValue;
             if (netGainScore > bestNetGainScore)
             {
@@ -235,22 +269,52 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
             return 0;
         }
 
+        whiteOwnedTraitorRooks &= ~bestMove.Value.CapturesMask;
+        blackOwnedTraitorRooks &= ~bestMove.Value.CapturesMask;
+        if (
+            bestMove.Value.Piece.Type is PieceType.TraitorRook
+            && bestMove.Value.Piece.Color is BitPieceColor.White
+        )
+        {
+            whiteOwnedTraitorRooks &= ~(UInt128.One << bestMove.Value.From);
+            whiteOwnedTraitorRooks |= UInt128.One << bestMove.Value.To;
+        }
+        else if (
+            bestMove.Value.Piece.Type is PieceType.TraitorRook
+            && bestMove.Value.Piece.Color is BitPieceColor.Black
+        )
+        {
+            blackOwnedTraitorRooks &= ~(UInt128.One << bestMove.Value.From);
+            blackOwnedTraitorRooks |= UInt128.One << bestMove.Value.To;
+        }
+
         MoveUndoState undo = board.MakeMove(bestMove.Value);
         int value = Math.Max(
             0,
             totalCapturedValue
                 - See(
                     position: bestMove.Value.To,
-                    capturedByPiece: bestMove.Value.Piece.Type,
-                    board
+                    capturedByPiece: bestMove.Value.Piece,
+                    board,
+                    whiteOwnedTraitorRooks,
+                    blackOwnedTraitorRooks
                 )
         );
         board.UndoMove(undo);
         return value;
     }
 
-    private static int GetCaptureValue(BitMove move, BitBoard board)
+    private static int GetCaptureValue(
+        BitMove move,
+        BitBoard board,
+        UInt128 whiteOwnedTraitorRooks,
+        UInt128 blackOwnedTraitorRooks
+    )
     {
+        UInt128 ourTraitorRooks = board.IsWhiteToMove
+            ? whiteOwnedTraitorRooks
+            : blackOwnedTraitorRooks;
+
         UInt128 capturesMask = move.CapturesMask;
         int captureValue = 0;
         while (capturesMask != 0)
@@ -261,12 +325,18 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
                 continue;
             }
 
-            int value = GetRelativeValue(
-                capturedPiece.Value.Type,
-                capturedPiece.Value.Color,
-                board
-            );
-            if (move.Piece.Color == capturedPiece.Value.Color)
+            int value = GetRelativeValue(capturedPiece.Value, board);
+
+            bool ownsTraitorRook = (ourTraitorRooks & (UInt128.One << capturePosition)) != 0;
+            if (capturedPiece.Value.Type is PieceType.TraitorRook && ownsTraitorRook)
+            {
+                captureValue -= value;
+            }
+            else if (capturedPiece.Value.Type is PieceType.TraitorRook && !ownsTraitorRook)
+            {
+                captureValue += value;
+            }
+            else if (move.Piece.Color == capturedPiece.Value.Color)
             {
                 captureValue -= value;
             }
@@ -278,14 +348,47 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
         return captureValue;
     }
 
-    private static int GetRelativeValue(PieceType piece, BitPieceColor color, BitBoard board)
+    private static int GetRelativeValue(BitPiece piece, BitBoard board)
     {
-        if (piece is PieceType.King && CountKings(color, board) <= 1)
+        if (piece.Type is PieceType.King && CountKings(piece.Color, board) <= 1)
         {
             return 100_000;
         }
+        else if (piece.Type is PieceType.TraitorRook)
+        {
+            return 150;
+        }
+        else
+        {
+            return MaterialValue.GetPieceValue(piece.Type);
+        }
+    }
 
-        return MaterialValue.GetPieceValue(piece);
+    private static UInt128 FindOwnedTraitorRooks(BitBoard board, bool isWhiteToMove)
+    {
+        UInt128 mask = 0;
+
+        UInt128 traitorRooks = board.BitboardFor(PieceType.TraitorRook, BitPieceColor.Neutral);
+        while (traitorRooks != 0)
+        {
+            byte position = (byte)BitboardHelpers.BitScanForward(ref traitorRooks);
+            UInt128 adjacent = PieceMasks.AdjacentMasks[position];
+            UInt128 whiteAdjacent = adjacent & board.WhitePieces;
+            UInt128 blackAdjacent = adjacent & board.BlackPieces;
+
+            int whiteAdjacentCount = BitboardHelpers.CountBits(whiteAdjacent);
+            int blackAdjacentCount = BitboardHelpers.CountBits(blackAdjacent);
+            if (whiteAdjacentCount > blackAdjacentCount && isWhiteToMove)
+            {
+                mask |= UInt128.One << position;
+            }
+            else if (blackAdjacentCount > whiteAdjacentCount && !isWhiteToMove)
+            {
+                mask |= UInt128.One << position;
+            }
+        }
+
+        return mask;
     }
 
     private static int CountKings(BitPieceColor color, BitBoard board) =>
