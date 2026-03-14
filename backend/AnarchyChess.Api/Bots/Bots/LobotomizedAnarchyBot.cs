@@ -141,11 +141,6 @@ public class LobotomizedAnarchyBot(
             move =>
                 move.MoveEval.EvalForBot - lastEval > DrasticallyBadMoveThreshold && !move.IsHang
         );
-        if (nonBlunders.Count == 0 && tactics.Count > 0)
-        {
-            _logger.LogInformation("playing tactic because no non blunders");
-            return SoftmaxTactics(tactics, board, endgameFactor);
-        }
 
         List<CandidateBotMove> obviousMoves =
         [
@@ -177,10 +172,20 @@ public class LobotomizedAnarchyBot(
             _logger.LogInformation("playing non blunders");
             return Softmax(nonBlunders, board, endgameFactor);
         }
+        else if (safeBlunders.Count > 0)
+        {
+            _logger.LogInformation("playing blunder beacuse no non blunders");
+            return Softmax(safeBlunders, board, endgameFactor);
+        }
+        else if (nonTactics.Count > 0)
+        {
+            _logger.LogInformation("playing non tactics");
+            return Softmax(nonTactics, board, endgameFactor);
+        }
         else
         {
-            _logger.LogInformation("playing non tactic");
-            return Softmax(nonTactics, board, endgameFactor);
+            _logger.LogInformation("playing tactic because no non tactics");
+            return SoftmaxTactics(tactics, board, endgameFactor);
         }
     }
 
