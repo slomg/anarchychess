@@ -137,7 +137,8 @@ public class LobotomizedAnarchyBot(
 
         (List<CandidateBotMove> nonBlunders, List<CandidateBotMove> blunders) = OrderInto(
             nonTactics,
-            move => move.MoveEval.EvalForBot - lastEval > DrasticallyBadMoveThreshold
+            move =>
+                move.MoveEval.EvalForBot - lastEval > DrasticallyBadMoveThreshold && !move.IsHang
         );
         if (nonBlunders.Count == 0 && tactics.Count > 0)
         {
@@ -145,13 +146,14 @@ public class LobotomizedAnarchyBot(
             return SoftmaxTactics(tactics, board, endgameFactor);
         }
 
-        (List<CandidateBotMove> obviousMoves, _) = OrderInto(
-            nonBlunders,
-            move =>
+        List<CandidateBotMove> obviousMoves =
+        [
+            .. nonBlunders.Where(move =>
                 (move.IsCapturingHanging || move.IsRecapture)
                 && !move.CausesForcedMove
                 && !move.IsMultiStep
-        );
+            ),
+        ];
         if (obviousMoves.Count > 0)
         {
             _logger.LogInformation("playing obvious move");
@@ -169,8 +171,16 @@ public class LobotomizedAnarchyBot(
             return Softmax(nonStupidBlunders, board, endgameFactor);
         }
 
-        _logger.LogInformation("playing non tactic");
-        return Softmax(nonTactics, board, endgameFactor);
+        if (nonBlunders.Count > 0)
+        {
+            _logger.LogInformation("playing non blunders");
+            return Softmax(nonBlunders, board, endgameFactor);
+        }
+        else
+        {
+            _logger.LogInformation("playing non tactic");
+            return Softmax(nonTactics, board, endgameFactor);
+        }
     }
 
     private CandidateBotMove ScoreMove(
