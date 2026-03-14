@@ -381,8 +381,20 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
             if (whiteAdjacentCount > blackAdjacentCount && isWhiteToMove)
             {
                 mask |= UInt128.One << position;
+                continue;
             }
             else if (blackAdjacentCount > whiteAdjacentCount && !isWhiteToMove)
+            {
+                mask |= UInt128.One << position;
+                continue;
+            }
+
+            int x = position % 10;
+            if (x < 50 && isWhiteToMove)
+            {
+                mask |= UInt128.One << position;
+            }
+            else if (x > 50 && !isWhiteToMove)
             {
                 mask |= UInt128.One << position;
             }
