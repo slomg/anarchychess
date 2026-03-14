@@ -15,6 +15,7 @@ public interface IBotHeuristics
     bool IsEdge(BitMove move);
     bool IsHang(BitMove move, BotHeuristicContext context);
     bool IsMultiStep(BitMove move, BotHeuristicContext context);
+    bool IsNonCentralPawn(BitMove move);
     bool IsRecapture(BitMove move, BotHeuristicContext context);
     bool LosesKingCastlingRight(BitMove move, BotHeuristicContext context);
     bool LosesRookCastlingRight(BitMove move, BotHeuristicContext context);
@@ -31,6 +32,19 @@ public record BotHeuristicContext(
 public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
 {
     private readonly IBitMoveGenerator _bitMoveGenerator = bitMoveGenerator;
+
+    public bool IsNonCentralPawn(BitMove move)
+    {
+        if (move.Piece.Type is not PieceType.Pawn)
+        {
+            return false;
+        }
+
+        const int centralMin = 3;
+        const int centralMax = 6;
+        int x = move.From % 10;
+        return x < centralMin || x > centralMax;
+    }
 
     public bool IsEdge(BitMove move)
     {

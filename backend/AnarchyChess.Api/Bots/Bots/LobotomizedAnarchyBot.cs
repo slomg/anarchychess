@@ -56,6 +56,7 @@ public class LobotomizedAnarchyBot(
     private const int BackwardsPenalty = 30;
     private const int EdgePenalty = 30;
     private const int BetaDecayPenalty = 300;
+    private const int NonCentralPawnPenaltyInOpening = 20;
 
     public BotType Type => BotType.LobotomizedAnarchyBot;
 
@@ -214,6 +215,7 @@ public class LobotomizedAnarchyBot(
         bool losesRookCastling = _botHeuristics.LosesRookCastlingRight(moveEval.Move, context);
         bool isBackwards = _botHeuristics.IsBackwards(moveEval.Move);
         bool isEdge = _botHeuristics.IsEdge(moveEval.Move);
+        bool isNonCentralPawn = _botHeuristics.IsNonCentralPawn(moveEval.Move);
 
         int playabilityEval = moveEval.EvalForBot;
 
@@ -260,6 +262,11 @@ public class LobotomizedAnarchyBot(
         if (moveEval.Move.SpecialMoveType is SpecialMoveType.RadioactiveBetaDecay)
         {
             playabilityEval -= BetaDecayPenalty;
+        }
+
+        if (isNonCentralPawn && board.Moves.Count <= 20)
+        {
+            playabilityEval -= NonCentralPawnPenaltyInOpening;
         }
 
         _logger.LogInformation(
