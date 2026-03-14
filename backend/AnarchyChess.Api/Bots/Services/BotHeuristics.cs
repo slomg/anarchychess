@@ -294,10 +294,14 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator) : IBotHeuristics
                     return true;
                 }
 
-                UInt128 checkerAttacks =
-                    PieceMasks.SingleCheckerJumpMasks[move.From]
-                    | PieceMasks.AdjacentMasks[move.From];
-                return (checkerAttacks & (UInt128.One << move.To)) == 0;
+                UInt128 checkerHops = PieceMasks.SingleCheckerJumpMasks[move.From];
+                UInt128 checkerCaptures = PieceMasks.AdjacentMasks[move.From];
+                UInt128 checkerAttacks = checkerHops & checkerCaptures;
+
+                // make sure all captures would be possible in a single hop
+                // and that all hops are possible in a single hop
+                return (move.CapturesMask & checkerCaptures) != move.CapturesMask
+                    || (checkerAttacks & (UInt128.One << move.To)) == 0;
             default:
                 return false;
         }
