@@ -113,9 +113,12 @@ public class BotHeuristicsTests : BaseIntegrationTest
             }
         );
         board.PlayMove(
-            new MoveFaker(GameColor.White, PieceType.Queen)
-                .RuleFor(x => x.From, new AlgebraicPoint("c2"))
-                .RuleFor(x => x.To, new AlgebraicPoint("f5"))
+            new MoveFaker(
+                GameColor.White,
+                PieceType.Queen,
+                from: new AlgebraicPoint("c2"),
+                to: new AlgebraicPoint("f5")
+            )
         );
 
         BitMove move = new BitMoveFaker(
@@ -143,10 +146,12 @@ public class BotHeuristicsTests : BaseIntegrationTest
             }
         );
         board.PlayMove(
-            new MoveFaker(GameColor.White, PieceType.Queen)
-                .RuleFor(x => x.From, new AlgebraicPoint("c2"))
-                .RuleFor(x => x.To, new AlgebraicPoint("f5"))
-                .RuleFor(x => x.Captures, [new MoveCapture(new("f5"), board)])
+            new MoveFaker(
+                GameColor.White,
+                PieceType.Queen,
+                from: new AlgebraicPoint("c2"),
+                to: new AlgebraicPoint("f5")
+            ).RuleFor(x => x.Captures, [new MoveCapture(new("f5"), board)])
         );
 
         BitMove move = new BitMoveFaker(
@@ -173,10 +178,12 @@ public class BotHeuristicsTests : BaseIntegrationTest
             }
         );
         board.PlayMove(
-            new MoveFaker(GameColor.White, PieceType.Queen)
-                .RuleFor(x => x.From, new AlgebraicPoint("c2"))
-                .RuleFor(x => x.To, new AlgebraicPoint("f5"))
-                .RuleFor(x => x.Captures, [new MoveCapture(new("f5"), board)])
+            new MoveFaker(
+                GameColor.White,
+                PieceType.Queen,
+                from: new AlgebraicPoint("c2"),
+                to: new AlgebraicPoint("f5")
+            ).RuleFor(x => x.Captures, [new MoveCapture(new("f5"), board)])
         );
 
         BitMove move = new BitMoveFaker(
@@ -226,5 +233,65 @@ public class BotHeuristicsTests : BaseIntegrationTest
         ).Generate();
 
         _botHeuristics.IsBackwards(move).Should().Be(expected);
+    }
+
+    [Fact]
+    public void LosesKingCastlingRight_returns_false_for_non_king()
+    {
+        ChessBoard board = new(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("f1")] = PieceFactory.White(PieceType.Queen),
+            }
+        );
+
+        BitMove move = new BitMoveFaker(
+            PieceType.Queen,
+            BitPieceColor.White,
+            from: new("f1"),
+            to: new("f2")
+        ).Generate();
+
+        _botHeuristics.LosesKingCastlingRight(move, CreateContext(move, board)).Should().BeFalse();
+    }
+
+    [Fact]
+    public void LosesKingCastlingRight_returns_false_if_king_already_moved()
+    {
+        ChessBoard board = new(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("f1")] = PieceFactory.White(PieceType.King, hasMoved: true),
+            }
+        );
+
+        BitMove move = new BitMoveFaker(
+            PieceType.King,
+            BitPieceColor.White,
+            from: new("f1"),
+            to: new("f2")
+        ).Generate();
+
+        _botHeuristics.LosesKingCastlingRight(move, CreateContext(move, board)).Should().BeFalse();
+    }
+
+    [Fact]
+    public void LosesKingCastlingRight_returns_true_for_unmoved_king()
+    {
+        ChessBoard board = new(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("f1")] = PieceFactory.White(PieceType.King),
+            }
+        );
+
+        BitMove move = new BitMoveFaker(
+            PieceType.King,
+            BitPieceColor.White,
+            from: new("f1"),
+            to: new("f2")
+        ).Generate();
+
+        _botHeuristics.LosesKingCastlingRight(move, CreateContext(move, board)).Should().BeTrue();
     }
 }
