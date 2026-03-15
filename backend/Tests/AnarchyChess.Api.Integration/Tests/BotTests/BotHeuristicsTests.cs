@@ -354,4 +354,99 @@ public class BotHeuristicsTests : BaseIntegrationTest
 
         _botHeuristics.LosesRookCastlingRight(move, CreateContext(move, board)).Should().BeTrue();
     }
+
+    [Fact]
+    public void CausesForcedMoves_returns_true_when_the_move_causes_a_forced_move_directly()
+    {
+        ChessBoard board = new(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("b2")] = PieceFactory.White(PieceType.Bishop),
+                [new("h9")] = PieceFactory.Black(PieceType.UnderagePawn),
+            },
+            sideToMove: GameColor.Black
+        );
+
+        BitMove move = new BitMoveFaker(
+            PieceType.UnderagePawn,
+            BitPieceColor.Black,
+            from: new("h9"),
+            to: new("h8")
+        ).Generate();
+
+        _botHeuristics.CausesForcedMove(move, CreateContext(move, board)).Should().BeTrue();
+    }
+
+    [Fact]
+    public void CausesForcedMoves_returns_false_when_the_move_doesnt_cause_a_forced_move_directly_and_is_not_a_capture()
+    {
+        ChessBoard board = new(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("b2")] = PieceFactory.White(PieceType.Bishop),
+                [new("h9")] = PieceFactory.Black(PieceType.UnderagePawn),
+                [new("j9")] = PieceFactory.Black(PieceType.UnderagePawn),
+            },
+            sideToMove: GameColor.Black
+        );
+
+        BitMove move = new BitMoveFaker(
+            PieceType.UnderagePawn,
+            BitPieceColor.Black,
+            from: new("h9"),
+            to: new("h7")
+        ).Generate();
+
+        _botHeuristics.CausesForcedMove(move, CreateContext(move, board)).Should().BeFalse();
+    }
+
+    [Fact]
+    public void CausesForcedMoves_returns_returns_false_when_a_recapture_doesnt_cause_a_forced_move()
+    {
+        ChessBoard board = new(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("g5")] = PieceFactory.White(PieceType.Queen),
+                [new("e9")] = PieceFactory.Black(PieceType.UnderagePawn),
+                [new("g8")] = PieceFactory.Black(PieceType.Queen),
+                [new("c4")] = PieceFactory.Black(PieceType.Bishop),
+            }
+        );
+
+        BitMove move = new BitMoveFaker(
+            PieceType.Queen,
+            BitPieceColor.White,
+            from: new("g5"),
+            to: new("g8")
+        )
+            .RuleFor(x => x.CapturesMask, UInt128.One << new AlgebraicPoint("g8").AsIdx())
+            .Generate();
+
+        _botHeuristics.CausesForcedMove(move, CreateContext(move, board)).Should().BeFalse();
+    }
+
+    [Fact]
+    public void CausesForcedMoves_returns_returns_true_when_a_recapture_causes_a_forced_move()
+    {
+        ChessBoard board = new(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("g5")] = PieceFactory.White(PieceType.Queen),
+                [new("f9")] = PieceFactory.Black(PieceType.UnderagePawn),
+                [new("g8")] = PieceFactory.Black(PieceType.Queen),
+                [new("c4")] = PieceFactory.Black(PieceType.Bishop),
+            }
+        );
+
+        BitMove move = new BitMoveFaker(
+            PieceType.Queen,
+            BitPieceColor.White,
+            from: new("g5"),
+            to: new("g8")
+        )
+            .RuleFor(x => x.CapturesMask, UInt128.One << new AlgebraicPoint("g8").AsIdx())
+            .Generate();
+
+        _botHeuristics.CausesForcedMove(move, CreateContext(move, board)).Should().BeTrue();
+    }
 }
