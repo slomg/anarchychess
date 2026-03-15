@@ -1,6 +1,7 @@
 ﻿using AnarchyChess.Ai;
 using AnarchyChess.Ai.Models;
 using AnarchyChess.Api.GameLogic;
+using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Api.Bots.Services;
@@ -51,10 +52,22 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator, IBotSee botSee) :
         return toX == 0 || toX == 9;
     }
 
-    public bool IsRecapture(BitMove move, BotHeuristicContext context) =>
-        context.Board.Moves.Count > 0
-        && context.Board.Moves[^1].Captures.Count > 0
-        && move.To == context.Board.Moves[^1].To.AsIdx();
+    public bool IsRecapture(BitMove move, BotHeuristicContext context)
+    {
+        if (context.Board.Moves.Count == 0)
+        {
+            return false;
+        }
+
+        Move lastMove = context.Board.Moves[^1];
+        if (lastMove.Captures.Count == 0)
+        {
+            return false;
+        }
+
+        UInt128 lastMoveTo = UInt128.One << lastMove.To.AsIdx();
+        return (move.CapturesMask & lastMoveTo) != 0;
+    }
 
     public bool IsBackwards(BitMove move)
     {
