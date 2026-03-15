@@ -10,7 +10,6 @@ public static class MagicLibrary
     public static MagicPieceTable BishopTable { get; }
 
     public static MagicPieceTable TwoStraightSquaresTable { get; }
-    public static MagicPieceTable TwoDiagonalSquaresTable { get; }
 
     public static MagicPieceTable WhiteLeftEnPassantTable { get; }
     public static MagicPieceTable WhiteRightEnPassantTable { get; }
@@ -29,7 +28,6 @@ public static class MagicLibrary
         BishopTable = LoadTable("BishopMagic.msgpack");
 
         TwoStraightSquaresTable = LoadTable("TwoStraightSquaresMagic.msgpack");
-        TwoDiagonalSquaresTable = LoadTable("TwoDiagonalSquaresMagic.msgpack");
 
         WhiteLeftEnPassantTable = LoadTable("WhiteLeftEnPassantMagic.msgpack");
         WhiteRightEnPassantTable = LoadTable("WhiteRightEnPassantMagic.msgpack");
