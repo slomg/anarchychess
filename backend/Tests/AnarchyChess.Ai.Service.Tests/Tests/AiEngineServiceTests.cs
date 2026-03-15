@@ -1,5 +1,4 @@
 ﻿using AnarchyChess.Ai.Models;
-using AnarchyChess.Ai.Service.DTO;
 using AnarchyChess.Ai.Service.Services;
 using AnarchyChess.Api.TestInfrastructure.Factories;
 using AnarchyChess.Api.TestInfrastructure.NSubtituteExtenstion;
@@ -77,11 +76,12 @@ public class AiEngineServiceTests
 
         AlgebraicPoint prevCapture1 = new("b5");
         AlgebraicPoint prevCapture2 = new("a6");
-        PrevMoveStateDto prevMoveDto = new(
-            From: new("a5"),
-            To: new("a2"),
-            Piece: PieceFactory.Black(PieceType.Pawn),
-            Captures: [prevCapture1, prevCapture2]
+        PrevMoveState prevMove = new(
+            From: new AlgebraicPoint("a5").AsIdx(),
+            To: new AlgebraicPoint("a2").AsIdx(),
+            Piece: new() { Type = PieceType.Pawn, Color = BitPieceColor.Black },
+            CaptureMask: (UInt128.One << prevCapture1.AsIdx())
+                | (UInt128.One << prevCapture2.AsIdx())
         );
 
         Dictionary<AlgebraicPoint, Piece> pieces = new()
@@ -96,7 +96,7 @@ public class AiEngineServiceTests
                 {
                     board.Should().NotBeNull();
 
-                    board.EnPassantPawnSquare.Should().Be(prevMoveDto.To.AsIdx());
+                    board.EnPassantPawnSquare.Should().Be(prevMove.To);
                     board
                         .EnPassantSquaresMask.Should()
                         .Be(
@@ -115,7 +115,7 @@ public class AiEngineServiceTests
             .Returns((BestMove: move, EvalForBot: -6969));
 
         var response = await _engine.FindBestMoveAsync(
-            new(pieces, IsWhiteToMove: true, PrevMoveState: prevMoveDto, Depth: 123),
+            new(pieces, IsWhiteToMove: true, PrevMoveState: prevMove, Depth: 123),
             TestContext.Current.CancellationToken
         );
 
