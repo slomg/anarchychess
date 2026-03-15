@@ -241,7 +241,7 @@ public class BotHeuristicsTests : BaseIntegrationTest
         ChessBoard board = new(
             new Dictionary<AlgebraicPoint, Piece>()
             {
-                [new("f1")] = PieceFactory.White(PieceType.Queen),
+                [new("f1")] = PieceFactory.White(PieceType.Queen, hasMoved: false),
             }
         );
 
@@ -281,7 +281,7 @@ public class BotHeuristicsTests : BaseIntegrationTest
         ChessBoard board = new(
             new Dictionary<AlgebraicPoint, Piece>()
             {
-                [new("f1")] = PieceFactory.White(PieceType.King),
+                [new("f1")] = PieceFactory.White(PieceType.King, hasMoved: false),
             }
         );
 
@@ -293,5 +293,65 @@ public class BotHeuristicsTests : BaseIntegrationTest
         ).Generate();
 
         _botHeuristics.LosesKingCastlingRight(move, CreateContext(move, board)).Should().BeTrue();
+    }
+
+    [Fact]
+    public void LosesRookCastlingRight_returns_false_for_non_rook()
+    {
+        ChessBoard board = new(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("a1")] = PieceFactory.White(PieceType.Queen, hasMoved: false),
+            }
+        );
+
+        BitMove move = new BitMoveFaker(
+            PieceType.Queen,
+            BitPieceColor.White,
+            from: new("a1"),
+            to: new("a2")
+        ).Generate();
+
+        _botHeuristics.LosesRookCastlingRight(move, CreateContext(move, board)).Should().BeFalse();
+    }
+
+    [Fact]
+    public void LosesRookCastlingRight_returns_false_if_rook_already_moved()
+    {
+        ChessBoard board = new(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("j1")] = PieceFactory.White(PieceType.Rook, hasMoved: true),
+            }
+        );
+
+        BitMove move = new BitMoveFaker(
+            PieceType.Rook,
+            BitPieceColor.White,
+            from: new("j1"),
+            to: new("j2")
+        ).Generate();
+
+        _botHeuristics.LosesRookCastlingRight(move, CreateContext(move, board)).Should().BeFalse();
+    }
+
+    [Fact]
+    public void LosesRookCastlingRight_returns_true_for_unmoved_rook()
+    {
+        ChessBoard board = new(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("a1")] = PieceFactory.White(PieceType.Rook, hasMoved: false),
+            }
+        );
+
+        BitMove move = new BitMoveFaker(
+            PieceType.Rook,
+            BitPieceColor.White,
+            from: new("a1"),
+            to: new("a2")
+        ).Generate();
+
+        _botHeuristics.LosesRookCastlingRight(move, CreateContext(move, board)).Should().BeTrue();
     }
 }
