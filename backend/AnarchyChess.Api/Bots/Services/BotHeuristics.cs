@@ -166,14 +166,17 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator, IBotSee botSee) :
         {
             return true;
         }
-        bool isWinningExchange = exchangeValue > 0;
 
         UInt128 positionBit = UInt128.One << move.To;
         for (int i = 0; i < context.OpponentMoveCount; i++)
         {
             BitMove opponentMove = context.OpponentMoves[i];
-            //we already know this exchance is winning, so we don't need to check it again
-            if (isWinningExchange && (opponentMove.CapturesMask & positionBit) != 0)
+            // we know this is either an equal or winning exchance
+            if (
+                exchangeValue >= 0
+                && move.CapturesMask != 0
+                && (opponentMove.CapturesMask & positionBit) != 0
+            )
             {
                 continue;
             }

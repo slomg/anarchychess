@@ -495,4 +495,102 @@ public class BotHeuristicsTests : BaseIntegrationTest
 
         _botHeuristics.IsCapturingOpponentHang(move, CreateContext(move, board)).Should().BeTrue();
     }
+
+    [Fact]
+    public void IsHang_returns_true_for_bad_capture()
+    {
+        ChessBoard board = new(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("f3")] = PieceFactory.White(PieceType.Queen),
+                [new("f8")] = PieceFactory.Black(PieceType.Bishop),
+                [new("e9")] = PieceFactory.Black(PieceType.Pawn),
+            }
+        );
+
+        BitMove move = new BitMoveFaker(
+            PieceType.Queen,
+            BitPieceColor.White,
+            from: new("f3"),
+            to: new("f8")
+        )
+            .RuleFor(x => x.CapturesMask, UInt128.One << new AlgebraicPoint("f8").AsIdx())
+            .Generate();
+
+        _botHeuristics.IsHang(move, CreateContext(move, board)).Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsHang_returns_false_for_trades()
+    {
+        ChessBoard board = new(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("f3")] = PieceFactory.White(PieceType.Queen),
+                [new("f8")] = PieceFactory.Black(PieceType.Queen),
+                [new("e9")] = PieceFactory.Black(PieceType.Pawn),
+            }
+        );
+
+        BitMove move = new BitMoveFaker(
+            PieceType.Queen,
+            BitPieceColor.White,
+            from: new("f3"),
+            to: new("f8")
+        )
+            .RuleFor(x => x.CapturesMask, UInt128.One << new AlgebraicPoint("f8").AsIdx())
+            .Generate();
+
+        _botHeuristics.IsHang(move, CreateContext(move, board)).Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsHang_returns_true_for_when_we_capture_a_hanging_piece_but_the_opponent_can_capture_a_higher_value_piece()
+    {
+        ChessBoard board = new(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("b4")] = PieceFactory.White(PieceType.Bishop),
+                [new("g9")] = PieceFactory.Black(PieceType.Pawn),
+                [new("i5")] = PieceFactory.Black(PieceType.Queen),
+                [new("i3")] = PieceFactory.White(PieceType.Queen),
+            }
+        );
+
+        BitMove move = new BitMoveFaker(
+            PieceType.Queen,
+            BitPieceColor.White,
+            from: new("b4"),
+            to: new("g9")
+        )
+            .RuleFor(x => x.CapturesMask, UInt128.One << new AlgebraicPoint("g9").AsIdx())
+            .Generate();
+
+        _botHeuristics.IsHang(move, CreateContext(move, board)).Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsHang_returns_false_when_we_capture_a_hanging_piece_and_the_opponent_only_has_a_lower_capture()
+    {
+        ChessBoard board = new(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("b4")] = PieceFactory.White(PieceType.Bishop),
+                [new("g9")] = PieceFactory.Black(PieceType.Rook),
+                [new("i5")] = PieceFactory.Black(PieceType.Queen),
+                [new("i3")] = PieceFactory.White(PieceType.Bishop),
+            }
+        );
+
+        BitMove move = new BitMoveFaker(
+            PieceType.Queen,
+            BitPieceColor.White,
+            from: new("b4"),
+            to: new("g9")
+        )
+            .RuleFor(x => x.CapturesMask, UInt128.One << new AlgebraicPoint("g9").AsIdx())
+            .Generate();
+
+        _botHeuristics.IsHang(move, CreateContext(move, board)).Should().BeFalse();
+    }
 }
