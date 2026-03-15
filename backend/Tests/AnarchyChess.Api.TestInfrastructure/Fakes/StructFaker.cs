@@ -57,9 +57,9 @@ public class StructFaker<T>
         MemberExpression memberExpr = property.Body switch
         {
             MemberExpression m => m,
-            UnaryExpression u when u.NodeType == ExpressionType.Convert
-                && u.Operand is MemberExpression m => m,
-            _ => throw new ArgumentException("Expression must be a member access")
+            UnaryExpression u
+                when u.NodeType == ExpressionType.Convert && u.Operand is MemberExpression m => m,
+            _ => throw new ArgumentException("Expression must be a member access"),
         };
         MemberInfo member = memberExpr.Member;
 
@@ -70,14 +70,11 @@ public class StructFaker<T>
         }
 
         var setter = (StructSetter<T, TProp>)del;
-        _rules.Add(
-            member,
-            (f, ref obj) =>
-            {
-                var value = valueFactory(f, obj);
-                setter(ref obj, value);
-            }
-        );
+        _rules[member] = (f, ref obj) =>
+        {
+            var value = valueFactory(f, obj);
+            setter(ref obj, value);
+        };
 
         return this;
     }
