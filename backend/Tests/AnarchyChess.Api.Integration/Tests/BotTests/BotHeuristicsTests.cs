@@ -467,7 +467,7 @@ public class BotHeuristicsTests : BaseIntegrationTest
             from: new("f3"),
             to: new("f9")
         )
-            .RuleFor(x => x.CapturesMask, UInt128.One << new AlgebraicPoint("f3").AsIdx())
+            .RuleFor(x => x.CapturesMask, UInt128.One << new AlgebraicPoint("f9").AsIdx())
             .Generate();
 
         _botHeuristics.IsCapturingOpponentHang(move, CreateContext(move, board)).Should().BeFalse();
