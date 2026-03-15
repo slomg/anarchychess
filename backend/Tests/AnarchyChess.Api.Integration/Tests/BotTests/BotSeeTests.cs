@@ -243,6 +243,28 @@ public class BotSeeTests : BaseIntegrationTest
     }
 
     [Fact]
+    public void SeeCapture_counts_traitor_rook_loss_even_if_opponent_cant_immedietly_capture()
+    {
+        BitBoard board = BitBoard.FromPieces(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("e2")] = PieceFactory.Neutral(PieceType.TraitorRook),
+                [new("e9")] = PieceFactory.Black(PieceType.Pawn),
+            }
+        );
+        BitMove move = new BitMoveFaker(
+            PieceType.TraitorRook,
+            BitPieceColor.Neutral,
+            from: new("e2"),
+            to: new("e9")
+        )
+            .RuleFor(x => x.CapturesMask, UInt128.One << new AlgebraicPoint("e9").AsIdx())
+            .Generate();
+
+        _botSee.SeeCapture(move, board).Should().Be(-150);
+    }
+
+    [Fact]
     public void SeeCapture_values_a_single_king_as_100k()
     {
         BitBoard board = BitBoard.FromPieces(

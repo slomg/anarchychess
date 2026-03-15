@@ -32,23 +32,13 @@ public sealed class BotSee(IBitMoveGenerator bitMoveGenerator) : IBotSee
             blackOwnedTraitorRooks
         );
 
-        UpdateTraitorRookMasks(move, ref whiteOwnedTraitorRooks, ref blackOwnedTraitorRooks);
-
         MoveUndoState undo = board.MakeMove(move);
-        int value =
-            captureValue
-            - See(move.To, move.Piece, board, whiteOwnedTraitorRooks, blackOwnedTraitorRooks);
+        int value = captureValue - See(move.To, move.Piece, board);
         board.UndoMove(undo);
         return value;
     }
 
-    private int See(
-        byte position,
-        BitPiece capturedByPiece,
-        BitBoard board,
-        UInt128 whiteOwnedTraitorRooks,
-        UInt128 blackOwnedTraitorRooks
-    )
+    private int See(byte position, BitPiece capturedByPiece, BitBoard board)
     {
         UInt128 positionBit = UInt128.One << position;
         int capturedByPieceValue = GetRelativeValue(capturedByPiece, board);
@@ -56,6 +46,9 @@ public sealed class BotSee(IBitMoveGenerator bitMoveGenerator) : IBotSee
         Span<BitMove> moves = stackalloc BitMove[EngineConstants.MaxMoves];
         int moveCount = 0;
         _bitMoveGenerator.Generate(board, moves, ref moveCount);
+
+        UInt128 whiteOwnedTraitorRooks = FindOwnedTraitorRooks(board, isWhiteToMove: true);
+        UInt128 blackOwnedTraitorRooks = FindOwnedTraitorRooks(board, isWhiteToMove: false);
 
         BitMove? bestMove = null;
         int totalCapturedValue = 0;
@@ -93,23 +86,11 @@ public sealed class BotSee(IBitMoveGenerator bitMoveGenerator) : IBotSee
             return 0;
         }
 
-        UpdateTraitorRookMasks(
-            bestMove.Value,
-            ref whiteOwnedTraitorRooks,
-            ref blackOwnedTraitorRooks
-        );
-
         MoveUndoState undo = board.MakeMove(bestMove.Value);
         int value = Math.Max(
             0,
             totalCapturedValue
-                - See(
-                    position: bestMove.Value.To,
-                    capturedByPiece: bestMove.Value.Piece,
-                    board,
-                    whiteOwnedTraitorRooks,
-                    blackOwnedTraitorRooks
-                )
+                - See(position: bestMove.Value.To, capturedByPiece: bestMove.Value.Piece, board)
         );
         board.UndoMove(undo);
         return value;
@@ -122,10 +103,6 @@ public sealed class BotSee(IBitMoveGenerator bitMoveGenerator) : IBotSee
         UInt128 blackOwnedTraitorRooks
     )
     {
-        UInt128 ourTraitorRooks = board.IsWhiteToMove
-            ? whiteOwnedTraitorRooks
-            : blackOwnedTraitorRooks;
-
         UInt128 capturesMask = move.CapturesMask;
         int captureValue = 0;
         while (capturesMask != 0)
@@ -137,17 +114,7 @@ public sealed class BotSee(IBitMoveGenerator bitMoveGenerator) : IBotSee
             }
 
             int value = GetRelativeValue(capturedPiece.Value, board);
-
-            bool ownsTraitorRook = (ourTraitorRooks & (UInt128.One << capturePosition)) != 0;
-            if (capturedPiece.Value.Type is PieceType.TraitorRook && ownsTraitorRook)
-            {
-                captureValue -= value;
-            }
-            else if (capturedPiece.Value.Type is PieceType.TraitorRook && !ownsTraitorRook)
-            {
-                captureValue += value;
-            }
-            else if (move.Piece.Color == capturedPiece.Value.Color)
+            if (move.Piece.Color == capturedPiece.Value.Color)
             {
                 captureValue -= value;
             }
@@ -156,6 +123,34 @@ public sealed class BotSee(IBitMoveGenerator bitMoveGenerator) : IBotSee
                 captureValue += value;
             }
         }
+
+        UInt128 ourPrevTraitorRooks = board.IsWhiteToMove
+            ? whiteOwnedTraitorRooks
+            : blackOwnedTraitorRooks;
+        UInt128 enemyPrevTraitorRooks = board.IsWhiteToMove
+            ? blackOwnedTraitorRooks
+            : whiteOwnedTraitorRooks;
+
+        MoveUndoState undo = board.MakeMove(move);
+        UInt128 ourNewTraitorRooks = FindOwnedTraitorRooks(
+            board,
+            isWhiteToMove: !board.IsWhiteToMove
+        );
+        UInt128 enemyNewTraitorRooks = FindOwnedTraitorRooks(
+            board,
+            isWhiteToMove: board.IsWhiteToMove
+        );
+        board.UndoMove(undo);
+
+        int ourLostTraitorRooks = BitboardHelpers.CountBits(
+            ourPrevTraitorRooks & ~ourNewTraitorRooks
+        );
+        int enemyLostTraitorRooks = BitboardHelpers.CountBits(
+            enemyPrevTraitorRooks & ~enemyNewTraitorRooks
+        );
+        captureValue -= ourLostTraitorRooks * 150;
+        captureValue += enemyLostTraitorRooks * 150;
+
         return captureValue;
     }
 
@@ -164,10 +159,6 @@ public sealed class BotSee(IBitMoveGenerator bitMoveGenerator) : IBotSee
         if (piece.Type is PieceType.King && CountKings(piece.Color, board) <= 1)
         {
             return 100_000;
-        }
-        else if (piece.Type is PieceType.TraitorRook)
-        {
-            return 150;
         }
         else
         {
@@ -211,31 +202,6 @@ public sealed class BotSee(IBitMoveGenerator bitMoveGenerator) : IBotSee
         }
 
         return mask;
-    }
-
-    private static void UpdateTraitorRookMasks(
-        BitMove move,
-        ref UInt128 whiteOwnedTraitorRooks,
-        ref UInt128 blackOwnedTraitorRooks
-    )
-    {
-        whiteOwnedTraitorRooks &= ~move.CapturesMask;
-        blackOwnedTraitorRooks &= ~move.CapturesMask;
-
-        UInt128 fromBit = UInt128.One << move.From;
-        if (move.Piece.Type is PieceType.TraitorRook && (whiteOwnedTraitorRooks & fromBit) != 0)
-        {
-            whiteOwnedTraitorRooks &= ~(UInt128.One << move.From);
-            whiteOwnedTraitorRooks |= UInt128.One << move.To;
-        }
-        else if (
-            move.Piece.Type is PieceType.TraitorRook
-            && (blackOwnedTraitorRooks & fromBit) != 0
-        )
-        {
-            blackOwnedTraitorRooks &= ~(UInt128.One << move.From);
-            blackOwnedTraitorRooks |= UInt128.One << move.To;
-        }
     }
 
     private static int CountKings(BitPieceColor color, BitBoard board) =>
