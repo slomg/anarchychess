@@ -200,12 +200,11 @@ public sealed class BotSee(IBitMoveGenerator bitMoveGenerator) : IBotSee
                 continue;
             }
 
-            int x = position % 10;
-            if (x < 50 && isWhiteToMove)
+            if (position < 50 && isWhiteToMove)
             {
                 mask |= UInt128.One << position;
             }
-            else if (x > 50 && !isWhiteToMove)
+            else if (position > 50 && !isWhiteToMove)
             {
                 mask |= UInt128.One << position;
             }
@@ -222,14 +221,16 @@ public sealed class BotSee(IBitMoveGenerator bitMoveGenerator) : IBotSee
     {
         whiteOwnedTraitorRooks &= ~move.CapturesMask;
         blackOwnedTraitorRooks &= ~move.CapturesMask;
-        if (move.Piece.Type is PieceType.TraitorRook && move.Piece.Color is BitPieceColor.White)
+
+        UInt128 fromBit = UInt128.One << move.From;
+        if (move.Piece.Type is PieceType.TraitorRook && (whiteOwnedTraitorRooks & fromBit) != 0)
         {
             whiteOwnedTraitorRooks &= ~(UInt128.One << move.From);
             whiteOwnedTraitorRooks |= UInt128.One << move.To;
         }
         else if (
             move.Piece.Type is PieceType.TraitorRook
-            && move.Piece.Color is BitPieceColor.Black
+            && (blackOwnedTraitorRooks & fromBit) != 0
         )
         {
             blackOwnedTraitorRooks &= ~(UInt128.One << move.From);
