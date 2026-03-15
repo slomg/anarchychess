@@ -66,6 +66,18 @@ public class LobotomizedAnarchyBot(
     private readonly IBotHeuristics _botHeuristics = botHeuristics;
     private readonly IBitMoveGenerator _bitMoveGenerator = bitMoveGenerator;
 
+    /// <summary>
+    /// Selects the next move by following this process:
+    /// 1. It identifies checkmates a human might miss and plays one probablistically
+    /// 2. If not, it identifies tactical moves and plays one probablistically
+    /// 3. If not, it seperates the non tactic moves into blunders and non blunders
+    /// 4. From the non blunders, it selects moves deemed obvious and plays one of available
+    /// 5. If not, it finds blunders deemed non obvious and plays one probablistically
+    /// 6. If not, it attempts to play a non blunder
+    /// 7. If there are none, it plays a non obvious blunder
+    /// 8. If there are none, it plays a non tactic move
+    /// 9. if there are none, it plays a tactic
+    /// </summary>
     public async Task<ErrorOr<MoveEvaluation>> FindMoveAsync(
         IReadOnlyChessBoard board,
         int lastEval,
