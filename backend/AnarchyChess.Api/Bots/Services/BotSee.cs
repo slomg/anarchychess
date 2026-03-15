@@ -263,7 +263,7 @@ public sealed class BotSee(IBitMoveGenerator bitMoveGenerator) : IBotSee
 
                 UInt128 checkerHops = PieceMasks.SingleCheckerJumpMasks[move.From];
                 UInt128 checkerCaptures = PieceMasks.AdjacentMasks[move.From];
-                UInt128 checkerAttacks = checkerHops & checkerCaptures;
+                UInt128 checkerAttacks = checkerHops | checkerCaptures;
 
                 // make sure all captures would be possible in a single hop
                 // and that all hops are possible in a single hop
