@@ -5,10 +5,10 @@ namespace AnarchyChess.Api.TestInfrastructure.Fakes;
 
 public class BitPieceFaker : StructFaker<BitPiece>
 {
-    public BitPieceFaker()
+    public BitPieceFaker(PieceType? pieceType = null)
     {
         StrictMode(true);
-        RuleFor(x => x.Type, f => f.PickRandom<PieceType>());
+        RuleFor(x => x.Type, f => pieceType ?? f.PickRandom<PieceType>());
         RuleFor(x => x.Color, f => f.PickRandom<BitPieceColor>());
     }
 }
