@@ -261,7 +261,10 @@ public class BotSeeTests : BaseIntegrationTest
             .RuleFor(x => x.CapturesMask, UInt128.One << new AlgebraicPoint("e9").AsIdx())
             .Generate();
 
-        _botSee.SeeCapture(move, board).Should().Be(-150);
+        _botSee
+            .SeeCapture(move, board)
+            .Should()
+            .Be(MaterialValue.GetPieceValue(PieceType.Pawn) - 150);
     }
 
     [Fact]
