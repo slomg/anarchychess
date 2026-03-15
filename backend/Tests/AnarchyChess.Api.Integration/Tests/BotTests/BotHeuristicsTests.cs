@@ -190,4 +190,41 @@ public class BotHeuristicsTests : BaseIntegrationTest
 
         _botHeuristics.IsRecapture(move, CreateContext(move, board)).Should().BeTrue();
     }
+
+    [Fact]
+    public void IsBackwards_returns_false_for_neutral_piece()
+    {
+        BitMove move = new BitMoveFaker(
+            PieceType.Rook,
+            BitPieceColor.Neutral,
+            from: new("e4"),
+            to: new("e3")
+        ).Generate();
+
+        _botHeuristics.IsBackwards(move).Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(BitPieceColor.White, "e4", "e3", true)]
+    [InlineData(BitPieceColor.White, "e4", "e5", false)]
+    [InlineData(BitPieceColor.Black, "e4", "e5", true)]
+    [InlineData(BitPieceColor.Black, "e4", "e3", false)]
+    [InlineData(BitPieceColor.White, "e4", "f4", false)]
+    [InlineData(BitPieceColor.Black, "e4", "f4", false)]
+    public void IsBackwards_detects_direction_correctly(
+        BitPieceColor color,
+        string from,
+        string to,
+        bool expected
+    )
+    {
+        BitMove move = new BitMoveFaker(
+            PieceType.Rook,
+            color,
+            from: new(from),
+            to: new(to)
+        ).Generate();
+
+        _botHeuristics.IsBackwards(move).Should().Be(expected);
+    }
 }
