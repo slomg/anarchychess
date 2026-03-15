@@ -1,4 +1,6 @@
-﻿using AnarchyChess.Ai.Service.DTO;
+﻿using AnarchyChess.Ai;
+using AnarchyChess.Ai.Models;
+using AnarchyChess.Ai.Service.DTO;
 using AnarchyChess.Ai.Service.Services;
 using AnarchyChess.Api.Bots.Errors;
 using AnarchyChess.Api.Bots.Services;
@@ -8,6 +10,7 @@ using AnarchyChess.Api.TestInfrastructure.Factories;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AnarchyChess.Api.TestInfrastructure.NSubtituteExtenstion;
 using AnarchyChess.EngineShared;
+using AnarchyChess.EngineShared.Extensions;
 using AwesomeAssertions;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
@@ -35,18 +38,27 @@ public class BotServiceTests : BaseUnitTest
             [new("d7")] = PieceFactory.Black(PieceType.Pawn),
         };
 
-        Move lastMove = MoveFaker.Capture(GameColor.White, [PieceType.Antiqueen, PieceType.Knook]);
+        Move lastMove = MoveFaker.Capture(
+            GameColor.White,
+            pieceType: PieceType.Queen,
+            captureTypes: [PieceType.Antiqueen, PieceType.Knook]
+        );
         ChessBoard board = new(pieces, moves: [lastMove]);
 
         var expectedReply = new MoveEvaluationFaker().Generate();
+        UInt128 requestCaptures = 0;
+        foreach (var capture in lastMove.Captures)
+        {
+            requestCaptures |= UInt128.One << capture.Position.AsIdx();
+        }
         AiEngineMoveRequest expectedRequest = new(
             Pieces: pieces,
             IsWhiteToMove: true,
             PrevMoveState: new(
-                From: lastMove.From,
-                To: lastMove.To,
-                Piece: lastMove.Piece,
-                Captures: [.. lastMove.Captures.Select(x => x.Position)]
+                From: lastMove.From.AsIdx(),
+                To: lastMove.To.AsIdx(),
+                Piece: new() { Type = PieceType.Queen, Color = BitPieceColor.White },
+                CaptureMask: requestCaptures
             ),
             Depth: 69
         );
@@ -68,11 +80,12 @@ public class BotServiceTests : BaseUnitTest
     [Fact]
     public async Task FindBestMoveAsync_passes_null_prev_move_when_no_moves()
     {
-        Dictionary<AlgebraicPoint, Piece> pieces = new()
-        {
-            [new("e2")] = PieceFactory.White(PieceType.Pawn),
-        };
-        ChessBoard chessBoard = new(pieces);
+        ChessBoard chessBoard = new(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("e2")] = PieceFactory.White(PieceType.Pawn),
+            }
+        );
 
         var expectedReply = new MoveEvaluationFaker().Generate();
         _aiEngineMock
@@ -232,5 +245,72 @@ public class BotServiceTests : BaseUnitTest
         var result = await _bot.CheckHealthAsync(CT);
 
         result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ConvertBoardToBit_creates_the_correct_bitboard()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new("e2")] = PieceFactory.White(PieceType.Pawn),
+            [new("d7")] = PieceFactory.Black(PieceType.Horsey),
+        };
+        ChessBoard board = new(pieces);
+
+        BitBoard result = _bot.ConvertBoardToBit(board);
+
+        var expected = BitBoard.FromPieces(pieces, isWhiteToMove: true, prevMoveState: null);
+
+        result.Should().BeEquivalentTo(expected);
+    }
+
+    [Theory]
+    [InlineData(GameColor.White)]
+    [InlineData(GameColor.Black)]
+    [InlineData(null)]
+    public void ConvertBoardToBit_returns_correct_bitboard_with_prev_move(GameColor? lastColor)
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new("e2")] = PieceFactory.White(PieceType.Pawn),
+            [new("d7")] = PieceFactory.Black(PieceType.Horsey),
+        };
+        Move lastMove = new MoveFaker()
+            .RuleFor(x => x.Piece, new Piece(PieceType.Pawn, lastColor))
+            .RuleFor(
+                x => x.Captures,
+                [new MoveCapture(new Piece(PieceType.Pawn, GameColor.White), new("a1"))]
+            );
+
+        ChessBoard board = new(
+            pieces,
+            moves: [lastMove],
+            sideToMove: lastColor is GameColor.White ? GameColor.Black : GameColor.White
+        );
+
+        PrevMoveState expectedPrevMove = new(
+            From: lastMove.From.AsIdx(),
+            To: lastMove.To.AsIdx(),
+            Piece: new()
+            {
+                Type = lastMove.Piece.Type,
+                Color = lastColor.Match(
+                    whenWhite: BitPieceColor.White,
+                    whenBlack: BitPieceColor.Black,
+                    whenNeutral: BitPieceColor.Neutral
+                ),
+            },
+            CaptureMask: UInt128.One << new AlgebraicPoint("a1").AsIdx()
+        );
+
+        BitBoard result = _bot.ConvertBoardToBit(board);
+
+        var expected = BitBoard.FromPieces(
+            pieces,
+            isWhiteToMove: board.SideToMove is GameColor.White,
+            prevMoveState: expectedPrevMove
+        );
+
+        result.Should().BeEquivalentTo(expected);
     }
 }
