@@ -24,7 +24,6 @@ public readonly record struct CandidateBotMove(
 );
 
 public class LobotomizedAnarchyBot(
-    ILogger<LobotomizedAnarchyBot> logger,
     IBotService botService,
     IRandomProvider randomProvider,
     IBotHeuristics botHeuristics,
@@ -60,7 +59,6 @@ public class LobotomizedAnarchyBot(
 
     public BotType Type => BotType.LobotomizedAnarchyBot;
 
-    private readonly ILogger<LobotomizedAnarchyBot> _logger = logger;
     private readonly IBotService _botService = botService;
     private readonly IRandomProvider _randomProvider = randomProvider;
     private readonly IBotHeuristics _botHeuristics = botHeuristics;
@@ -99,7 +97,6 @@ public class LobotomizedAnarchyBot(
                 .Value.Select((move, i) => ScoreMove(move, board, bitboard, endgameFactor))
                 .OrderByDescending(x => x.MoveEval.EvalForBot),
         ];
-        _logger.LogInformation("Last eval: {LastEval}", lastEval);
 
         (List<CandidateBotMove> missableCheckmates, List<CandidateBotMove> nonCheckmates) =
             OrderInto(
@@ -126,7 +123,6 @@ public class LobotomizedAnarchyBot(
             );
         if (missableCheckmates.Count > 0 && _randomProvider.NextDouble() < CheckmateChance)
         {
-            _logger.LogInformation("playing missable checkmate");
             return Softmax(missableCheckmates, board, endgameFactor);
         }
 
@@ -138,13 +134,11 @@ public class LobotomizedAnarchyBot(
         );
         if (tactics.Count == moves.Count)
         {
-            _logger.LogInformation("playing tactic because no other move");
             return SoftmaxTactics(moves, board, endgameFactor);
         }
 
         if (TrySoftmaxTactics(tactics, board, endgameFactor, out var tactic))
         {
-            _logger.LogInformation("playing tactic");
             return tactic;
         }
 
@@ -164,7 +158,6 @@ public class LobotomizedAnarchyBot(
         ];
         if (obviousMoves.Count > 0)
         {
-            _logger.LogInformation("playing obvious move");
             return Softmax(obviousMoves, board, endgameFactor);
         }
 
@@ -175,28 +168,23 @@ public class LobotomizedAnarchyBot(
             && _randomProvider.NextDouble() < BlunderChance
         )
         {
-            _logger.LogInformation("playing blunder");
             return Softmax(safeBlunders, board, endgameFactor);
         }
 
         if (nonBlunders.Count > 0)
         {
-            _logger.LogInformation("playing non blunders");
             return Softmax(nonBlunders, board, endgameFactor);
         }
         else if (safeBlunders.Count > 0)
         {
-            _logger.LogInformation("playing blunder beacuse no non blunders");
             return Softmax(safeBlunders, board, endgameFactor);
         }
         else if (nonTactics.Count > 0)
         {
-            _logger.LogInformation("playing non tactics");
             return Softmax(nonTactics, board, endgameFactor);
         }
         else
         {
-            _logger.LogInformation("playing tactic because no non tactics");
             return SoftmaxTactics(tactics, board, endgameFactor);
         }
     }
@@ -286,22 +274,6 @@ public class LobotomizedAnarchyBot(
             playabilityEval -= NonCentralPawnPenaltyInOpening;
         }
 
-        _logger.LogInformation(
-            "from: {From}, to: {To}, candidate: {Candidate}, is backwards: {IsBackwards}",
-            AlgebraicPoint.FromIdx(moveEval.Move.From),
-            AlgebraicPoint.FromIdx(moveEval.Move.To),
-            new CandidateBotMove(
-                moveEval,
-                IsHang: isHang,
-                IsCapturingHanging: isCapturingHanging,
-                IsRecapture: isRecapture,
-                CausesForcedMove: causesForcedMove,
-                IsMultiStep: isMultiStep,
-                PlayabilityEval: playabilityEval
-            ),
-            isBackwards
-        );
-
         return new CandidateBotMove(
             moveEval,
             IsHang: isHang,
@@ -344,12 +316,6 @@ public class LobotomizedAnarchyBot(
     {
         double temperature = GetTemperature(board, endgameFactor);
         var result = _randomProvider.Softmax(moves, x => x.PlayabilityEval, temperature).MoveEval;
-        _logger.LogInformation(
-            "TEMPERATURE: {Tempterature}, FROM: {From}, TO: {To}",
-            temperature,
-            result.Move.From,
-            result.Move.To
-        );
         return result;
     }
 
@@ -389,7 +355,6 @@ public class LobotomizedAnarchyBot(
         var (complexTactics, simpleTactics) = SortTactics(tactics);
         if (complexTactics.Count == 0)
         {
-            _logger.LogInformation("playing simple tactic");
             result = Softmax(simpleTactics, board, endgameFactor);
             return true;
         }
@@ -402,13 +367,11 @@ public class LobotomizedAnarchyBot(
 
         if (playSimple)
         {
-            _logger.LogInformation("playing simple tactic");
             result = Softmax(simpleTactics, board, endgameFactor);
             return true;
         }
         else
         {
-            _logger.LogInformation("playing complex tactic");
             result = Softmax(complexTactics, board, endgameFactor);
             return true;
         }
@@ -425,17 +388,7 @@ public class LobotomizedAnarchyBot(
 
         if (playSimple && simpleTactics.Count == 0)
         {
-            _logger.LogInformation("playing complex tactic");
             return Softmax(complexTactics, board, endgameFactor);
-        }
-
-        if (playSimple)
-        {
-            _logger.LogInformation("playing simple tactic");
-        }
-        else
-        {
-            _logger.LogInformation("playing complex tactic");
         }
 
         return playSimple
