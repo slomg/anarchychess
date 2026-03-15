@@ -49,4 +49,16 @@ public class BotHeuristicsTests : BaseIntegrationTest
 
         _botHeuristics.IsNonCentralPawn(move).Should().Be(isNonCentral);
     }
+
+    [Theory]
+    [InlineData("b2", "a3", true)]
+    [InlineData("i2", "j3", true)]
+    [InlineData("a2", "b3", false)]
+    [InlineData("j2", "i3", false)]
+    [InlineData("e2", "e3", false)]
+    public void IsEdge_detects_edge_moves(string from, string to, bool expected)
+    {
+        BitMove move = new BitMoveFaker(from: new(from), to: new(to)).Generate();
+        _botHeuristics.IsEdge(move).Should().Be(expected);
+    }
 }
