@@ -345,4 +345,178 @@ public class BotSeeTests : BaseIntegrationTest
 
         _botSee.SeeCapture(move, board).Should().Be(MaterialValue.GetPieceValue(PieceType.Bishop));
     }
+
+    [Fact]
+    public void CheckMultiStep_returns_false_for_pieces_that_cant_multi_step()
+    {
+        BitBoard board = BitBoard.FromPieces(
+            new Dictionary<AlgebraicPoint, Piece>
+            {
+                [new("e5")] = PieceFactory.White(PieceType.Rook),
+            }
+        );
+        BitMove move = new BitMoveFaker(
+            PieceType.Rook,
+            BitPieceColor.White,
+            from: new("e5"),
+            to: new("e10")
+        ).Generate();
+
+        _botSee.CheckMultiStep(move, board).Should().BeFalse();
+    }
+
+    [Fact]
+    public void CheckMultiStep_returns_false_for_regular_bishop_moves()
+    {
+        BitBoard board = BitBoard.FromPieces(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("f3")] = PieceFactory.White(PieceType.Bishop),
+            }
+        );
+        BitMove move = new BitMoveFaker(
+            PieceType.Bishop,
+            BitPieceColor.White,
+            from: new("f3"),
+            to: new("a8")
+        ).Generate();
+
+        _botSee.CheckMultiStep(move, board).Should().BeFalse();
+    }
+
+    [Fact]
+    public void CheckMultiStep_returns_true_for_bishop_hop()
+    {
+        BitBoard board = BitBoard.FromPieces(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("f3")] = PieceFactory.White(PieceType.Bishop),
+            }
+        );
+        BitMove move = new BitMoveFaker(
+            PieceType.Bishop,
+            BitPieceColor.White,
+            from: new("f3"),
+            to: new("i4")
+        ).Generate();
+
+        _botSee.CheckMultiStep(move, board).Should().BeTrue();
+    }
+
+    [Fact]
+    public void CheckMultiStep_returns_true_for_a_move_that_would_be_possible_without_hop_but_piece_blocks()
+    {
+        BitBoard board = BitBoard.FromPieces(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("f3")] = PieceFactory.White(PieceType.Bishop),
+                [new("d5")] = PieceFactory.Black(),
+                [new("c6")] = PieceFactory.Black(),
+            }
+        );
+        BitMove move = new BitMoveFaker(
+            PieceType.Bishop,
+            BitPieceColor.White,
+            from: new("f3"),
+            to: new("c6")
+        )
+            .RuleFor(x => x.CapturesMask, UInt128.One << new AlgebraicPoint("c6").AsIdx())
+            .Generate();
+
+        _botSee.CheckMultiStep(move, board).Should().BeTrue();
+    }
+
+    [Fact]
+    public void CheckMultiStep_returns_false_for_regular_checker_move()
+    {
+        BitBoard board = BitBoard.FromPieces(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("f3")] = PieceFactory.White(PieceType.Checker),
+                [new("e4")] = PieceFactory.Black(),
+            }
+        );
+        BitMove move = new BitMoveFaker(
+            PieceType.Checker,
+            BitPieceColor.White,
+            from: new("f3"),
+            to: new("d5")
+        )
+            .RuleFor(x => x.CapturesMask, UInt128.One << new AlgebraicPoint("e4").AsIdx())
+            .Generate();
+
+        _botSee.CheckMultiStep(move, board).Should().BeFalse();
+    }
+
+    [Fact]
+    public void CheckMultiStep_returns_true_for_multiple_checker_captures()
+    {
+        BitBoard board = BitBoard.FromPieces(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("f3")] = PieceFactory.White(PieceType.Checker),
+                [new("e4")] = PieceFactory.Black(),
+                [new("e6")] = PieceFactory.Black(),
+            }
+        );
+        BitMove move = new BitMoveFaker(
+            PieceType.Checker,
+            BitPieceColor.White,
+            from: new("f3"),
+            to: new("f7")
+        )
+            .RuleFor(
+                x => x.CapturesMask,
+                (UInt128.One << new AlgebraicPoint("e4").AsIdx())
+                    | (UInt128.One << new AlgebraicPoint("e6").AsIdx())
+            )
+            .Generate();
+
+        _botSee.CheckMultiStep(move, board).Should().BeTrue();
+    }
+
+    [Fact]
+    public void CheckMultiStep_returns_true_for_multiple_checker_non_capture_hops()
+    {
+        BitBoard board = BitBoard.FromPieces(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("f3")] = PieceFactory.White(PieceType.Checker),
+                [new("e4")] = PieceFactory.White(),
+                [new("e6")] = PieceFactory.White(),
+            }
+        );
+        BitMove move = new BitMoveFaker(
+            PieceType.Checker,
+            BitPieceColor.White,
+            from: new("f3"),
+            to: new("f7")
+        ).Generate();
+
+        _botSee.CheckMultiStep(move, board).Should().BeTrue();
+    }
+
+    [Fact]
+    public void CheckMultiStep_returns_true_for_a_square_reachable_without_hops_but_not_with_a_capture()
+    {
+        BitBoard board = BitBoard.FromPieces(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("f3")] = PieceFactory.White(PieceType.Checker),
+                [new("g4")] = PieceFactory.White(),
+                [new("d5")] = PieceFactory.White(),
+                [new("e6")] = PieceFactory.Black(),
+            }
+        );
+        BitMove move = new BitMoveFaker(
+            PieceType.Checker,
+            BitPieceColor.White,
+            from: new("f3"),
+            to: new("g5")
+        )
+            .RuleFor(x => x.CapturesMask, UInt128.One << new AlgebraicPoint("e6").AsIdx())
+            .Generate();
+
+        _botSee.CheckMultiStep(move, board).Should().BeTrue();
+    }
 }
