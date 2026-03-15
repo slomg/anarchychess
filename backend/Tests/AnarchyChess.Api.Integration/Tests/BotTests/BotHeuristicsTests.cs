@@ -401,7 +401,7 @@ public class BotHeuristicsTests : BaseIntegrationTest
     }
 
     [Fact]
-    public void CausesForcedMoves_returns_returns_false_when_a_recapture_doesnt_cause_a_forced_move()
+    public void CausesForcedMoves_returns_false_when_a_recapture_doesnt_cause_a_forced_move()
     {
         ChessBoard board = new(
             new Dictionary<AlgebraicPoint, Piece>()
@@ -426,7 +426,7 @@ public class BotHeuristicsTests : BaseIntegrationTest
     }
 
     [Fact]
-    public void CausesForcedMoves_returns_returns_true_when_a_recapture_causes_a_forced_move()
+    public void CausesForcedMoves_returns_true_when_a_recapture_causes_a_forced_move()
     {
         ChessBoard board = new(
             new Dictionary<AlgebraicPoint, Piece>()
