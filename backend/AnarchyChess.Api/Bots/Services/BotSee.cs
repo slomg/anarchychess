@@ -32,21 +32,7 @@ public sealed class BotSee(IBitMoveGenerator bitMoveGenerator) : IBotSee
             blackOwnedTraitorRooks
         );
 
-        whiteOwnedTraitorRooks &= ~move.CapturesMask;
-        blackOwnedTraitorRooks &= ~move.CapturesMask;
-        if (move.Piece.Type is PieceType.TraitorRook && move.Piece.Color is BitPieceColor.White)
-        {
-            whiteOwnedTraitorRooks &= ~(UInt128.One << move.From);
-            whiteOwnedTraitorRooks |= UInt128.One << move.To;
-        }
-        else if (
-            move.Piece.Type is PieceType.TraitorRook
-            && move.Piece.Color is BitPieceColor.Black
-        )
-        {
-            blackOwnedTraitorRooks &= ~(UInt128.One << move.From);
-            blackOwnedTraitorRooks |= UInt128.One << move.To;
-        }
+        UpdateTraitorRookMasks(move, ref whiteOwnedTraitorRooks, ref blackOwnedTraitorRooks);
 
         MoveUndoState undo = board.MakeMove(move);
         int value =
@@ -107,24 +93,11 @@ public sealed class BotSee(IBitMoveGenerator bitMoveGenerator) : IBotSee
             return 0;
         }
 
-        whiteOwnedTraitorRooks &= ~bestMove.Value.CapturesMask;
-        blackOwnedTraitorRooks &= ~bestMove.Value.CapturesMask;
-        if (
-            bestMove.Value.Piece.Type is PieceType.TraitorRook
-            && bestMove.Value.Piece.Color is BitPieceColor.White
-        )
-        {
-            whiteOwnedTraitorRooks &= ~(UInt128.One << bestMove.Value.From);
-            whiteOwnedTraitorRooks |= UInt128.One << bestMove.Value.To;
-        }
-        else if (
-            bestMove.Value.Piece.Type is PieceType.TraitorRook
-            && bestMove.Value.Piece.Color is BitPieceColor.Black
-        )
-        {
-            blackOwnedTraitorRooks &= ~(UInt128.One << bestMove.Value.From);
-            blackOwnedTraitorRooks |= UInt128.One << bestMove.Value.To;
-        }
+        UpdateTraitorRookMasks(
+            bestMove.Value,
+            ref whiteOwnedTraitorRooks,
+            ref blackOwnedTraitorRooks
+        );
 
         MoveUndoState undo = board.MakeMove(bestMove.Value);
         int value = Math.Max(
@@ -239,6 +212,29 @@ public sealed class BotSee(IBitMoveGenerator bitMoveGenerator) : IBotSee
         }
 
         return mask;
+    }
+
+    private static void UpdateTraitorRookMasks(
+        BitMove move,
+        ref UInt128 whiteOwnedTraitorRooks,
+        ref UInt128 blackOwnedTraitorRooks
+    )
+    {
+        whiteOwnedTraitorRooks &= ~move.CapturesMask;
+        blackOwnedTraitorRooks &= ~move.CapturesMask;
+        if (move.Piece.Type is PieceType.TraitorRook && move.Piece.Color is BitPieceColor.White)
+        {
+            whiteOwnedTraitorRooks &= ~(UInt128.One << move.From);
+            whiteOwnedTraitorRooks |= UInt128.One << move.To;
+        }
+        else if (
+            move.Piece.Type is PieceType.TraitorRook
+            && move.Piece.Color is BitPieceColor.Black
+        )
+        {
+            blackOwnedTraitorRooks &= ~(UInt128.One << move.From);
+            blackOwnedTraitorRooks |= UInt128.One << move.To;
+        }
     }
 
     private static int CountKings(BitPieceColor color, BitBoard board) =>
