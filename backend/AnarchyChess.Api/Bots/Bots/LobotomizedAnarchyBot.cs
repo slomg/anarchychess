@@ -56,6 +56,7 @@ public class LobotomizedAnarchyBot(
     private const int EdgePenalty = 30;
     private const int BetaDecayPenalty = 300;
     private const int NonCentralPawnPenaltyInOpening = 20;
+    private const int CastleBonus = 300;
     private const int SamePiecePenalty = 50;
 
     public BotType Type => BotType.LobotomizedAnarchyBot;
@@ -269,6 +270,14 @@ public class LobotomizedAnarchyBot(
         if (moveEval.Move.SpecialMoveType is SpecialMoveType.RadioactiveBetaDecay)
         {
             playabilityEval -= BetaDecayPenalty;
+        }
+
+        if (
+            moveEval.Move.SpecialMoveType is SpecialMoveType.KingsideCastle
+            || moveEval.Move.SpecialMoveType is SpecialMoveType.QueensideCastle
+        )
+        {
+            playabilityEval += CastleBonus;
         }
 
         if (isNonCentralPawn && board.Moves.Count <= 20)
