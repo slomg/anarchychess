@@ -104,18 +104,18 @@ public class BitBoardTests
         board
             .WhiteMaterialCount.Should()
             .Be(
-                MaterialEvaluator.GetPieceValue(PieceType.King)
-                    + MaterialEvaluator.GetPieceValue(PieceType.Queen)
-                    + MaterialEvaluator.GetPieceValue(PieceType.Rook)
-                    + MaterialEvaluator.GetPieceValue(PieceType.Rook)
+                MaterialValue.GetPieceValue(PieceType.King)
+                    + MaterialValue.GetPieceValue(PieceType.Queen)
+                    + MaterialValue.GetPieceValue(PieceType.Rook)
+                    + MaterialValue.GetPieceValue(PieceType.Rook)
             );
         board
             .BlackMaterialCount.Should()
             .Be(
-                MaterialEvaluator.GetPieceValue(PieceType.King)
-                    + MaterialEvaluator.GetPieceValue(PieceType.Queen)
-                    + MaterialEvaluator.GetPieceValue(PieceType.Rook)
-                    + MaterialEvaluator.GetPieceValue(PieceType.Bishop)
+                MaterialValue.GetPieceValue(PieceType.King)
+                    + MaterialValue.GetPieceValue(PieceType.Queen)
+                    + MaterialValue.GetPieceValue(PieceType.Rook)
+                    + MaterialValue.GetPieceValue(PieceType.Bishop)
             );
     }
 

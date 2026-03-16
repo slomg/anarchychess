@@ -75,7 +75,9 @@ public class LegalMoveCalculator : ILegalMoveCalculator
         foreach (var rule in _foreverRules)
         {
             foreach (var move in rule.GetBehaviours(board, board.SideToMove))
+            {
                 yield return move;
+            }
         }
     }
 }

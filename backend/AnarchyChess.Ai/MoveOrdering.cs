@@ -87,13 +87,13 @@ public sealed class MoveOrdering : IMoveOrdering
         {
             UInt128 captureMask = move.CapturesMask;
             int score = 0;
-            int attackerValue = MaterialEvaluator.GetPieceValue(move.Piece.Type);
+            int attackerValue = MaterialValue.GetPieceValue(move.Piece.Type);
             while (captureMask != 0)
             {
                 byte captureSquare = (byte)BitboardHelpers.BitScanForward(ref captureMask);
                 if (board.TryGetPieceAt(captureSquare, out var capturePiece))
                 {
-                    int victimValue = MaterialEvaluator.GetPieceValue(capturePiece.Value.Type);
+                    int victimValue = MaterialValue.GetPieceValue(capturePiece.Value.Type);
                     score += victimValue - attackerValue;
                 }
             }
@@ -102,7 +102,7 @@ public sealed class MoveOrdering : IMoveOrdering
 
         if (move.PromotesTo is not null)
         {
-            return 8_000 + MaterialEvaluator.GetPieceValue(move.PromotesTo.Value);
+            return 8_000 + MaterialValue.GetPieceValue(move.PromotesTo.Value);
         }
 
         if (move.SpecialMoveType is not SpecialMoveType.None)

@@ -1,18 +1,45 @@
-﻿namespace AnarchyChess.Ai;
+﻿using AnarchyChess.EngineShared;
+
+namespace AnarchyChess.Ai;
 
 public static class PieceMasks
 {
     public static readonly UInt128[] HorseyMasks = MakeBoardMasksByDeltas(
-        deltaRanks: [-2, -1, 1, 2, 2, 1, -1, -2],
-        deltaFiles: [1, 2, 2, 1, -1, -2, -2, -1]
+        [
+            new Offset(X: 1, Y: -2),
+            new Offset(X: 2, Y: -1),
+            new Offset(X: 2, Y: 1),
+            new Offset(X: 1, Y: 2),
+            new Offset(X: -1, Y: 2),
+            new Offset(X: -2, Y: 1),
+            new Offset(X: -2, Y: -1),
+            new Offset(X: -1, Y: -2),
+        ]
     );
 
     public static readonly UInt128[] AdjacentMasks = MakeBoardMasksByDeltas(
-        deltaRanks: [-1, -1, -1, 0, 0, 1, 1, 1],
-        deltaFiles: [-1, 0, 1, -1, 1, -1, 0, 1]
+        [
+            new Offset(X: -1, Y: -1),
+            new Offset(X: 0, Y: -1),
+            new Offset(X: 1, Y: -1),
+            new Offset(X: -1, Y: 0),
+            new Offset(X: 1, Y: 0),
+            new Offset(X: -1, Y: 1),
+            new Offset(X: 0, Y: 1),
+            new Offset(X: 1, Y: 1),
+        ]
     );
 
-    private static UInt128[] MakeBoardMasksByDeltas(int[] deltaRanks, int[] deltaFiles)
+    public static readonly UInt128[] SingleCheckerJumpMasks = MakeBoardMasksByDeltas(
+        [
+            new Offset(X: -2, Y: 2),
+            new Offset(X: 2, Y: 2),
+            new Offset(X: -2, Y: -2),
+            new Offset(X: 2, Y: -2),
+        ]
+    );
+
+    private static UInt128[] MakeBoardMasksByDeltas(Offset[] offsets)
     {
         UInt128[] masks = new UInt128[10 * 10];
         for (int rank = 0; rank < 10; rank++)
@@ -20,25 +47,20 @@ public static class PieceMasks
             for (int file = 0; file < 10; file++)
             {
                 int squareIdx = rank * 10 + file;
-                masks[squareIdx] = MakeMaskForSquareByDeltas(rank, file, deltaRanks, deltaFiles);
+                masks[squareIdx] = MakeMaskForSquareByDeltas(rank, file, offsets);
             }
         }
         return masks;
     }
 
-    private static UInt128 MakeMaskForSquareByDeltas(
-        int rank,
-        int file,
-        int[] deltaRanks,
-        int[] deltaFiles
-    )
+    private static UInt128 MakeMaskForSquareByDeltas(int rank, int file, Offset[] offsets)
     {
         UInt128 mask = 0;
 
-        for (int i = 0; i < Math.Max(deltaRanks.Length, deltaFiles.Length); i++)
+        foreach (Offset offset in offsets)
         {
-            int deltaRank = i < deltaRanks.Length ? rank + deltaRanks[i] : 0;
-            int deltaFile = i < deltaFiles.Length ? file + deltaFiles[i] : 0;
+            int deltaRank = rank + offset.Y;
+            int deltaFile = file + offset.X;
             if (deltaRank >= 0 && deltaRank < 10 && deltaFile >= 0 && deltaFile < 10)
             {
                 mask |= UInt128.One << (deltaRank * 10 + deltaFile);

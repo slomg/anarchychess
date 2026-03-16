@@ -1,4 +1,5 @@
-﻿using AnarchyChess.Api.GameLogic.Models;
+﻿using AnarchyChess.Ai.Models;
+using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 
 namespace AnarchyChess.Api.Game.Models;
@@ -14,4 +15,19 @@ public record LegalMoveSet(
 
     public LegalMoveSet()
         : this(MoveMap: new Dictionary<MoveKey, Move>(), MovePaths: []) { }
+
+    public Move? FindBotMove(BitMove botMove) =>
+        AllMoves.FirstOrDefault(move =>
+        {
+            UInt128 moveCaptureMask = 0;
+            foreach (var capture in move.Captures)
+            {
+                moveCaptureMask |= UInt128.One << capture.Position.AsIdx();
+            }
+
+            return move.From.AsIdx() == botMove.From
+                && move.To.AsIdx() == botMove.To
+                && move.PromotesTo == botMove.PromotesTo
+                && moveCaptureMask == botMove.CapturesMask;
+        });
 }

@@ -18,10 +18,6 @@ public readonly record struct UserId(string Value)
 
     public static UserId Authed() => Guid.NewGuid().ToString();
 
-    public static UserId AnarchyBot() => "bot:anarchybot";
-
-    public static UserId LobotomizedAnarchyBot() => "bot:lobotomized-anarchybot";
-
     public static implicit operator string(UserId id) => id.Value;
 
     public static implicit operator UserId(string value) => new(value);

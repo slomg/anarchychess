@@ -7,11 +7,16 @@ import ProfilePicture from "@/features/profile/components/ProfilePicture";
 import Selector from "@/components/ui/Selector";
 import useBotMatch from "../hooks/useBotMatch";
 import Button from "@/components/ui/Button";
-import { GameColor } from "@/lib/apiClient";
+import { BotType, GameColor } from "@/lib/apiClient";
+import useLocalPref from "@/hooks/useLocalPref";
 import Card from "@/components/ui/Card";
+import constants from "@/lib/constants";
 
 const BotPlayOptions = () => {
-    const [selected, setSelected] = useState("bot:anarchybot");
+    const [selectedBotType, setSelectedBotType] = useLocalPref<BotType>(
+        constants.LOCALSTORAGE.PREFERS_BOT_TYPE,
+        BotType.ANARCHY_BOT,
+    );
     const [color, setColor] = useState<GameColor | null>(null);
     const [error, setError] = useState<string>();
 
@@ -20,7 +25,7 @@ const BotPlayOptions = () => {
     async function startGame() {
         setError(undefined);
 
-        const success = await matchBotGame(color);
+        const success = await matchBotGame(color, selectedBotType);
         if (!success) {
             setError("Failed to start game. Please try again.");
             return;
@@ -36,18 +41,18 @@ const BotPlayOptions = () => {
                 <Bot
                     label="Anarchy Bot"
                     userId="bot:anarchybot"
-                    selected={selected}
-                    select={() => setSelected("bot:anarchybot")}
+                    selected={selectedBotType === BotType.ANARCHY_BOT}
+                    select={() => setSelectedBotType(BotType.ANARCHY_BOT)}
                 />
-            </div>
-
-            <div className="flex flex-col gap-2">
-                <h2 className="text-lg">Coming Soon:</h2>
                 <Bot
                     label="Lobotomized Anarchy Bot"
                     userId="bot:lobotomized-anarchybot"
-                    selected={selected}
-                    disabled
+                    selected={
+                        selectedBotType === BotType.LOBOTOMIZED_ANARCHY_BOT
+                    }
+                    select={() =>
+                        setSelectedBotType(BotType.LOBOTOMIZED_ANARCHY_BOT)
+                    }
                 />
             </div>
 
@@ -100,7 +105,7 @@ const Bot = ({
 }: {
     label: string;
     userId: string;
-    selected: string;
+    selected: boolean;
     select?: () => void;
     disabled?: boolean;
 }) => {
@@ -116,8 +121,7 @@ const Bot = ({
         >
             <ProfilePicture
                 className={clsx(
-                    selected === userId &&
-                        "border-secondary rounded-xl border-3 p-1",
+                    selected && "border-secondary rounded-xl border-3 p-1",
                 )}
                 userId={userId}
                 size={104}

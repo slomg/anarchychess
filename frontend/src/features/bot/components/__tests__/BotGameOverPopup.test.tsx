@@ -12,7 +12,7 @@ import { mockRouter, RouterMock } from "@/lib/testUtils/mocks/mockRouter";
 import { createFakeGameResultData } from "@/lib/testUtils/fakers/gameResultDataFaker";
 import BotGameOverPopup from "../BotGameOverPopup";
 import useBotMatch from "../../hooks/useBotMatch";
-import { GameColor } from "@/lib/apiClient";
+import { BotType, GameColor } from "@/lib/apiClient";
 import constants from "@/lib/constants";
 
 vi.mock("@/features/bot/hooks/useBotMatch");
@@ -41,7 +41,7 @@ describe("BotGameOverPopup", () => {
 
         render(
             <LiveChessStoreContext.Provider value={store}>
-                <BotGameOverPopup />
+                <BotGameOverPopup botType={BotType.ANARCHY_BOT} />
             </LiveChessStoreContext.Provider>,
         );
 
@@ -59,7 +59,7 @@ describe("BotGameOverPopup", () => {
     it("should render both play new bot and rematch buttons if viewer is in game", () => {
         render(
             <LiveChessStoreContext.Provider value={store}>
-                <BotGameOverPopup />
+                <BotGameOverPopup botType={BotType.ANARCHY_BOT} />
             </LiveChessStoreContext.Provider>,
         );
 
@@ -75,7 +75,7 @@ describe("BotGameOverPopup", () => {
         const user = userEvent.setup();
         render(
             <LiveChessStoreContext.Provider value={store}>
-                <BotGameOverPopup />
+                <BotGameOverPopup botType={BotType.ANARCHY_BOT} />
             </LiveChessStoreContext.Provider>,
         );
 
@@ -90,7 +90,7 @@ describe("BotGameOverPopup", () => {
         const user = userEvent.setup();
         render(
             <LiveChessStoreContext.Provider value={store}>
-                <BotGameOverPopup />
+                <BotGameOverPopup botType={BotType.ANARCHY_BOT} />
             </LiveChessStoreContext.Provider>,
         );
 
@@ -98,8 +98,28 @@ describe("BotGameOverPopup", () => {
 
         expect(matchBotGameMock).toHaveBeenCalledExactlyOnceWith(
             GameColor.BLACK,
+            BotType.ANARCHY_BOT,
         );
     });
+
+    it.each([BotType.ANARCHY_BOT, BotType.LOBOTOMIZED_ANARCHY_BOT])(
+        "should start a game with the correct bot type",
+        async (botType) => {
+            const user = userEvent.setup();
+            render(
+                <LiveChessStoreContext.Provider value={store}>
+                    <BotGameOverPopup botType={botType} />
+                </LiveChessStoreContext.Provider>,
+            );
+
+            await user.click(screen.getByRole("button", { name: /REMATCH/i }));
+
+            expect(matchBotGameMock).toHaveBeenCalledExactlyOnceWith(
+                GameColor.BLACK,
+                botType,
+            );
+        },
+    );
 
     it("should start a game with null color if viewer not in game", async () => {
         const user = userEvent.setup();
@@ -107,7 +127,7 @@ describe("BotGameOverPopup", () => {
 
         render(
             <LiveChessStoreContext.Provider value={store}>
-                <BotGameOverPopup />
+                <BotGameOverPopup botType={BotType.ANARCHY_BOT} />
             </LiveChessStoreContext.Provider>,
         );
 
@@ -115,6 +135,9 @@ describe("BotGameOverPopup", () => {
             screen.getByRole("button", { name: /PLAY ANARCHY BOT/i }),
         );
 
-        expect(matchBotGameMock).toHaveBeenCalledExactlyOnceWith(null);
+        expect(matchBotGameMock).toHaveBeenCalledExactlyOnceWith(
+            null,
+            BotType.ANARCHY_BOT,
+        );
     });
 });

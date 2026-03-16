@@ -1,4 +1,5 @@
-﻿using AnarchyChess.Api.Profile.Errors;
+﻿using AnarchyChess.Api.Bots.Bots;
+using AnarchyChess.Api.Profile.Errors;
 using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Profile.Services;
 using AnarchyChess.Api.TestInfrastructure;
@@ -137,7 +138,7 @@ public class ProfilePictureProviderTests : BaseIntegrationTest
     [Fact]
     public async Task GetProfilePictureAsync_returns_bot_picture()
     {
-        UserId botId = UserId.AnarchyBot();
+        UserId botId = AnarchyBot.BotId;
 
         var result = await _profilePictureProvider.GetProfilePictureAsync(botId, CT);
 
@@ -169,7 +170,7 @@ public class ProfilePictureProviderTests : BaseIntegrationTest
     [Fact]
     public async Task GetLastModifiedAsync_returns_bot_last_modified()
     {
-        UserId botId = UserId.AnarchyBot();
+        UserId botId = AnarchyBot.BotId;
 
         var botLastModified = await _profilePictureProvider.GetLastModifiedAsync(botId, CT);
 

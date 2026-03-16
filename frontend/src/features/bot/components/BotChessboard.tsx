@@ -29,8 +29,8 @@ import useBotMoveEmitter from "../hooks/useBotMoveEmitter";
 import useLiveBotEvents from "../hooks/useLiveBotEvents";
 import BotGameOverPopup from "./BotGameOverPopup";
 import { BotGameState } from "@/lib/apiClient";
-import BotDialog from "./BotDialog";
 import useConst from "@/hooks/useConst";
+import BotDialog from "./BotDialog";
 
 const BotChessboard = ({
     gameToken,
@@ -62,7 +62,7 @@ const BotChessboard = ({
     return (
         <LiveChessStoreContext.Provider value={liveChessStore}>
             <ChessboardStoreContext.Provider value={chessboardStore}>
-                <BotGameOverPopup />
+                <BotGameOverPopup botType={gameState.botType} />
                 <ChessboardWithSidebar
                     chessboard={
                         <>
@@ -105,7 +105,7 @@ const BotChessboard = ({
                                 chessboardStore={chessboardStore}
                             />
                             <MoveHistoryTable />
-                            <BotGameControlsCard />
+                            <BotGameControlsCard botType={gameState.botType} />
                         </aside>
                     }
                 />

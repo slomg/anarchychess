@@ -510,6 +510,33 @@ export const cancelAllIncomingChallenges = <
         ThrowOnError
     >({ url: "/api/Challenge/incoming", ...options });
 
+export const getBotGame = <ThrowOnError extends boolean = false>(
+    options: Options<GetBotGameData, ThrowOnError>,
+) =>
+    (options.client ?? client).get<
+        GetBotGameResponses,
+        GetBotGameErrors,
+        ThrowOnError
+    >({ url: "/api/Bot/{gameToken}", ...options });
+
+export const startBotGame = <ThrowOnError extends boolean = false>(
+    options?: Options<StartBotGameData, ThrowOnError>,
+) =>
+    (options?.client ?? client).post<
+        StartBotGameResponses,
+        StartBotGameErrors,
+        ThrowOnError
+    >({ url: "/api/Bot/start", ...options });
+
+export const checkBotHealth = <ThrowOnError extends boolean = false>(
+    options?: Options<CheckBotHealthData, ThrowOnError>,
+) =>
+    (options?.client ?? client).get<
+        CheckBotHealthResponses,
+        unknown,
+        ThrowOnError
+    >({ url: "/api/Bot/health", ...options });
+
 export const refresh = <ThrowOnError extends boolean = false>(
     options?: Options<RefreshData, ThrowOnError>,
 ) =>
@@ -570,33 +597,6 @@ export const signInOAuth = <ThrowOnError extends boolean = false>(
         url: "/api/OAuth/signin/{provider}",
         ...options,
     });
-
-export const getBotGame = <ThrowOnError extends boolean = false>(
-    options: Options<GetBotGameData, ThrowOnError>,
-) =>
-    (options.client ?? client).get<
-        GetBotGameResponses,
-        GetBotGameErrors,
-        ThrowOnError
-    >({ url: "/api/Bot/{gameToken}", ...options });
-
-export const startBotGame = <ThrowOnError extends boolean = false>(
-    options?: Options<StartBotGameData, ThrowOnError>,
-) =>
-    (options?.client ?? client).post<
-        StartBotGameResponses,
-        StartBotGameErrors,
-        ThrowOnError
-    >({ url: "/api/Bot/start", ...options });
-
-export const checkBotHealth = <ThrowOnError extends boolean = false>(
-    options?: Options<CheckBotHealthData, ThrowOnError>,
-) =>
-    (options?.client ?? client).get<
-        CheckBotHealthResponses,
-        unknown,
-        ThrowOnError
-    >({ url: "/api/Bot/health", ...options });
 
 export const getInitialAnalysisPosition = <
     ThrowOnError extends boolean = false,

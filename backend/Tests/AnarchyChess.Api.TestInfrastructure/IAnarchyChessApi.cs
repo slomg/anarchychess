@@ -1,6 +1,6 @@
 ﻿using AnarchyChess.Api.Analysis.Models;
-using AnarchyChess.Api.AnarchyBot.Models;
 using AnarchyChess.Api.ArchivedGames.Models;
+using AnarchyChess.Api.Bots.Models;
 using AnarchyChess.Api.Challenges.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Matchmaking.Models;
@@ -190,6 +190,6 @@ public interface IAnarchyChessApi
     Task<IApiResponse<BotGameState>> GetBotGameAsync(string gameToken);
 
     [Post("/api/bot/start")]
-    Task<IApiResponse<string>> StartBotGameAsync(GameColor myColor);
+    Task<IApiResponse<string>> StartBotGameAsync(GameColor myColor, BotType botType);
     #endregion
 }

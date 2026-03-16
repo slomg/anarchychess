@@ -11,7 +11,7 @@ import LiveChessStoreContext from "@/features/liveGame/contexts/liveChessContext
 import { mockRouter, RouterMock } from "@/lib/testUtils/mocks/mockRouter";
 import useBotMatch from "@/features/bot/hooks/useBotMatch";
 import BotOverControls from "../BotOverControls";
-import { GameColor } from "@/lib/apiClient";
+import { BotType, GameColor } from "@/lib/apiClient";
 import constants from "@/lib/constants";
 
 vi.mock("@/features/bot/hooks/useBotMatch");
@@ -40,7 +40,7 @@ describe("BotOverControls", () => {
 
         render(
             <LiveChessStoreContext.Provider value={store}>
-                <BotOverControls />
+                <BotOverControls botType={BotType.ANARCHY_BOT} />
             </LiveChessStoreContext.Provider>,
         );
 
@@ -55,7 +55,7 @@ describe("BotOverControls", () => {
     it("should render both play new bot button and rematch if viewer is in game", () => {
         render(
             <LiveChessStoreContext.Provider value={store}>
-                <BotOverControls />
+                <BotOverControls botType={BotType.ANARCHY_BOT} />
             </LiveChessStoreContext.Provider>,
         );
 
@@ -71,7 +71,7 @@ describe("BotOverControls", () => {
         const user = userEvent.setup();
         render(
             <LiveChessStoreContext.Provider value={store}>
-                <BotOverControls />
+                <BotOverControls botType={BotType.ANARCHY_BOT} />
             </LiveChessStoreContext.Provider>,
         );
 
@@ -86,7 +86,7 @@ describe("BotOverControls", () => {
         const user = userEvent.setup();
         render(
             <LiveChessStoreContext.Provider value={store}>
-                <BotOverControls />
+                <BotOverControls botType={BotType.LOBOTOMIZED_ANARCHY_BOT} />
             </LiveChessStoreContext.Provider>,
         );
 
@@ -94,6 +94,7 @@ describe("BotOverControls", () => {
 
         expect(matchBotGameMock).toHaveBeenCalledExactlyOnceWith(
             GameColor.BLACK,
+            BotType.LOBOTOMIZED_ANARCHY_BOT,
         );
     });
 });

@@ -1,11 +1,13 @@
-﻿using AnarchyChess.Api.AnarchyBot.Grains;
-using AnarchyChess.Api.AnarchyBot.Services;
+﻿using AnarchyChess.Api.Bots.Bots;
+using AnarchyChess.Api.Bots.Grains;
+using AnarchyChess.Api.Bots.Services;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.TestInfrastructure.Factories;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AnarchyChess.Api.TestInfrastructure.Utils;
 using AnarchyChess.EngineShared;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 
 namespace AnarchyChess.Api.Unit.Tests.BotTests;
@@ -16,7 +18,7 @@ public class BotMoveRunnerTests
 
     private readonly BotMoveRunner _runner;
 
-    private readonly IBotService _botServiceMock = Substitute.For<IBotService>();
+    private readonly IBot _botMock = Substitute.For<IBot>();
     private readonly IGrainFactory _grainsMock = Substitute.For<IGrainFactory>();
     private readonly IBotGrain _botGrainMock = Substitute.For<IBotGrain>();
 
@@ -24,7 +26,7 @@ public class BotMoveRunnerTests
     {
         _grainsMock.GetGrain<IBotGrain>(_testGameToken).Returns(_botGrainMock);
 
-        _runner = new(_botServiceMock, _grainsMock);
+        _runner = new(Substitute.For<ILogger<BotMoveRunner>>(), _grainsMock);
     }
 
     [Fact]
@@ -33,16 +35,18 @@ public class BotMoveRunnerTests
         ChessBoard board = new(
             new Dictionary<AlgebraicPoint, Piece>() { [new("a1")] = PieceFactory.White() }
         );
-        var expectedMove = new AiEngineMoveReplyFaker().Generate();
-        _botServiceMock
-            .FindBestMoveAsync(board, Arg.Any<CancellationToken>())
+        int lastEval = 6969;
+
+        var expectedMove = new MoveEvaluationFaker().Generate();
+        _botMock
+            .FindMoveAsync(board, lastEval: lastEval, CancellationToken.None)
             .Returns(expectedMove);
 
-        _runner.RunMove(board, _testGameToken);
+        _runner.RunMove(board, lastEval: lastEval, _testGameToken, _botMock);
 
-        await Wait.UntilAsync(() => _botServiceMock.ReceivedCalls().Any());
+        await Wait.UntilAsync(() => _botMock.ReceivedCalls().Any());
 
-        await _botServiceMock.Received(1).FindBestMoveAsync(board, Arg.Any<CancellationToken>());
+        await _botMock.Received(1).FindMoveAsync(board, lastEval, CancellationToken.None);
         await _botGrainMock
             .Received(1)
             .PlayBotMoveAsync(expectedMove, Arg.Any<CancellationToken>());

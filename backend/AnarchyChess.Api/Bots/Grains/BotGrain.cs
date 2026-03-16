@@ -1,9 +1,10 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using AnarchyChess.Ai.Service.DTO;
-using AnarchyChess.Api.AnarchyBot.Errors;
-using AnarchyChess.Api.AnarchyBot.Models;
-using AnarchyChess.Api.AnarchyBot.Services;
+using AnarchyChess.Ai.Models;
 using AnarchyChess.Api.ArchivedGames.Services;
+using AnarchyChess.Api.Bots.Bots;
+using AnarchyChess.Api.Bots.Errors;
+using AnarchyChess.Api.Bots.Models;
+using AnarchyChess.Api.Bots.Services;
 using AnarchyChess.Api.Game.Errors;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
@@ -18,9 +19,9 @@ using AnarchyChess.EngineShared;
 using AnarchyChess.EngineShared.Extensions;
 using ErrorOr;
 
-namespace AnarchyChess.Api.AnarchyBot.Grains;
+namespace AnarchyChess.Api.Bots.Grains;
 
-[Alias("AnarchyChess.Api.AnarchyBot.Grains.IBotGrain")]
+[Alias("AnarchyChess.Api.Bots.Grains.IBotGrain")]
 public interface IBotGrain : IGrainWithStringKey
 {
     [Alias("SyncPlyNumberAsync")]
@@ -30,7 +31,7 @@ public interface IBotGrain : IGrainWithStringKey
     );
 
     [Alias("CreateAsync")]
-    Task StartGameAsync(GamePlayer player, CancellationToken token = default);
+    Task StartGameAsync(GamePlayer player, BotType botType, CancellationToken token = default);
 
     [Alias("GetStateAsync")]
     Task<ErrorOr<BotGameState>> GetStateAsync(CancellationToken token = default);
@@ -43,17 +44,14 @@ public interface IBotGrain : IGrainWithStringKey
     );
 
     [Alias("PlayBotMoveAsync")]
-    Task PlayBotMoveAsync(
-        ErrorOr<AiEngineMoveReply> botMoveResult,
-        CancellationToken token = default
-    );
+    Task PlayBotMoveAsync(ErrorOr<MoveEvaluation> botMoveResult, CancellationToken token = default);
 
     [Alias("ResignAsync")]
     Task<ErrorOr<Success>> ResignAsync(UserId userId, CancellationToken token = default);
 }
 
 [GenerateSerializer]
-[Alias("AnarchyChess.Api.AnarchyBot.Grains.BotGameData")]
+[Alias("AnarchyChess.Api.Bots.Grains.BotGameData")]
 public class BotGameData
 {
     [Id(0)]
@@ -64,6 +62,12 @@ public class BotGameData
 
     [Id(2)]
     public required GameColor BotColor { get; init; }
+
+    [Id(7)]
+    public required BotType BotType { get; init; }
+
+    [Id(8)]
+    public int LastEval { get; set; }
 
     [Id(3)]
     public required string InitialFen { get; init; }
@@ -79,7 +83,7 @@ public class BotGameData
 }
 
 [GenerateSerializer]
-[Alias("AnarchyChess.Api.AnarchyBot.Grains.BotGrainState")]
+[Alias("AnarchyChess.Api.Bots.Grains.BotGrainState")]
 public class BotGrainState
 {
     [Id(0)]
@@ -92,6 +96,8 @@ public class BotGrain : Grain, IBotGrain
 
     private readonly ILogger<BotGrain> _logger;
     private readonly IPersistentState<BotGrainState> _state;
+
+    private readonly Dictionary<BotType, IBot> _bots;
     private readonly IGameCore _core;
     private readonly IBotMoveRunner _botMoveRunner;
     private readonly IBotNotifier _notifier;
@@ -103,6 +109,7 @@ public class BotGrain : Grain, IBotGrain
     public BotGrain(
         ILogger<BotGrain> logger,
         [PersistentState(StateName)] IPersistentState<BotGrainState> state,
+        IEnumerable<IBot> bots,
         IGameCore core,
         IBotMoveRunner botMoveRunner,
         IBotNotifier notifier,
@@ -115,6 +122,8 @@ public class BotGrain : Grain, IBotGrain
 
         _logger = logger;
         _state = state;
+
+        _bots = bots.ToDictionary(x => x.Type);
         _core = core;
         _botMoveRunner = botMoveRunner;
         _notifier = notifier;
@@ -136,18 +145,18 @@ public class BotGrain : Grain, IBotGrain
         return Result.Success;
     }
 
-    public async Task StartGameAsync(GamePlayer player, CancellationToken token = default)
+    public async Task StartGameAsync(
+        GamePlayer player,
+        BotType botType,
+        CancellationToken token = default
+    )
     {
-        GameCoreState core = new();
-        GamePlayer botPlayer = new(
-            UserId: UserId.AnarchyBot(),
-            Color: player.Color.Invert(),
-            UserName: "Anarchy Bot",
-            CountryCode: "XX",
-            Rating: 161660
-        );
+        IBot bot = _bots[botType];
 
-        _state.State.CurrentGame = new BotGameData()
+        GameCoreState core = new();
+        GamePlayer botPlayer = bot.CreateBotPlayer(color: player.Color.Invert());
+
+        BotGameData game = new()
         {
             Players = new(
                 WhitePlayer: player.Color is GameColor.White ? player : botPlayer,
@@ -155,14 +164,16 @@ public class BotGrain : Grain, IBotGrain
             ),
             HumanColor = player.Color,
             BotColor = botPlayer.Color,
+            BotType = botType,
             InitialFen = _core.StartGame(core).FullFen,
             Core = core,
         };
+        _state.State.CurrentGame = game;
 
         if (player.Color is GameColor.Black)
         {
-            IReadOnlyChessBoard board = _core.GetReadOnlyBoard(_state.State.CurrentGame.Core);
-            _botMoveRunner.RunMove(board, _gameToken);
+            IReadOnlyChessBoard board = _core.GetReadOnlyBoard(game.Core);
+            _botMoveRunner.RunMove(board, lastEval: 0, _gameToken, bot);
         }
 
         await _state.WriteStateAsync(token);
@@ -175,7 +186,19 @@ public class BotGrain : Grain, IBotGrain
             return Task.FromResult<ErrorOr<BotGameState>>(GameErrors.GameNotFound);
         }
 
-        return Task.FromResult<ErrorOr<BotGameState>>(GetGameState(game));
+        return Task.FromResult<ErrorOr<BotGameState>>(
+            new BotGameState(
+                WhitePlayer: game.Players.WhitePlayer,
+                BlackPlayer: game.Players.BlackPlayer,
+                BotColor: game.BotColor,
+                BotType: game.BotType,
+                SideToMove: _core.SideToMove(game.Core),
+                InitialFen: game.InitialFen,
+                MoveHistory: game.MoveHistory.Moves,
+                LegalMoves: _core.GetLegalMoves(game.Core).MovePaths,
+                ResultData: game.Result
+            )
+        );
     }
 
     public async Task<ErrorOr<Success>> PlayMoveAsync(
@@ -222,7 +245,7 @@ public class BotGrain : Grain, IBotGrain
         else if (nextSideToMove == game.BotColor)
         {
             IReadOnlyChessBoard board = _core.GetReadOnlyBoard(game.Core);
-            _botMoveRunner.RunMove(board, _gameToken);
+            _botMoveRunner.RunMove(board, lastEval: game.LastEval, _gameToken, _bots[game.BotType]);
         }
 
         await _state.WriteStateAsync(token);
@@ -250,7 +273,7 @@ public class BotGrain : Grain, IBotGrain
     }
 
     public async Task PlayBotMoveAsync(
-        ErrorOr<AiEngineMoveReply> botMoveResult,
+        ErrorOr<MoveEvaluation> botMoveResult,
         CancellationToken token = default
     )
     {
@@ -274,16 +297,7 @@ public class BotGrain : Grain, IBotGrain
         var botMove = botMoveResult.Value;
 
         LegalMoveSet legalMoves = _core.GetLegalMoves(game.Core);
-        Move? legalMove = legalMoves.AllMoves.FirstOrDefault(move =>
-        {
-            HashSet<AlgebraicPoint> moveCaptures = [.. move.Captures.Select(c => c.Position)];
-            HashSet<AlgebraicPoint> botCaptures = botMove.Captures?.ToHashSet() ?? [];
-
-            return move.From == botMove.From
-                && move.To == botMove.To
-                && move.PromotesTo == botMove.PromotesTo
-                && moveCaptures.SetEquals(botCaptures);
-        });
+        Move? legalMove = legalMoves.FindBotMove(botMove.Move);
         if (legalMove is null)
         {
             _logger.LogError(
@@ -316,6 +330,8 @@ public class BotGrain : Grain, IBotGrain
             evalForBot: botMove.EvalForBot,
             didMoveEndGame: moveResult.EndStatus is not null
         );
+
+        game.LastEval = botMove.EvalForBot;
 
         await _state.WriteStateAsync(token);
     }
@@ -354,18 +370,6 @@ public class BotGrain : Grain, IBotGrain
 
         game.Result = resultData;
     }
-
-    private BotGameState GetGameState(BotGameData game) =>
-        new(
-            WhitePlayer: game.Players.WhitePlayer,
-            BlackPlayer: game.Players.BlackPlayer,
-            BotColor: game.BotColor,
-            SideToMove: _core.SideToMove(game.Core),
-            InitialFen: game.InitialFen,
-            MoveHistory: game.MoveHistory.Moves,
-            LegalMoves: _core.GetLegalMoves(game.Core).MovePaths,
-            ResultData: game.Result
-        );
 
     private bool TryGetCurrentGame([NotNullWhen(true)] out BotGameData? state)
     {

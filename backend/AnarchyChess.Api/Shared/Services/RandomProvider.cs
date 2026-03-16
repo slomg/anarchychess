@@ -9,6 +9,7 @@ public interface IRandomProvider
     void NextBytes(byte[] buffer);
     T NextItem<T>(IEnumerable<T> enumerable);
     T NextItemWeighted<T>(IEnumerable<T> enumerable, Func<T, int> getWeight);
+    T Softmax<T>(IEnumerable<T> items, Func<T, int> getScore, double temperature);
 }
 
 public class RandomProvider(Random? random = null) : IRandomProvider
@@ -27,16 +28,16 @@ public class RandomProvider(Random? random = null) : IRandomProvider
 
     public T NextItem<T>(IEnumerable<T> items) => items.ElementAt(_random.Next(items.Count()));
 
-    public T NextItemWeighted<T>(IEnumerable<T> enumerable, Func<T, int> getWeight)
+    public T NextItemWeighted<T>(IEnumerable<T> items, Func<T, int> getWeight)
     {
-        List<int> weights = [.. enumerable.Select(getWeight)];
+        List<int> weights = [.. items.Select(getWeight)];
 
         int totalWeight = weights.Sum();
         int rnd = _random.Next(totalWeight);
 
         int cumulative = 0;
         int selectedIndex = 0;
-        for (int i = 0; i < enumerable.Count(); i++)
+        for (int i = 0; i < items.Count(); i++)
         {
             cumulative += weights[i];
             if (rnd < cumulative)
@@ -46,6 +47,29 @@ public class RandomProvider(Random? random = null) : IRandomProvider
             }
         }
 
-        return enumerable.ElementAt(selectedIndex);
+        return items.ElementAt(selectedIndex);
+    }
+
+    public T Softmax<T>(IEnumerable<T> items, Func<T, int> getScore, double temperature)
+    {
+        double max = items.Max(getScore);
+        double[] expScores = [.. items.Select(x => Math.Exp((getScore(x) - max) / temperature))];
+        double sumExp = expScores.Sum();
+        double[] probabilities = [.. expScores.Select(x => x / sumExp)];
+
+        double threshold = NextDouble();
+        double cum = 0; // hehe
+        int selectedIdx = items.Count() - 1;
+
+        for (int i = 0; i < items.Count(); i++)
+        {
+            cum += probabilities[i];
+            if (cum >= threshold)
+            {
+                selectedIdx = i;
+                break;
+            }
+        }
+        return items.ElementAt(selectedIdx);
     }
 }

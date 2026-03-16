@@ -1,5 +1,5 @@
-﻿using AnarchyChess.Api.AnarchyBot.Grains;
-using AnarchyChess.Api.AnarchyBot.Services;
+﻿using AnarchyChess.Api.Bots.Grains;
+using AnarchyChess.Api.Bots.Services;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Infrastructure;
@@ -8,7 +8,7 @@ using ErrorOr;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
-namespace AnarchyChess.Api.AnarchyBot.SignalR;
+namespace AnarchyChess.Api.Bots.SignalR;
 
 public interface IBotHubClient : IAnarchyChessHubClient
 {

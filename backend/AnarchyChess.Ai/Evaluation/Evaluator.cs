@@ -10,13 +10,8 @@ public interface IEvaluator
     bool TryEvaluateTermination(BitBoard board, int depth, out int eval);
 }
 
-public sealed class Evaluator(
-    IEndgameFactorCalculator? endgameFactorCalculator = null,
-    IEnumerable<IEvaluatorFunction>? evaluators = null
-) : IEvaluator
+public sealed class Evaluator(IEnumerable<IEvaluatorFunction>? evaluators = null) : IEvaluator
 {
-    private readonly IEndgameFactorCalculator _endgameFactorCalculator =
-        endgameFactorCalculator ?? new EndgameFactorCalculator();
     private readonly IEvaluatorFunction[] _evaluators = evaluators is not null
         ? [.. evaluators]
         :
@@ -33,7 +28,7 @@ public sealed class Evaluator(
 
     public int Evaluate(BitBoard board)
     {
-        float endgameFactor = _endgameFactorCalculator.EndgameFactor(board);
+        float endgameFactor = EndgameFactorCalculator.EndgameFactor(board);
 
         int whiteScore = 0;
         int blackScore = 0;

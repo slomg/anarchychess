@@ -4,6 +4,7 @@ using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.TestInfrastructure;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
+using AnarchyChess.Api.TestInfrastructure.NSubtituteExtenstion;
 using AnarchyChess.Api.TestInfrastructure.Utils;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
@@ -74,12 +75,22 @@ public class GameEndHandlerTests : BaseIntegrationTest
 
         await _handler.HandleGameEndAsync(_gameState, _endStatus, _gameToken, _gameData, CT);
 
+        var expectedClockSnapshot = _clock.ToSnapshot(_gameData.ClockState);
         await _gameNotifierMock
             .Received(1)
             .NotifyGameEndedAsync(
                 _gameToken,
                 resultData,
-                _clock.ToSnapshot(_gameData.ClockState),
+                ArgEx.FluentAssert<ClockSnapshot>(x =>
+                {
+                    x.Should()
+                        .BeEquivalentTo(
+                            expectedClockSnapshot,
+                            options => options.Excluding(x => x.ServerTime)
+                        );
+                    x.ServerTime.Should()
+                        .BeApproximately(expectedClockSnapshot.ServerTime, precision: 5000);
+                }),
                 _gameData.NotifierState
             );
     }

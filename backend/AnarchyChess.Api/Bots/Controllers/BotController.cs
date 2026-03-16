@@ -1,7 +1,7 @@
-﻿using AnarchyChess.Api.AnarchyBot.Grains;
-using AnarchyChess.Api.AnarchyBot.Models;
-using AnarchyChess.Api.AnarchyBot.Services;
-using AnarchyChess.Api.Auth.Services;
+﻿using AnarchyChess.Api.Auth.Services;
+using AnarchyChess.Api.Bots.Grains;
+using AnarchyChess.Api.Bots.Models;
+using AnarchyChess.Api.Bots.Services;
 using AnarchyChess.Api.ErrorHandling.Extensions;
 using AnarchyChess.Api.ErrorHandling.Infrastructure;
 using AnarchyChess.Api.Game.Models;
@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AnarchyChess.Api.AnarchyBot.Controllers;
+namespace AnarchyChess.Api.Bots.Controllers;
 
 [ApiController]
 [Route("/api/[controller]")]
@@ -45,7 +45,11 @@ public class BotController(
     [HttpPost("start")]
     [ProducesResponseType<string>(StatusCodes.Status200OK)]
     [Authorize(AuthPolicies.ActiveSession)]
-    public async Task<ActionResult<string>> StartBotGame(GameColor myColor, CancellationToken token)
+    public async Task<ActionResult<string>> StartBotGame(
+        GameColor myColor,
+        BotType botType,
+        CancellationToken token
+    )
     {
         var userIdResult = _authService.GetUserId(User);
         if (userIdResult.IsError)
@@ -64,7 +68,7 @@ public class BotController(
 
         GameToken gameToken = _randomCodeGenerator.Generate(16);
         var botGrain = _grains.GetGrain<IBotGrain>(gameToken);
-        await botGrain.StartGameAsync(player, token);
+        await botGrain.StartGameAsync(player, botType, token);
 
         return Ok(gameToken.ToString());
     }

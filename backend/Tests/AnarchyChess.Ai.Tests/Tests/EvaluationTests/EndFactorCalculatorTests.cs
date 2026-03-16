@@ -9,13 +9,11 @@ using Xunit;
 
 public class EndgameFactorCalculatorTests
 {
-    private readonly EndgameFactorCalculator _calculator = new();
-
     [Fact]
     public void EndgameFactor_returns_1_when_board_is_empty()
     {
         BitBoard board = new();
-        _calculator.EndgameFactor(board).Should().Be(1f);
+        EndgameFactorCalculator.EndgameFactor(board).Should().Be(1f);
     }
 
     [Fact]
@@ -34,7 +32,7 @@ public class EndgameFactorCalculatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        _calculator.EndgameFactor(board).Should().Be(0f);
+        EndgameFactorCalculator.EndgameFactor(board).Should().Be(0f);
     }
 
     [Fact]
@@ -47,7 +45,7 @@ public class EndgameFactorCalculatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        _calculator.EndgameFactor(board).Should().BeGreaterThan(0f).And.BeLessThan(1f);
+        EndgameFactorCalculator.EndgameFactor(board).Should().BeGreaterThan(0f).And.BeLessThan(1f);
     }
 
     [Fact]
@@ -60,7 +58,7 @@ public class EndgameFactorCalculatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        _calculator
+        EndgameFactorCalculator
             .EndgameFactor(board)
             .Should()
             .Be(1f - (2 * 0.5f / EndgameFactorCalculator.MaxPhase));
@@ -82,6 +80,6 @@ public class EndgameFactorCalculatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        _calculator.EndgameFactor(board).Should().Be(0f);
+        EndgameFactorCalculator.EndgameFactor(board).Should().Be(0f);
     }
 }

@@ -1,4 +1,5 @@
-﻿using AnarchyChess.Api.Profile.Models;
+﻿using AnarchyChess.Api.Bots.Bots;
+using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Profile.Services;
 using AwesomeAssertions;
 
@@ -52,9 +53,9 @@ public class BotProfilePictureProviderTests
 
     public static IEnumerable<TheoryDataRow<UserId, string>> BotData =>
         [
-            new(UserId.AnarchyBot(), Path.Combine(_baseDirectory, "anarchybot.webp")),
+            new(AnarchyBot.BotId, Path.Combine(_baseDirectory, "anarchybot.webp")),
             new(
-                UserId.LobotomizedAnarchyBot(),
+                LobotomizedAnarchyBot.BotId,
                 Path.Combine(_baseDirectory, "lobotomized-anarchybot.webp")
             ),
         ];

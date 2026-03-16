@@ -6,8 +6,9 @@ import { invertColor } from "@/lib/utils/chessUtils";
 import useBotMatch from "../hooks/useBotMatch";
 import Button from "@/components/ui/Button";
 import constants from "@/lib/constants";
+import { BotType } from "@/lib/apiClient";
 
-const BotGameOverPopup = () => {
+const BotGameOverPopup = ({ botType }: { botType: BotType }) => {
     const viewer = useLiveChessStore((x) => x.viewer);
 
     const router = useRouter();
@@ -22,7 +23,7 @@ const BotGameOverPopup = () => {
             viewer.playerColor !== null
                 ? invertColor(viewer.playerColor)
                 : null;
-        await matchBotGame(myColor);
+        await matchBotGame(myColor, botType);
     }
 
     return (

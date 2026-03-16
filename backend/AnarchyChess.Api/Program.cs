@@ -3,16 +3,19 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using AnarchyChess.Ai;
+using AnarchyChess.Ai.Service.DTO;
 using AnarchyChess.Ai.Service.Services;
 using AnarchyChess.Api.Analysis.Services;
-using AnarchyChess.Api.AnarchyBot.Services;
-using AnarchyChess.Api.AnarchyBot.SignalR;
 using AnarchyChess.Api.ArchivedGames.Repositories;
 using AnarchyChess.Api.ArchivedGames.Services;
 using AnarchyChess.Api.Auth.Errors;
 using AnarchyChess.Api.Auth.OAuthAuthenticators;
 using AnarchyChess.Api.Auth.Repositories;
 using AnarchyChess.Api.Auth.Services;
+using AnarchyChess.Api.Bots.Bots;
+using AnarchyChess.Api.Bots.Services;
+using AnarchyChess.Api.Bots.SignalR;
 using AnarchyChess.Api.Challenges.Services;
 using AnarchyChess.Api.Challenges.SignalR;
 using AnarchyChess.Api.CountryCodes.Services;
@@ -73,6 +76,7 @@ using Orleans.Providers;
 using Orleans.Serialization.Serializers;
 using Orleans.Storage;
 using ProtoBuf.Grpc.ClientFactory;
+using ProtoBuf.Meta;
 using Scalar.AspNetCore;
 using Serilog;
 using static OpenIddict.Abstractions.OpenIddictConstants;
@@ -617,10 +621,17 @@ builder.Services.AddSingleton<IChallengeNotifier, ChallengeNotifier>();
 builder.Services.AddScoped<IChallengeRequestCreator, ChallengeRequestCreator>();
 #endregion
 
-#region Anarchy Bot
+#region Bots
 builder.Services.AddSingleton<IBotService, BotService>();
 builder.Services.AddSingleton<IBotMoveRunner, BotMoveRunner>();
 builder.Services.AddSingleton<IBotNotifier, BotNotifier>();
+builder.Services.AddSingleton<IBotHeuristics, BotHeuristics>();
+builder.Services.AddSingleton<IBitMoveGenerator, BitMoveGenerator>();
+builder.Services.AddSingleton<IBotSee, BotSee>();
+
+builder.Services.AddSingleton<IBot, AnarchyBot>();
+builder.Services.AddSingleton<IBot, LobotomizedAnarchyBot>();
+
 builder
     .Services.AddCodeFirstGrpcClient<IAiEngineService>(client =>
     {
@@ -639,6 +650,10 @@ builder.Services.AddSingleton<IValidator<PaginationQuery>, PaginationValidator>(
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
+
+RuntimeTypeModel
+    .Default.Add<UInt128>(applyDefaultBehaviour: false)
+    .SetSurrogate(typeof(UInt128Surrogate));
 
 var app = builder.Build();
 

@@ -5,9 +5,10 @@ import GameControlButton from "@/features/liveGame/components/GameControls/GameC
 import useLiveChessStore from "@/features/liveGame/hooks/useLiveChessStore";
 import { invertColor } from "@/lib/utils/chessUtils";
 import useBotMatch from "../../hooks/useBotMatch";
+import { BotType } from "@/lib/apiClient";
 import constants from "@/lib/constants";
 
-const BotOverControls = () => {
+const BotOverControls = ({ botType }: { botType: BotType }) => {
     const viewer = useLiveChessStore((x) => x.viewer);
     const router = useRouter();
     const { matchBotGame, isMatching } = useBotMatch();
@@ -21,7 +22,7 @@ const BotOverControls = () => {
             viewer.playerColor !== null
                 ? invertColor(viewer.playerColor)
                 : null;
-        await matchBotGame(myColor);
+        await matchBotGame(myColor, botType);
     }
 
     return (

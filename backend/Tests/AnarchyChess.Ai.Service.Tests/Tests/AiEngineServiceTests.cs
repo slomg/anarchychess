@@ -1,5 +1,4 @@
 ﻿using AnarchyChess.Ai.Models;
-using AnarchyChess.Ai.Service.DTO;
 using AnarchyChess.Ai.Service.Services;
 using AnarchyChess.Api.TestInfrastructure.Factories;
 using AnarchyChess.Api.TestInfrastructure.NSubtituteExtenstion;
@@ -44,27 +43,22 @@ public class AiEngineServiceTests
             [new("h7")] = PieceFactory.Black(),
         };
         bool isWhiteToMove = true;
+        int depth = 69;
 
         BitBoard expectedBoard = BitBoard.FromPieces(pieces, isWhiteToMove: isWhiteToMove);
         _aiEngineMock
             .FindBestMove(
                 ArgEx.FluentAssert<BitBoard>(x => x.Should().BeEquivalentTo(expectedBoard)),
-                depth: AiEngineService.Depth
+                depth: depth
             )
             .Returns((BestMove: move, EvalForBot: 6969));
 
         var response = await _engine.FindBestMoveAsync(
-            new(pieces, IsWhiteToMove: isWhiteToMove, PrevMoveState: null),
+            new(pieces, IsWhiteToMove: isWhiteToMove, PrevMoveState: null, Depth: depth),
             TestContext.Current.CancellationToken
         );
 
-        AiEngineMoveReply expectedReply = new(
-            From: from,
-            To: to,
-            Captures: [capture1, capture2],
-            PromotesTo: promotesTo,
-            EvalForBot: 6969
-        );
+        MoveEvaluation expectedReply = new(move, EvalForBot: 6969);
         response.Should().BeEquivalentTo(expectedReply);
     }
 
@@ -82,11 +76,12 @@ public class AiEngineServiceTests
 
         AlgebraicPoint prevCapture1 = new("b5");
         AlgebraicPoint prevCapture2 = new("a6");
-        PrevMoveStateDto prevMoveDto = new(
-            From: new("a5"),
-            To: new("a2"),
-            Piece: PieceFactory.Black(PieceType.Pawn),
-            Captures: [prevCapture1, prevCapture2]
+        PrevMoveState prevMove = new(
+            From: new AlgebraicPoint("a5").AsIdx(),
+            To: new AlgebraicPoint("a2").AsIdx(),
+            Piece: new() { Type = PieceType.Pawn, Color = BitPieceColor.Black },
+            CaptureMask: (UInt128.One << prevCapture1.AsIdx())
+                | (UInt128.One << prevCapture2.AsIdx())
         );
 
         Dictionary<AlgebraicPoint, Piece> pieces = new()
@@ -101,7 +96,7 @@ public class AiEngineServiceTests
                 {
                     board.Should().NotBeNull();
 
-                    board.EnPassantPawnSquare.Should().Be(prevMoveDto.To.AsIdx());
+                    board.EnPassantPawnSquare.Should().Be(prevMove.To);
                     board
                         .EnPassantSquaresMask.Should()
                         .Be(
@@ -115,22 +110,16 @@ public class AiEngineServiceTests
                                 | (UInt128.One << prevCapture2.AsIdx())
                         );
                 }),
-                depth: AiEngineService.Depth
+                depth: 123
             )
             .Returns((BestMove: move, EvalForBot: -6969));
 
         var response = await _engine.FindBestMoveAsync(
-            new(pieces, IsWhiteToMove: true, PrevMoveState: prevMoveDto),
+            new(pieces, IsWhiteToMove: true, PrevMoveState: prevMove, Depth: 123),
             TestContext.Current.CancellationToken
         );
 
-        AiEngineMoveReply expectedReply = new(
-            From: from,
-            To: to,
-            Captures: [],
-            PromotesTo: null,
-            EvalForBot: -6969
-        );
+        MoveEvaluation expectedReply = new(move, EvalForBot: -6969);
         response.Should().BeEquivalentTo(expectedReply);
     }
 
@@ -138,12 +127,84 @@ public class AiEngineServiceTests
     public async Task FindBestMoveAsync_throws_when_no_move_is_found()
     {
         _aiEngineMock
-            .FindBestMove(Arg.Any<BitBoard>(), AiEngineService.Depth)
+            .FindBestMove(Arg.Any<BitBoard>(), depth: 123)
             .Returns((BestMove: null, EvalForBot: 0));
 
         Func<Task> act = async () =>
             await _engine
-                .FindBestMoveAsync(new(Pieces: [], IsWhiteToMove: true, PrevMoveState: null))
+                .FindBestMoveAsync(
+                    new(Pieces: [], IsWhiteToMove: true, PrevMoveState: null, Depth: 123)
+                )
+                .AsTask();
+
+        var ex = await act.Should().ThrowAsync<RpcException>();
+
+        ex.Which.StatusCode.Should().Be(StatusCode.InvalidArgument);
+        ex.Which.Status.Detail.Should()
+            .Be("The provided position contains no legal moves and is invalid");
+    }
+
+    [Fact]
+    public async Task EvaluateAllMovesAsync_returns_expected_moves()
+    {
+        AlgebraicPoint from1 = new("a1");
+        AlgebraicPoint to1 = new("b2");
+        AlgebraicPoint capture1 = new("c3");
+        BitMove move1 = new()
+        {
+            From = from1.AsIdx(),
+            To = to1.AsIdx(),
+            Piece = new() { Type = PieceType.Rook, Color = BitPieceColor.White },
+            CapturesMask = UInt128.One << capture1.AsIdx(),
+        };
+
+        AlgebraicPoint from2 = new("d4");
+        AlgebraicPoint to2 = new("e5");
+        BitMove move2 = new()
+        {
+            From = from2.AsIdx(),
+            To = to2.AsIdx(),
+            Piece = new() { Type = PieceType.Pawn, Color = BitPieceColor.White },
+            CapturesMask = 0,
+            PromotesTo = PieceType.Queen,
+        };
+
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new("a1")] = PieceFactory.White(),
+            [new("d4")] = PieceFactory.White(PieceType.Pawn),
+        };
+
+        BitBoard expectedBoard = BitBoard.FromPieces(pieces);
+
+        MoveEvaluation[] engineMoves = [new(move1, 100), new(move2, -50)];
+        _aiEngineMock
+            .EvaluateAllMoves(
+                ArgEx.FluentAssert<BitBoard>(x => x.Should().BeEquivalentTo(expectedBoard)),
+                depth: 69
+            )
+            .Returns(engineMoves);
+
+        var response = await _engine.EvaluateAllMovesAsync(
+            new(pieces, IsWhiteToMove: true, PrevMoveState: null, Depth: 69),
+            TestContext.Current.CancellationToken
+        );
+
+        List<MoveEvaluation> expected = [new(move1, EvalForBot: 100), new(move2, EvalForBot: -50)];
+        response.Moves.Should().BeEquivalentTo(expected);
+    }
+
+    [Fact]
+    public async Task EvaluateAllMovesAsync_throws_when_no_moves_are_found()
+    {
+        _aiEngineMock.EvaluateAllMoves(Arg.Any<BitBoard>(), depth: 123).Returns([]);
+
+        Func<Task> act = async () =>
+            await _engine
+                .EvaluateAllMovesAsync(
+                    new(Pieces: [], IsWhiteToMove: true, PrevMoveState: null, Depth: 123),
+                    TestContext.Current.CancellationToken
+                )
                 .AsTask();
 
         var ex = await act.Should().ThrowAsync<RpcException>();

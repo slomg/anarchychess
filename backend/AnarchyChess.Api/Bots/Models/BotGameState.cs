@@ -1,14 +1,15 @@
 ﻿using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.EngineShared;
 
-namespace AnarchyChess.Api.AnarchyBot.Models;
+namespace AnarchyChess.Api.Bots.Models;
 
 [GenerateSerializer]
-[Alias("AnarchyChess.Api.AnarchyBot.Models.BotGameState")]
+[Alias("AnarchyChess.Api.Bots.Models.BotGameState")]
 public record BotGameState(
     GamePlayer WhitePlayer,
     GamePlayer BlackPlayer,
     GameColor BotColor,
+    BotType BotType,
     GameColor SideToMove,
     string InitialFen,
     IReadOnlyList<MoveSnapshot> MoveHistory,

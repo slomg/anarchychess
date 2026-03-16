@@ -1,23 +1,28 @@
-﻿using AnarchyChess.EngineShared.Extensions;
-using AnarchyChess.Api.GameLogic.Models;
+﻿using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.EngineShared;
+using AnarchyChess.EngineShared.Extensions;
 using Bogus;
 
 namespace AnarchyChess.Api.TestInfrastructure.Fakes;
 
 public class MoveFaker : RecordFaker<Move>
 {
-    public MoveFaker(GameColor? forColor = null, PieceType? pieceType = null)
+    public MoveFaker(
+        GameColor? forColor = null,
+        PieceType? pieceType = null,
+        AlgebraicPoint? from = null,
+        AlgebraicPoint? to = null
+    )
     {
         StrictMode(true);
 
         RuleFor(
             x => x.From,
-            f => new AlgebraicPoint(X: f.Random.Number(0, 9), Y: f.Random.Number(0, 9))
+            f => from ?? new AlgebraicPoint(X: f.Random.Number(0, 9), Y: f.Random.Number(0, 9))
         );
         RuleFor(
             x => x.To,
-            f => new AlgebraicPoint(X: f.Random.Number(0, 9), Y: f.Random.Number(0, 9))
+            f => to ?? new AlgebraicPoint(X: f.Random.Number(0, 9), Y: f.Random.Number(0, 9))
         );
         RuleFor(
             x => x.Piece,
