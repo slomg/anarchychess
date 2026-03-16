@@ -92,7 +92,8 @@ public class BotGrainTests : BaseOrleansIntegrationTest
         );
         BotMoveRunner botMoveRunner = new(
             Silo.ServiceProvider.GetRequiredService<ILogger<BotMoveRunner>>(),
-            Silo.GrainFactory
+            Silo.GrainFactory,
+            Substitute.For<IDelayProvider>()
         );
 
         Silo.ServiceProvider.AddService<IEnumerable<IBot>>([_anarchyBot, _lobotomizedAnarchyBot]);

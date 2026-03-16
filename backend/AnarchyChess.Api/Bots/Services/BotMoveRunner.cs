@@ -3,6 +3,7 @@ using AnarchyChess.Api.Bots.Errors;
 using AnarchyChess.Api.Bots.Grains;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.GameLogic;
+using AnarchyChess.Api.Shared.Services;
 
 namespace AnarchyChess.Api.Bots.Services;
 
@@ -11,10 +12,15 @@ public interface IBotMoveRunner
     void RunMove(IReadOnlyChessBoard board, int lastEval, GameToken gameToken, IBot bot);
 }
 
-public class BotMoveRunner(ILogger<BotMoveRunner> logger, IGrainFactory grains) : IBotMoveRunner
+public class BotMoveRunner(
+    ILogger<BotMoveRunner> logger,
+    IGrainFactory grains,
+    IDelayProvider delayProvider
+) : IBotMoveRunner
 {
     private readonly ILogger<BotMoveRunner> _logger = logger;
     private readonly IGrainFactory _grains = grains;
+    private readonly IDelayProvider _delayProvider = delayProvider;
 
     public const int MinBotMoveDelayMs = 1000;
 
@@ -33,7 +39,7 @@ public class BotMoveRunner(ILogger<BotMoveRunner> logger, IGrainFactory grains) 
         var grain = _grains.GetGrain<IBotGrain>(gameToken);
         try
         {
-            var delayTask = Task.Delay(MinBotMoveDelayMs);
+            var delayTask = _delayProvider.DelayAsync(MinBotMoveDelayMs);
             var botMoveResultTask = bot.FindMoveAsync(board, lastEval);
             await Task.WhenAll(botMoveResultTask, delayTask);
 

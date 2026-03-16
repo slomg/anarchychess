@@ -645,6 +645,7 @@ builder
 builder.Services.AddSingleton<IShardRouter, ShardRouter>();
 builder.Services.AddSingleton<IRandomCodeGenerator, RandomCodeGenerator>();
 builder.Services.AddSingleton<IRandomProvider, RandomProvider>();
+builder.Services.AddSingleton<IDelayProvider, DelayProvider>();
 builder.Services.AddTransient<IStopwatchProvider, StopwatchProvider>();
 builder.Services.AddSingleton<IValidator<PaginationQuery>, PaginationValidator>();
 
