@@ -16,9 +16,12 @@ public sealed class BotSee(IBitMoveGenerator bitMoveGenerator) : IBotSee
 {
     private readonly IBitMoveGenerator _bitMoveGenerator = bitMoveGenerator;
 
+    public const int BotTraitorRookValue = 250;
+
     public int SeeCapture(BitMove move, BitBoard board)
     {
-        if (move.CapturesMask == 0)
+        // traitor rooks can be lost even without a capture
+        if (move.CapturesMask == 0 && move.Piece.Type is not PieceType.TraitorRook)
         {
             return 0;
         }
@@ -148,8 +151,8 @@ public sealed class BotSee(IBitMoveGenerator bitMoveGenerator) : IBotSee
         int enemyLostTraitorRooks = BitboardHelpers.CountBits(
             enemyPrevTraitorRooks & ~enemyNewTraitorRooks
         );
-        captureValue -= ourLostTraitorRooks * 150;
-        captureValue += enemyLostTraitorRooks * 150;
+        captureValue -= ourLostTraitorRooks * BotTraitorRookValue;
+        captureValue += enemyLostTraitorRooks * BotTraitorRookValue;
 
         return captureValue;
     }

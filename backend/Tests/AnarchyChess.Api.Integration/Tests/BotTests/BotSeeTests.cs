@@ -166,7 +166,7 @@ public class BotSeeTests : BaseIntegrationTest
         _botSee
             .SeeCapture(move, board)
             .Should()
-            .Be(MaterialValue.GetPieceValue(PieceType.Pawn) - 150);
+            .Be(MaterialValue.GetPieceValue(PieceType.Pawn) - BotSee.BotTraitorRookValue);
     }
 
     [Fact]
@@ -194,7 +194,7 @@ public class BotSeeTests : BaseIntegrationTest
         _botSee
             .SeeCapture(move, board)
             .Should()
-            .Be(MaterialValue.GetPieceValue(PieceType.Pawn) - 150);
+            .Be(MaterialValue.GetPieceValue(PieceType.Pawn) - BotSee.BotTraitorRookValue);
     }
 
     [Fact]
@@ -217,7 +217,7 @@ public class BotSeeTests : BaseIntegrationTest
             .RuleFor(x => x.CapturesMask, UInt128.One << new AlgebraicPoint("e2").AsIdx())
             .Generate();
 
-        _botSee.SeeCapture(move, board).Should().Be(150);
+        _botSee.SeeCapture(move, board).Should().Be(BotSee.BotTraitorRookValue);
     }
 
     [Fact]
@@ -239,7 +239,7 @@ public class BotSeeTests : BaseIntegrationTest
             .RuleFor(x => x.CapturesMask, UInt128.One << new AlgebraicPoint("e9").AsIdx())
             .Generate();
 
-        _botSee.SeeCapture(move, board).Should().Be(150);
+        _botSee.SeeCapture(move, board).Should().Be(BotSee.BotTraitorRookValue);
     }
 
     [Fact]
@@ -264,7 +264,26 @@ public class BotSeeTests : BaseIntegrationTest
         _botSee
             .SeeCapture(move, board)
             .Should()
-            .Be(MaterialValue.GetPieceValue(PieceType.Pawn) - 150);
+            .Be(MaterialValue.GetPieceValue(PieceType.Pawn) - BotSee.BotTraitorRookValue);
+    }
+
+    [Fact]
+    public void SeeCapture_evaluates_traitor_rook_moves_without_capture()
+    {
+        BitBoard board = BitBoard.FromPieces(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("e2")] = PieceFactory.Neutral(PieceType.TraitorRook),
+            }
+        );
+        BitMove move = new BitMoveFaker(
+            PieceType.TraitorRook,
+            BitPieceColor.Neutral,
+            from: new("e2"),
+            to: new("e9")
+        ).Generate();
+
+        _botSee.SeeCapture(move, board).Should().Be(-BotSee.BotTraitorRookValue);
     }
 
     [Fact]
