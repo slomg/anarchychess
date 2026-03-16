@@ -166,7 +166,6 @@ public class LobotomizedAnarchyBot(
         List<CandidateBotMove> missableBlunders = [.. blunders.Where(move => !move.IsHang)];
         if (
             board.Moves.Count > 10
-            && safeBlunders.Count > 0
             && missableBlunders.Count > 0
             && _randomProvider.NextDouble() < BlunderChance
         )
