@@ -442,7 +442,7 @@ public class LobotomizedAnarchyBot(
         List<CandidateBotMove> simpleTactics = [];
         foreach (CandidateBotMove move in tactics)
         {
-            if (move.CausesForcedMove || move.IsMultiStep)
+            if (move.CausesForcedMove || move.IsMultiStep || move.IsHang)
             {
                 complexTactics.Add(move);
             }
