@@ -185,7 +185,7 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator, IBotSee botSee) :
             BitMove opponentMove = context.OpponentMoves[i];
             // we know this is either an equal or winning exchance
             if (
-                exchangeValue > 0
+                exchangeValue >= 0
                 && move.CapturesMask != 0
                 && (opponentMove.CapturesMask & positionBit) != 0
             )
