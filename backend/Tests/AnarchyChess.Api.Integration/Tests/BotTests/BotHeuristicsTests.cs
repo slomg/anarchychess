@@ -182,7 +182,6 @@ public class BotHeuristicsTests : BaseIntegrationTest
                 ).Generate(),
             ]
         );
-
         BitMove move = new BitMoveFaker(
             PieceType.Bishop,
             BitPieceColor.Black,
@@ -215,7 +214,6 @@ public class BotHeuristicsTests : BaseIntegrationTest
                 to: new AlgebraicPoint("f5")
             ).RuleFor(x => x.Captures, [new MoveCapture(new("f5"), board)])
         );
-
         BitMove move = new BitMoveFaker(
             PieceType.Bishop,
             BitPieceColor.Black,
@@ -247,7 +245,6 @@ public class BotHeuristicsTests : BaseIntegrationTest
                 to: new AlgebraicPoint("f5")
             ).RuleFor(x => x.Captures, [new MoveCapture(new("f5"), board)])
         );
-
         BitMove move = new BitMoveFaker(
             PieceType.Bishop,
             BitPieceColor.Black,
@@ -306,7 +303,6 @@ public class BotHeuristicsTests : BaseIntegrationTest
                 [new("f1")] = PieceFactory.White(PieceType.Queen, hasMoved: false),
             }
         );
-
         BitMove move = new BitMoveFaker(
             PieceType.Queen,
             BitPieceColor.White,
@@ -326,7 +322,6 @@ public class BotHeuristicsTests : BaseIntegrationTest
                 [new("f1")] = PieceFactory.White(PieceType.King, hasMoved: true),
             }
         );
-
         BitMove move = new BitMoveFaker(
             PieceType.King,
             BitPieceColor.White,
@@ -346,7 +341,6 @@ public class BotHeuristicsTests : BaseIntegrationTest
                 [new("f1")] = PieceFactory.White(PieceType.King, hasMoved: false),
             }
         );
-
         BitMove move = new BitMoveFaker(
             PieceType.King,
             BitPieceColor.White,
@@ -366,7 +360,6 @@ public class BotHeuristicsTests : BaseIntegrationTest
                 [new("a1")] = PieceFactory.White(PieceType.Queen, hasMoved: false),
             }
         );
-
         BitMove move = new BitMoveFaker(
             PieceType.Queen,
             BitPieceColor.White,
@@ -386,7 +379,6 @@ public class BotHeuristicsTests : BaseIntegrationTest
                 [new("j1")] = PieceFactory.White(PieceType.Rook, hasMoved: true),
             }
         );
-
         BitMove move = new BitMoveFaker(
             PieceType.Rook,
             BitPieceColor.White,
@@ -406,7 +398,6 @@ public class BotHeuristicsTests : BaseIntegrationTest
                 [new("a1")] = PieceFactory.White(PieceType.Rook, hasMoved: false),
             }
         );
-
         BitMove move = new BitMoveFaker(
             PieceType.Rook,
             BitPieceColor.White,
@@ -428,7 +419,6 @@ public class BotHeuristicsTests : BaseIntegrationTest
             },
             sideToMove: GameColor.Black
         );
-
         BitMove move = new BitMoveFaker(
             PieceType.UnderagePawn,
             BitPieceColor.Black,
@@ -451,7 +441,6 @@ public class BotHeuristicsTests : BaseIntegrationTest
             },
             sideToMove: GameColor.Black
         );
-
         BitMove move = new BitMoveFaker(
             PieceType.UnderagePawn,
             BitPieceColor.Black,
@@ -474,7 +463,6 @@ public class BotHeuristicsTests : BaseIntegrationTest
                 [new("c4")] = PieceFactory.Black(PieceType.Bishop),
             }
         );
-
         BitMove move = new BitMoveFaker(
             PieceType.Queen,
             BitPieceColor.White,
@@ -499,7 +487,6 @@ public class BotHeuristicsTests : BaseIntegrationTest
                 [new("c4")] = PieceFactory.Black(PieceType.Bishop),
             }
         );
-
         BitMove move = new BitMoveFaker(
             PieceType.Queen,
             BitPieceColor.White,
@@ -522,7 +509,6 @@ public class BotHeuristicsTests : BaseIntegrationTest
                 [new("f9")] = PieceFactory.Black(PieceType.SterilePawn),
             }
         );
-
         BitMove move = new BitMoveFaker(
             PieceType.Queen,
             BitPieceColor.White,
@@ -545,7 +531,6 @@ public class BotHeuristicsTests : BaseIntegrationTest
                 [new("f9")] = PieceFactory.Black(PieceType.Bishop),
             }
         );
-
         BitMove move = new BitMoveFaker(
             PieceType.Queen,
             BitPieceColor.White,
@@ -569,7 +554,6 @@ public class BotHeuristicsTests : BaseIntegrationTest
                 [new("e9")] = PieceFactory.Black(PieceType.Pawn),
             }
         );
-
         BitMove move = new BitMoveFaker(
             PieceType.Queen,
             BitPieceColor.White,
@@ -593,7 +577,6 @@ public class BotHeuristicsTests : BaseIntegrationTest
                 [new("e9")] = PieceFactory.Black(PieceType.Pawn),
             }
         );
-
         BitMove move = new BitMoveFaker(
             PieceType.Queen,
             BitPieceColor.White,
@@ -618,7 +601,6 @@ public class BotHeuristicsTests : BaseIntegrationTest
                 [new("i3")] = PieceFactory.White(PieceType.Queen),
             }
         );
-
         BitMove move = new BitMoveFaker(
             PieceType.Queen,
             BitPieceColor.White,
@@ -643,7 +625,6 @@ public class BotHeuristicsTests : BaseIntegrationTest
                 [new("i3")] = PieceFactory.White(PieceType.Bishop),
             }
         );
-
         BitMove move = new BitMoveFaker(
             PieceType.Queen,
             BitPieceColor.White,
