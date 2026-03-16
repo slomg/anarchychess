@@ -49,6 +49,67 @@ public class BotHeuristicsTests : BaseIntegrationTest
     }
 
     [Fact]
+    public void IsSameAsPieceAsLast_returns_false_without_prior_moves()
+    {
+        ChessBoard board = new(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("e5")] = PieceFactory.White(PieceType.Queen),
+            }
+        );
+        BitMove move = new BitMoveFaker(
+            PieceType.Queen,
+            BitPieceColor.White,
+            from: new("e5"),
+            to: new("e6")
+        ).Generate();
+
+        _botHeuristics.IsSameAsPieceAsLast(move, CreateContext(move, board));
+    }
+
+    [Fact]
+    public void IsSamePieceAsLast_returns_true_when_the_same_piece_is_moved()
+    {
+        ChessBoard board = new(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("e5")] = PieceFactory.White(PieceType.Queen),
+                [new("a7")] = PieceFactory.White(PieceType.Queen),
+            },
+            moves: [new MoveFaker(GameColor.White, PieceType.Queen, from: new("e3"), to: new("e5"))]
+        );
+        BitMove move = new BitMoveFaker(
+            PieceType.Queen,
+            BitPieceColor.White,
+            from: new("e5"),
+            to: new("e6")
+        ).Generate();
+
+        _botHeuristics.IsSameAsPieceAsLast(move, CreateContext(move, board)).Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsSamePieceAsLast_returns_false_when_a_different_piece_is_moved()
+    {
+        ChessBoard board = new(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("e5")] = PieceFactory.White(PieceType.Queen),
+                [new("a7")] = PieceFactory.White(PieceType.Queen),
+            },
+            moves: [new MoveFaker(GameColor.White, PieceType.Queen, from: new("e3"), to: new("e5"))]
+        );
+        BitMove move = new BitMoveFaker(
+            PieceType.Queen,
+            BitPieceColor.White,
+            from: new("a7"),
+            to: new("a6")
+        ).Generate();
+
+        _botHeuristics.IsSameAsPieceAsLast(move, CreateContext(move, board)).Should().BeFalse();
+    }
+
+    [Fact]
     public void IsNonCentralPawn_returns_false_for_non_pawn()
     {
         BitMove move = new BitMoveFaker(
@@ -108,17 +169,18 @@ public class BotHeuristicsTests : BaseIntegrationTest
         ChessBoard board = new(
             new Dictionary<AlgebraicPoint, Piece>()
             {
-                [new("c2")] = PieceFactory.White(PieceType.Queen),
+                [new("f5")] = PieceFactory.White(PieceType.Queen),
                 [new("i2")] = PieceFactory.Black(PieceType.Bishop),
-            }
-        );
-        board.PlayMove(
-            new MoveFaker(
-                GameColor.White,
-                PieceType.Queen,
-                from: new AlgebraicPoint("c2"),
-                to: new AlgebraicPoint("f5")
-            )
+            },
+            moves:
+            [
+                new MoveFaker(
+                    GameColor.White,
+                    PieceType.Queen,
+                    from: new AlgebraicPoint("c2"),
+                    to: new AlgebraicPoint("f5")
+                ).Generate(),
+            ]
         );
 
         BitMove move = new BitMoveFaker(

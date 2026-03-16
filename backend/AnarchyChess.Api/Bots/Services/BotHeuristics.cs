@@ -16,6 +16,7 @@ public interface IBotHeuristics
     bool IsMultiStep(BitMove move, BotHeuristicContext context);
     bool IsNonCentralPawn(BitMove move);
     bool IsRecapture(BitMove move, BotHeuristicContext context);
+    bool IsSameAsPieceAsLast(BitMove move, BotHeuristicContext context);
     bool LosesKingCastlingRight(BitMove move, BotHeuristicContext context);
     bool LosesRookCastlingRight(BitMove move, BotHeuristicContext context);
 }
@@ -32,6 +33,17 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator, IBotSee botSee) :
 {
     private readonly IBitMoveGenerator _bitMoveGenerator = bitMoveGenerator;
     private readonly IBotSee _botSee = botSee;
+
+    public bool IsSameAsPieceAsLast(BitMove move, BotHeuristicContext context)
+    {
+        if (context.Board.Moves.Count == 0)
+        {
+            return false;
+        }
+
+        Move lastMove = context.Board.Moves[^1];
+        return move.From == lastMove.To.AsIdx();
+    }
 
     public bool IsNonCentralPawn(BitMove move)
     {
@@ -173,7 +185,7 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator, IBotSee botSee) :
             BitMove opponentMove = context.OpponentMoves[i];
             // we know this is either an equal or winning exchance
             if (
-                exchangeValue >= 0
+                exchangeValue > 0
                 && move.CapturesMask != 0
                 && (opponentMove.CapturesMask & positionBit) != 0
             )

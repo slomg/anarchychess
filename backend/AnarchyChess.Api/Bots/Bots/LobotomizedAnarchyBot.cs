@@ -56,6 +56,7 @@ public class LobotomizedAnarchyBot(
     private const int EdgePenalty = 30;
     private const int BetaDecayPenalty = 300;
     private const int NonCentralPawnPenaltyInOpening = 20;
+    private const int SamePiecePenalty = 50;
 
     public BotType Type => BotType.LobotomizedAnarchyBot;
 
@@ -93,9 +94,9 @@ public class LobotomizedAnarchyBot(
 
         List<CandidateBotMove> moves =
         [
-            .. evaluationResult
-                .Value.Select((move, i) => ScoreMove(move, board, bitboard, endgameFactor))
-                .OrderByDescending(x => x.MoveEval.EvalForBot),
+            .. evaluationResult.Value.Select(
+                (move, i) => ScoreMove(move, board, bitboard, endgameFactor)
+            ),
         ];
 
         (List<CandidateBotMove> missableCheckmates, List<CandidateBotMove> nonCheckmates) =
@@ -221,6 +222,7 @@ public class LobotomizedAnarchyBot(
         bool isBackwards = _botHeuristics.IsBackwards(moveEval.Move);
         bool isEdge = _botHeuristics.IsEdge(moveEval.Move);
         bool isNonCentralPawn = _botHeuristics.IsNonCentralPawn(moveEval.Move);
+        bool isSamePieceAsLast = _botHeuristics.IsSameAsPieceAsLast(moveEval.Move, context);
 
         int playabilityEval = moveEval.EvalForBot;
 
@@ -272,6 +274,11 @@ public class LobotomizedAnarchyBot(
         if (isNonCentralPawn && board.Moves.Count <= 20)
         {
             playabilityEval -= NonCentralPawnPenaltyInOpening;
+        }
+
+        if (isSamePieceAsLast)
+        {
+            playabilityEval += SamePiecePenalty;
         }
 
         return new CandidateBotMove(
