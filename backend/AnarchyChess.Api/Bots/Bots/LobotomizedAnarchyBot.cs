@@ -74,9 +74,9 @@ public class LobotomizedAnarchyBot(
     /// 4. From the non blunders, it selects moves deemed obvious and plays one of available
     /// 5. If not, it finds blunders deemed non obvious and plays one probablistically
     /// 6. If not, it attempts to play a non blunder
-    /// 7. If there are none, it plays a non obvious blunder
-    /// 8. If there are none, it plays a non tactic move
-    /// 9. if there are none, it plays a tactic
+    /// 7. If there are none, it plays a tactic
+    /// 8. If there are none, it plays a blunder
+    /// 9. if there are none, it plays a non tactic
     /// </summary>
     public async Task<ErrorOr<MoveEvaluation>> FindMoveAsync(
         IReadOnlyChessBoard board,
@@ -163,31 +163,34 @@ public class LobotomizedAnarchyBot(
             return Softmax(obviousMoves, board, endgameFactor);
         }
 
-        List<CandidateBotMove> safeBlunders = [.. blunders.Where(move => !move.IsHang)];
+        List<CandidateBotMove> missableBlunders = [.. blunders.Where(move => !move.IsHang)];
         if (
             board.Moves.Count > 10
             && safeBlunders.Count > 0
+            && missableBlunders.Count > 0
             && _randomProvider.NextDouble() < BlunderChance
         )
         {
-            return Softmax(safeBlunders, board, endgameFactor);
+            return Softmax(missableBlunders, board, endgameFactor);
         }
 
         if (nonBlunders.Count > 0)
         {
+            _logger.LogInformation("playing non blunders");
             return Softmax(nonBlunders, board, endgameFactor);
         }
-        else if (safeBlunders.Count > 0)
+        else if (tactics.Count > 0)
         {
-            return Softmax(safeBlunders, board, endgameFactor);
+            _logger.LogInformation("playing tactic because non non blunders");
         }
-        else if (nonTactics.Count > 0)
+        else if (missableBlunders.Count > 0)
         {
-            return Softmax(nonTactics, board, endgameFactor);
+            return Softmax(missableBlunders, board, endgameFactor);
         }
         else
         {
-            return SoftmaxTactics(tactics, board, endgameFactor);
+            _logger.LogInformation("playing non tactics");
+            return Softmax(nonTactics, board, endgameFactor);
         }
     }
 
@@ -289,6 +292,12 @@ public class LobotomizedAnarchyBot(
         {
             playabilityEval += SamePiecePenalty;
         }
+                CausesForcedMove: causesForcedMove,
+                IsMultiStep: isMultiStep,
+                PlayabilityEval: playabilityEval
+            ),
+            isBackwards
+        );
 
         return new CandidateBotMove(
             moveEval,
@@ -332,6 +341,12 @@ public class LobotomizedAnarchyBot(
     {
         double temperature = GetTemperature(board, endgameFactor);
         var result = _randomProvider.Softmax(moves, x => x.PlayabilityEval, temperature).MoveEval;
+        _logger.LogInformation(
+            "TEMPERATURE: {Tempterature}, FROM: {From}, TO: {To}",
+            temperature,
+            result.Move.From,
+            result.Move.To
+        );
         return result;
     }
 
@@ -371,6 +386,7 @@ public class LobotomizedAnarchyBot(
         var (complexTactics, simpleTactics) = SortTactics(tactics);
         if (complexTactics.Count == 0)
         {
+            _logger.LogInformation("playing simple tactic");
             result = Softmax(simpleTactics, board, endgameFactor);
             return true;
         }
@@ -388,6 +404,7 @@ public class LobotomizedAnarchyBot(
         }
         else
         {
+            _logger.LogInformation("playing complex tactic");
             result = Softmax(complexTactics, board, endgameFactor);
             return true;
         }
@@ -405,6 +422,12 @@ public class LobotomizedAnarchyBot(
         if (playSimple && simpleTactics.Count == 0)
         {
             return Softmax(complexTactics, board, endgameFactor);
+        }
+
+        }
+        else
+        {
+            _logger.LogInformation("playing complex tactic");
         }
 
         return playSimple
