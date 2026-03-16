@@ -16,6 +16,8 @@ public class BotMoveRunner(ILogger<BotMoveRunner> logger, IGrainFactory grains) 
     private readonly ILogger<BotMoveRunner> _logger = logger;
     private readonly IGrainFactory _grains = grains;
 
+    public const int MinBotMoveDelayMs = 1000;
+
     public void RunMove(IReadOnlyChessBoard board, int lastEval, GameToken gameToken, IBot bot)
     {
         _ = ExecuteMoveAsync(board, lastEval, gameToken, bot);
@@ -31,7 +33,11 @@ public class BotMoveRunner(ILogger<BotMoveRunner> logger, IGrainFactory grains) 
         var grain = _grains.GetGrain<IBotGrain>(gameToken);
         try
         {
-            var botMoveResult = await bot.FindMoveAsync(board, lastEval);
+            var delayTask = Task.Delay(MinBotMoveDelayMs);
+            var botMoveResultTask = bot.FindMoveAsync(board, lastEval);
+            await Task.WhenAll(botMoveResultTask, delayTask);
+
+            var botMoveResult = await botMoveResultTask;
             await grain.PlayBotMoveAsync(botMoveResult);
         }
         catch (Exception ex)
