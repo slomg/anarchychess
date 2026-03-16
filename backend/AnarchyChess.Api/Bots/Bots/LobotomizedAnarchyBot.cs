@@ -136,7 +136,7 @@ public class LobotomizedAnarchyBot(
         );
         if (tactics.Count == moves.Count)
         {
-            return SoftmaxTactics(moves, board, endgameFactor);
+            return SoftmaxTactics(tactics, board, endgameFactor);
         }
 
         if (TrySoftmaxTactics(tactics, board, endgameFactor, out var tactic))
@@ -175,12 +175,11 @@ public class LobotomizedAnarchyBot(
 
         if (nonBlunders.Count > 0)
         {
-            _logger.LogInformation("playing non blunders");
             return Softmax(nonBlunders, board, endgameFactor);
         }
         else if (tactics.Count > 0)
         {
-            _logger.LogInformation("playing tactic because non non blunders");
+            return SoftmaxTactics(tactics, board, endgameFactor);
         }
         else if (missableBlunders.Count > 0)
         {
@@ -188,7 +187,6 @@ public class LobotomizedAnarchyBot(
         }
         else
         {
-            _logger.LogInformation("playing non tactics");
             return Softmax(nonTactics, board, endgameFactor);
         }
     }
@@ -291,12 +289,6 @@ public class LobotomizedAnarchyBot(
         {
             playabilityEval += SamePiecePenalty;
         }
-                CausesForcedMove: causesForcedMove,
-                IsMultiStep: isMultiStep,
-                PlayabilityEval: playabilityEval
-            ),
-            isBackwards
-        );
 
         return new CandidateBotMove(
             moveEval,
@@ -340,12 +332,6 @@ public class LobotomizedAnarchyBot(
     {
         double temperature = GetTemperature(board, endgameFactor);
         var result = _randomProvider.Softmax(moves, x => x.PlayabilityEval, temperature).MoveEval;
-        _logger.LogInformation(
-            "TEMPERATURE: {Tempterature}, FROM: {From}, TO: {To}",
-            temperature,
-            result.Move.From,
-            result.Move.To
-        );
         return result;
     }
 
@@ -385,7 +371,6 @@ public class LobotomizedAnarchyBot(
         var (complexTactics, simpleTactics) = SortTactics(tactics);
         if (complexTactics.Count == 0)
         {
-            _logger.LogInformation("playing simple tactic");
             result = Softmax(simpleTactics, board, endgameFactor);
             return true;
         }
@@ -403,7 +388,6 @@ public class LobotomizedAnarchyBot(
         }
         else
         {
-            _logger.LogInformation("playing complex tactic");
             result = Softmax(complexTactics, board, endgameFactor);
             return true;
         }
@@ -421,12 +405,6 @@ public class LobotomizedAnarchyBot(
         if (playSimple && simpleTactics.Count == 0)
         {
             return Softmax(complexTactics, board, endgameFactor);
-        }
-
-        }
-        else
-        {
-            _logger.LogInformation("playing complex tactic");
         }
 
         return playSimple
