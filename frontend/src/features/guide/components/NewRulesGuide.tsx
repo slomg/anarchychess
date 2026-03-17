@@ -1,3 +1,5 @@
+import hyperacceleratedbongcloud1 from "@public/assets/examples/hyperacceleratedbongcloud1.png";
+import hyperacceleratedbongcloud2 from "@public/assets/examples/hyperacceleratedbongcloud2.png";
 import verticalcastling1 from "@public/assets/examples/verticalcastling1.png";
 import verticalcastling2 from "@public/assets/examples/verticalcastling2.png";
 import verticalcastling3 from "@public/assets/examples/verticalcastling3.png";
@@ -114,6 +116,19 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
                     "If the chain ends on the back rank, your pawn promotes as normal.",
                 ]}
                 images={[longpassant1, longpassant2, longpassant3]}
+            />
+
+            <GuideCard
+                title="Hyper Accelerated Bongcloud"
+                points={[
+                    "You can move your king one square forwad on your first turn.",
+                    "This captures the pawn in front of the king.",
+                    "It gives not strategic advantange except asserting dominance.",
+                ]}
+                images={[
+                    hyperacceleratedbongcloud1,
+                    hyperacceleratedbongcloud2,
+                ]}
             />
 
             <GuideCard
