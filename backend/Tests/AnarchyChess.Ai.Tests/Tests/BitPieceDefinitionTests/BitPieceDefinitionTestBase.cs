@@ -13,6 +13,8 @@ public class BitPieceDefinitionTestBase
 
     protected void TestMoves(PieceTestCase testCase)
     {
+        Assert.SkipWhen(testCase.ShouldSkipAi, "Test marked as skip ai");
+
         testCase.BlockedBy.Add(testCase.Origin, testCase.Piece);
         Move? lastMove = testCase.PriorMoves.LastOrDefault();
         BitBoard board = BitBoard.FromPieces(

@@ -60,7 +60,7 @@ public class RookTestData : TheoryData<PieceTestCase>
                 .GoesTo("h1")
                 .GoesTo("i1")
                 .GoesTo("j1")
-                .WithDescription("Corner case: rook at a1")
+                .WithDescription("Rook at a1")
         );
 
         Add(
@@ -87,7 +87,7 @@ public class RookTestData : TheoryData<PieceTestCase>
                 .GoesTo("h5")
                 .GoesTo("i5")
                 .GoesTo("j5")
-                .WithDescription("Edge case: rook at a5")
+                .WithDescription("Rook at a5")
         );
 
         Add(
@@ -95,7 +95,7 @@ public class RookTestData : TheoryData<PieceTestCase>
                 .From("a1", rook)
                 .WithFriendlyPieceAt("d1")
                 .WithEnemyPieceAt("e1")
-                .WithFriendlyPieceAt("a4")
+                .WithFriendlyPieceAt("a4", excludePieces: [PieceType.Horsey])
                 .WithEnemyPieceAt("a5")
                 .GoesTo("a2", "a3", "b1", "c1")
                 .WithDescription("Rook at a1 with blockers")

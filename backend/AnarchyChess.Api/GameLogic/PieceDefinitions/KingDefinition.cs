@@ -21,6 +21,7 @@ public class KingDefinition : IPieceDefinition
             new StepBehaviour(new Offset(X: -1, Y: -1))
         ),
         new CastleRule(),
+        new HyperAcceleratedBongcloudRule(),
     ];
 
     public IEnumerable<IPieceMovementRule> GetBehaviours(

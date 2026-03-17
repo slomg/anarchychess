@@ -1,4 +1,5 @@
 ﻿using AnarchyChess.Api.TestInfrastructure.Factories;
+using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.EngineTests.Shared;
@@ -27,6 +28,7 @@ public class KingTestData : TheoryData<PieceTestCase>
         Add(
             PieceTestCase
                 .From("d4", whiteKing)
+                .WithPriorMoves(new MoveFaker().Generate(2))
                 .WithFriendlyPieceAt("d5")
                 .WithFriendlyPieceAt("e5")
                 .WithFriendlyPieceAt("e4")
@@ -35,7 +37,7 @@ public class KingTestData : TheoryData<PieceTestCase>
                 .WithFriendlyPieceAt("c3")
                 .WithFriendlyPieceAt("c4")
                 .WithFriendlyPieceAt("c5")
-                .WithDescription("Surrounded by friendly pieces - no moves")
+                .WithDescription("Surrounded by friendly pieces, no moves")
         );
 
         Add(
@@ -57,7 +59,7 @@ public class KingTestData : TheoryData<PieceTestCase>
                 .GoesTo("c3", captures: ["c3"])
                 .GoesTo("c4", captures: ["c4"])
                 .GoesTo("c5", captures: ["c5"])
-                .WithDescription("Surrounded by enemies - all moves are captures")
+                .WithDescription("Surrounded by enemies, all moves are captures")
         );
 
         Add(
@@ -66,7 +68,7 @@ public class KingTestData : TheoryData<PieceTestCase>
                 .GoesTo("a2") // up
                 .GoesTo("b2") // up-right
                 .GoesTo("b1") // right
-                .WithDescription("Edge of board: king on a1")
+                .WithDescription("Edge of board, king on a1")
         );
 
         Add(
@@ -75,7 +77,7 @@ public class KingTestData : TheoryData<PieceTestCase>
                 .GoesTo("i10") // left
                 .GoesTo("i9") // down-left
                 .GoesTo("j9") // down
-                .WithDescription("Corner case: king on j10 (top-right corner)")
+                .WithDescription("Corner case, king on j10 (top-right corner)")
         );
 
         Add(
@@ -210,6 +212,18 @@ public class KingTestData : TheoryData<PieceTestCase>
                 .WithDescription(
                     "Bishop would be self captured if castled, but another piece is blocking"
                 )
+        );
+
+        Add(
+            PieceTestCase
+                .From("f1", whiteKing with { HasMoved = false })
+                .SkipAi()
+                .WithPieceAt("f2", PieceFactory.White(PieceType.Pawn))
+                .WithPieceAt("e2", PieceFactory.White(PieceType.Pawn))
+                .WithPieceAt("g2", PieceFactory.White(PieceType.Pawn))
+                .GoesTo("e1", "g1")
+                .GoesTo("f2", captures: ["f2"])
+                .WithDescription("Hyper accelerated bongcloud")
         );
     }
 }

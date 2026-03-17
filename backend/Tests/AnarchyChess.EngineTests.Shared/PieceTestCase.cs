@@ -1,10 +1,10 @@
 ﻿using System.Text.Json.Serialization;
 using AnarchyChess.Api.GameLogic;
-using AnarchyChess.EngineShared.Extensions;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.TestInfrastructure.Factories;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AnarchyChess.EngineShared;
+using AnarchyChess.EngineShared.Extensions;
 
 namespace AnarchyChess.EngineTests.Shared;
 
@@ -36,7 +36,7 @@ public class PieceTestCase
     [JsonPropertyName(nameof(BlockedBy))]
     public Dictionary<string, Piece> BlockedBySurrogate
     {
-        get => BlockedBy.ToDictionary(x => (string)x.Key.AsAlgebraic(), x => x.Value);
+        get => BlockedBy.ToDictionary(x => x.Key.AsAlgebraic(), x => x.Value);
         set
         {
             BlockedBy.Clear();
@@ -44,6 +44,8 @@ public class PieceTestCase
                 BlockedBy[new AlgebraicPoint(kvp.Key)] = kvp.Value;
         }
     }
+
+    public bool ShouldSkipAi { get; private set; }
 
     public string TestDecription { get; private set; } = "";
 
@@ -192,6 +194,12 @@ public class PieceTestCase
         return this;
     }
 
+    public PieceTestCase WithPriorMoves(params IEnumerable<Move> priorMoves)
+    {
+        PriorMoves.AddRange(priorMoves);
+        return this;
+    }
+
     public PieceTestCase WithMovingPlayer(GameColor playerColor)
     {
         MovingPlayer = playerColor;
@@ -210,6 +218,12 @@ public class PieceTestCase
         {
             action(item, this);
         }
+        return this;
+    }
+
+    public PieceTestCase SkipAi()
+    {
+        ShouldSkipAi = true;
         return this;
     }
 
