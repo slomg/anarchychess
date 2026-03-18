@@ -23,7 +23,7 @@
         "formik": "2.4.9",
         "immer": "11.0.1",
         "js-cookie": "3.0.5",
-        "next": "16.1.6",
+        "next": "16.1.7",
         "qrcode": "1.5.4",
         "react": "19.2.4",
         "react-apexcharts": "1.9.0",
@@ -46,13 +46,13 @@
         "@types/js-cookie": "3.0.6",
         "@types/node": "24",
         "@types/qrcode": "1.5.6",
-        "@types/react": "19.2.10",
+        "@types/react": "19.2.14",
         "@types/react-dom": "19.2.3",
         "@types/react-transition-group": "4.4.12",
         "@vitejs/plugin-react": "5.1.1",
         "@vitest/coverage-v8": "4.0.15",
         "eslint": "9",
-        "eslint-config-next": "16.1.6",
+        "eslint-config-next": "16.1.7",
         "jsdom": "27.2.0",
         "prettier-plugin-classnames": "0.9.0",
         "prettier-plugin-merge": "0.9.1",
@@ -63,5 +63,9 @@
         "vitest": "4.0.15",
         "vitest-dom": "0.1.1",
         "vitest-mock-extended": "3.1.0"
+    },
+    "overrides": {
+        "@types/react": "19.2.14",
+        "@types/react-dom": "19.2.3"
     }
 }
