@@ -4,13 +4,17 @@ import { useState } from "react";
 import clsx from "clsx";
 
 import ProfilePicture from "@/features/profile/components/ProfilePicture";
+import traitorRook from "@public/assets/pieces/traitor_rook_neutral.png";
+import whiteKing from "@public/assets/pieces/king_white.png";
+import blackKing from "@public/assets/pieces/king_black.png";
+import { BotType, GameColor } from "@/lib/apiClient";
+import useLocalPref from "@/hooks/useLocalPref";
 import Selector from "@/components/ui/Selector";
 import useBotMatch from "../hooks/useBotMatch";
 import Button from "@/components/ui/Button";
-import { BotType, GameColor } from "@/lib/apiClient";
-import useLocalPref from "@/hooks/useLocalPref";
 import Card from "@/components/ui/Card";
 import constants from "@/lib/constants";
+import Image from "next/image";
 
 const BotPlayOptions = () => {
     const [selectedBotType, setSelectedBotType] = useLocalPref<BotType>(
@@ -69,12 +73,39 @@ const BotPlayOptions = () => {
                 <Selector
                     options={[
                         {
-                            label: <span className="text-white">♚</span>,
+                            label: (
+                                <Image
+                                    src={whiteKing}
+                                    alt="play as white"
+                                    className="mx-auto"
+                                    width={50}
+                                    height={50}
+                                />
+                            ),
                             value: GameColor.WHITE,
                         },
-                        { label: "◐", value: null },
                         {
-                            label: <span className="text-black">♚</span>,
+                            label: (
+                                <Image
+                                    src={traitorRook}
+                                    alt="random color"
+                                    className="mx-auto"
+                                    width={50}
+                                    height={50}
+                                />
+                            ),
+                            value: null,
+                        },
+                        {
+                            label: (
+                                <Image
+                                    src={blackKing}
+                                    alt="play as black"
+                                    className="mx-auto"
+                                    width={50}
+                                    height={50}
+                                />
+                            ),
                             value: GameColor.BLACK,
                         },
                     ]}

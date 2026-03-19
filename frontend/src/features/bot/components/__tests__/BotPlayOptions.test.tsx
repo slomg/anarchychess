@@ -1,11 +1,15 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
+import traitorRook from "@public/assets/pieces/traitor_rook_neutral.png";
+import whiteKing from "@public/assets/pieces/king_white.png";
+import blackKing from "@public/assets/pieces/king_black.png";
+import { BotType, GameColor } from "@/lib/apiClient";
 import useBotMatch from "../../hooks/useBotMatch";
 import BotPlayOptions from "../BotPlayOptions";
-import { BotType, GameColor } from "@/lib/apiClient";
 
 vi.mock("../../hooks/useBotMatch");
+vi.mock("next/image");
 
 describe("BotPlayOptions", () => {
     const useBotMatchMock = vi.mocked(useBotMatch);
@@ -76,6 +80,25 @@ describe("BotPlayOptions", () => {
                 color,
                 expect.anything(),
             );
+        },
+    );
+
+    it.each([
+        [GameColor.WHITE, whiteKing, "play as white"],
+        [GameColor.BLACK, blackKing, "play as black"],
+        [null, traitorRook, "random color"],
+    ])(
+        "should render the correct image for color options",
+        (color, image, alt) => {
+            render(<BotPlayOptions />);
+
+            const selector = screen.getByTestId("botPlayOptionsColorSelector");
+            const selectorImage = within(
+                within(selector).getByTestId("selector-" + color),
+            ).getByAltText(alt);
+
+            expect(selectorImage).toBeInTheDocument();
+            expect(selectorImage.getAttribute("src")).toEqual(image);
         },
     );
 });
