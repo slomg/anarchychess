@@ -7,12 +7,12 @@ import {
     getUserQuestPoints,
 } from "@/lib/apiClient";
 
-import DailyQuestCardLoggedOut from "@/features/quests/components/DailyQuestCardLoggedOut";
 import DailyQuestRankCard from "@/features/quests/components/DailyQuestRankCard";
-import WithOptionalAuthedUser from "@/features/auth/hocs/WithOptionalAuthedUser";
 import QuestLeaderboard from "@/features/quests/components/QuestLeaderboard";
 import DailyQuestTitle from "@/features/quests/components/DailyQuestTitle";
 import DailyQuestCard from "@/features/quests/components/DailyQuestCard";
+import WithSession from "@/features/auth/hocs/WithSession";
+import { isGuest } from "@/features/auth/lib/userGuard";
 import dataOrThrow from "@/lib/apiClient/dataOrThrow";
 import constants from "@/lib/constants";
 
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
 
 export default async function QuestsPage() {
     return (
-        <WithOptionalAuthedUser>
+        <WithSession>
             {async ({ accessToken, user }) => {
                 const [
                     leaderboard,
@@ -50,8 +50,6 @@ export default async function QuestsPage() {
                         }),
                     ),
                     (async () => {
-                        if (!accessToken) return;
-
                         return await dataOrThrow(
                             getDailyQuest({
                                 auth: () => accessToken,
@@ -59,14 +57,18 @@ export default async function QuestsPage() {
                         );
                     })(),
                     (async () => {
-                        if (!accessToken) return;
+                        if (isGuest(user)) {
+                            return;
+                        }
 
                         return await dataOrThrow(
                             getMyQuestRanking({ auth: () => accessToken }),
                         );
                     })(),
                     (async () => {
-                        if (!user) return;
+                        if (isGuest(user)) {
+                            return;
+                        }
 
                         return await dataOrThrow(
                             getUserQuestPoints({
@@ -86,24 +88,22 @@ export default async function QuestsPage() {
                                 md:grid-cols-[auto_1fr]"
                         >
                             <DailyQuestTitle />
-
-                            {dailyQuest ? (
-                                <DailyQuestCard initialQuest={dailyQuest} />
-                            ) : (
-                                <DailyQuestCardLoggedOut />
-                            )}
+                            <DailyQuestCard initialQuest={dailyQuest} />
                         </div>
 
                         <DailyQuestRankCard
-                            questPoints={userQuestPoints}
-                            currentRank={userCurrentRank}
-                            totalPlayers={leaderboard.totalCount}
+                            rank={{
+                                questPoints: userQuestPoints ?? 0,
+                                currentRank:
+                                    userCurrentRank ?? leaderboard.totalCount,
+                                totalPlayers: leaderboard.totalCount,
+                            }}
                         />
 
                         <QuestLeaderboard initialLeaderboard={leaderboard} />
                     </main>
                 );
             }}
-        </WithOptionalAuthedUser>
+        </WithSession>
     );
 }

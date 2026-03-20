@@ -26,7 +26,7 @@ public record PublicUser(
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
 [JsonDerivedType(typeof(PrivateUser), SessionUserType.Authed)]
 [JsonDerivedType(typeof(GuestUser), SessionUserType.Guest)]
-public abstract record SessionUser(UserId UserId)
+public abstract record SessionUser(UserId UserId, string UserName)
 {
     public abstract string Type { get; }
 }
@@ -39,7 +39,7 @@ public record PrivateUser(
     string CountryCode,
     DateTime CreatedAt,
     DateTime? UsernameLastChanged
-) : SessionUser(UserId)
+) : SessionUser(UserId, UserName)
 {
     public override string Type => SessionUserType.Authed;
 
@@ -54,7 +54,7 @@ public record PrivateUser(
         ) { }
 }
 
-public record GuestUser(UserId UserId) : SessionUser(UserId)
+public record GuestUser(UserId UserId) : SessionUser(UserId, UserName: "Guest")
 {
     public override string Type => SessionUserType.Guest;
 }

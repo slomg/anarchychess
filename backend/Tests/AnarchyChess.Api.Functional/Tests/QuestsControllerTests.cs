@@ -1,10 +1,10 @@
-﻿using AnarchyChess.Api.Pagination.Models;
+﻿using System.Net;
+using AnarchyChess.Api.Pagination.Models;
 using AnarchyChess.Api.Quests.DTOs;
 using AnarchyChess.Api.Quests.Entities;
 using AnarchyChess.Api.TestInfrastructure;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AwesomeAssertions;
-using System.Net;
 
 namespace AnarchyChess.Api.Functional.Tests;
 
@@ -27,13 +27,14 @@ public class QuestsControllerTests(AnarchyChessWebApplicationFactory factory)
     }
 
     [Fact]
-    public async Task GetDailyQuest_rejects_unauthorized()
+    public async Task GetDailyQuest_returns_a_quest_for_guests()
     {
         AuthUtils.AuthenticateGuest(ApiClient);
 
         var response = await ApiClient.Api.GetDailyQuestAsync();
 
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        response.IsSuccessful.Should().BeTrue();
+        response.Content.Should().NotBeNull();
     }
 
     [Fact]
@@ -56,13 +57,14 @@ public class QuestsControllerTests(AnarchyChessWebApplicationFactory factory)
     }
 
     [Fact]
-    public async Task ReplaceDailyQuest_rejects_unauthorized()
+    public async Task ReplaceDailyQuest_returns_a_new_quest_for_guests()
     {
         AuthUtils.AuthenticateGuest(ApiClient);
 
         var response = await ApiClient.Api.ReplaceDailyQuestAsync();
 
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        response.IsSuccessful.Should().BeTrue();
+        response.Content.Should().NotBeNull();
     }
 
     [Fact]
@@ -76,13 +78,13 @@ public class QuestsControllerTests(AnarchyChessWebApplicationFactory factory)
     }
 
     [Fact]
-    public async Task CollectQuestReward_rejects_unauthorized()
+    public async Task CollectQuestReward_allows_guests()
     {
         AuthUtils.AuthenticateGuest(ApiClient);
 
         var response = await ApiClient.Api.CollectQuestRewardAsync();
 
-        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]

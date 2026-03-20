@@ -59,7 +59,12 @@ public class AuthCookieSetter(
     }
 
     public void SetGuestCookie(string accessToken, HttpContext context) =>
-        SetCookie(context, _settings.AccessTokenCookieName, accessToken);
+        SetCookie(
+            context,
+            _settings.AccessTokenCookieName,
+            accessToken,
+            maxAge: TimeSpan.FromDays(365)
+        );
 
     public void SetAuthFailureCookie(Error reason, HttpContext context) =>
         SetCookie(context, _settings.AuthFailureCookieName, reason.Code, httpOnly: false);

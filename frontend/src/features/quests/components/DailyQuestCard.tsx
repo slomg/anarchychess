@@ -10,6 +10,8 @@ import {
     replaceDailyQuest,
 } from "@/lib/apiClient";
 
+import { useSessionUser } from "@/features/auth/hooks/useSessionUser";
+import { isAuthed } from "@/features/auth/lib/userGuard";
 import ProgressBar from "@/components/ui/ProgressBar";
 import NewQuestCountdown from "./NewQuestCountdown";
 import Button from "@/components/ui/Button";
@@ -20,6 +22,7 @@ const DailyQuestCard = ({ initialQuest }: { initialQuest: Quest }) => {
     const [error, setError] = useState("");
     const [isFetching, setIsFetching] = useState(false);
     const router = useRouter();
+    const user = useSessionUser();
 
     const percentDone = (quest.progress / quest.target) * 100;
     const difficultyText =
@@ -79,7 +82,7 @@ const DailyQuestCard = ({ initialQuest }: { initialQuest: Quest }) => {
     }
 
     const renderActionButton = () => {
-        if (!isCompleted && quest.canReplace)
+        if (!isCompleted && quest.canReplace) {
             return (
                 <Button
                     data-testid="dailyQuestReplaceButton"
@@ -90,8 +93,9 @@ const DailyQuestCard = ({ initialQuest }: { initialQuest: Quest }) => {
                     Replace
                 </Button>
             );
+        }
 
-        if (isCompleted && !quest.rewardCollected)
+        if (isCompleted && !quest.rewardCollected) {
             return (
                 <Button
                     data-testid="dailyQuestCollectButton"
@@ -102,8 +106,9 @@ const DailyQuestCard = ({ initialQuest }: { initialQuest: Quest }) => {
                     Collect Reward
                 </Button>
             );
+        }
 
-        if (isCompleted && quest.rewardCollected)
+        if (isCompleted && quest.rewardCollected && isAuthed(user)) {
             return (
                 <p
                     data-testid="dailyQuestCollectedRewardText"
@@ -112,13 +117,13 @@ const DailyQuestCard = ({ initialQuest }: { initialQuest: Quest }) => {
                     +{quest.difficulty} points
                 </p>
             );
+        }
 
         return null;
     };
 
     return (
         <Card className="p-6">
-            {/* quest */}
             <div className="flex flex-col gap-2">
                 <p
                     className="text-lg sm:text-start"
@@ -133,7 +138,7 @@ const DailyQuestCard = ({ initialQuest }: { initialQuest: Quest }) => {
                     {quest.description}
                 </p>
 
-                <div className="flex items-center">
+                <div className="flex items-center gap-1">
                     <ProgressBar percent={percentDone} />
 
                     <p

@@ -1,6 +1,7 @@
 ﻿using AnarchyChess.Api.Auth.Services;
 using AnarchyChess.Api.ErrorHandling.Extensions;
 using AnarchyChess.Api.ErrorHandling.Infrastructure;
+using AnarchyChess.Api.Infrastructure;
 using AnarchyChess.Api.Infrastructure.Extensions;
 using AnarchyChess.Api.Pagination.Models;
 using AnarchyChess.Api.Quests.DTOs;
@@ -29,7 +30,7 @@ public class QuestsController(
 
     [HttpGet]
     [ProducesResponseType<QuestDto>(StatusCodes.Status200OK)]
-    [Authorize]
+    [Authorize(AuthPolicies.ActiveSession)]
     public async Task<ActionResult<QuestDto>> GetDailyQuest()
     {
         var userIdResult = _authService.GetUserId(User);
@@ -43,7 +44,7 @@ public class QuestsController(
     [HttpPost("replace")]
     [ProducesResponseType<QuestDto>(StatusCodes.Status200OK)]
     [ProducesResponseType<ApiProblemDetails>(StatusCodes.Status403Forbidden)]
-    [Authorize]
+    [Authorize(AuthPolicies.ActiveSession)]
     public async Task<ActionResult<QuestDto>> ReplaceDailyQuest()
     {
         var userIdResult = _authService.GetUserId(User);
@@ -59,7 +60,7 @@ public class QuestsController(
     [HttpPost("claim")]
     [ProducesResponseType<int>(StatusCodes.Status200OK)]
     [ProducesResponseType<ApiProblemDetails>(StatusCodes.Status404NotFound)]
-    [Authorize]
+    [Authorize(AuthPolicies.ActiveSession)]
     public async Task<ActionResult<int>> CollectQuestReward()
     {
         var userIdResult = _authService.GetUserId(User);

@@ -32,6 +32,7 @@ export function createFakePrivateUser(
 export function createFakeGuestUser(override?: Partial<GuestUser>): GuestUser {
     return {
         userId: "guest:" + faker.string.uuid(),
+        userName: "Guest",
         type: "guest",
 
         ...override,

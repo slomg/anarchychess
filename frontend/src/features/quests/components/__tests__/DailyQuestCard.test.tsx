@@ -2,13 +2,20 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import {
+    createFakeGuestUser,
+    createFakePrivateUser,
+} from "@/lib/testUtils/fakers/userFaker";
+import {
     collectQuestReward,
+    GuestUser,
+    PrivateUser,
     QuestDifficulty,
     replaceDailyQuest,
 } from "@/lib/apiClient";
 
-import { createFakeQuest } from "@/lib/testUtils/fakers/questFaker";
 import { mockRouter, RouterMock } from "@/lib/testUtils/mocks/mockRouter";
+import SessionProvider from "@/features/auth/contexts/sessionContext";
+import { createFakeQuest } from "@/lib/testUtils/fakers/questFaker";
 import DailyQuestCard from "../DailyQuestCard";
 
 vi.mock("@/lib/apiClient/definition");
@@ -17,15 +24,24 @@ describe("DailyQuestCard", () => {
     const replaceDailyQuestMock = vi.mocked(replaceDailyQuest);
     const collectQuestRewardMock = vi.mocked(collectQuestReward);
 
+    let authedUserMock: PrivateUser;
+    let guestUserMock: GuestUser;
+
     let routerMock: RouterMock;
 
     beforeEach(() => {
         routerMock = mockRouter();
+        authedUserMock = createFakePrivateUser();
+        guestUserMock = createFakeGuestUser();
     });
 
     it("should render the fire emoji when streak > 0", () => {
         const quest = createFakeQuest({ streak: 7 });
-        render(<DailyQuestCard initialQuest={quest} />);
+        render(
+            <SessionProvider user={authedUserMock}>
+                <DailyQuestCard initialQuest={quest} />
+            </SessionProvider>,
+        );
 
         expect(screen.getByTestId("dailyQuestStreak")).toHaveTextContent(
             "🔥7 Days Streak",
@@ -36,7 +52,11 @@ describe("DailyQuestCard", () => {
         const quest = createFakeQuest({
             difficulty: QuestDifficulty.HARD,
         });
-        render(<DailyQuestCard initialQuest={quest} />);
+        render(
+            <SessionProvider user={authedUserMock}>
+                <DailyQuestCard initialQuest={quest} />
+            </SessionProvider>,
+        );
 
         expect(screen.getByTestId("dailyQuestDifficulty")).toHaveTextContent(
             "Hard:",
@@ -48,7 +68,11 @@ describe("DailyQuestCard", () => {
 
     it("should render progress bar with correct width", () => {
         const quest = createFakeQuest({ progress: 3, target: 6 });
-        render(<DailyQuestCard initialQuest={quest} />);
+        render(
+            <SessionProvider user={authedUserMock}>
+                <DailyQuestCard initialQuest={quest} />
+            </SessionProvider>,
+        );
 
         expect(screen.getByTestId("progressBarFill")).toHaveStyle({
             width: "50%",
@@ -57,7 +81,11 @@ describe("DailyQuestCard", () => {
 
     it("should render progress text correctly", () => {
         const quest = createFakeQuest({ progress: 2, target: 5 });
-        render(<DailyQuestCard initialQuest={quest} />);
+        render(
+            <SessionProvider user={authedUserMock}>
+                <DailyQuestCard initialQuest={quest} />
+            </SessionProvider>,
+        );
 
         expect(screen.getByTestId("dailyQuestProgressText")).toHaveTextContent(
             "2/5",
@@ -66,7 +94,11 @@ describe("DailyQuestCard", () => {
 
     it("should render replace button", () => {
         const quest = createFakeQuest();
-        render(<DailyQuestCard initialQuest={quest} />);
+        render(
+            <SessionProvider user={authedUserMock}>
+                <DailyQuestCard initialQuest={quest} />
+            </SessionProvider>,
+        );
 
         expect(screen.getByTestId("dailyQuestReplaceButton")).toHaveTextContent(
             "Replace",
@@ -79,7 +111,11 @@ describe("DailyQuestCard", () => {
         [QuestDifficulty.HARD, "text-red-400"],
     ])("should apply correct difficulty color class", (difficulty, style) => {
         const quest = createFakeQuest({ difficulty });
-        render(<DailyQuestCard initialQuest={quest} />);
+        render(
+            <SessionProvider user={authedUserMock}>
+                <DailyQuestCard initialQuest={quest} />
+            </SessionProvider>,
+        );
 
         expect(screen.getByTestId("dailyQuestDifficulty")).toHaveClass(style);
     });
@@ -97,7 +133,11 @@ describe("DailyQuestCard", () => {
         });
 
         const user = userEvent.setup();
-        render(<DailyQuestCard initialQuest={initialQuest} />);
+        render(
+            <SessionProvider user={authedUserMock}>
+                <DailyQuestCard initialQuest={initialQuest} />
+            </SessionProvider>,
+        );
         const replaceButton = screen.getByTestId("dailyQuestReplaceButton");
 
         await user.click(replaceButton);
@@ -122,7 +162,11 @@ describe("DailyQuestCard", () => {
         });
 
         const user = userEvent.setup();
-        render(<DailyQuestCard initialQuest={initialQuest} />);
+        render(
+            <SessionProvider user={authedUserMock}>
+                <DailyQuestCard initialQuest={initialQuest} />
+            </SessionProvider>,
+        );
         const replaceButton = screen.getByTestId("dailyQuestReplaceButton");
 
         await user.click(replaceButton);
@@ -135,7 +179,11 @@ describe("DailyQuestCard", () => {
 
     it("should not render replace button if quest cannot be replaced", () => {
         const quest = createFakeQuest({ canReplace: false });
-        render(<DailyQuestCard initialQuest={quest} />);
+        render(
+            <SessionProvider user={authedUserMock}>
+                <DailyQuestCard initialQuest={quest} />
+            </SessionProvider>,
+        );
 
         expect(
             screen.queryByTestId("dailyQuestReplaceButton"),
@@ -148,7 +196,11 @@ describe("DailyQuestCard", () => {
             target: 5,
             rewardCollected: false,
         });
-        render(<DailyQuestCard initialQuest={quest} />);
+        render(
+            <SessionProvider user={authedUserMock}>
+                <DailyQuestCard initialQuest={quest} />
+            </SessionProvider>,
+        );
 
         expect(
             screen.getByTestId("dailyQuestCollectButton"),
@@ -172,7 +224,11 @@ describe("DailyQuestCard", () => {
         });
 
         const user = userEvent.setup();
-        render(<DailyQuestCard initialQuest={quest} />);
+        render(
+            <SessionProvider user={authedUserMock}>
+                <DailyQuestCard initialQuest={quest} />
+            </SessionProvider>,
+        );
         const collectButton = screen.getByTestId("dailyQuestCollectButton");
 
         await user.click(collectButton);
@@ -182,6 +238,36 @@ describe("DailyQuestCard", () => {
         expect(
             screen.getByTestId("dailyQuestCollectedRewardText"),
         ).toHaveTextContent(`+${quest.difficulty} points`);
+    });
+
+    it("should not show + points for guests", async () => {
+        const quest = createFakeQuest({
+            progress: 5,
+            target: 5,
+            rewardCollected: false,
+        });
+
+        collectQuestRewardMock.mockResolvedValue({
+            data: quest.difficulty,
+            error: undefined,
+            response: new Response(),
+        });
+
+        const user = userEvent.setup();
+        render(
+            <SessionProvider user={guestUserMock}>
+                <DailyQuestCard initialQuest={quest} />
+            </SessionProvider>,
+        );
+        const collectButton = screen.getByTestId("dailyQuestCollectButton");
+
+        await user.click(collectButton);
+
+        expect(collectButton).not.toBeInTheDocument();
+        expect(routerMock.refresh).toHaveBeenCalled();
+        expect(
+            screen.queryByTestId("dailyQuestCollectedRewardText"),
+        ).not.toBeInTheDocument();
     });
 
     it("should display error message if collectQuestReward fails", async () => {
@@ -198,7 +284,11 @@ describe("DailyQuestCard", () => {
         });
 
         const user = userEvent.setup();
-        render(<DailyQuestCard initialQuest={quest} />);
+        render(
+            <SessionProvider user={authedUserMock}>
+                <DailyQuestCard initialQuest={quest} />
+            </SessionProvider>,
+        );
         const collectButton = screen.getByTestId("dailyQuestCollectButton");
 
         await user.click(collectButton);
@@ -227,7 +317,11 @@ describe("DailyQuestCard", () => {
         });
 
         const user = userEvent.setup();
-        render(<DailyQuestCard initialQuest={quest} />);
+        render(
+            <SessionProvider user={authedUserMock}>
+                <DailyQuestCard initialQuest={quest} />
+            </SessionProvider>,
+        );
 
         expect(screen.getByTestId("dailyQuestStreak")).toHaveTextContent(
             "🔥3 Days Streak",

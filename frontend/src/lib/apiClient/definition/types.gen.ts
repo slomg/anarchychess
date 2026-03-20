@@ -128,13 +128,13 @@ export type UserQuestPoints = {
 
 export type SessionUser = {
     userId: string;
+    userName: string;
     type: string;
 };
 
 export type PrivateUser = SessionUser & {
     type: "authed";
 } & {
-    userName: string;
     about: string;
     countryCode: string;
     createdAt: string;

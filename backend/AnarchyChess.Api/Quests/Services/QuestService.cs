@@ -77,6 +77,11 @@ public class QuestService(
         CancellationToken token = default
     )
     {
+        if (userId.IsGuest)
+        {
+            return ProfileErrors.NotFound;
+        }
+
         var userQuestPoints = await _questRepository.GetUserPointsAsync(userId, token);
         if (userQuestPoints is not null)
         {
@@ -87,7 +92,9 @@ public class QuestService(
 
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
+        {
             return ProfileErrors.NotFound;
+        }
 
         await _questRepository.AddQuestPointsAsync(
             new UserQuestPoints()

@@ -1,5 +1,7 @@
 ﻿using AnarchyChess.Api.Pagination.Models;
 using AnarchyChess.Api.Profile.DTOs;
+using AnarchyChess.Api.Profile.Errors;
+using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Quests.DTOs;
 using AnarchyChess.Api.Quests.Entities;
 using AnarchyChess.Api.Quests.Services;
@@ -82,6 +84,20 @@ public class QuestServiceTests : BaseIntegrationTest
         var result = await _questService.GetQuestPointsAsync(existing.UserId, CT);
 
         result.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task IncrementQuestPointsAsync_returns_error_when_user_is_guest()
+    {
+        UserId guestId = UserId.Guest();
+
+        var result = await _questService.IncrementQuestPointsAsync(guestId, 123, CT);
+
+        result.IsError.Should().BeTrue();
+        result.FirstError.Should().Be(ProfileErrors.NotFound);
+
+        var inDb = await DbContext.QuestPoints.AsNoTracking().ToListAsync(CT);
+        inDb.Should().BeEmpty();
     }
 
     [Fact]

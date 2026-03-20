@@ -123,7 +123,8 @@ public class AuthCookieSetterTests : BaseIntegrationTest
 
         var expectedCookie = CreateExpectedCookie(
             _settings.AccessTokenCookieName,
-            accessTokenValue
+            accessTokenValue,
+            maxAge: TimeSpan.FromDays(365)
         );
 
         var context = new DefaultHttpContext();
