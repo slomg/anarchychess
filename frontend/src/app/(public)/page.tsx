@@ -8,7 +8,7 @@ import HomeHero from "@/features/home/components/HomeHero";
 export const metadata: Metadata = {
     title: "Anarchy Chess",
     description:
-        "Anarchy Chess is a chaotic chess bariant with unique pieces and custom rules inspired by r/AnarchyChess. " +
+        "Anarchy Chess is a chaotic chess variant with unique pieces and custom rules inspired by r/AnarchyChess. " +
         "Play online, experiment with unusual mechanics, face off against bots, complete quests and more.",
     icons: {
         icon: "/favicon.ico",
