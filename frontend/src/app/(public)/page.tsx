@@ -13,6 +13,12 @@ export const metadata: Metadata = {
     icons: {
         icon: "/favicon.ico",
     },
+    openGraph: {
+        images: ["/favicon.ico"],
+    },
+    twitter: {
+        images: ["/favicon.ico"],
+    },
     keywords: [
         "chess",
         "anarchy chess",
