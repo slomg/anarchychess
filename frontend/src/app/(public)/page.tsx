@@ -10,15 +10,6 @@ export const metadata: Metadata = {
     description:
         "Anarchy Chess is a chaotic chess variant with unique pieces and custom rules inspired by r/AnarchyChess. " +
         "Play online, experiment with unusual mechanics, face off against bots, complete quests and more.",
-    icons: {
-        icon: "/favicon.ico",
-    },
-    openGraph: {
-        images: ["/favicon.ico"],
-    },
-    twitter: {
-        images: ["/favicon.ico"],
-    },
     keywords: [
         "chess",
         "anarchy chess",
