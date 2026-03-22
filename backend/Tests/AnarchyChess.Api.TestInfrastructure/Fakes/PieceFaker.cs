@@ -13,5 +13,6 @@ public class PieceFaker : RecordFaker<Piece>
         RuleFor(x => x.Type, f => piece ?? f.PickRandom<PieceType>());
         RuleFor(x => x.Color, color);
         RuleFor(x => x.HasMoved, f => hasMoved ?? f.Random.Bool());
+        RuleFor(x => x.StunnedForTurns, 0);
     }
 }
