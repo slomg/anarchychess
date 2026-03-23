@@ -40,7 +40,7 @@ public class LegalMoveCalculatorTests : BaseIntegrationTest
         ChessBoard board = new(moves: [lastMove], sideToMove: GameColor.White);
         board.PlacePiece(lastMove.To, lastMove.Piece);
 
-        var moves = _calculator.CalculateAllLegalMoves(board).ToList();
+        List<Move> moves = [.. _calculator.CalculateAllLegalMoves(board)];
 
         moves
             .Should()
@@ -54,7 +54,7 @@ public class LegalMoveCalculatorTests : BaseIntegrationTest
         board.PlacePiece(new AlgebraicPoint("a1"), PieceFactory.White(PieceType.Pawn));
         board.PlacePiece(new AlgebraicPoint("a3"), PieceFactory.Black(PieceType.King));
 
-        var moves = _calculator.CalculateAllLegalMoves(board);
+        List<Move> moves = [.. _calculator.CalculateAllLegalMoves(board)];
 
         moves
             .Should()
@@ -80,9 +80,25 @@ public class LegalMoveCalculatorTests : BaseIntegrationTest
         board.PlacePiece(new AlgebraicPoint("c3"), PieceFactory.White(PieceType.Pawn));
         board.PlacePiece(new AlgebraicPoint("e5"), PieceFactory.Black(PieceType.Pawn));
 
-        var moves = _calculator.CalculateAllLegalMoves(board).ToList();
+        List<Move> moves = [.. _calculator.CalculateAllLegalMoves(board)];
 
         moves.Should().Contain(move => move.Piece.Type == PieceType.TraitorRook);
+    }
+
+    [Fact]
+    public void CalculateLegalMoves_doesnt_allow_moves_for_stunned_pieces()
+    {
+        ChessBoard board = new(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("f3")] = PieceFactory.White(PieceType.Pawn, hasMoved: true),
+                [new("d3")] = PieceFactory.White(PieceType.Pawn, stunnedForMoves: 1),
+            }
+        );
+
+        List<Move> moves = [.. _calculator.CalculateAllLegalMoves(board)];
+
+        moves.Should().ContainSingle().Which.From.Should().Be(new AlgebraicPoint("f3"));
     }
 
     [Fact]
@@ -97,7 +113,7 @@ public class LegalMoveCalculatorTests : BaseIntegrationTest
         ChessBoard board = new(moves: [lastMove], sideToMove: GameColor.White);
         board.PlacePiece(lastMove.To, lastMove.Piece);
 
-        var moves = _calculator.CalculateForeverRules(board).ToList();
+        List<Move> moves = [.. _calculator.CalculateForeverRules(board)];
 
         moves
             .Should()
