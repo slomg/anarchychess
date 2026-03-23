@@ -17,6 +17,7 @@ namespace AnarchyChess.Api.GameLogic.Models;
 /// <param name="SideEffects">Any additional movement caused by this</param>
 /// <param name="SpecialMoveType">Indicates the type of move</param>
 /// <param name="PieceSpawns">Any new pieces to spawn</param>
+/// <param name="Stuns">Which pieces should be stunned</param>
 /// <param name="ForcedPriority">
 /// Indicates whether this move is forced, and if so, how strongly it should be prioritized.
 /// The move(s) with the highest <see cref="ForcedMovePriority"/> will be the only ones allowed
@@ -36,6 +37,7 @@ public record Move(
     IReadOnlyCollection<MoveCapture> Captures,
     IReadOnlyCollection<MoveSideEffect> SideEffects,
     IReadOnlyCollection<PieceSpawn> PieceSpawns,
+    IReadOnlyCollection<MoveStun> Stuns,
     SpecialMoveType SpecialMoveType,
     ForcedMovePriority ForcedPriority,
     PieceType? PromotesTo,
@@ -51,6 +53,7 @@ public record Move(
         IEnumerable<MoveCapture>? captures = null,
         IEnumerable<MoveSideEffect>? sideEffects = null,
         IEnumerable<PieceSpawn>? pieceSpawns = null,
+        IEnumerable<MoveStun>? stuns = null,
         SpecialMoveType specialMoveType = SpecialMoveType.None,
         ForcedMovePriority forcedPriority = ForcedMovePriority.None,
         PieceType? promotesTo = null,
@@ -65,6 +68,7 @@ public record Move(
             Captures: captures?.ToList() ?? [],
             SideEffects: sideEffects?.ToList() ?? [],
             PieceSpawns: pieceSpawns?.ToList() ?? [],
+            Stuns: stuns?.ToList() ?? [],
             SpecialMoveType: specialMoveType,
             ForcedPriority: forcedPriority,
             PromotesTo: promotesTo,
