@@ -23,6 +23,7 @@ describe("NewRulesGuide", () => {
             "Self-Bishop Castle Capture",
             "Omnipotent Pawn",
             "Long Passant",
+            "Hyper Accelerated Bongcloud",
             "Il Vaticano",
             "Vertical Castling",
             "Knooklear Fusion",
