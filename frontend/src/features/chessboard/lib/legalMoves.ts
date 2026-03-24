@@ -1,6 +1,6 @@
+import { ForcedMovePriority, SpecialMoveType } from "@/lib/apiClient";
 import { LogicalPoint, StrPoint } from "@/features/point/types";
 import { pointToStr } from "@/features/point/pointUtils";
-import { ForcedMovePriority } from "@/lib/apiClient";
 import { Move } from "./types";
 
 export interface MoveNode {
@@ -12,6 +12,8 @@ export interface MoveNode {
 
 export default class LegalMoves {
     readonly byOrigin: Map<StrPoint, Map<StrPoint, MoveNode>> = new Map();
+    readonly throwByOrigin: Map<StrPoint, Move[]> = new Map();
+
     _hasForcedMoves: boolean = false;
     _emphasizedSquares: LogicalPoint[] = [];
 
@@ -49,12 +51,23 @@ export default class LegalMoves {
         );
     }
 
+    getThrowFromOrigin(from: LogicalPoint): Move[] {
+        return this.throwByOrigin.get(pointToStr(from)) ?? [];
+    }
+
     addMove(move: Move): void {
         if (move.forcedPriority != ForcedMovePriority.NONE) {
             this._hasForcedMoves = true;
         }
         if (move.emphasizeSquare) {
             this._emphasizedSquares.push(move.from);
+        }
+
+        if (move.specialType === SpecialMoveType.THROW) {
+            const throws = this.throwByOrigin.get(pointToStr(move.from)) ?? [];
+            throws.push(move);
+            this.throwByOrigin.set(pointToStr(move.from), throws);
+            return;
         }
 
         let movesFromOrigin = this.byOrigin.get(pointToStr(move.from));

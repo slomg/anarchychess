@@ -1,8 +1,8 @@
 import { createFakeMove } from "@/lib/testUtils/fakers/chessboardFakers";
 import { logicalPoint, pointToStr } from "@/features/point/pointUtils";
-import { ForcedMovePriority } from "@/lib/apiClient";
-import LegalMoves from "../legalMoves";
+import { ForcedMovePriority, SpecialMoveType } from "@/lib/apiClient";
 import { IntermediateSquare } from "../types";
+import LegalMoves from "../legalMoves";
 
 describe("LegalMoves", () => {
     let legalMoves: LegalMoves;
@@ -201,6 +201,23 @@ describe("LegalMoves", () => {
             expect(triggerIntermediateNode2).toBeDefined();
             expect(triggerIntermediateNode2?.terminalMoves).toContain(move);
         });
+
+        it("should add throw moves to throwByOrigin instead of byOrigin", () => {
+            const throwMove = createFakeMove({
+                specialType: SpecialMoveType.THROW,
+                from: logicalPoint({ x: 1, y: 1 }),
+                to: logicalPoint({ x: 2, y: 2 }),
+            });
+
+            legalMoves.addMove(throwMove);
+
+            expect([...legalMoves.getFromOrigin(throwMove.from)]).toHaveLength(
+                0,
+            );
+            expect(legalMoves.getThrowFromOrigin(throwMove.from)).toContain(
+                throwMove,
+            );
+        });
     });
 
     describe("getDirectNode", () => {
@@ -271,6 +288,35 @@ describe("LegalMoves", () => {
                 move1.to,
                 move2.to,
             ]);
+        });
+    });
+
+    describe("getThrowFromOrigin", () => {
+        it("should return an empty array if no throw moves exist", () => {
+            const result = legalMoves.getThrowFromOrigin(
+                logicalPoint({ x: 0, y: 0 }),
+            );
+            expect(result).toEqual([]);
+        });
+
+        it("should return all throw moves from a given origin", () => {
+            const origin = logicalPoint({ x: 1, y: 1 });
+            const throwMove1 = createFakeMove({
+                specialType: SpecialMoveType.THROW,
+                from: origin,
+            });
+            const throwMove2 = createFakeMove({
+                specialType: SpecialMoveType.THROW,
+                from: origin,
+            });
+
+            legalMoves.addMove(throwMove1);
+            legalMoves.addMove(throwMove2);
+
+            const result = legalMoves.getThrowFromOrigin(origin);
+            expect(result).toHaveLength(2);
+            expect(result).toContain(throwMove1);
+            expect(result).toContain(throwMove2);
         });
     });
 });

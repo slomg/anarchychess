@@ -14,6 +14,7 @@ import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardSto
 import HighlightedLegalMovesRenderer from "../HighlightedLegalMove";
 import { logicalPoint } from "@/features/point/pointUtils";
 import { IntermediateSquare } from "../../lib/types";
+import { SpecialMoveType } from "@/lib/apiClient";
 import BoardPieces from "../../lib/boardPieces";
 import LegalMoves from "../../lib/legalMoves";
 
@@ -104,5 +105,29 @@ describe("HighlightedLegalMovesRenderer", () => {
             );
             expect(square).toBeInTheDocument();
         });
+    });
+
+    it("should not show throw moves", () => {
+        const piece = createFakePiece();
+        const move = createFakeMove({
+            from: piece.position,
+            specialType: SpecialMoveType.THROW,
+        });
+        const legalMoves = new LegalMoves([move]);
+
+        store.setState({ pieces: BoardPieces.fromPieces(piece) });
+        const { setLatestLegalMoves, selectPiece } = store.getState();
+        setLatestLegalMoves(legalMoves);
+        selectPiece(piece.id);
+
+        render(
+            <ChessboardStoreContext.Provider value={store}>
+                <HighlightedLegalMovesRenderer />
+            </ChessboardStoreContext.Provider>,
+        );
+
+        expect(
+            screen.queryByTestId("highlightedLegalMove"),
+        ).not.toBeInTheDocument();
     });
 });

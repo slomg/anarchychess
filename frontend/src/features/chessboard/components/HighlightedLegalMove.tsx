@@ -1,6 +1,6 @@
+import { LogicalPoint, StrPoint } from "@/features/point/types";
 import { useChessboardStore } from "../hooks/useChessboard";
 import { pointToStr } from "@/features/point/pointUtils";
-import { LogicalPoint, StrPoint } from "@/features/point/types";
 import ChessSquare from "./ChessSquare";
 
 const HighlightedLegalMovesRenderer = () => {
@@ -28,7 +28,6 @@ const HighlightedLegalMovesRenderer = () => {
                     pointToStr(move.intermediates[0].position),
                     move.intermediates[0].position,
                 );
-                continue;
             }
         }
 
