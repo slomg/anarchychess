@@ -175,7 +175,7 @@ public class FenEncoderTests : BaseIntegrationTest
         result
             .FullFen.Should()
             .Be(
-                "Pp {\"lastMove\":{\"from\":\"a1\",\"to\":\"b1\",\"captures\":[{\"piece\":{\"type\":2,\"color\":1,\"hasMoved\":false},\"pos\":\"b1\"}]}}"
+                "Pp {\"lastMove\":{\"from\":\"a1\",\"to\":\"b1\",\"captures\":[{\"piece\":{\"type\":2,\"color\":1,\"hasMoved\":false,\"stunnedForTurns\":0},\"pos\":\"b1\"}]}}"
             );
     }
 
