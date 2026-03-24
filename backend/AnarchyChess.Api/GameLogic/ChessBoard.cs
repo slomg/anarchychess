@@ -115,7 +115,7 @@ public class ChessBoard : IReadOnlyChessBoard, IEquatable<ChessBoard>
 
     public void PlayMove(Move move)
     {
-        var steps = move.Flatten().ToList();
+        List<MoveStep> steps = [.. move.Flatten()];
 
         // store each piece along with its final destination before changing the board
         // ensures we don't lose any piece if its original square gets overwritten during moves

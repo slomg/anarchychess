@@ -85,7 +85,7 @@ public record Move(
             }
         }
 
-        bool isMainSelfCapture = From == To && PromotesTo is null;
+        bool isMainSelfCapture = Captures.Any(x => x.Position == From) && PromotesTo is null;
         yield return new(From: From, To: To, IsSelfCapture: isMainSelfCapture);
     }
 }

@@ -386,6 +386,28 @@ public class ChessBoardTests
     }
 
     [Fact]
+    public void PlayMove_with_a_self_capture_where_destination_is_not_origin_removes_piece_correctly()
+    {
+        ChessBoard board = new();
+
+        Piece piece = PieceFactory.White();
+        AlgebraicPoint position = new("a1");
+        AlgebraicPoint dest = new("f6");
+        board.PlacePiece(position, piece);
+
+        Move move = new(
+            from: position,
+            to: dest,
+            piece: piece,
+            captures: [new MoveCapture(piece, position)]
+        );
+        board.PlayMove(move);
+
+        board.PeekPieceAt(position).Should().BeNull();
+        board.PeekPieceAt(dest).Should().BeNull();
+    }
+
+    [Fact]
     public void PlayMove_doesnt_treat_promotions_in_place_as_self_captures()
     {
         ChessBoard board = new();
