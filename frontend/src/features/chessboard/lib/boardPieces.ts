@@ -52,26 +52,26 @@ export default class BoardPieces {
         return this._byId.get(pieceId);
     }
 
-    getFriendlyBehind(piece: Piece): Piece[] {
+    getFriendlyBehind(test: Piece): Piece[] {
         const behindY =
-            piece.color === GameColor.WHITE
-                ? piece.position.y - 1
-                : piece.position.y + 1;
+            test.color === GameColor.WHITE
+                ? test.position.y - 1
+                : test.position.y + 1;
         const behindPieces = [
             this.getByPosition(
-                logicalPoint({ x: piece.position.x - 1, y: behindY }),
+                logicalPoint({ x: test.position.x - 1, y: behindY }),
             ),
             this.getByPosition(
-                logicalPoint({ x: piece.position.x, y: behindY }),
+                logicalPoint({ x: test.position.x, y: behindY }),
             ),
             this.getByPosition(
-                logicalPoint({ x: piece.position.x + 1, y: behindY }),
+                logicalPoint({ x: test.position.x + 1, y: behindY }),
             ),
         ];
 
         const result: Piece[] = [];
         for (const pieceBehind of behindPieces) {
-            if (pieceBehind && pieceBehind.color === piece.color) {
+            if (pieceBehind && pieceBehind.color === test.color) {
                 result.push(pieceBehind);
             }
         }

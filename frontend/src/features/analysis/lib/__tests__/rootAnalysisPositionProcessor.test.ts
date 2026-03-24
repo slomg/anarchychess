@@ -1,9 +1,10 @@
 import { decodeMovePathIntoLegalMoves } from "@/features/liveGame/lib/moveDecoder";
+import createDefaultChessboard from "@/features/chessboard/lib/defaultBoard";
+import { createFakeMovePath } from "@/lib/testUtils/fakers/movePathFaker";
 import processRootAnalysis from "../rootAnalysisPositionProcessor";
 import { GameColor, RootAnalysisPosition } from "@/lib/apiClient";
 import mockSequentialUUID from "@/lib/testUtils/mocks/mockUuids";
 import constants from "@/lib/constants";
-import { createFakeMovePath } from "@/lib/testUtils/fakers/movePathFaker";
 
 describe("processRootAnalysis", () => {
     it("should create a chessboard store with correct initial state", () => {
@@ -22,7 +23,7 @@ describe("processRootAnalysis", () => {
             boardWidth: constants.BOARD_WIDTH,
         });
 
-        expect(state.pieces).toEqual(constants.DEFAULT_CHESS_BOARD);
+        expect(state.pieces).toEqual(createDefaultChessboard());
 
         expect(state.boardDimensions).toEqual({
             width: constants.BOARD_WIDTH,
@@ -53,7 +54,7 @@ describe("processRootAnalysis", () => {
         const state = store.getState();
 
         expect(state.positionHistory.rootPieces).toEqual(
-            constants.DEFAULT_CHESS_BOARD,
+            createDefaultChessboard(),
         );
         expect(state.positionHistory.totalPlyCount).toEqual(0);
     });

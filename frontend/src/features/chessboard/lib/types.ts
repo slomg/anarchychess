@@ -5,7 +5,7 @@ import {
     SpecialMoveType,
 } from "@/lib/apiClient";
 import { LogicalPoint } from "@/features/point/types";
-import BoardPieces from "./boardPieces";
+import type BoardPieces from "./boardPieces";
 
 export interface Piece {
     id: PieceID;

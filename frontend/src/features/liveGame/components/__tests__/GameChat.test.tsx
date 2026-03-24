@@ -1,23 +1,27 @@
-import userEvent from "@testing-library/user-event";
 import { screen, render, act } from "@testing-library/react";
-
-import GameChat from "../GameChat";
-import LiveChessStoreContext from "../../contexts/liveChessContext";
+import userEvent from "@testing-library/user-event";
 import { StoreApi } from "zustand";
+
+import {
+    createFakeGuestUser,
+    createFakePrivateUser,
+} from "@/lib/testUtils/fakers/userFaker";
 import createLiveChessStore, {
     LiveChessStore,
 } from "../../stores/liveChessStore";
-import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
-import { mockRouter } from "@/lib/testUtils/mocks/mockRouter";
-import { EventHandlers } from "@/features/signalR/hooks/useSignalREvent";
-import SessionProvider from "@/features/auth/contexts/sessionContext";
-import { GuestUser, PrivateUser } from "@/lib/apiClient";
-import { createFakePrivateUser } from "@/lib/testUtils/fakers/userFaker";
 import {
     GameClientEvents,
     useGameEmitter,
     useGameEvent,
 } from "../../hooks/useGameHub";
+
+import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
+import { EventHandlers } from "@/features/signalR/hooks/useSignalREvent";
+import SessionProvider from "@/features/auth/contexts/sessionContext";
+import LiveChessStoreContext from "../../contexts/liveChessContext";
+import { mockRouter } from "@/lib/testUtils/mocks/mockRouter";
+import { PrivateUser } from "@/lib/apiClient";
+import GameChat from "../GameChat";
 
 vi.mock("@/features/liveGame/hooks/useGameHub");
 
@@ -60,7 +64,7 @@ describe("GameChat", () => {
     });
 
     it("should disable input when a guest", () => {
-        const guest: GuestUser = { userId: "test", type: "guest" };
+        const guest = createFakeGuestUser();
         render(
             <SessionProvider user={guest}>
                 <LiveChessStoreContext.Provider value={store}>

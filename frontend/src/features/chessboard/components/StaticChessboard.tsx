@@ -10,6 +10,7 @@ import {
 
 import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardStoreContext";
 import ChessboardLayout, { ChessboardLayoutProps } from "./ChessboardLayout";
+import createDefaultChessboard from "../lib/defaultBoard";
 import useBoardReplay from "../hooks/useBoardReplay";
 import PositionHistory from "../lib/positionHistory";
 import { decodeFen } from "../lib/fenDecoder";
@@ -46,7 +47,7 @@ const StaticChessboard = ({
     disableDrag = false,
     muteAudio = false,
 
-    position = constants.DEFAULT_CHESS_BOARD,
+    position = createDefaultChessboard(),
     replays = [],
 
     ...props

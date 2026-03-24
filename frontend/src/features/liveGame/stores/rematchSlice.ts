@@ -1,5 +1,6 @@
 import { StateCreator } from "zustand";
-import { LiveChessStore } from "./liveChessStore";
+
+import type { LiveChessStore } from "./liveChessStore";
 
 export interface RematchSlice {
     isRequestingRematch: boolean;
