@@ -7,10 +7,10 @@ import {
 
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
 import { pointEquals, pointToStr } from "@/features/point/pointUtils";
+import { AnimationStep, MoveBounds, PieceID } from "../lib/types";
 import type { ChessboardStore } from "./chessboardStore";
 import { LogicalPoint } from "@/features/point/types";
 import { ScreenPoint } from "@/features/point/types";
-import { AnimationStep, MoveBounds, PieceID } from "../lib/types";
 import BoardPieces from "../lib/boardPieces";
 import { Position } from "../lib/position";
 import EventBus from "@/lib/eventBus";

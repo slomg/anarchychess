@@ -1,6 +1,6 @@
+import { logicalPoint, pointToStr } from "@/features/point/pointUtils";
 import { LogicalPoint, StrPoint } from "@/features/point/types";
 import { Move, Piece, PieceID } from "./types";
-import { logicalPoint, pointToStr } from "@/features/point/pointUtils";
 import { GameColor } from "@/lib/apiClient";
 
 interface SinglePieceMove {

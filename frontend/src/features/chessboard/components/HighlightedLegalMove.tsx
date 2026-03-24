@@ -9,10 +9,14 @@ const HighlightedLegalMovesRenderer = () => {
     );
     const pieces = useChessboardStore((x) => x.pieces);
     const selectedPieceId = useChessboardStore((x) => x.selectedPieceId);
-    if (!selectedPieceId) return null;
+    if (!selectedPieceId) {
+        return null;
+    }
 
     const selectedPiece = pieces.getById(selectedPieceId);
-    if (!selectedPiece) return null;
+    if (!selectedPiece) {
+        return null;
+    }
 
     const moveNodes = legalMoves.getFromOrigin(selectedPiece.position);
 
@@ -32,6 +36,14 @@ const HighlightedLegalMovesRenderer = () => {
         }
 
         toHighlightPoints.set(pointToStr(moveNode.at), moveNode.at);
+    }
+
+    const throwMoves = legalMoves.getThrowFromOrigin(selectedPiece.position);
+    if (throwMoves.length > 0) {
+        const piecesBehind = pieces.getFriendlyBehind(selectedPiece);
+        for (const piece of piecesBehind) {
+            toHighlightPoints.set(pointToStr(piece.position), piece.position);
+        }
     }
 
     return [...toHighlightPoints.values()].map((point) => (
