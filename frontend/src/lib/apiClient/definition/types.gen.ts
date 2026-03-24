@@ -428,6 +428,10 @@ export enum SpecialMoveType {
      * OmnipotentPawnSpawn
      */
     OMNIPOTENT_PAWN_SPAWN = 8,
+    /**
+     * Throw
+     */
+    THROW = 9,
 }
 
 export enum ForcedMovePriority {
