@@ -34,14 +34,14 @@ public abstract class BasePawnDefinition : IPieceDefinition
         [
             new NoCaptureRule(
                 new ConditionalBehaviour(
-                    (board, pos, piece) => !piece.HasMoved,
+                    (board, pos, piece) => piece.HasMoved,
                     // move maxInitialMoveDistance squares if this piece has not moved before
-                    trueBranch: new SlideBehaviour(
+                    trueBranch: new StepBehaviour(new Offset(X: 0, Y: 1 * direction)),
+                    // move one square if this piece has moved before
+                    falseBranch: new SlideBehaviour(
                         new Offset(X: 0, Y: 1 * direction),
                         max: maxInitialMoveDistance
-                    ),
-                    // move one square if this piece has moved before
-                    falseBranch: new StepBehaviour(new Offset(X: 0, Y: 1 * direction))
+                    )
                 )
             ),
             new CaptureOnlyRule(
@@ -59,7 +59,9 @@ public abstract class BasePawnDefinition : IPieceDefinition
         ];
 
         if (position.Y == promotionY)
+        {
             behaviour.Add(new MoveToSelfRule());
+        }
 
         return
         [
@@ -68,6 +70,7 @@ public abstract class BasePawnDefinition : IPieceDefinition
                 promotesTo: promotesTo,
                 behaviour
             ),
+            new ThrowingRule(),
         ];
     }
 }
