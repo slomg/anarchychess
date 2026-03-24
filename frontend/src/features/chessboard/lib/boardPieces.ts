@@ -1,6 +1,7 @@
 import { LogicalPoint, StrPoint } from "@/features/point/types";
 import { Move, Piece, PieceID } from "./types";
-import { pointToStr } from "@/features/point/pointUtils";
+import { logicalPoint, pointToStr } from "@/features/point/pointUtils";
+import { GameColor } from "@/lib/apiClient";
 
 interface SinglePieceMove {
     pieceId: PieceID;
@@ -49,6 +50,32 @@ export default class BoardPieces {
         if (!pieceId) return undefined;
 
         return this._byId.get(pieceId);
+    }
+
+    getFriendlyBehind(piece: Piece): Piece[] {
+        const behindY =
+            piece.color === GameColor.WHITE
+                ? piece.position.y - 1
+                : piece.position.y + 1;
+        const behindPieces = [
+            this.getByPosition(
+                logicalPoint({ x: piece.position.x - 1, y: behindY }),
+            ),
+            this.getByPosition(
+                logicalPoint({ x: piece.position.x, y: behindY }),
+            ),
+            this.getByPosition(
+                logicalPoint({ x: piece.position.x + 1, y: behindY }),
+            ),
+        ];
+
+        const result: Piece[] = [];
+        for (const pieceBehind of behindPieces) {
+            if (pieceBehind && pieceBehind.color === piece.color) {
+                result.push(pieceBehind);
+            }
+        }
+        return result;
     }
 
     playMove(move: Move): PieceID[] {
