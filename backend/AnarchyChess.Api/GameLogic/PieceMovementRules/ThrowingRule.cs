@@ -148,7 +148,8 @@ public sealed class ThrowingRule : IPieceMovementRule
 
         if (
             MaterialValue.GetPieceValue(throwingPiece.Type)
-            <= MaterialValue.GetPieceValue(movingPiece.Type)
+                - MaterialValue.GetPieceValue(movingPiece.Type)
+            < 100
         )
         {
             yield break;

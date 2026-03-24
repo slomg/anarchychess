@@ -47,6 +47,7 @@ public class ThrowingRuleTests
     [Theory]
     [InlineData(PieceType.Pawn)]
     [InlineData(PieceType.SterilePawn)]
+    [InlineData(PieceType.UnderagePawn)]
     public void Evaluate_creates_no_move_if_the_piece_behind_is_too_weak(PieceType piece)
     {
         ChessBoard board = new(
