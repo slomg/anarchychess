@@ -157,6 +157,22 @@ describe("LegalMoves", () => {
             expect(triggerNode2?.terminalMoves).toContain(moveWithTriggers);
         });
 
+        it("should not add a trigger move if it equals main destination", () => {
+            const destination = logicalPoint({ x: 5, y: 5 });
+
+            const move = createFakeMove({
+                to: destination,
+                triggers: [destination],
+            });
+
+            legalMoves.addMove(move);
+
+            const node = legalMoves.getDirectNode(move.from, destination);
+            expect(node).toBeDefined();
+
+            expect(node?.terminalMoves).toEqual([move]);
+        });
+
         it("should add moves with one intermediate for main destination and each trigger", () => {
             const intermediate: IntermediateSquare = {
                 position: logicalPoint({ x: 2, y: 2 }),

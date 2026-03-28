@@ -7,7 +7,8 @@ namespace AnarchyChess.Api.GameLogic.Models;
 /// <param name="To">Destination square</param>
 /// <param name="Piece">The piece being moved</param>
 /// <param name="TriggerSquares">
-/// Squares (other than the destination) that the user can click on to trigger this move.
+/// Squares that the user can click on to trigger this move.
+/// When specified, these replace <see cref="To"/> as the clickable squares in the frontend
 /// </param>
 /// <param name="IntermediateSquares">
 /// Squares the piece passes through before reaching its final destination.

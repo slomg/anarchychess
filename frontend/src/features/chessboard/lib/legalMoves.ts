@@ -1,6 +1,6 @@
 import { ForcedMovePriority, SpecialMoveType } from "@/lib/apiClient";
+import { pointEquals, pointToStr } from "@/features/point/pointUtils";
 import { LogicalPoint, StrPoint } from "@/features/point/types";
-import { pointToStr } from "@/features/point/pointUtils";
 import { Move } from "./types";
 
 export interface MoveNode {
@@ -77,6 +77,10 @@ export default class LegalMoves {
         }
 
         for (const trigger of move.triggers) {
+            if (pointEquals(trigger, move.to)) {
+                continue;
+            }
+
             this._insertMoveTree(move, movesFromOrigin, trigger);
         }
         this._insertMoveTree(move, movesFromOrigin, move.to);

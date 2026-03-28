@@ -289,7 +289,7 @@ public class BishopTestData : TheoryData<PieceTestCase>
                 .WithFriendlyPieceAt("f4", excludePieces)
                 .GoesTo(
                     "h5",
-                    trigger: ["f5", "g5"],
+                    trigger: ["f5", "g5", "h5"],
                     captures: ["f5", "g5"],
                     sideEffects:
                     [
@@ -309,7 +309,7 @@ public class BishopTestData : TheoryData<PieceTestCase>
                 .GoesTo(openE5Moves)
                 .GoesTo(
                     "b5",
-                    trigger: ["c5", "d5"],
+                    trigger: ["b5", "c5", "d5"],
                     captures: ["c5", "d5"],
                     sideEffects:
                     [
@@ -332,7 +332,7 @@ public class BishopTestData : TheoryData<PieceTestCase>
                 .WithFriendlyPieceAt("f4", excludePieces)
                 .GoesTo(
                     "e8",
-                    trigger: ["e6", "e7"],
+                    trigger: ["e6", "e7", "e8"],
                     captures: ["e6", "e7"],
                     sideEffects:
                     [
@@ -352,7 +352,7 @@ public class BishopTestData : TheoryData<PieceTestCase>
                 .GoesTo(openE5Moves)
                 .GoesTo(
                     "e2",
-                    trigger: ["e3", "e4"],
+                    trigger: ["e2", "e3", "e4"],
                     captures: ["e3", "e4"],
                     sideEffects:
                     [
@@ -375,7 +375,7 @@ public class BishopTestData : TheoryData<PieceTestCase>
                 .WithFriendlyPieceAt("f4", excludePieces)
                 .GoesTo(
                     "h5",
-                    trigger: ["f5", "g5"],
+                    trigger: ["f5", "g5", "h5"],
                     captures: ["f5", "g5"],
                     sideEffects:
                     [

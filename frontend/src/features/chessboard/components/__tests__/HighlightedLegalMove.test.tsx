@@ -107,6 +107,49 @@ describe("HighlightedLegalMovesRenderer", () => {
         });
     });
 
+    it("should not highlight destination if there are triggers", () => {
+        const piece = createFakePiece();
+        const destination = logicalPoint({ x: 4, y: 4 });
+        const trigger1 = logicalPoint({ x: 5, y: 5 });
+        const trigger2 = logicalPoint({ x: 6, y: 6 });
+
+        const move = createFakeMove({
+            from: piece.position,
+            to: destination,
+            triggers: [trigger1, trigger2],
+        });
+
+        const legalMoves = new LegalMoves([move]);
+        const { setLatestLegalMoves, selectPiece } = store.getState();
+        store.setState({ pieces: BoardPieces.fromPieces(piece) });
+        setLatestLegalMoves(legalMoves);
+        selectPiece(piece.id);
+
+        render(
+            <ChessboardStoreContext.Provider value={store}>
+                <HighlightedLegalMovesRenderer />
+            </ChessboardStoreContext.Provider>,
+        );
+
+        const squares = screen.getAllByTestId("highlightedLegalMove");
+
+        [trigger1, trigger2].forEach((point) => {
+            const square = squares.find(
+                (el) =>
+                    el.getAttribute("data-position") ===
+                    `${point.x},${point.y}`,
+            );
+            expect(square).toBeInTheDocument();
+        });
+
+        const destinationSquare = squares.find(
+            (el) =>
+                el.getAttribute("data-position") ===
+                `${destination.x},${destination.y}`,
+        );
+        expect(destinationSquare).toBeUndefined();
+    });
+
     it("should highlight friendly pieces behind when throw moves exist", () => {
         const piece = createFakePiece({
             position: logicalPoint({ x: 3, y: 3 }),

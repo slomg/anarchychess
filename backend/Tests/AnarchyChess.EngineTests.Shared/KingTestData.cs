@@ -104,19 +104,19 @@ public class KingTestData : TheoryData<PieceTestCase>
                 .WithPieceAt("f10", whiteRook) // Vertical rook
                 .GoesTo(
                     "h1",
-                    trigger: ["i1"],
+                    trigger: ["h1", "i1"],
                     sideEffects: [new(From: new("j1"), To: new("g1"), whiteRook)],
                     specialMoveType: SpecialMoveType.KingsideCastle
                 )
                 .GoesTo(
                     "d1",
-                    trigger: ["c1", "b1"],
+                    trigger: ["d1", "c1", "b1"],
                     sideEffects: [new(From: new("a1"), To: new("e1"), whiteRook)],
                     specialMoveType: SpecialMoveType.QueensideCastle
                 )
                 .GoesTo(
                     "f3",
-                    trigger: ["f4", "f5", "f6", "f7", "f8", "f9"],
+                    trigger: ["f3", "f4", "f5", "f6", "f7", "f8", "f9"],
                     sideEffects: [new(From: new("f10"), To: new("f2"), whiteRook)],
                     specialMoveType: SpecialMoveType.VerticalCastle
                 )
@@ -132,19 +132,19 @@ public class KingTestData : TheoryData<PieceTestCase>
                 .WithPieceAt("f1", blackRook) // Vertical rook
                 .GoesTo(
                     "h10",
-                    trigger: ["i10"],
+                    trigger: ["h10", "i10"],
                     sideEffects: [new(From: new("j10"), To: new("g10"), blackRook)],
                     specialMoveType: SpecialMoveType.KingsideCastle
                 )
                 .GoesTo(
                     "d10",
-                    trigger: ["c10", "b10"],
+                    trigger: ["d10", "c10", "b10"],
                     sideEffects: [new(From: new("a10"), To: new("e10"), blackRook)],
                     specialMoveType: SpecialMoveType.QueensideCastle
                 )
                 .GoesTo(
                     "f8",
-                    trigger: ["f2", "f3", "f4", "f5", "f6", "f7"],
+                    trigger: ["f2", "f3", "f4", "f5", "f6", "f7", "f8"],
                     sideEffects: [new(From: new("f1"), To: new("f9"), blackRook)],
                     specialMoveType: SpecialMoveType.VerticalCastle
                 )
@@ -180,7 +180,7 @@ public class KingTestData : TheoryData<PieceTestCase>
                 .WithPieceAt("h1", PieceFactory.White(PieceType.Bishop))
                 .GoesTo(
                     "h1",
-                    trigger: ["i1"],
+                    trigger: ["h1", "i1"],
                     sideEffects: [new(From: new("j1"), To: new("g1"), whiteRook)],
                     specialMoveType: SpecialMoveType.KingsideCastle,
                     captures: ["h1"]

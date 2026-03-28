@@ -39,7 +39,7 @@ public class IlVaticanoRuleTests
             new MoveCapture(intermediatePiece1, intermediate1),
             new MoveCapture(intermediatePiece2, intermediate2),
         ];
-        List<AlgebraicPoint> triggers = [intermediate1, intermediate2];
+        List<AlgebraicPoint> triggers = [partnerSquare, intermediate1, intermediate2];
         MoveSideEffect sideEffect = new(From: partnerSquare, To: origin, partnerPiece);
 
         Move expected = new(
@@ -67,7 +67,9 @@ public class IlVaticanoRuleTests
         foreach (var (pos, piece) in additionalPieces)
         {
             if (piece is not null)
+            {
                 board.PlacePiece(pos, piece);
+            }
         }
 
         return board;

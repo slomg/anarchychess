@@ -18,16 +18,24 @@ public class CastleRule : IPieceMovementRule
     )
     {
         if (movingPiece.HasMoved)
+        {
             yield break;
+        }
 
         foreach (var move in GetKingSide(board, position, movingPiece))
+        {
             yield return move;
+        }
 
         foreach (var move in GetQueenSide(board, position, movingPiece))
+        {
             yield return move;
+        }
 
         foreach (var move in GetVertical(board, position, movingPiece))
+        {
             yield return move;
+        }
     }
 
     private IEnumerable<Move> GetKingSide(
@@ -63,7 +71,9 @@ public class CastleRule : IPieceMovementRule
     )
     {
         if (movingPiece.Color is null)
+        {
             return [];
+        }
 
         var rookY = movingPiece.Color.Value.Match(whenWhite: board.Height - 1, whenBlack: 0);
         return GetCastlingMovesInDirection(
@@ -89,12 +99,14 @@ public class CastleRule : IPieceMovementRule
             || rook.Color != movingPiece.Color
             || rook.Type != PieceType.Rook
         )
+        {
             yield break;
+        }
 
         AlgebraicPoint? targetPosition = null;
         AlgebraicPoint? targetRookPosition = null;
 
-        List<AlgebraicPoint> trigger = [];
+        List<AlgebraicPoint> triggers = [];
         List<MoveCapture> captures = [];
 
         int dx = rookPosition.X - position.X;
@@ -107,20 +119,28 @@ public class CastleRule : IPieceMovementRule
                 position.Y + step * dy / steps
             );
             if (!board.IsWithinBoundaries(currentSquare))
+            {
                 yield break;
+            }
 
             if (step == RookDestStep)
+            {
                 targetRookPosition = currentSquare;
+            }
             else if (step == KingDestStep)
+            {
                 targetPosition = currentSquare;
+            }
+
+            // we don't want to add it as a trigger if the king could move there with a regular move
+            if (step != 1)
+            {
+                triggers.Add(currentSquare);
+            }
 
             var pieceOnSquare = board.PeekPieceAt(currentSquare);
             if (pieceOnSquare is null)
             {
-                // we don't want to add the target position if it is the current square
-                // because target position is already a trigger
-                if (step != 1 && step != KingDestStep)
-                    trigger.Add(currentSquare);
                 continue;
             }
 
@@ -129,13 +149,17 @@ public class CastleRule : IPieceMovementRule
                 && pieceOnSquare.Color == movingPiece.Color;
             bool isCaptureOnLandingSquare = step == KingDestStep || step == RookDestStep;
             if (!isCapturedAllowed || !isCaptureOnLandingSquare)
+            {
                 yield break;
+            }
 
             captures.Add(new MoveCapture(currentSquare, board));
         }
 
         if (targetPosition is null || targetRookPosition is null)
+        {
             yield break;
+        }
 
         MoveSideEffect rookSideEffect = new(
             From: rookPosition,
@@ -146,7 +170,7 @@ public class CastleRule : IPieceMovementRule
             position,
             targetPosition.Value,
             movingPiece,
-            triggerSquares: trigger,
+            triggerSquares: triggers,
             captures: captures,
             sideEffects: [rookSideEffect],
             specialMoveType: moveType
