@@ -4,6 +4,8 @@ using AnarchyChess.EngineShared.Extensions;
 
 namespace AnarchyChess.Api.GameLogic.PieceMovementRules;
 
+public readonly record struct Throw(AlgebraicPoint From, AlgebraicPoint To);
+
 public sealed class ThrowingRule : IPieceMovementRule
 {
     public IEnumerable<Move> Evaluate(
@@ -18,16 +20,19 @@ public sealed class ThrowingRule : IPieceMovementRule
         }
 
         int forwardDirection = movingPiece.Color.Value.Match(whenWhite: 1, whenBlack: -1);
-        HashSet<AlgebraicPoint> points =
+        Throw[] points =
         [
             .. ThrowLeft(board, position, movingPiece, forwardDirection),
             .. ThrowRight(board, position, movingPiece, forwardDirection),
             .. ThrowForward(board, position, movingPiece, forwardDirection),
         ];
+        Dictionary<AlgebraicPoint, AlgebraicPoint[]> destinationToOrigins = points
+            .GroupBy(x => x.To)
+            .ToDictionary(x => x.Key, x => x.Select(t => t.From).ToArray());
 
-        foreach (var point in points)
+        foreach (var (to, origins) in destinationToOrigins)
         {
-            var stunnedPiece = board.PeekPieceAt(point);
+            var stunnedPiece = board.PeekPieceAt(to);
             if (stunnedPiece?.Color == movingPiece.Color)
             {
                 continue;
@@ -35,7 +40,7 @@ public sealed class ThrowingRule : IPieceMovementRule
 
             yield return new Move(
                 from: position,
-                to: point,
+                to: to,
                 movingPiece,
                 specialMoveType: SpecialMoveType.Throw,
                 // remove self if we hit a piece
@@ -44,12 +49,13 @@ public sealed class ThrowingRule : IPieceMovementRule
                     : [new MoveCapture(CapturedPiece: movingPiece, Position: position)],
                 stuns: stunnedPiece is null
                     ? null
-                    : [new MoveStun(Position: point, Piece: stunnedPiece, StunForTurns: 1)]
+                    : [new MoveStun(Position: to, Piece: stunnedPiece, StunForTurns: 1)],
+                triggerSquares: origins
             );
         }
     }
 
-    private static IEnumerable<AlgebraicPoint> ThrowRight(
+    private static IEnumerable<Throw> ThrowRight(
         IReadOnlyChessBoard board,
         AlgebraicPoint origin,
         Piece movingPiece,
@@ -67,7 +73,7 @@ public sealed class ThrowingRule : IPieceMovementRule
                     origin + new Offset(X: 0, Y: 1),
                     origin + new Offset(X: 0, Y: -1),
                 ],
-                new Offset(X: 1, Y: forwardDirection)
+                direction: new Offset(X: 1, Y: forwardDirection)
             )
         )
         {
@@ -75,7 +81,7 @@ public sealed class ThrowingRule : IPieceMovementRule
         }
     }
 
-    private static IEnumerable<AlgebraicPoint> ThrowLeft(
+    private static IEnumerable<Throw> ThrowLeft(
         IReadOnlyChessBoard board,
         AlgebraicPoint origin,
         Piece movingPiece,
@@ -93,7 +99,7 @@ public sealed class ThrowingRule : IPieceMovementRule
                     origin + new Offset(X: 0, Y: 1),
                     origin + new Offset(X: 0, Y: -1),
                 ],
-                new Offset(X: -1, Y: forwardDirection)
+                direction: new Offset(X: -1, Y: forwardDirection)
             )
         )
         {
@@ -101,7 +107,7 @@ public sealed class ThrowingRule : IPieceMovementRule
         }
     }
 
-    private static IEnumerable<AlgebraicPoint> ThrowForward(
+    private static IEnumerable<Throw> ThrowForward(
         IReadOnlyChessBoard board,
         AlgebraicPoint origin,
         Piece movingPiece,
@@ -119,7 +125,7 @@ public sealed class ThrowingRule : IPieceMovementRule
                     origin + new Offset(X: 1, Y: 0),
                     origin + new Offset(X: -1, Y: 0),
                 ],
-                new Offset(X: 0, Y: forwardDirection)
+                direction: new Offset(X: 0, Y: forwardDirection)
             )
         )
         {
@@ -127,7 +133,7 @@ public sealed class ThrowingRule : IPieceMovementRule
         }
     }
 
-    private static IEnumerable<AlgebraicPoint> Throw(
+    private static IEnumerable<Throw> Throw(
         IReadOnlyChessBoard board,
         AlgebraicPoint origin,
         Piece movingPiece,
@@ -162,7 +168,7 @@ public sealed class ThrowingRule : IPieceMovementRule
             current += direction;
             while (board.IsWithinBoundaries(current))
             {
-                yield return current;
+                yield return new(From: throwingPiecePosition, To: current);
                 current += direction;
             }
         }

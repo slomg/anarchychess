@@ -103,7 +103,8 @@ public class ThrowingRuleTests
                 from: new("f4"),
                 to: dest,
                 _whitePawn,
-                specialMoveType: SpecialMoveType.Throw
+                specialMoveType: SpecialMoveType.Throw,
+                triggerSquares: [new("f3")]
             )),
         ];
         result.Should().BeEquivalentTo(expectedMoves);
@@ -146,7 +147,8 @@ public class ThrowingRuleTests
                 from: new("f4"),
                 to: dest,
                 _whitePawn,
-                specialMoveType: SpecialMoveType.Throw
+                specialMoveType: SpecialMoveType.Throw,
+                triggerSquares: [new("g3")]
             )),
         ];
         result.Should().BeEquivalentTo(expectedMoves);
@@ -186,7 +188,8 @@ public class ThrowingRuleTests
                 from: new("f4"),
                 to: dest,
                 _whitePawn,
-                specialMoveType: SpecialMoveType.Throw
+                specialMoveType: SpecialMoveType.Throw,
+                triggerSquares: [new("e3")]
             )),
         ];
         result.Should().BeEquivalentTo(expectedMoves);
@@ -229,7 +232,8 @@ public class ThrowingRuleTests
                 from: new("f6"),
                 to: dest,
                 _blackPawn,
-                specialMoveType: SpecialMoveType.Throw
+                specialMoveType: SpecialMoveType.Throw,
+                triggerSquares: [new("f7")]
             )),
         ];
         result.Should().BeEquivalentTo(expectedMoves);
@@ -279,7 +283,8 @@ public class ThrowingRuleTests
                 from: new("f4"),
                 to: dest,
                 _whitePawn,
-                specialMoveType: SpecialMoveType.Throw
+                specialMoveType: SpecialMoveType.Throw,
+                triggerSquares: [new("f3")]
             )),
             new Move(
                 from: new("f4"),
@@ -287,7 +292,8 @@ public class ThrowingRuleTests
                 _whitePawn,
                 specialMoveType: SpecialMoveType.Throw,
                 stuns: [new(Position: new("e6"), stunnedPiece, StunForTurns: 1)],
-                captures: [new(_whitePawn, Position: new("f4"))]
+                captures: [new(_whitePawn, Position: new("f4"))],
+                triggerSquares: [new("f3")]
             ),
         ];
         result.Should().BeEquivalentTo(expectedMoves);

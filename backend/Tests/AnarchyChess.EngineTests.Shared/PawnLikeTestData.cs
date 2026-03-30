@@ -527,7 +527,11 @@ public abstract class PawnLikeTestData : TheoryData<PieceTestCase>
                 .ForEach(
                     ["a8", "b8", "c8", "a9", "b9", "c9", "a10", "b10", "c10"],
                     (position, testCase) =>
-                        testCase.GoesTo(position, specialMoveType: SpecialMoveType.Throw)
+                        testCase.GoesTo(
+                            position,
+                            specialMoveType: SpecialMoveType.Throw,
+                            trigger: ["b6"]
+                        )
                 )
                 .GoesTo("b8")
         );
