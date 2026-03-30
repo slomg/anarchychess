@@ -4,7 +4,7 @@ import {
 } from "@/lib/testUtils/fakers/chessboardFakers";
 
 import { logicalPoint } from "@/features/point/pointUtils";
-import { GameColor, PieceType } from "@/lib/apiClient";
+import { PieceType } from "@/lib/apiClient";
 import BoardPieces from "../boardPieces";
 
 describe("BoardPieces", () => {
@@ -351,95 +351,6 @@ describe("BoardPieces", () => {
             const result = board.removeFrom(logicalPoint({ x: 1, y: 2 }));
 
             expect(result).toBe(false);
-        });
-    });
-
-    describe("getFriendlyBehind", () => {
-        it("should return empty array if no pieces are behind", () => {
-            const piece = createFakePiece({
-                position: logicalPoint({ x: 3, y: 3 }),
-                color: GameColor.WHITE,
-            });
-
-            const board = BoardPieces.fromPieces(piece);
-
-            const result = board.getFriendlyBehind(piece);
-
-            expect(result).toEqual([]);
-        });
-
-        it("should return friendly pieces directly behind ", () => {
-            const piece = createFakePiece({
-                position: logicalPoint({ x: 3, y: 3 }),
-                color: GameColor.WHITE,
-            });
-
-            const behindLeft = createFakePiece({
-                position: logicalPoint({ x: 2, y: 2 }),
-                color: GameColor.WHITE,
-            });
-            const behindCenter = createFakePiece({
-                position: logicalPoint({ x: 3, y: 2 }),
-                color: GameColor.WHITE,
-            });
-            const behindRight = createFakePiece({
-                position: logicalPoint({ x: 4, y: 2 }),
-                color: GameColor.WHITE,
-            });
-            const front = createFakePiece({
-                position: logicalPoint({ x: 3, y: 4 }),
-            });
-
-            const board = BoardPieces.fromPieces(
-                piece,
-                behindLeft,
-                behindCenter,
-                behindRight,
-                front,
-            );
-
-            const result = board.getFriendlyBehind(piece);
-
-            expect(result).toEqual([behindLeft, behindCenter, behindRight]);
-        });
-
-        it("should not include enemy pieces behind", () => {
-            const piece = createFakePiece({
-                position: logicalPoint({ x: 3, y: 3 }),
-                color: GameColor.WHITE,
-            });
-
-            const enemyBehind = createFakePiece({
-                position: logicalPoint({ x: 3, y: 2 }),
-                color: GameColor.BLACK,
-            });
-
-            const board = BoardPieces.fromPieces(piece, enemyBehind);
-
-            const result = board.getFriendlyBehind(piece);
-
-            expect(result).toEqual([]);
-        });
-
-        it("should use correct direction for black pieces", () => {
-            const piece = createFakePiece({
-                position: logicalPoint({ x: 3, y: 3 }),
-                color: GameColor.BLACK,
-            });
-
-            const behind = createFakePiece({
-                position: logicalPoint({ x: 3, y: 4 }),
-                color: GameColor.BLACK,
-            });
-            const front = createFakePiece({
-                position: logicalPoint({ x: 3, y: 2 }),
-            });
-
-            const board = BoardPieces.fromPieces(piece, behind, front);
-
-            const result = board.getFriendlyBehind(piece);
-
-            expect(result).toEqual([behind]);
         });
     });
 

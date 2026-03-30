@@ -22,7 +22,7 @@ const HighlightedLegalMovesRenderer = () => {
 
     const toHighlightPoints = new Map<StrPoint, LogicalPoint>();
     for (const moveNode of moveNodes) {
-        let allTriggers = true;
+        let allTriggers = moveNode.terminalMoves.length > 0;
         for (const move of moveNode.terminalMoves) {
             if (move.triggers.length === 0) {
                 allTriggers = false;
@@ -42,14 +42,6 @@ const HighlightedLegalMovesRenderer = () => {
 
         if (!allTriggers) {
             toHighlightPoints.set(pointToStr(moveNode.at), moveNode.at);
-        }
-    }
-
-    const throwMoves = legalMoves.getThrowFromOrigin(selectedPiece.position);
-    if (throwMoves.length > 0) {
-        const piecesBehind = pieces.getFriendlyBehind(selectedPiece);
-        for (const piece of piecesBehind) {
-            toHighlightPoints.set(pointToStr(piece.position), piece.position);
         }
     }
 

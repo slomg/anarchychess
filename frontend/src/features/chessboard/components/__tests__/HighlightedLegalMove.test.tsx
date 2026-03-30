@@ -14,7 +14,6 @@ import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardSto
 import HighlightedLegalMovesRenderer from "../HighlightedLegalMove";
 import { logicalPoint } from "@/features/point/pointUtils";
 import { IntermediateSquare } from "../../lib/types";
-import { GameColor, SpecialMoveType } from "@/lib/apiClient";
 import BoardPieces from "../../lib/boardPieces";
 import LegalMoves from "../../lib/legalMoves";
 
@@ -148,66 +147,5 @@ describe("HighlightedLegalMovesRenderer", () => {
                 `${destination.x},${destination.y}`,
         );
         expect(destinationSquare).toBeUndefined();
-    });
-
-    it("should highlight friendly pieces behind when throw moves exist", () => {
-        const piece = createFakePiece({
-            position: logicalPoint({ x: 3, y: 3 }),
-            color: GameColor.WHITE,
-        });
-
-        const behindLeft = createFakePiece({
-            position: logicalPoint({ x: 2, y: 2 }),
-            color: GameColor.WHITE,
-        });
-        const behindCenter = createFakePiece({
-            position: logicalPoint({ x: 3, y: 2 }),
-            color: GameColor.WHITE,
-        });
-        const behindRight = createFakePiece({
-            position: logicalPoint({ x: 4, y: 2 }),
-            color: GameColor.WHITE,
-        });
-
-        const throwMove = createFakeMove({
-            from: piece.position,
-            specialType: SpecialMoveType.THROW,
-        });
-
-        const legalMoves = new LegalMoves([throwMove]);
-
-        const { setLatestLegalMoves, selectPiece } = store.getState();
-        store.setState({
-            pieces: BoardPieces.fromPieces(
-                piece,
-                behindLeft,
-                behindCenter,
-                behindRight,
-            ),
-        });
-        setLatestLegalMoves(legalMoves);
-        selectPiece(piece.id);
-
-        render(
-            <ChessboardStoreContext.Provider value={store}>
-                <HighlightedLegalMovesRenderer />
-            </ChessboardStoreContext.Provider>,
-        );
-
-        const squares = screen.getAllByTestId("highlightedLegalMove");
-
-        const expectedPoints = [
-            behindLeft.position,
-            behindCenter.position,
-            behindRight.position,
-        ];
-        expectedPoints.forEach((point) => {
-            const square = squares.find(
-                (el) =>
-                    el.getAttribute("data-position") ===
-                    `${point.x},${point.y}`,
-            );
-            expect(square).toBeInTheDocument();
-        });
     });
 });
