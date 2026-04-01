@@ -1,8 +1,12 @@
-import { LogicalPoint } from "@/features/point/types";
-import { ViewPoint } from "@/features/point/types";
-import { ScreenPoint } from "@/features/point/types";
-import { Point } from "@/features/point/types";
-import { StrPoint } from "@/features/point/types";
+
+import {
+    ViewPoint,
+    ScreenPoint,
+    Point,
+    LogicalPoint,
+    Offset,
+    StrPoint,
+} from "@/features/point/types";
 
 export function pointToStr(point: Point): StrPoint {
     return `${point.x},${point.y}`;
@@ -28,6 +32,10 @@ export function viewPoint(point: Point): ViewPoint {
 
 export function screenPoint(point: Point): ScreenPoint {
     return point as ScreenPoint;
+}
+
+export function offset(point: Point): Offset {
+    return point as Offset;
 }
 
 export function pointEquals(a?: Point, b?: Point): boolean {

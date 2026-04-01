@@ -8,9 +8,11 @@ export interface Point {
 export declare const logicalPointBrand: unique symbol;
 export declare const viewPointBrand: unique symbol;
 export declare const screenPointBrand: unique symbol;
+export declare const offsetBrand: unique symbol;
 
 export type ScreenPoint = Brand<Point, typeof screenPointBrand>;
 export type LogicalPoint = Brand<Point, typeof logicalPointBrand>;
 export type ViewPoint = Brand<Point, typeof viewPointBrand>;
+export type Offset = Brand<Point, typeof offsetBrand>;
 
 export type StrPoint = `${number},${number}`;
