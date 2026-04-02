@@ -1,5 +1,5 @@
-import { pointEquals, pointToStr } from "@/features/point/pointUtils";
 import { LogicalPoint, StrPoint } from "@/features/point/types";
+import { pointToStr } from "@/features/point/pointUtils";
 import { ForcedMovePriority } from "@/lib/apiClient";
 import { Move } from "./types";
 
