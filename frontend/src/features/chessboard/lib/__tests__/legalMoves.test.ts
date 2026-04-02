@@ -42,7 +42,7 @@ describe("LegalMoves", () => {
             legalMoves.addMove(move);
 
             const node = legalMoves.getDirectNode(move.from, move.to);
-            expect(node).toBeDefined();
+            expect(node).not.toBeNullable();
             expect(node?.terminalMoves).toContain(move);
             expect(legalMoves.byOrigin.has(pointToStr(move.from))).toBe(true);
             expect(legalMoves.hasMovesDirectlyFromTo(move.from, move.to)).toBe(
@@ -74,7 +74,7 @@ describe("LegalMoves", () => {
             legalMoves.addMove(move1);
 
             let node = legalMoves.getDirectNode(move1.from, move1.to);
-            expect(node).toBeDefined();
+            expect(node).not.toBeNullable();
             expect(node?.terminalMoves).toEqual([move1]);
             expect(node?.nextIntermediates.size).toBe(0);
 
@@ -95,7 +95,7 @@ describe("LegalMoves", () => {
             legalMoves.addMove(move2);
 
             node = legalMoves.getDirectNode(move1.from, move1.to);
-            expect(node).toBeDefined();
+            expect(node).not.toBeNullable();
             expect(node?.terminalMoves).toEqual([move1]);
 
             const firstIntermediate = legalMoves.getDirectNode(
@@ -105,23 +105,23 @@ describe("LegalMoves", () => {
                     y: 3,
                 }),
             );
-            expect(firstIntermediate).toBeDefined();
+            expect(firstIntermediate).not.toBeNullable();
             expect(firstIntermediate?.terminalMoves.length).toBe(0);
 
             const secondIntermediate = firstIntermediate?.nextIntermediates.get(
                 pointToStr({ x: 2, y: 3 }),
             );
-            expect(secondIntermediate).toBeDefined();
+            expect(secondIntermediate).not.toBeNullable();
             expect(secondIntermediate?.terminalMoves.length).toBe(0);
 
             const destination = secondIntermediate?.nextIntermediates.get(
                 pointToStr(move2.to),
             );
-            expect(destination).toBeDefined();
+            expect(destination).not.toBeNullable();
             expect(destination?.terminalMoves).toEqual([move2]);
         });
 
-        it("should add moves for each trigger in addition to the main destination", () => {
+        it("should add moves for each trigger in without the main destination", () => {
             const triggerPoint1 = logicalPoint({ x: 3, y: 3 });
             const triggerPoint2 = logicalPoint({ x: 4, y: 4 });
             const mainDestination = logicalPoint({ x: 5, y: 5 });
@@ -138,39 +138,22 @@ describe("LegalMoves", () => {
                 moveWithTriggers.from,
                 mainDestination,
             );
-            expect(mainNode).toBeDefined();
-            expect(mainNode?.terminalMoves).toContain(moveWithTriggers);
+            expect(mainNode).toBeNullable();
 
             // trigger nodes
             const triggerNode1 = legalMoves.getDirectNode(
                 moveWithTriggers.from,
                 triggerPoint1,
             );
-            expect(triggerNode1).toBeDefined();
+            expect(triggerNode1).not.toBeNullable();
             expect(triggerNode1?.terminalMoves).toContain(moveWithTriggers);
 
             const triggerNode2 = legalMoves.getDirectNode(
                 moveWithTriggers.from,
                 triggerPoint2,
             );
-            expect(triggerNode2).toBeDefined();
+            expect(triggerNode2).not.toBeNullable();
             expect(triggerNode2?.terminalMoves).toContain(moveWithTriggers);
-        });
-
-        it("should not add a trigger move if it equals main destination", () => {
-            const destination = logicalPoint({ x: 5, y: 5 });
-
-            const move = createFakeMove({
-                to: destination,
-                triggers: [destination],
-            });
-
-            legalMoves.addMove(move);
-
-            const node = legalMoves.getDirectNode(move.from, destination);
-            expect(node).toBeDefined();
-
-            expect(node?.terminalMoves).toEqual([move]);
         });
 
         it("should add moves with one intermediate for main destination and each trigger", () => {
@@ -190,31 +173,29 @@ describe("LegalMoves", () => {
 
             legalMoves.addMove(move);
 
-            // main destination node
-            const mainIntermediateNode = legalMoves.getDirectNode(
+            const intermediateNode = legalMoves.getDirectNode(
                 move.from,
                 intermediate.position,
             );
-            expect(mainIntermediateNode).toBeDefined();
+            expect(intermediateNode).not.toBeNullable();
 
-            const mainTerminalNode =
-                mainIntermediateNode?.nextIntermediates.get(
+            const intermediateTerminalNode =
+                intermediateNode?.nextIntermediates.get(
                     pointToStr(mainDestination),
                 );
-            expect(mainTerminalNode).toBeDefined();
-            expect(mainTerminalNode?.terminalMoves).toContain(move);
+            expect(intermediateTerminalNode).toBeNullable();
 
             // trigger nodes
             const triggerIntermediateNode1 = legalMoves
                 .getDirectNode(move.from, intermediate.position)
                 ?.nextIntermediates.get(pointToStr(triggerPoint1));
-            expect(triggerIntermediateNode1).toBeDefined();
+            expect(triggerIntermediateNode1).not.toBeNullable();
             expect(triggerIntermediateNode1?.terminalMoves).toContain(move);
 
             const triggerIntermediateNode2 = legalMoves
                 .getDirectNode(move.from, intermediate.position)
                 ?.nextIntermediates.get(pointToStr(triggerPoint2));
-            expect(triggerIntermediateNode2).toBeDefined();
+            expect(triggerIntermediateNode2).not.toBeNullable();
             expect(triggerIntermediateNode2?.terminalMoves).toContain(move);
         });
     });
@@ -235,7 +216,7 @@ describe("LegalMoves", () => {
 
             const node = legalMoves.getDirectNode(move.from, move.to);
 
-            expect(node).toBeDefined();
+            expect(node).not.toBeNullable();
             expect(node?.from).toEqual(move.from);
             expect(node?.at).toEqual(move.to);
             expect(node?.terminalMoves).toEqual([move]);

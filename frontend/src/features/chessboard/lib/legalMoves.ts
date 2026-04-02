@@ -65,13 +65,11 @@ export default class LegalMoves {
         }
 
         for (const trigger of move.triggers) {
-            if (pointEquals(trigger, move.to)) {
-                continue;
-            }
-
             this._insertMoveTree(move, movesFromOrigin, trigger);
         }
-        this._insertMoveTree(move, movesFromOrigin, move.to);
+        if (move.triggers.length === 0) {
+            this._insertMoveTree(move, movesFromOrigin, move.to);
+        }
     }
 
     _insertMoveTree(

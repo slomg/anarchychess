@@ -22,12 +22,7 @@ const HighlightedLegalMovesRenderer = () => {
 
     const toHighlightPoints = new Map<StrPoint, LogicalPoint>();
     for (const moveNode of moveNodes) {
-        let allTriggers = moveNode.terminalMoves.length > 0;
         for (const move of moveNode.terminalMoves) {
-            if (move.triggers.length === 0) {
-                allTriggers = false;
-            }
-
             for (const trigger of move.triggers) {
                 toHighlightPoints.set(pointToStr(trigger), trigger);
             }
@@ -40,9 +35,7 @@ const HighlightedLegalMovesRenderer = () => {
             }
         }
 
-        if (!allTriggers) {
-            toHighlightPoints.set(pointToStr(moveNode.at), moveNode.at);
-        }
+        toHighlightPoints.set(pointToStr(moveNode.at), moveNode.at);
     }
 
     return [...toHighlightPoints.values()].map((point) => (
