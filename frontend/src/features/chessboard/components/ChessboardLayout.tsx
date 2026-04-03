@@ -133,6 +133,7 @@ const ChessboardLayout = ({
                 viewBox={`0 0 ${boardDimensions.width} ${boardDimensions.height}`}
                 preserveAspectRatio="none"
                 className="absolute inset-0 h-full w-full rounded-md"
+                shapeRendering="crispEdges"
             >
                 <rect
                     x="0"
