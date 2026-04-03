@@ -7,10 +7,10 @@ import {
 } from "@/lib/testUtils/fakers/chessboardFakers";
 
 import { ChessboardStore, createChessboardStore } from "../chessboardStore";
+import { PieceType, SpecialMoveType } from "@/lib/apiClient";
 import { logicalPoint } from "@/features/point/pointUtils";
 import BoardPieces from "../../lib/boardPieces";
 import LegalMoves from "../../lib/legalMoves";
-import { PieceType } from "@/lib/apiClient";
 
 describe("UiLegalMovesSlice", () => {
     let store: StoreApi<ChessboardStore>;
@@ -125,6 +125,78 @@ describe("UiLegalMovesSlice", () => {
                 expect(state.resolvePromotion).not.toBeNull();
             });
             store.getState().resolvePromotion?.(null);
+
+            const result = await promise;
+            expect(result).toBeNull();
+        });
+
+        it("should prompt for throw when multiple throw moves exist", async () => {
+            const origin = logicalPoint({ x: 1, y: 1 });
+            const dest = logicalPoint({ x: 4, y: 4 });
+            const piece = createFakePiece({ position: origin });
+            const pieces = BoardPieces.fromPieces(piece);
+
+            const throwMove1 = createFakeMove({
+                from: origin,
+                to: dest,
+                specialType: SpecialMoveType.THROW,
+            });
+            const throwMove2 = createFakeMove({
+                from: origin,
+                to: dest,
+                specialType: SpecialMoveType.THROW,
+            });
+
+            store
+                .getState()
+                .setLatestLegalMoves(new LegalMoves([throwMove1, throwMove2]));
+
+            const promise = store
+                .getState()
+                .getLegalMove(dest, piece.id, pieces);
+
+            await waitFor(() =>
+                expect(store.getState().pendingThrow).not.toBeNull(),
+            );
+
+            const { pendingThrow } = store.getState();
+            expect(pendingThrow).not.toBeNull();
+            pendingThrow?.resolve(pendingThrow!.points[0]);
+
+            const result = await promise;
+            expect(result).toEqual(throwMove1);
+        });
+
+        it("should return null if throw is cancelled when multiple throw moves exist", async () => {
+            const origin = logicalPoint({ x: 0, y: 0 });
+            const dest = logicalPoint({ x: 3, y: 3 });
+            const piece = createFakePiece({ position: origin });
+            const pieces = BoardPieces.fromPieces(piece);
+
+            const throwMove1 = createFakeMove({
+                from: origin,
+                to: dest,
+                specialType: SpecialMoveType.THROW,
+            });
+            const throwMove2 = createFakeMove({
+                from: origin,
+                to: dest,
+                specialType: SpecialMoveType.THROW,
+            });
+
+            store
+                .getState()
+                .setLatestLegalMoves(new LegalMoves([throwMove1, throwMove2]));
+
+            const promise = store
+                .getState()
+                .getLegalMove(dest, piece.id, pieces);
+
+            await waitFor(() => {
+                expect(store.getState().pendingThrow).not.toBeNull();
+            });
+
+            store.getState().pendingThrow?.resolve(null);
 
             const result = await promise;
             expect(result).toBeNull();
