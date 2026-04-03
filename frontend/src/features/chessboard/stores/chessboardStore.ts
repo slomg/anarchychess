@@ -49,6 +49,8 @@ export type ChessboardStore = BoardSlice &
     AnimationSlice &
     AudioSlice &
     CoreSlice;
+    CoreSlice &
+    ThrowSlice &
 export type ChessboardProps = BoardSliceProps &
     PieceSliceProps &
     HistorySliceProps &
@@ -84,6 +86,7 @@ export function createChessboardStore(
                 ...createAnimationSlice(initState)(...a),
                 ...createAudioSlice(initState)(...a),
                 ...createCoreSlice(...a),
+                ...createThrowSlice(...a),
             })),
             { name: "chessboardStore" },
         ),
