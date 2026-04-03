@@ -134,11 +134,26 @@ const ChessboardLayout = ({
                 preserveAspectRatio="none"
                 className="absolute inset-0 h-full w-full rounded-md"
             >
-                <image
-                    href="/assets/board.svg"
+                <rect
+                    x="0"
+                    y="0"
                     width={boardDimensions.width}
                     height={boardDimensions.height}
-                    preserveAspectRatio="none"
+                    fill="#577298"
+                />
+                <path
+                    fill="#e9e9d4"
+                    d="
+                        M 0,0 H 10 v 1 H 0 z
+                        m 0,2 H 10 v 1 H 0 z
+                        m 0,2 H 10 v 1 H 0 z
+                        m 0,2 H 10 v 1 H 0 z
+                        m 0,2 H 10 v 1 H 0 z
+                        M 1,0 V 10 h 1 V 0 z
+                        m 2,0 V 10 h 1 V 0 z
+                        m 2,0 V 10 h 1 V 0 z
+                        m 2,0 V 10 h 1 V 0 z
+                        m 2,0 V 10 h 1 V 0 z"
                 />
             </svg>
 
