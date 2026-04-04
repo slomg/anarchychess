@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useState } from "react";
+import { useEffect, useEffectEvent, useMemo, useState } from "react";
 
 import {
     idxToLogicalPoint,
@@ -52,9 +52,9 @@ const ThrowPrompt = () => {
         null,
     );
 
-    const throwData = getThrowData(pendingThrow);
+    const throwData = useMemo(() => getThrowData(pendingThrow), [pendingThrow]);
 
-    const throwLineEffectEvent = useEffectEvent((selectedSide: ThrowSide) => {
+    useEffect(() => {
         if (!pendingThrow || !throwData) {
             return;
         }
@@ -86,22 +86,54 @@ const ThrowPrompt = () => {
             return;
         }
 
-        return addBoardEffect({
+        const effectId = addBoardEffect({
             type: BoardEffectType.THROW_AIM_LINE,
             from: pendingThrow.piece.position,
             mid: min,
             to: max,
         });
-    });
 
-    useEffect(() => {
-        const effectId = throwLineEffectEvent(selectedSide);
         return () => {
-            if (effectId) {
-                removeBoardEffect(effectId);
-            }
+            removeBoardEffect(effectId);
         };
-    }, [pendingThrow, selectedSide, removeBoardEffect]);
+    }, [
+        pendingThrow,
+        throwData,
+        selectedSide,
+        addBoardEffect,
+        removeBoardEffect,
+    ]);
+
+    const fixSelectedSideEffectEvent = useEffectEvent(
+        (pendingThrow: PendingThrow | null, throwData: ThrowData | null) => {
+            if (!pendingThrow || !throwData) {
+                return;
+            }
+
+            const availableSides = getAvailableSides(pendingThrow, throwData);
+            if (!availableSides.some((x) => x === selectedSide)) {
+                setSelectedSide(availableSides[0]);
+            }
+        },
+    );
+    useEffect(() => {
+        fixSelectedSideEffectEvent(pendingThrow, throwData);
+    }, [pendingThrow, throwData]);
+
+    function getNextSide(
+        current: ThrowSide,
+        pendingThrow: PendingThrow,
+        throwData: ThrowData,
+    ) {
+        const availableSides = getAvailableSides(pendingThrow, throwData);
+        if (availableSides.length === 0) {
+            return current;
+        }
+
+        const currentIdx = availableSides.indexOf(current);
+        const nextIdx = (currentIdx + 1) % availableSides.length;
+        return availableSides[nextIdx];
+    }
 
     function handlePress(event: React.PointerEvent): void {
         if (!pendingThrow || !throwData) {
@@ -187,18 +219,16 @@ const ThrowPrompt = () => {
             clearTimeout(timeout);
             setSelectedPoint(null);
 
+            if (!pendingThrow || !throwData) {
+                return;
+            }
+
             if (targetIdx !== -1) {
                 pendingThrow?.resolve(pointsFromClosest[targetIdx]);
                 return;
             }
 
-            if (selectedSide === ThrowSide.LEFT) {
-                setSelectedSide(ThrowSide.CENTER);
-            } else if (selectedSide === ThrowSide.CENTER) {
-                setSelectedSide(ThrowSide.RIGHT);
-            } else {
-                setSelectedSide(ThrowSide.LEFT);
-            }
+            setSelectedSide(getNextSide(selectedSide, pendingThrow, throwData));
         }
 
         document.addEventListener("pointerup", onPointerUp);
@@ -268,6 +298,21 @@ function isOnLine(
         (point.x - origin.x) * throwData.direction.y ===
         (point.y - origin.y) * throwData.direction.x
     );
+}
+
+function getAvailableSides(
+    pendingThrow: PendingThrow,
+    throwData: ThrowData,
+): ThrowSide[] {
+    const sides: ThrowSide[] = [
+        ThrowSide.LEFT,
+        ThrowSide.CENTER,
+        ThrowSide.RIGHT,
+    ];
+    const availableSides = sides.filter((side) =>
+        pendingThrow.points.some((x) => isOnLine(x, side, throwData)),
+    );
+    return availableSides;
 }
 
 function getThrowData(pendingThrow: PendingThrow | null): ThrowData | null {

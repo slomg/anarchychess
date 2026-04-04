@@ -401,6 +401,45 @@ describe("ThrowPrompt", () => {
         assertAimEffect(data, ThrowSide.CENTER);
     });
 
+    it("should skip unavailable sides when clicking", async () => {
+        const data = createThrowTestData({
+            piece: createFakePiece({
+                position: logicalPoint({ x: 9, y: 1 }),
+            }),
+            throwerOrigin: logicalPoint({ x: 9, y: 0 }),
+            leftPoints: [],
+            centerPoints: [
+                logicalPoint({ x: 9, y: 2 }),
+                logicalPoint({ x: 9, y: 3 }),
+                logicalPoint({ x: 9, y: 4 }),
+                logicalPoint({ x: 9, y: 5 }),
+            ],
+            rightPoints: [
+                logicalPoint({ x: 8, y: 2 }),
+                logicalPoint({ x: 8, y: 3 }),
+                logicalPoint({ x: 8, y: 4 }),
+                logicalPoint({ x: 8, y: 5 }),
+            ],
+        });
+        promptThrow(data);
+
+        const user = userEvent.setup();
+        render(
+            <ChessboardStoreContext.Provider value={store}>
+                <ThrowPrompt />
+            </ChessboardStoreContext.Provider>,
+        );
+
+        assertAimEffect(data, ThrowSide.CENTER);
+
+        const overlay = screen.getByTestId("throwPromptOverlay");
+        await user.click(overlay);
+        assertAimEffect(data, ThrowSide.RIGHT);
+
+        await user.click(overlay);
+        assertAimEffect(data, ThrowSide.CENTER);
+    });
+
     it("should discard the prompt when right clicking", async () => {
         const promptPromise = promptThrow(whiteCenterThrow);
 
