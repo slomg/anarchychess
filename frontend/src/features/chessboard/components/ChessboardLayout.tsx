@@ -5,6 +5,7 @@ import { useChessboardStore } from "@/features/chessboard/hooks/useChessboard";
 import HighlightedLegalMovesRenderer from "./HighlightedLegalMove";
 import IntermediateSquarePrompt from "./IntermediateSquarePrompt";
 import EmphasizedSquaresRenderer from "./EmphasizedSquare";
+import BoardEffects from "./boardEffects/BoardEffects";
 import LastMoveHighlight from "./LastMoveHighlight";
 import OverlayRenderer from "./OverlayRenderer";
 import PromotionPrompt from "./PromotionPrompt";
@@ -163,6 +164,7 @@ const ChessboardLayout = ({
             <EmphasizedSquaresRenderer />
             <IntermediateSquarePrompt />
             <LastMoveHighlight />
+            <BoardEffects />
             <OverlayRenderer />
             <PromotionPrompt />
             <PieceRenderer />

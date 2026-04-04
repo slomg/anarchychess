@@ -1,3 +1,4 @@
+import { Vector3 } from "three";
 
 import {
     ViewPoint,
@@ -38,9 +39,20 @@ export function offset(point: Point): Offset {
     return point as Offset;
 }
 
-export function pointEquals(a?: Point, b?: Point): boolean {
-    if (a === undefined && b === undefined) return true;
-    else if (a === undefined || b === undefined) return false;
+export function viewToWorld(point: ViewPoint): Vector3 {
+    const squareSize = 0.775; // we don't talk about how I got this number
+    const boardSize = 10;
+
+    const offset = (boardSize * squareSize) / 2;
+
+    const vx = point.x * squareSize - offset + squareSize / 2;
+    const vy = offset - point.y * squareSize - squareSize / 2;
+    return new Vector3(vx, vy);
+}
+
+export function pointEquals(a?: Point | null, b?: Point | null): boolean {
+    if (a == null && b == null) return true;
+    else if (a == null || b == null) return false;
 
     return a.x === b.x && a.y === b.y;
 }
