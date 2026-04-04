@@ -65,6 +65,10 @@ export function pointArrayStartsWith(arr: Point[], prefix: Point[]): boolean {
     return true;
 }
 
-export function sortPoints(points: LogicalPoint[]): LogicalPoint[] {
+export function sortPoints<T extends Point>(points: T[]): T[] {
     return [...points].sort((a, b) => a.x - b.x || a.y - b.y);
+}
+
+export function pointDistanceSquared(from: Point, to: Point): number {
+    return (to.x - from.x) ** 2 + (to.y - from.y) ** 2;
 }

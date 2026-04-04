@@ -9,6 +9,7 @@ import LastMoveHighlight from "./LastMoveHighlight";
 import OverlayRenderer from "./OverlayRenderer";
 import PromotionPrompt from "./PromotionPrompt";
 import PieceRenderer from "./PieceRenderer";
+import ThrowPrompt from "./ThrowPrompt";
 import Coords from "./Coords";
 
 export interface PaddingOffset {
@@ -165,6 +166,7 @@ const ChessboardLayout = ({
             <OverlayRenderer />
             <PromotionPrompt />
             <PieceRenderer />
+            <ThrowPrompt />
             <Coords />
             {children}
         </div>
