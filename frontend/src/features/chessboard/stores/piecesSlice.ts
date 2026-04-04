@@ -209,18 +209,23 @@ export function createPiecesSlice(
                     getViewedPositionLegalMoves,
                     isProcessingMove,
                 } = get();
-                if (isProcessingMove) return { success: false };
+                if (isProcessingMove) {
+                    return { success: false };
+                }
 
                 set((state) => {
                     state.isProcessingMove = true;
                 });
                 try {
                     const dest = screenToLogicalPoint(mousePoint);
-                    if (!dest) return { success: false };
+                    if (!dest) {
+                        return { success: false };
+                    }
 
                     const needsDoubleClick = detectNeedsDoubleClick(dest);
-                    if (needsDoubleClick && !isDoubleClick)
+                    if (needsDoubleClick && !isDoubleClick) {
                         return { success: false, needsDoubleClick: true };
+                    }
 
                     const move = await getMoveForSelection(dest);
                     if (move) {
