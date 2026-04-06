@@ -65,18 +65,6 @@ export function pointArraysEqual(a: Point[], b: Point[]): boolean {
     return true;
 }
 
-export function pointWithinArray(point: Point, arr: Point[]): boolean {
-    return arr.some((p) => pointEquals(p, point));
-}
-
-export function pointArrayStartsWith(arr: Point[], prefix: Point[]): boolean {
-    if (prefix.length > arr.length) return false;
-    for (let i = 0; i < prefix.length; i++) {
-        if (!pointEquals(arr[i], prefix[i])) return false;
-    }
-    return true;
-}
-
 export function sortPoints<T extends Point>(points: T[]): T[] {
     return [...points].sort((a, b) => a.x - b.x || a.y - b.y);
 }
