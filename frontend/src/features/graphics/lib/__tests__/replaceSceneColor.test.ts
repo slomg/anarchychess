@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { Group, Mesh, MeshBasicMaterial, Color, BoxGeometry } from "three";
-import { useColorReplace } from "../useColorReplace";
+import replaceSceneColor from "../replaceSceneColor";
 
 describe("useColorReplace", () => {
     let scene: Group;
@@ -32,7 +32,7 @@ describe("useColorReplace", () => {
         const from = new Color("white");
         const to = new Color("red");
 
-        useColorReplace(scene, from, to);
+        replaceSceneColor(scene, from, to);
 
         expect((whiteMesh.material as MeshBasicMaterial).color).toEqual(to);
         expect((blackMesh.material as MeshBasicMaterial).color).toEqual(black);
@@ -42,7 +42,7 @@ describe("useColorReplace", () => {
         const from = new Color("white");
         const to = new Color("blue");
 
-        useColorReplace(scene, from, to);
+        replaceSceneColor(scene, from, to);
 
         const group = scene.children[2];
         expect(group.type).toBe("Group");

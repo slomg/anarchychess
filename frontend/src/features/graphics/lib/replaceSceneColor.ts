@@ -1,11 +1,12 @@
 import { Color, Group, Material, Mesh, Object3DEventMap } from "three";
 
-export function useColorReplace(
+export default function replaceSceneColor(
     scene: Group<Object3DEventMap>,
     from: Color,
     to: Color,
-) {
-    scene.traverse((child) => {
+): Group<Object3DEventMap> {
+    const colored = scene.clone();
+    colored.traverse((child) => {
         const mesh = child as Mesh;
         if (!mesh.isMesh) {
             return;
@@ -16,4 +17,5 @@ export function useColorReplace(
             mat.color.set(to);
         }
     });
+    return colored;
 }

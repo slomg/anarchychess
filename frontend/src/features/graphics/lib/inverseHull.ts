@@ -7,7 +7,7 @@ import {
     Mesh,
 } from "three";
 
-export default function useInverseHull(
+export default function inverseHull(
     scene: Group<Object3DEventMap>,
     { color, thickness }: { color?: Color; thickness?: number } = {},
 ): Group<Object3DEventMap> {

@@ -7,9 +7,9 @@ import {
     Color,
 } from "three";
 
-import useInverseHull from "../useInverseHull";
+import inverseHull from "../inverseHull";
 
-describe("useInverseHull", () => {
+describe("inverseHull", () => {
     let scene: Group;
     let originalPositions: number[][] = [];
     let originalNormals: number[][] = [];
@@ -35,14 +35,14 @@ describe("useInverseHull", () => {
     });
 
     it("should return a cloned scene", () => {
-        const hull = useInverseHull(scene);
+        const hull = inverseHull(scene);
         expect(hull).not.toBe(scene);
         expect(hull.children.length).toBe(scene.children.length);
     });
 
     it("should set mesh materials to provided color", () => {
         const color = new Color("red");
-        const hull = useInverseHull(scene, { color });
+        const hull = inverseHull(scene, { color });
 
         const mesh = hull.children[0] as Mesh;
         expect(mesh.material).toBeInstanceOf(MeshBasicMaterial);
@@ -50,7 +50,7 @@ describe("useInverseHull", () => {
     });
 
     it("should set mesh materials to back side", () => {
-        const hull = useInverseHull(scene);
+        const hull = inverseHull(scene);
 
         const mesh = hull.children[0] as Mesh;
         expect(mesh.material).toBeInstanceOf(MeshBasicMaterial);
@@ -59,7 +59,7 @@ describe("useInverseHull", () => {
 
     it("should offset geometry vertices by normal * thickness", () => {
         const thickness = 0.2;
-        const hull = useInverseHull(scene, { thickness });
+        const hull = inverseHull(scene, { thickness });
         const newMesh = hull.children[0] as Mesh;
         const newPos = newMesh.geometry.attributes.position;
 
