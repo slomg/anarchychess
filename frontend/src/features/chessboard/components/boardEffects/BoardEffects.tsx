@@ -43,18 +43,14 @@ const BoardEffects = () => {
     }
 
     return (
-        <Canvas
-            className="pointer-events-none! absolute! inset-0 z-40 touch-none
-                select-none"
-            data-testid="boardEffects"
-        >
+        <>
             <ambientLight intensity={1} />
             <directionalLight
-                position={viewToWorld(viewPoint({ x: 9, y: 9 }))}
+                position={viewToWorld(viewPoint({ x: 9, y: 9 })).toArray()}
             />
 
             {result}
-        </Canvas>
+        </>
     );
 };
 export default BoardEffects;

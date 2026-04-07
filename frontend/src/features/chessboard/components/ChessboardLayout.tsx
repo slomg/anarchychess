@@ -12,6 +12,7 @@ import PromotionPrompt from "./PromotionPrompt";
 import PieceRenderer from "./PieceRenderer";
 import ThrowPrompt from "./ThrowPrompt";
 import Coords from "./Coords";
+import { Canvas } from "@react-three/fiber";
 
 export interface PaddingOffset {
     width: number;
@@ -160,11 +161,18 @@ const ChessboardLayout = ({
                 />
             </svg>
 
+            <Canvas
+                className="pointer-events-none! absolute! inset-0 z-40
+                    touch-none select-none"
+                data-testid="boardEffects"
+            >
+                <BoardEffects />
+            </Canvas>
+
             <HighlightedLegalMovesRenderer />
             <EmphasizedSquaresRenderer />
             <IntermediateSquarePrompt />
             <LastMoveHighlight />
-            <BoardEffects />
             <OverlayRenderer />
             <PromotionPrompt />
             <PieceRenderer />
