@@ -8,7 +8,7 @@ import {
     pointToStr,
 } from "@/features/point/pointUtils";
 
-import { BoardEffectType } from "./boardEffects/BoardEffects";
+import { PersistentBoardEffectType } from "../stores/boardEffectsSlice";
 import { LogicalPoint, Offset } from "@/features/point/types";
 import { useChessboardStore } from "../hooks/useChessboard";
 import { PendingThrow } from "../stores/throwSlice";
@@ -40,10 +40,11 @@ export const CHARGE_OSCILLATION_LOWER_INDEX = 3;
 const ThrowPrompt = () => {
     const pendingThrow = useChessboardStore((x) => x.pendingThrow);
     const boardDimensions = useChessboardStore((x) => x.boardDimensions);
-    const { addBoardEffect, removeBoardEffect } = useChessboardStore((x) => ({
-        addBoardEffect: x.addBoardEffect,
-        removeBoardEffect: x.removeBoardEffect,
-    }));
+    const { addPersistentBoardEffect, removePersistentBoardEffect } =
+        useChessboardStore((x) => ({
+            addPersistentBoardEffect: x.addPersistentBoardEffect,
+            removePersistentBoardEffect: x.removePersistentBoardEffect,
+        }));
 
     const [selectedSide, setSelectedSide] = useState<ThrowSide>(
         ThrowSide.CENTER,
@@ -86,22 +87,22 @@ const ThrowPrompt = () => {
             return;
         }
 
-        const effectId = addBoardEffect({
-            type: BoardEffectType.THROW_AIM_LINE,
+        const effectId = addPersistentBoardEffect({
+            type: PersistentBoardEffectType.THROW_AIM_LINE,
             from: pendingThrow.piece.position,
             mid: min,
             to: max,
         });
 
         return () => {
-            removeBoardEffect(effectId);
+            removePersistentBoardEffect(effectId);
         };
     }, [
         pendingThrow,
         throwData,
         selectedSide,
-        addBoardEffect,
-        removeBoardEffect,
+        addPersistentBoardEffect,
+        removePersistentBoardEffect,
     ]);
 
     const fixSelectedSideEffectEvent = useEffectEvent(
