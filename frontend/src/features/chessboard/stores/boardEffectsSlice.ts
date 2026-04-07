@@ -41,6 +41,7 @@ export interface BoardEffectsSlice {
         promise: Promise<void>;
     };
     resolveTransientBoardEffect(id: BoardEffectId): void;
+    resolveAllTransientBoardEffects(): void;
 }
 
 export const createBoardEffectsSlice: StateCreator<
@@ -112,5 +113,12 @@ export const createBoardEffectsSlice: StateCreator<
         }
 
         effect.finish();
+    },
+
+    resolveAllTransientBoardEffects() {
+        const { activeTransientBoardEffects } = get();
+        for (const effect of activeTransientBoardEffects.values()) {
+            effect.finish();
+        }
     },
 });

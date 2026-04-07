@@ -1,15 +1,14 @@
-import { Canvas } from "@react-three/fiber";
 import { JSX } from "react";
 
-import { viewPoint, viewToWorld } from "@/features/point/pointUtils";
-
-import { useChessboardStore } from "../../hooks/useChessboard";
-import ThrowAimLine from "./ThrowAimLine";
-import PawnThrow from "./PawnThrow";
 import {
     PersistentBoardEffectType,
     TransientBoardEffectType,
 } from "../../stores/boardEffectsSlice";
+
+import { viewPoint, viewToWorld } from "@/features/point/pointUtils";
+import { useChessboardStore } from "../../hooks/useChessboard";
+import ThrowAimLine from "./ThrowAimLine";
+import PawnThrow from "./PawnThrow";
 
 const BoardEffects = () => {
     const persistentEffects = useChessboardStore(

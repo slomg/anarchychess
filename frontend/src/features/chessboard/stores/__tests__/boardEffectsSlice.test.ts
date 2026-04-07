@@ -126,4 +126,35 @@ describe("BoardEffectsSlice", () => {
             expect(activeEffects.size).toBe(0);
         });
     });
+
+    describe("resolveAllTransientBoardEffects", () => {
+        it("should finish and remove all active transient effects", async () => {
+            const effect1 = createFakePawnThrowEffect();
+            const effect2 = createFakePawnThrowEffect();
+
+            const { id: id1, promise: promise1 } = store
+                .getState()
+                .addTransientBoardEffect(effect1);
+            const { id: id2, promise: promise2 } = store
+                .getState()
+                .addTransientBoardEffect(effect2);
+
+            store.getState().resolveAllTransientBoardEffects();
+
+            await expect(promise1).resolves.toBeUndefined();
+            await expect(promise2).resolves.toBeUndefined();
+
+            const activeEffects = store.getState().activeTransientBoardEffects;
+            expect(activeEffects.size).toBe(0);
+            expect(activeEffects.has(id1)).toBe(false);
+            expect(activeEffects.has(id2)).toBe(false);
+        });
+
+        it("should do nothing if there are no active transient effects", () => {
+            store.getState().resolveAllTransientBoardEffects();
+
+            const activeEffects = store.getState().activeTransientBoardEffects;
+            expect(activeEffects.size).toBe(0);
+        });
+    });
 });
