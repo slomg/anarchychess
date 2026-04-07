@@ -4,6 +4,7 @@ import { createFakeThrowAimEffect } from "@/lib/testUtils/fakers/throwAimEffectF
 import { ChessboardStore, createChessboardStore } from "../chessboardStore";
 import { logicalPoint } from "@/features/point/pointUtils";
 import { BoardEffectId } from "../boardEffectsSlice";
+import { createFakePawnThrowEffect } from "@/lib/testUtils/fakers/pawnThrowEffectFaker";
 
 describe("BoardEffectsSlice", () => {
     let store: StoreApi<ChessboardStore>;
@@ -12,12 +13,12 @@ describe("BoardEffectsSlice", () => {
         store = createChessboardStore();
     });
 
-    describe("addBoardEffect", () => {
+    describe("addPersistentBoardEffect", () => {
         it("should add an effect and return a valid id", () => {
             const effect = createFakeThrowAimEffect();
-            const id = store.getState().addBoardEffect(effect);
+            const id = store.getState().addPersistentBoardEffect(effect);
 
-            const activeEffects = store.getState().activeBoardEffects;
+            const activeEffects = store.getState().activePersistentBoardEffects;
 
             expect(id).toBeDefined();
             expect(activeEffects.size).toBe(1);
@@ -25,7 +26,7 @@ describe("BoardEffectsSlice", () => {
         });
     });
 
-    describe("updateBoardEffect", () => {
+    describe("updatePersistentBoardEffect", () => {
         it("should update an existing effect", () => {
             const initial = createFakeThrowAimEffect({
                 to: logicalPoint({ x: 1, y: 1 }),
@@ -34,11 +35,11 @@ describe("BoardEffectsSlice", () => {
                 ...initial,
                 to: logicalPoint({ x: 2, y: 2 }),
             };
-            const id = store.getState().addBoardEffect(initial);
+            const id = store.getState().addPersistentBoardEffect(initial);
 
-            store.getState().updateBoardEffect(id, updated);
+            store.getState().updatePersistentBoardEffect(id, updated);
 
-            const activeEffects = store.getState().activeBoardEffects;
+            const activeEffects = store.getState().activePersistentBoardEffects;
             expect(activeEffects.size).toBe(1);
             expect(activeEffects.get(id)).toEqual(updated);
         });
@@ -48,44 +49,81 @@ describe("BoardEffectsSlice", () => {
 
             store
                 .getState()
-                .updateBoardEffect("wrong id" as BoardEffectId, effect);
+                .updatePersistentBoardEffect(
+                    "wrong id" as BoardEffectId,
+                    effect,
+                );
 
-            const activeEffects = store.getState().activeBoardEffects;
+            const activeEffects = store.getState().activePersistentBoardEffects;
             expect(activeEffects.size).toBe(0);
         });
     });
 
-    describe("removeBoardEffect", () => {
+    describe("removePersistentBoardEffect", () => {
         it("should remove an existing effect", () => {
             const effect = createFakeThrowAimEffect();
-            const id = store.getState().addBoardEffect(effect);
+            const id = store.getState().addPersistentBoardEffect(effect);
 
-            store.getState().removeBoardEffect(id);
+            store.getState().removePersistentBoardEffect(id);
 
-            const activeEffects = store.getState().activeBoardEffects;
+            const activeEffects = store.getState().activePersistentBoardEffects;
             expect(activeEffects.size).toBe(0);
             expect(activeEffects.has(id)).toBe(false);
         });
 
-        it("should do nothing if id is null or undefined", () => {
+        it("should do nothing if id does not exist", () => {
             const effect = createFakeThrowAimEffect();
-            store.getState().addBoardEffect(effect);
+            store.getState().addPersistentBoardEffect(effect);
 
-            store.getState().removeBoardEffect(null);
-            store.getState().removeBoardEffect(undefined);
+            store
+                .getState()
+                .removePersistentBoardEffect("wrong id" as BoardEffectId);
 
-            const activeEffects = store.getState().activeBoardEffects;
+            const activeEffects = store.getState().activePersistentBoardEffects;
             expect(activeEffects.size).toBe(1);
+        });
+    });
+
+    describe("addTransientBoardEffect", () => {
+        it("should add an effect and return id and promise", async () => {
+            const effect = createFakePawnThrowEffect();
+            const { id, promise } = store
+                .getState()
+                .addTransientBoardEffect(effect);
+
+            const activeEffects = store.getState().activeTransientBoardEffects;
+            expect(id).toBeDefined();
+            expect(activeEffects.size).toBe(1);
+            expect(activeEffects.get(id)?.value).toEqual(effect);
+
+            store.getState().resolveTransientBoardEffect(id);
+            await expect(promise).resolves.toBeUndefined();
+            expect(store.getState().activeTransientBoardEffects.has(id)).toBe(
+                false,
+            );
+        });
+    });
+
+    describe("resolveTransientBoardEffect", () => {
+        it("should finish and remove the effect", async () => {
+            const effect = createFakePawnThrowEffect();
+            const { id, promise } = store
+                .getState()
+                .addTransientBoardEffect(effect);
+
+            store.getState().resolveTransientBoardEffect(id);
+
+            await expect(promise).resolves.toBeUndefined();
+            const activeEffects = store.getState().activeTransientBoardEffects;
+            expect(activeEffects.has(id)).toBe(false);
         });
 
         it("should do nothing if id does not exist", () => {
-            const effect = createFakeThrowAimEffect();
-            store.getState().addBoardEffect(effect);
-
-            store.getState().removeBoardEffect("wrong id" as BoardEffectId);
-
-            const activeEffects = store.getState().activeBoardEffects;
-            expect(activeEffects.size).toBe(1);
+            store
+                .getState()
+                .resolveTransientBoardEffect("wrong id" as BoardEffectId);
+            const activeEffects = store.getState().activeTransientBoardEffects;
+            expect(activeEffects.size).toBe(0);
         });
     });
 });

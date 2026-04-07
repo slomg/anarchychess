@@ -1,16 +1,46 @@
 import { StateCreator } from "zustand";
 
+import type { ThrowAimEffect } from "../components/boardEffects/ThrowAimLine";
+import type { PawnThrowEffect } from "../components/boardEffects/PawnThrow";
 import type { ChessboardStore } from "./chessboardStore";
-import { BoardEffect } from "../components/boardEffects/BoardEffects";
+
+export enum PersistentBoardEffectType {
+    THROW_AIM_LINE,
+}
+
+export enum TransientBoardEffectType {
+    PAWN_THROW,
+}
+
+export type PersistentBoardEffect = ThrowAimEffect;
+export type TransientBoardEffect = PawnThrowEffect;
 
 export type BoardEffectId = string & "BoardEffect";
 
-export interface BoardEffectsSlice {
-    activeBoardEffects: Map<string, BoardEffect>;
+interface ManagedTransientBoardEffect<T extends TransientBoardEffect> {
+    value: T;
+    finish: () => void;
+}
 
-    addBoardEffect(effect: BoardEffect): BoardEffectId;
-    updateBoardEffect(id: BoardEffectId, effect: BoardEffect): void;
-    removeBoardEffect(id?: BoardEffectId | null): void;
+export interface BoardEffectsSlice {
+    activePersistentBoardEffects: Map<BoardEffectId, PersistentBoardEffect>;
+    activeTransientBoardEffects: Map<
+        BoardEffectId,
+        ManagedTransientBoardEffect<TransientBoardEffect>
+    >;
+
+    addPersistentBoardEffect(effect: PersistentBoardEffect): BoardEffectId;
+    updatePersistentBoardEffect(
+        id: BoardEffectId,
+        effect: PersistentBoardEffect,
+    ): void;
+    removePersistentBoardEffect(id: BoardEffectId): void;
+
+    addTransientBoardEffect(effect: TransientBoardEffect): {
+        id: BoardEffectId;
+        promise: Promise<void>;
+    };
+    resolveTransientBoardEffect(id: BoardEffectId): void;
 }
 
 export const createBoardEffectsSlice: StateCreator<
@@ -19,32 +49,68 @@ export const createBoardEffectsSlice: StateCreator<
     [],
     BoardEffectsSlice
 > = (set, get) => ({
-    activeBoardEffects: new Map(),
+    activePersistentBoardEffects: new Map(),
+    activeTransientBoardEffects: new Map(),
 
-    addBoardEffect(effect) {
-        const id = crypto.randomUUID();
+    addPersistentBoardEffect(effect) {
+        const id = crypto.randomUUID() as BoardEffectId;
         set((state) => {
-            state.activeBoardEffects.set(id, effect);
+            state.activePersistentBoardEffects.set(id, effect);
         });
-        return id as BoardEffectId;
+        return id;
     },
 
-    updateBoardEffect(id, effect) {
-        const { activeBoardEffects } = get();
-        if (!activeBoardEffects.has(id)) {
+    updatePersistentBoardEffect(id, effect) {
+        const { activePersistentBoardEffects } = get();
+        if (!activePersistentBoardEffects.has(id)) {
             return;
         }
         set((state) => {
-            state.activeBoardEffects.set(id, effect);
+            state.activePersistentBoardEffects.set(id, effect);
         });
     },
 
-    removeBoardEffect(id) {
-        if (id == null) {
+    removePersistentBoardEffect(id) {
+        set((state) => {
+            state.activePersistentBoardEffects.delete(id);
+        });
+    },
+
+    addTransientBoardEffect(effect) {
+        const id = crypto.randomUUID() as BoardEffectId;
+
+        let resolveFn!: () => void;
+        const promise = new Promise<void>((resolve) => {
+            resolveFn = resolve;
+        });
+
+        const finish = () => {
+            set((state) => {
+                state.activeTransientBoardEffects.delete(id);
+            });
+            resolveFn();
+        };
+
+        set((state) => {
+            state.activeTransientBoardEffects.set(id, {
+                value: effect,
+                finish,
+            });
+        });
+
+        return {
+            id,
+            promise,
+        };
+    },
+
+    resolveTransientBoardEffect(id) {
+        const { activeTransientBoardEffects } = get();
+        const effect = activeTransientBoardEffects.get(id);
+        if (!effect) {
             return;
         }
-        set((state) => {
-            state.activeBoardEffects.delete(id);
-        });
+
+        effect.finish();
     },
 });

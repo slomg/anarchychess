@@ -1,13 +1,13 @@
 import { Color, CubicBezierCurve3 } from "three";
 import { Line } from "@react-three/drei";
 
+import { PersistentBoardEffectType } from "../../stores/boardEffectsSlice";
 import { useChessboardStore } from "../../hooks/useChessboard";
 import { viewToWorld } from "@/features/point/pointUtils";
 import { LogicalPoint } from "@/features/point/types";
-import { BoardEffectType } from "./BoardEffects";
 
 export interface ThrowAimEffect {
-    type: BoardEffectType.THROW_AIM_LINE;
+    type: PersistentBoardEffectType.THROW_AIM_LINE;
     from: LogicalPoint;
     mid: LogicalPoint;
     to: LogicalPoint;
