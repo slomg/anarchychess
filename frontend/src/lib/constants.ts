@@ -11,6 +11,14 @@ const BOARD_HEIGHT = 10;
 
 const PROFILE_PICTURE_MAX_SIZE = 1024 * 1024 * 2;
 
+const MODELS = {
+    PAWN: "/assets/models/pawn.glb",
+};
+
+const SPRITE_SHEETS = {
+    EXPLOSION: "/assets/sprite-sheets/explosion.png",
+};
+
 export enum OAuthProvider {
     GOOGLE = "google",
     DISCORD = "discord",
@@ -211,6 +219,8 @@ const QUEST_WEEKDAY_NAMES: Record<number, string> = {
 };
 
 const constants = {
+    MODELS,
+    SPRITE_SHEETS,
     USERNAME_EDIT_EVERY_MS,
     BOARD_WIDTH,
     BOARD_HEIGHT,
