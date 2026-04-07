@@ -26,11 +26,11 @@ import ThrowPrompt, {
 } from "../ThrowPrompt";
 
 import ChessboardStoreContext from "../../contexts/chessboardStoreContext";
-import { BoardEffectType } from "../boardEffects/BoardEffects";
 import { ThrowAimEffect } from "../boardEffects/ThrowAimLine";
 import { LogicalPoint } from "@/features/point/types";
 import { Move, Piece } from "../../lib/types";
 import { GameColor } from "@/lib/apiClient";
+import { PersistentBoardEffectType } from "../../stores/boardEffectsSlice";
 
 interface ThrowTestMovesData {
     [ThrowSide.LEFT]: Move[];
@@ -300,12 +300,12 @@ describe("ThrowPrompt", () => {
     }
 
     function assertAimEffect(data: ThrowTestData, side: ThrowSide): void {
-        const boardEffects = store.getState().activeBoardEffects;
+        const boardEffects = store.getState().activePersistentBoardEffects;
         expect(boardEffects.size).toBe(1);
 
         const effect = [...boardEffects.values()][0];
         expect(effect).toEqual<ThrowAimEffect>({
-            type: BoardEffectType.THROW_AIM_LINE,
+            type: PersistentBoardEffectType.THROW_AIM_LINE,
             from: data.piece.position,
             mid: data.points[side][0],
             to: data.points[side].at(-1)!,
