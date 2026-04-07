@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { Group, Mesh, MeshBasicMaterial, Color, BoxGeometry } from "three";
 import replaceSceneColor from "../replaceSceneColor";
 
-describe("useColorReplace", () => {
+describe("replaceSceneColor", () => {
     let scene: Group;
     let whiteMesh: Mesh;
     let blackMesh: Mesh;
@@ -28,13 +28,23 @@ describe("useColorReplace", () => {
         scene.add(new Group());
     });
 
-    it("should replace the color exactly from 'from' to 'to'", () => {
+    it("should replace the color exactly from 'from' to 'to' in the cloned scene", () => {
         const from = new Color("white");
         const to = new Color("red");
 
-        replaceSceneColor(scene, from, to);
+        const result = replaceSceneColor(scene, from, to);
 
-        expect((whiteMesh.material as MeshBasicMaterial).color).toEqual(to);
+        const [resultWhiteMesh, resultBlackMesh] = result.children as Mesh[];
+
+        expect((resultWhiteMesh.material as MeshBasicMaterial).color).toEqual(
+            to,
+        );
+        expect((resultBlackMesh.material as MeshBasicMaterial).color).toEqual(
+            black,
+        );
+
+        // original scene should remain unchanged
+        expect((whiteMesh.material as MeshBasicMaterial).color).toEqual(white);
         expect((blackMesh.material as MeshBasicMaterial).color).toEqual(black);
     });
 
@@ -42,9 +52,9 @@ describe("useColorReplace", () => {
         const from = new Color("white");
         const to = new Color("blue");
 
-        replaceSceneColor(scene, from, to);
+        const result = replaceSceneColor(scene, from, to);
 
-        const group = scene.children[2];
+        const group = result.children[2];
         expect(group.type).toBe("Group");
     });
 });
