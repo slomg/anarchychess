@@ -317,6 +317,7 @@ export type MovePath = {
     intermediateSquares?: Array<IntermediateSquarePath> | null;
     sideEffects?: Array<MoveSideEffectPath> | null;
     pieceSpawns?: Array<PieceSpawnPath> | null;
+    stuns?: Array<MoveStunPath> | null;
     promotesTo?: PieceType | null;
     specialType?: SpecialMoveType | null;
     forcedPriority?: ForcedMovePriority | null;
@@ -390,6 +391,11 @@ export enum PieceType {
      */
     CHECKER = 11,
 }
+
+export type MoveStunPath = {
+    posIdx: number;
+    stunForTurns: number;
+};
 
 export enum SpecialMoveType {
     /**
