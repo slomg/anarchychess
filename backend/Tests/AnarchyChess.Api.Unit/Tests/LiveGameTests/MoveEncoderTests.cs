@@ -34,21 +34,7 @@ public class MoveEncoderTests
         MovePath[] paths =
         [
             new MovePathFaker().Generate(),
-            new(
-                FromIdx: 1,
-                ToIdx: 2,
-                MoveKey: "move2",
-                CapturedIdxs: null,
-                TriggerIdxs: null,
-                IntermediateSquares: null,
-                SideEffects: null,
-                PieceSpawns: null,
-                PromotesTo: null,
-                SpecialType: null,
-                ForcedPriority: null,
-                EmphasizeSquare: false,
-                OvertimeRemovalIdxs: null
-            ),
+            new(FromIdx: 1, ToIdx: 2, MoveKey: "move2"),
         ];
 
         var result = _encoder.EncodeMoves(paths);

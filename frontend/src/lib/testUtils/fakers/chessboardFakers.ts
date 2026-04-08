@@ -41,6 +41,7 @@ export function createFakeMove(override?: Partial<Move>): Move {
         intermediates: [],
         sideEffects: [],
         pieceSpawns: [],
+        stuns: [],
         promotesTo: null,
         specialType: SpecialMoveType.NONE,
         forcedPriority: ForcedMovePriority.NONE,
