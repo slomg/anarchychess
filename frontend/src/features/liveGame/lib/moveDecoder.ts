@@ -5,6 +5,7 @@ import {
     Move,
     MoveKey,
     MoveSideEffect,
+    MoveStun,
     Piece,
 } from "@/features/chessboard/lib/types";
 import {
@@ -12,6 +13,7 @@ import {
     IntermediateSquarePath,
     MovePath,
     MoveSideEffectPath,
+    MoveStunPath,
     PieceSpawnPath,
     SpecialMoveType,
 } from "@/lib/apiClient";
@@ -53,6 +55,7 @@ export function decodeMovePath(path: MovePath, boardWidth: number): Move {
         path.sideEffects?.map((x) => parseSideEffect(x, boardWidth)) ?? [];
     const pieceSpawns =
         path.pieceSpawns?.map((x) => parsePieceSpawns(x, boardWidth)) ?? [];
+    const stuns = path.stuns?.map((x) => parseStuns(x, boardWidth)) ?? [];
 
     const overtimeRemovals =
         path.overtimeRemovalIdxs?.map((idx) =>
@@ -68,6 +71,7 @@ export function decodeMovePath(path: MovePath, boardWidth: number): Move {
         intermediates,
         sideEffects,
         pieceSpawns,
+        stuns,
         specialType: path.specialType ?? SpecialMoveType.NONE,
         forcedPriority: path.forcedPriority ?? ForcedMovePriority.NONE,
         promotesTo: path.promotesTo ?? null,
@@ -106,6 +110,14 @@ function parseIntermediateSquares(
     return {
         position,
         isCapture: path.isCapture,
+    };
+}
+
+function parseStuns(path: MoveStunPath, boardWidth: number): MoveStun {
+    const position = idxToLogicalPoint(path.posIdx, boardWidth);
+    return {
+        position,
+        stunForTurns: path.stunForTurns,
     };
 }
 

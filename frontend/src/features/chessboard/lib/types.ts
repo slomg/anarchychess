@@ -25,6 +25,7 @@ export interface Move {
     intermediates: IntermediateSquare[];
     sideEffects: MoveSideEffect[];
     pieceSpawns: Piece[];
+    stuns: MoveStun[];
     promotesTo: PieceType | null;
     forcedPriority: ForcedMovePriority;
     specialType: SpecialMoveType;
@@ -48,6 +49,11 @@ export interface MoveSideEffect {
 export interface IntermediateSquare {
     position: LogicalPoint;
     isCapture: boolean;
+}
+
+export interface MoveStun {
+    position: LogicalPoint;
+    stunForTurns: number;
 }
 
 export type PieceID = string;
