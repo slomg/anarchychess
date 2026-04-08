@@ -141,6 +141,7 @@ const ChessPiece = ({ id }: { id: PieceID }) => {
             >
                 <DoubleClickIndicator ref={doubleClickRef} />
             </ChessSquare>
+
             {isSelected && (
                 <ChessSquare
                     data-testid="pieceSquareHighlight"

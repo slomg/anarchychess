@@ -1,13 +1,15 @@
 import { render, screen } from "@testing-library/react";
-import ChessboardStoreContext from "../../contexts/chessboardStoreContext";
+import { StoreApi } from "zustand";
+import React from "react";
+
 import {
     ChessboardStore,
     createChessboardStore,
 } from "../../stores/chessboardStore";
-import { StoreApi } from "zustand";
+
+import ChessboardStoreContext from "../../contexts/chessboardStoreContext";
 import { pointToStr, viewPoint } from "@/features/point/pointUtils";
 import CoordSquare, { ChessSquareRef } from "../CoordSquare";
-import React from "react";
 
 describe("CoordSquare", () => {
     let store: StoreApi<ChessboardStore>;
@@ -34,10 +36,6 @@ describe("CoordSquare", () => {
     });
 
     it("should set width and height based on board dimensions", () => {
-        store.setState({
-            boardDimensions: { width: 10, height: 10 },
-        });
-
         renderWithStore(<CoordSquare position={viewPoint({ x: 0, y: 0 })} />);
 
         const el = screen.getByTestId("coordSquare");
@@ -79,8 +77,6 @@ describe("CoordSquare", () => {
     });
 
     it("should calculate correct transform based on position and offset", () => {
-        store.setState({ boardDimensions: { width: 10, height: 10 } });
-
         const ref = React.createRef<ChessSquareRef>();
         renderWithStore(
             <CoordSquare position={viewPoint({ x: 2, y: 3 })} ref={ref} />,
@@ -97,6 +93,24 @@ describe("CoordSquare", () => {
         expect(el).toHaveStyle({
             transform:
                 "translate(clamp(0%,calc(200%+15px),900%),clamp(0%,calc(300%+-10px),900%))",
+        });
+    });
+
+    it("should apply rotation correctly", () => {
+        const ref = React.createRef<ChessSquareRef>();
+        renderWithStore(
+            <CoordSquare
+                position={viewPoint({ x: 1, y: 2 })}
+                rotation={45}
+                ref={ref}
+            />,
+        );
+
+        const el = screen.getByTestId("coordSquare");
+
+        expect(el).toHaveStyle({
+            transform:
+                "translate(clamp(0%,calc(10%+0px),900%),clamp(0%,calc(20%+0px),900%)) rotate(45deg)",
         });
     });
 });
