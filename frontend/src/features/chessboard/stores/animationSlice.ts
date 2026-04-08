@@ -42,7 +42,12 @@ export function createAnimationSlice(
             animationSteps: AnimationStep[],
             persistent: boolean = false,
         ) {
-            const { playAudioForAnimationStep } = get();
+            const {
+                playAudioForAnimationStep,
+                addTransientBoardEffect,
+                resolveAllTransientBoardEffects,
+            } = get();
+            resolveAllTransientBoardEffects();
 
             if (currentAnimationCancelToken) {
                 currentAnimationCancelToken.canceled = true;
@@ -52,7 +57,9 @@ export function createAnimationSlice(
             currentAnimationCancelToken = cancelToken;
 
             for (let i = 0; i < animationSteps.length; i++) {
-                if (cancelToken.canceled) break;
+                if (cancelToken.canceled) {
+                    break;
+                }
 
                 const step = animationSteps[i];
                 playAudioForAnimationStep(step);
@@ -67,7 +74,11 @@ export function createAnimationSlice(
                 });
                 await markPiecesAsAnimating(step.movedPieceIds);
 
-                if (i < animationSteps.length - 1) {
+                if (step.boardEffect) {
+                    await addTransientBoardEffect(step.boardEffect).promise;
+                }
+
+                if (i < animationSteps.length - 1 && !step.disableStepDelay) {
                     await new Promise<void>((resolve) =>
                         setTimeout(
                             () => resolve(),
@@ -98,17 +109,23 @@ export function createAnimationSlice(
             await new Promise<void>((resolve) => setTimeout(resolve));
         }
 
-        async function markPiecesAsAnimating(pieceIds: Iterable<PieceID>) {
+        async function markPiecesAsAnimating(pieceIds: PieceID[]) {
+            if (pieceIds.length === 0) {
+                return;
+            }
+
             set((state) => {
-                for (const pieceId of pieceIds)
+                for (const pieceId of pieceIds) {
                     state.animatingPieceIds.add(pieceId);
+                }
             });
 
             await new Promise<void>((resolve) =>
                 setTimeout(() => {
                     set((state) => {
-                        for (const pieceId of pieceIds)
+                        for (const pieceId of pieceIds) {
                             state.animatingPieceIds.delete(pieceId);
+                        }
                     });
                     resolve();
                 }, constants.PIECE_ANIMATION_LENGTH_MS),
