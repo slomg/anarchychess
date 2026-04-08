@@ -613,6 +613,7 @@ export enum ErrorCode {
     GAME_MALFORMED_FEN_PARTS = "Game.MalformedFen.Parts",
     GAME_MALFORMED_FEN_PIECES = "Game.MalformedFen.Pieces",
     GAME_MALFORMED_FEN_MOVED_PIECES = "Game.MalformedFen.MovedPieces",
+    GAME_MALFORMED_FEN_STUNNED_PIECES = "Game.MalformedFen.StunnedPieces",
     GAME_MALFORMED_FEN_LAST_MOVE = "Game.MalformedFen.LastMove",
     GAME_CHAT_INVALID_USER = "GameChat.InvalidUser",
     GAME_CHAT_INVALID_MESSAGE = "GameChat.InvalidMessage",
