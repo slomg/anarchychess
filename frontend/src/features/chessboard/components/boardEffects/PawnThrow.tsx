@@ -25,7 +25,7 @@ export interface PawnThrowEffect {
     type: TransientBoardEffectType.PAWN_THROW;
     from: LogicalPoint;
     to: LogicalPoint;
-    color: GameColor;
+    color: GameColor | null;
 }
 
 export const BLACK_PAWN_COLOR = new Color("#575452");
