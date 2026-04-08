@@ -19,7 +19,8 @@ export type BoardEffectId = string & "BoardEffect";
 
 interface ManagedTransientBoardEffect<T extends TransientBoardEffect> {
     value: T;
-    finish: () => void;
+    settle: () => void;
+    complete: () => void;
 }
 
 export interface BoardEffectsSlice {
@@ -85,7 +86,7 @@ export const createBoardEffectsSlice: StateCreator<
             resolveFn = resolve;
         });
 
-        const finish = () => {
+        const complete = () => {
             set((state) => {
                 state.activeTransientBoardEffects.delete(id);
             });
@@ -95,7 +96,8 @@ export const createBoardEffectsSlice: StateCreator<
         set((state) => {
             state.activeTransientBoardEffects.set(id, {
                 value: effect,
-                finish,
+                settle: resolveFn,
+                complete,
             });
         });
 
@@ -112,13 +114,13 @@ export const createBoardEffectsSlice: StateCreator<
             return;
         }
 
-        effect.finish();
+        effect.complete();
     },
 
     resolveAllTransientBoardEffects() {
         const { activeTransientBoardEffects } = get();
         for (const effect of activeTransientBoardEffects.values()) {
-            effect.finish();
+            effect.complete();
         }
     },
 });

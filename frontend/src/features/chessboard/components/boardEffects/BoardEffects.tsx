@@ -33,7 +33,8 @@ const BoardEffects = () => {
                 result.push(
                     <PawnThrow
                         effect={effect.value}
-                        onFinish={effect.finish}
+                        onSettle={effect.settle}
+                        onComplete={effect.complete}
                         key={id}
                     />,
                 );

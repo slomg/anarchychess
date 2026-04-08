@@ -45,7 +45,7 @@ describe("BoardEffects", () => {
         const { id } = store.getState().addTransientBoardEffect(effect);
         const finish = store
             .getState()
-            .activeTransientBoardEffects.get(id)?.finish;
+            .activeTransientBoardEffects.get(id)?.complete;
 
         await ReactThreeTestRenderer.create(
             <ChessboardStoreContext.Provider value={store}>

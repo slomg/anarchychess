@@ -102,10 +102,25 @@ describe("BoardEffectsSlice", () => {
                 false,
             );
         });
+
+        it("should allow settling the effect without removing it", async () => {
+            const effect = createFakePawnThrowEffect();
+            const { id, promise } = store
+                .getState()
+                .addTransientBoardEffect(effect);
+
+            store.getState().activeTransientBoardEffects.get(id)!.settle();
+
+            await expect(promise).resolves.toBeUndefined();
+
+            const activeEffects = store.getState().activeTransientBoardEffects;
+            expect(activeEffects.has(id)).toBe(true);
+            expect(activeEffects.get(id)?.value).toEqual(effect);
+        });
     });
 
     describe("resolveTransientBoardEffect", () => {
-        it("should finish and remove the effect", async () => {
+        it("should complete and remove the effect", async () => {
             const effect = createFakePawnThrowEffect();
             const { id, promise } = store
                 .getState()
@@ -128,7 +143,7 @@ describe("BoardEffectsSlice", () => {
     });
 
     describe("resolveAllTransientBoardEffects", () => {
-        it("should finish and remove all active transient effects", async () => {
+        it("should complete and remove all active transient effects", async () => {
             const effect1 = createFakePawnThrowEffect();
             const effect2 = createFakePawnThrowEffect();
 

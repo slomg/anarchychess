@@ -36,10 +36,12 @@ const SPIN_SPEED = 5;
 
 const PawnThrow = ({
     effect,
-    onFinish,
+    onSettle,
+    onComplete,
 }: {
     effect: PawnThrowEffect;
-    onFinish: () => void;
+    onSettle: () => void;
+    onComplete: () => void;
 }) => {
     const { scene } = useGLTF(constants.MODELS.PAWN);
     const { spriteObj: explosionSprite } = useSpriteLoader(
@@ -92,6 +94,7 @@ const PawnThrow = ({
         const time = progressRef.current + (delta * THROW_SPEED) / curveLength;
         if (time > 1) {
             setHasFinishedThrow(true);
+            onSettle();
             return;
         }
         progressRef.current = time;
@@ -147,7 +150,7 @@ const PawnThrow = ({
                     fps={30}
                     position={to}
                     scale={1.5}
-                    onEnd={onFinish}
+                    onEnd={onComplete}
                 />
             )}
         </>
