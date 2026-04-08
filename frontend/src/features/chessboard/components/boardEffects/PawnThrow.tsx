@@ -101,7 +101,7 @@ const PawnThrow = ({
         progressRef.current = time;
 
         const position = curve.getPoint(time);
-        const forward = curve.getTangent(time).normalize();
+        const forward = curve.getTangent(time).multiplyScalar(-1).normalize();
         meshRef.current.position.copy(position);
 
         const lookAt = position.clone().add(forward);
