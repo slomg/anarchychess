@@ -33,6 +33,7 @@ const UP = new Vector3(0, 1, 0);
 const THROW_SPEED = 7;
 const FLIP_SPEED = 5;
 const SPIN_SPEED = 5;
+const MAX_ROTATION = Math.PI / 18;
 
 const PawnThrow = ({
     effect,
@@ -115,11 +116,17 @@ const PawnThrow = ({
 
         // flip forward
         const axis = new Vector3().crossVectors(UP, forward).normalize();
-        flip.current += delta * FLIP_SPEED * rotationFactor;
+        flip.current = Math.min(
+            flip.current + delta * FLIP_SPEED * rotationFactor,
+            MAX_ROTATION,
+        );
         const flipQuat = new Quaternion().setFromAxisAngle(axis, flip.current);
 
         // spin
-        spin.current += delta * SPIN_SPEED * rotationFactor;
+        spin.current = Math.min(
+            spin.current + delta * SPIN_SPEED * rotationFactor,
+            MAX_ROTATION,
+        );
         const spinQuat = new Quaternion().setFromAxisAngle(UP, spin.current);
 
         meshRef.current.quaternion
