@@ -4,7 +4,7 @@ export enum AudioType {
     ILLEGAL_MOVE = "/assets/sfx/illegal.webm",
     PROMOTION = "/assets/sfx/promotion.webm",
 
-    KNOOKLEAR_FUSION = "/assets/sfx/explosion.webm",
+    EXPLOSION = "/assets/sfx/explosion.webm",
     CASTLE = "/assets/sfx/castle.webm",
 
     LOW_TIME = "/assets/sfx/low_time.webm",

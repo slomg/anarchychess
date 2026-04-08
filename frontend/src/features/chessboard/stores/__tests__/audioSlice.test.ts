@@ -56,7 +56,7 @@ describe("AudioSlice", () => {
         await store.getState().playAudioForAnimationStep(step);
 
         expect(audioConstructorMock).toHaveBeenCalledExactlyOnceWith(
-            AudioType.KNOOKLEAR_FUSION,
+            AudioType.EXPLOSION,
         );
         expect(audioMock.play).toHaveBeenCalledOnce();
     });
