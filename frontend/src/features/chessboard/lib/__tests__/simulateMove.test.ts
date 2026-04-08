@@ -3,12 +3,12 @@ import {
     createFakePiece,
 } from "@/lib/testUtils/fakers/chessboardFakers";
 
+import { TransientBoardEffectType } from "../../stores/boardEffectsSlice";
 import { simulateMove, simulateMoveAnimated } from "../simulateMove";
 import { AnimationStep, IntermediateSquare } from "../types";
 import { PieceType, SpecialMoveType } from "@/lib/apiClient";
 import { logicalPoint } from "@/features/point/pointUtils";
 import BoardPieces from "../boardPieces";
-import { TransientBoardEffectType } from "../../stores/boardEffectsSlice";
 
 describe("simulateMove", () => {
     it("should return a new BoardPieces instance that reflects the result of playMove", () => {
