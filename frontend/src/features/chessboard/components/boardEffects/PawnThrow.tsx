@@ -30,6 +30,9 @@ export interface PawnThrowEffect {
 
 export const BLACK_PAWN_COLOR = new Color("#575452");
 const UP = new Vector3(0, 1, 0);
+const THROW_SPEED = 7;
+const FLIP_SPEED = 5;
+const SPIN_SPEED = 5;
 
 const PawnThrow = ({
     effect,
@@ -86,7 +89,7 @@ const PawnThrow = ({
             return;
         }
 
-        const time = progressRef.current + (10 * delta) / curveLength;
+        const time = progressRef.current + (delta * THROW_SPEED) / curveLength;
         if (time > 1) {
             setHasFinishedThrow(true);
             return;
@@ -109,11 +112,11 @@ const PawnThrow = ({
 
         // flip forward
         const axis = new Vector3().crossVectors(UP, forward).normalize();
-        flip.current += delta * 5 * rotationFactor;
+        flip.current += delta * FLIP_SPEED * rotationFactor;
         const flipQuat = new Quaternion().setFromAxisAngle(axis, flip.current);
 
         // spin
-        spin.current += delta * 10 * rotationFactor;
+        spin.current += delta * SPIN_SPEED * rotationFactor;
         const spinQuat = new Quaternion().setFromAxisAngle(UP, spin.current);
 
         meshRef.current.quaternion
@@ -133,8 +136,8 @@ const PawnThrow = ({
         <>
             {!hasFinishedThrow && (
                 <group ref={meshRef}>
-                    <primitive object={colored} scale={0.15} />
-                    <primitive object={hull} scale={0.15} />
+                    <primitive object={colored} scale={0.13} />
+                    <primitive object={hull} scale={0.13} />
                 </group>
             )}
 
