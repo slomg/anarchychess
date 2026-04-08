@@ -60,7 +60,11 @@ describe("GameChat", () => {
     });
 
     it("should disable input when a guest", () => {
-        const guest: GuestUser = { userId: "test", type: "guest" };
+        const guest: GuestUser = {
+            userId: "test",
+            userName: "Guest",
+            type: "guest",
+        };
         render(
             <SessionProvider user={guest}>
                 <LiveChessStoreContext.Provider value={store}>
