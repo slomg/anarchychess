@@ -1,9 +1,6 @@
 import { StateCreator } from "zustand";
 
-import {
-    simulateMove,
-    simulateMoveWithIntermediates,
-} from "../lib/simulateMove";
+import { simulateMove, simulateMoveAnimated } from "../lib/simulateMove";
 
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
 import { pointEquals, pointToStr } from "@/features/point/pointUtils";
@@ -167,7 +164,7 @@ export function createPiecesSlice(
             async applyMoveAnimated(move) {
                 const { playAnimation, pieces } = get();
 
-                const steps = simulateMoveWithIntermediates(pieces, move);
+                const steps = simulateMoveAnimated(pieces, move);
                 const lastStep = steps.at(-1);
                 if (!lastStep) return;
 

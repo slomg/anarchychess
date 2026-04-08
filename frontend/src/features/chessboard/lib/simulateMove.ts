@@ -2,7 +2,7 @@ import { AnimationStep, MoveBounds, Piece, PieceID } from "./types";
 import BoardPieces from "./boardPieces";
 import { Move } from "./types";
 
-export function simulateMoveWithIntermediates(
+export function simulateMoveAnimated(
     pieces: BoardPieces,
     move: Move,
 ): AnimationStep[] {

@@ -2,7 +2,7 @@ import {
     createFakeMove,
     createFakePiece,
 } from "@/lib/testUtils/fakers/chessboardFakers";
-import { simulateMove, simulateMoveWithIntermediates } from "../simulateMove";
+import { simulateMove, simulateMoveAnimated } from "../simulateMove";
 import { logicalPoint } from "@/features/point/pointUtils";
 import BoardPieces from "../boardPieces";
 import { AnimationStep, IntermediateSquare } from "../types";
@@ -206,7 +206,7 @@ describe("simulateMove", () => {
     });
 });
 
-describe("simulateMoveWithIntermediates", () => {
+describe("simulateMoveAnimated", () => {
     it("should return intermediate positions and final move", () => {
         const movingPiece = createFakePiece({
             position: logicalPoint({ x: 0, y: 0 }),
@@ -224,7 +224,7 @@ describe("simulateMoveWithIntermediates", () => {
             captures: [],
         });
 
-        const resultSteps = simulateMoveWithIntermediates(pieces, move);
+        const resultSteps = simulateMoveAnimated(pieces, move);
 
         const expected1 = new BoardPieces(pieces);
         expected1.movePiece(movingPiece.id, intermediates[0].position);
@@ -265,7 +265,7 @@ describe("simulateMoveWithIntermediates", () => {
             captures: [capturePiece.position],
         });
 
-        const resultSteps = simulateMoveWithIntermediates(pieces, move);
+        const resultSteps = simulateMoveAnimated(pieces, move);
 
         const expectedFadedPieces = new Map([[capturePiece.id, capturePiece]]);
         expect(
