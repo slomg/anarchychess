@@ -227,6 +227,19 @@ public class FenDecoderTests : BaseIntegrationTest
     }
 
     [Fact]
+    public void DecodeFen_parse_stunned_pieces_correctly()
+    {
+        var fen = "K9/r9 {\"stunnedPieces\":{\"a1\":2,\"b2\":3}}";
+
+        var result = _fenDecoder.DecodeFen(fen);
+
+        result.IsError.Should().BeFalse();
+        result.Value.StunnedPieces.Should().HaveCount(2);
+        result.Value.StunnedPieces[new("a1")].Should().Be(2);
+        result.Value.StunnedPieces[new("b2")].Should().Be(3);
+    }
+
+    [Fact]
     public void DecodeFen_parses_halfmove_clock_correctly()
     {
         var fen = "K9/r9 {\"halfMoveClock\":42}";

@@ -5,7 +5,8 @@ namespace AnarchyChess.Api.Game.Models;
 
 public record FenParts(
     GameColor? SideToMove,
-    IReadOnlyList<AlgebraicString>? MovedPieces,
+    IReadOnlyCollection<AlgebraicString>? MovedPieces,
+    IReadOnlyDictionary<string, int>? StunnedPieces,
     FenLastMove? LastMove,
     int? HalfMoveClock
 );

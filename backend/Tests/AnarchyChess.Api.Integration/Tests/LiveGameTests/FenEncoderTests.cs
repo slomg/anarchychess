@@ -175,8 +175,28 @@ public class FenEncoderTests : BaseIntegrationTest
         result
             .FullFen.Should()
             .Be(
-                "Pp {\"lastMove\":{\"from\":\"a1\",\"to\":\"b1\",\"captures\":[{\"piece\":{\"type\":2,\"color\":1,\"hasMoved\":false,\"stunnedForTurns\":0},\"pos\":\"b1\"}]}}"
+                "Pp {\"lastMove\":{\"from\":\"a1\",\"to\":\"b1\",\"captures\":[{\"piece\":{\"type\":2,\"color\":1,\"hasMoved\":false},\"pos\":\"b1\"}]}}"
             );
+    }
+
+    [Fact]
+    public void EncodeFen_returns_correct_fen_with_stunned_pieces()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new AlgebraicPoint("a1")] = new Piece(PieceType.Pawn, GameColor.White),
+            [new AlgebraicPoint("b1")] = new Piece(PieceType.Pawn, GameColor.Black),
+        };
+        ChessBoard board = new(
+            pieces,
+            height: 1,
+            width: 2,
+            stunnedPieces: new() { [new("a2")] = 69 }
+        );
+
+        var result = _fenEncoder.EncodeFen(board);
+
+        result.FullFen.Should().Be("Pp {\"stunnedPieces\":{\"a2\":69}}");
     }
 
     [Fact]
