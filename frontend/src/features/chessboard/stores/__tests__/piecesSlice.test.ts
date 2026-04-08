@@ -150,30 +150,6 @@ describe("PiecesSlice", () => {
         });
     });
 
-    describe("applyMoveImmediate", () => {
-        it("should simulate the move and animate it", () => {
-            const piece = createFakePiece({
-                position: logicalPoint({ x: 1, y: 1 }),
-            });
-
-            store.setState({
-                pieces: BoardPieces.fromPieces(piece),
-            });
-
-            const move = createFakeMove({
-                from: piece.position,
-                to: logicalPoint({ x: 5, y: 5 }),
-            });
-
-            store.getState().applyMoveImmediate(move);
-
-            expectPieces({ piece, position: move.to });
-            expect(store.getState().animatingPieceIds).toEqual(
-                new Set([piece.id]),
-            );
-        });
-    });
-
     describe("removePieceAt", () => {
         it("should remove the piece and animate it", async () => {
             const piece = createFakePiece({

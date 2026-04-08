@@ -6,6 +6,7 @@ import {
 } from "@/lib/apiClient";
 import { LogicalPoint } from "@/features/point/types";
 import type BoardPieces from "./boardPieces";
+import { TransientBoardEffect } from "../stores/boardEffectsSlice";
 
 export interface Piece {
     id: PieceID;
@@ -63,11 +64,14 @@ export interface AnimationStep {
     initialSpawnPositions?: BoardPieces;
     fadedPieces?: Map<PieceID, Piece>;
 
+    boardEffect?: TransientBoardEffect;
     moveBounds?: MoveBounds;
     specialType?: SpecialMoveType | null;
     isCapture?: boolean;
     isPromotion?: boolean;
     hasOvertimeRemovals?: boolean;
+
+    disableStepDelay?: boolean;
 }
 
 export interface GameReplay {

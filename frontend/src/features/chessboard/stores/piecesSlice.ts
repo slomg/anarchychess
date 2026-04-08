@@ -1,10 +1,9 @@
 import { StateCreator } from "zustand";
 
-import { simulateMove, simulateMoveAnimated } from "../lib/simulateMove";
-
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
 import { pointEquals, pointToStr } from "@/features/point/pointUtils";
 import { AnimationStep, MoveBounds, PieceID } from "../lib/types";
+import { simulateMoveAnimated } from "../lib/simulateMove";
 import type { ChessboardStore } from "./chessboardStore";
 import { LogicalPoint } from "@/features/point/types";
 import { ScreenPoint } from "@/features/point/types";
@@ -30,7 +29,6 @@ export interface PiecesSlice {
     unselectPiece(): void;
 
     applyMoveAnimated(move: Move): Promise<void>;
-    applyMoveImmediate(move: Move): Promise<void>;
     removePieceAt(point: LogicalPoint): Promise<void>;
 
     handleMousePieceDrop(args: {
@@ -57,13 +55,23 @@ export function createPiecesSlice(
     return (set, get) => {
         async function applyMoveTurn(move: Move): Promise<void> {
             const {
-                applyMoveImmediate,
                 unselectPiece,
                 pieces: prevPieces,
                 pieceMovementEvent,
+                playAnimation,
+                pieces,
             } = get();
 
-            const animationPromise = applyMoveImmediate(move);
+            const steps = simulateMoveAnimated(pieces, move, {
+                skipAlreadyPlayedLocally: true,
+            });
+            const lastStep = steps.at(-1);
+            if (!lastStep) {
+                return;
+            }
+
+            commitPositionChange(lastStep.newPieces);
+            const animationPromise = playAnimation(steps);
 
             unselectPiece();
             await pieceMovementEvent.emit(move, prevPieces);
@@ -153,20 +161,14 @@ export function createPiecesSlice(
                 });
             },
 
-            async applyMoveImmediate(move) {
-                const { playAnimation, pieces } = get();
-                const animation = simulateMove(pieces, move);
-
-                commitPositionChange(animation.newPieces);
-                await playAnimation(animation);
-            },
-
             async applyMoveAnimated(move) {
                 const { playAnimation, pieces } = get();
 
                 const steps = simulateMoveAnimated(pieces, move);
                 const lastStep = steps.at(-1);
-                if (!lastStep) return;
+                if (!lastStep) {
+                    return;
+                }
 
                 commitPositionChange(lastStep.newPieces);
                 await playAnimation(steps);
