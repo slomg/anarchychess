@@ -170,6 +170,14 @@ public class ChessBoard : IReadOnlyChessBoard, IEquatable<ChessBoard>
             PlacePiece(spawn.Position, new Piece(Type: spawn.Type, Color: spawn.Color));
         }
 
+        foreach (var stun in move.Stuns)
+        {
+            ModifyPiece(
+                stun.Position,
+                piece => piece with { StunnedForTurns = piece.StunnedForTurns + stun.StunForTurns }
+            );
+        }
+
         if (move.PromotesTo is PieceType promotesTo)
         {
             ModifyPiece(move.To, piece => piece with { Type = promotesTo, HasMoved = false });

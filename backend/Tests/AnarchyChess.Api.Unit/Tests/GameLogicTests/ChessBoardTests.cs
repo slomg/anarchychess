@@ -408,6 +408,38 @@ public class ChessBoardTests
     }
 
     [Fact]
+    public void PlayMove_with_stun_applies_stun_to_target_piece()
+    {
+        ChessBoard board = new();
+
+        Piece attacker = PieceFactory.White(PieceType.Pawn);
+        Piece target = PieceFactory.Black(PieceType.Rook);
+
+        AlgebraicPoint from = new("a1");
+        AlgebraicPoint to = new("e5");
+
+        board.PlacePiece(from, attacker);
+        board.PlacePiece(to, target);
+
+        Move move = new(
+            from: from,
+            to: to,
+            piece: attacker,
+            captures: [new MoveCapture(attacker, from)],
+            stuns: [new MoveStun(to, Piece: target, StunForTurns: 2)],
+            specialMoveType: SpecialMoveType.Throw
+        );
+
+        board.PlayMove(move);
+
+        var stunnedPiece = board.PeekPieceAt(to);
+        stunnedPiece.Should().NotBeNull();
+        stunnedPiece.StunnedForTurns.Should().Be(target.StunnedForTurns + 2);
+
+        board.PeekPieceAt(from).Should().BeNull();
+    }
+
+    [Fact]
     public void PlayMove_doesnt_treat_promotions_in_place_as_self_captures()
     {
         ChessBoard board = new();
