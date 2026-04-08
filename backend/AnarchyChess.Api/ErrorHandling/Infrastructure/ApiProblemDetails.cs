@@ -62,6 +62,7 @@ public static class ErrorCodes
     public const string GameMalformedFenParts = "Game.MalformedFen.Parts";
     public const string GameMalformedFenPieces = "Game.MalformedFen.Pieces";
     public const string GameMalformedFenMovedPieces = "Game.MalformedFen.MovedPieces";
+    public const string GameMalformedFenStunnedPieces = "Game.MalformedFen.StunnedPieces";
     public const string GameMalformedFenLastMove = "Game.MalformedFen.LastMove";
 
     public const string GameChatInvalidUser = "GameChat.InvalidUser";
