@@ -13,11 +13,12 @@ public class ThrowNotator(IPieceLetterMap pieceLetterMap) : BaseSanNotator(piece
     {
         sb.Append(move.From.AsAlgebraic());
         sb.Append("->");
-        sb.Append(move.To.AsAlgebraic());
 
         if (move.Stuns.Count > 0)
         {
             sb.Append('*');
         }
+
+        sb.Append(move.To.AsAlgebraic());
     }
 }
