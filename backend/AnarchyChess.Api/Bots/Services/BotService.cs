@@ -157,7 +157,8 @@ public class BotService(ILogger<BotService> logger, IAiEngineService aiEngineSer
                     whenNeutral: BitPieceColor.Neutral
                 ),
             },
-            CaptureMask: capturesMask
+            CaptureMask: capturesMask,
+            SpecialMoveType: lastMove.SpecialMoveType
         );
     }
 }

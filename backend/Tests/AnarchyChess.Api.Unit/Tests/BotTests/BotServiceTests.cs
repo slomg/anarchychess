@@ -38,11 +38,13 @@ public class BotServiceTests : BaseUnitTest
             [new("d7")] = PieceFactory.Black(PieceType.Pawn),
         };
 
-        Move lastMove = MoveFaker.Capture(
-            GameColor.White,
-            pieceType: PieceType.Queen,
-            captureTypes: [PieceType.Antiqueen, PieceType.Knook]
-        );
+        Move lastMove = MoveFaker
+            .Capture(
+                GameColor.White,
+                pieceType: PieceType.Queen,
+                captureTypes: [PieceType.Antiqueen, PieceType.Knook]
+            )
+            .RuleFor(x => x.SpecialMoveType, SpecialMoveType.KingsideCastle);
         ChessBoard board = new(pieces, moves: [lastMove]);
 
         var expectedReply = new MoveEvaluationFaker().Generate();
@@ -58,7 +60,8 @@ public class BotServiceTests : BaseUnitTest
                 From: lastMove.From.AsIdx(),
                 To: lastMove.To.AsIdx(),
                 Piece: new() { Type = PieceType.Queen, Color = BitPieceColor.White },
-                CaptureMask: requestCaptures
+                CaptureMask: requestCaptures,
+                SpecialMoveType: SpecialMoveType.KingsideCastle
             ),
             Depth: 69
         );
@@ -300,7 +303,8 @@ public class BotServiceTests : BaseUnitTest
                     whenNeutral: BitPieceColor.Neutral
                 ),
             },
-            CaptureMask: UInt128.One << new AlgebraicPoint("a1").AsIdx()
+            CaptureMask: UInt128.One << new AlgebraicPoint("a1").AsIdx(),
+            SpecialMoveType: SpecialMoveType.None
         );
 
         BitBoard result = _bot.ConvertBoardToBit(board);

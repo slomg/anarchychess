@@ -28,7 +28,8 @@ public class BitOmnipotentPawnRuleTests
             From: 0,
             To: BitOmnipotentPawnRule.WhiteSquare,
             Piece: new BitPiece { Type = PieceType.Rook, Color = BitPieceColor.Black },
-            CaptureMask: BitOmnipotentPawnRule.WhiteSquareMask
+            CaptureMask: BitOmnipotentPawnRule.WhiteSquareMask,
+            SpecialMoveType: SpecialMoveType.None
         );
         BitBoard board = BitBoard.FromPieces([], isWhiteToMove: true, prevMove);
         Span<BitMove> moves = stackalloc BitMove[10];
@@ -58,7 +59,8 @@ public class BitOmnipotentPawnRuleTests
             From: 0,
             To: BitOmnipotentPawnRule.BlackSquare,
             Piece: new BitPiece { Type = PieceType.Rook, Color = BitPieceColor.White },
-            CaptureMask: BitOmnipotentPawnRule.BlackSquareMask
+            CaptureMask: BitOmnipotentPawnRule.BlackSquareMask,
+            SpecialMoveType: SpecialMoveType.None
         );
         BitBoard board = BitBoard.FromPieces([], isWhiteToMove: false, prevMove);
         Span<BitMove> moves = stackalloc BitMove[10];
@@ -88,7 +90,8 @@ public class BitOmnipotentPawnRuleTests
             From: 0,
             To: BitOmnipotentPawnRule.BlackSquare,
             Piece: new BitPiece { Type = PieceType.Rook, Color = BitPieceColor.Black },
-            CaptureMask: BitOmnipotentPawnRule.BlackSquareMask
+            CaptureMask: BitOmnipotentPawnRule.BlackSquareMask,
+            SpecialMoveType: SpecialMoveType.None
         );
         BitBoard board = BitBoard.FromPieces([], isWhiteToMove: true, prevMoveState: prevMove);
         Span<BitMove> moves = stackalloc BitMove[10];
@@ -106,7 +109,8 @@ public class BitOmnipotentPawnRuleTests
             From: 0,
             To: BitOmnipotentPawnRule.WhiteSquare,
             Piece: new BitPiece { Type = PieceType.Rook, Color = BitPieceColor.White },
-            CaptureMask: BitOmnipotentPawnRule.WhiteSquare
+            CaptureMask: BitOmnipotentPawnRule.WhiteSquare,
+            SpecialMoveType: SpecialMoveType.None
         );
         BitBoard board = BitBoard.FromPieces([], isWhiteToMove: false, prevMoveState: prevMove);
         Span<BitMove> moves = stackalloc BitMove[10];

@@ -1,5 +1,4 @@
-﻿using AnarchyChess.Ai.Evaluation;
-using AnarchyChess.Ai.Models;
+﻿using AnarchyChess.Ai.Models;
 using AnarchyChess.Api.TestInfrastructure.Factories;
 using AnarchyChess.EngineShared;
 using AwesomeAssertions;
@@ -151,7 +150,8 @@ public class BitBoardTests
             From: new AlgebraicPoint("b2").AsIdx(),
             To: new AlgebraicPoint("b5").AsIdx(),
             Piece: new() { Type = PieceType.Pawn, Color = BitPieceColor.White },
-            CaptureMask: (UInt128.One << 1) | (UInt128.One << 15)
+            CaptureMask: (UInt128.One << 1) | (UInt128.One << 15),
+            SpecialMoveType: SpecialMoveType.None
         );
 
         BitBoard board = BitBoard.FromPieces(
@@ -324,7 +324,8 @@ public class BitBoardTests
             From: new AlgebraicPoint("b2").AsIdx(),
             To: new AlgebraicPoint("b4").AsIdx(),
             Piece: new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.White },
-            CaptureMask: UInt128.One << new AlgebraicPoint("a5").AsIdx()
+            CaptureMask: UInt128.One << new AlgebraicPoint("a5").AsIdx(),
+            SpecialMoveType: SpecialMoveType.None
         );
         BitBoard board = BitBoard.FromPieces(
             pieces,
@@ -379,7 +380,8 @@ public class BitBoardTests
             From: new AlgebraicPoint("b2").AsIdx(),
             To: new AlgebraicPoint("b4").AsIdx(),
             Piece: new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.White },
-            CaptureMask: UInt128.One << new AlgebraicPoint("a5").AsIdx()
+            CaptureMask: UInt128.One << new AlgebraicPoint("a5").AsIdx(),
+            SpecialMoveType: SpecialMoveType.None
         );
         BitBoard board = BitBoard.FromPieces(
             new() { [new AlgebraicPoint("b2")] = PieceFactory.White(PieceType.Pawn) },

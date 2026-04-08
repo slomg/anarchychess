@@ -81,7 +81,8 @@ public class AiEngineServiceTests
             To: new AlgebraicPoint("a2").AsIdx(),
             Piece: new() { Type = PieceType.Pawn, Color = BitPieceColor.Black },
             CaptureMask: (UInt128.One << prevCapture1.AsIdx())
-                | (UInt128.One << prevCapture2.AsIdx())
+                | (UInt128.One << prevCapture2.AsIdx()),
+            SpecialMoveType: SpecialMoveType.None
         );
 
         Dictionary<AlgebraicPoint, Piece> pieces = new()
