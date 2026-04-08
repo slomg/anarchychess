@@ -40,6 +40,6 @@ public class ThrowNotatorTests
         StringBuilder sb = new();
         _notator.Notate(move, [move], sb);
 
-        sb.ToString().Should().Be("b2->c4*");
+        sb.ToString().Should().Be("b2->*c4");
     }
 }
