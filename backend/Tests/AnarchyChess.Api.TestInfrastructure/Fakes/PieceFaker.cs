@@ -5,12 +5,7 @@ namespace AnarchyChess.Api.TestInfrastructure.Fakes;
 
 public class PieceFaker : RecordFaker<Piece>
 {
-    public PieceFaker(
-        GameColor? color,
-        PieceType? piece = null,
-        bool? hasMoved = null,
-        int stunnedForMoves = 0
-    )
+    public PieceFaker(GameColor? color, PieceType? piece = null, bool? hasMoved = null)
     {
         UseSeed(Faker.GlobalUniqueIndex++);
 
@@ -18,6 +13,5 @@ public class PieceFaker : RecordFaker<Piece>
         RuleFor(x => x.Type, f => piece ?? f.PickRandom<PieceType>());
         RuleFor(x => x.Color, color);
         RuleFor(x => x.HasMoved, f => hasMoved ?? f.Random.Bool());
-        RuleFor(x => x.StunnedForTurns, stunnedForMoves);
     }
 }

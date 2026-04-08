@@ -92,8 +92,9 @@ public class LegalMoveCalculatorTests : BaseIntegrationTest
             new Dictionary<AlgebraicPoint, Piece>()
             {
                 [new("f3")] = PieceFactory.White(PieceType.Pawn, hasMoved: true),
-                [new("d3")] = PieceFactory.White(PieceType.Pawn, stunnedForMoves: 1),
-            }
+                [new("d3")] = PieceFactory.White(PieceType.Pawn),
+            },
+            stunnedPieces: new() { [new("d3")] = 1 }
         );
 
         List<Move> moves = [.. _calculator.CalculateAllLegalMoves(board)];

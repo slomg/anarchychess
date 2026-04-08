@@ -58,7 +58,7 @@ public class LegalMoveCalculator : ILegalMoveCalculator
             yield break;
         }
 
-        if (piece.StunnedForTurns > 0)
+        if (board.StunnedPieces.ContainsKey(position))
         {
             yield break;
         }
