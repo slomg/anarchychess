@@ -179,7 +179,6 @@ describe("BoardPieces", () => {
         it("should handle self captures", () => {
             const piece = createFakePiece();
             const pieces = BoardPieces.fromPieces(piece);
-
             const move = createFakeMove({
                 from: piece.position,
                 to: piece.position,
@@ -190,6 +189,28 @@ describe("BoardPieces", () => {
 
             expect(pieces.getById(piece.id)).toBeUndefined();
             expect(pieces.getByPosition(move.to)).toBeUndefined();
+        });
+
+        it("should handle self captures where from != to", () => {
+            const piece = createFakePiece({
+                position: logicalPoint({ x: 0, y: 0 }),
+            });
+            const targetPiece = createFakePiece({
+                position: logicalPoint({ x: 5, y: 5 }),
+            });
+            const pieces = BoardPieces.fromPieces(piece, targetPiece);
+            const move = createFakeMove({
+                from: piece.position,
+                to: targetPiece.position,
+                captures: [piece.position],
+            });
+
+            pieces.playMove(move);
+
+            expect(pieces.getById(piece.id)).toBeUndefined();
+            expect(pieces.getByPosition(move.from)).toBeUndefined();
+            expect(pieces.getByPosition(move.to)).toEqual(targetPiece);
+            expect(pieces.getById(targetPiece.id)).toEqual(targetPiece);
         });
     });
 

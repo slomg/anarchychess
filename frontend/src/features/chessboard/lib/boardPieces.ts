@@ -58,17 +58,28 @@ export default class BoardPieces {
         // so we don't capture any piece that just moved
         this.removeRemovedPiecesFromMove(move);
 
+        const capturedBeforeMove = new Set<PieceID>();
         // step 2: clear all origin squares of moving pieces
         // this is done before placing pieces to handle swaps correctly
-        for (const move of pieceMoves) {
-            this._byPosition.delete(pointToStr(move.from));
+        for (const pieceMove of pieceMoves) {
+            if (this.getByPosition(pieceMove.from)) {
+                this._byPosition.delete(pointToStr(pieceMove.from));
+            } else {
+                capturedBeforeMove.add(pieceMove.pieceId);
+            }
         }
 
         // step 3: place all pieces on their final destinations
-        for (const move of pieceMoves) {
-            this._byPosition.set(pointToStr(move.to), move.pieceId);
-            const piece = this._byId.get(move.pieceId);
-            if (piece) piece.position = move.to;
+        for (const pieceMove of pieceMoves) {
+            if (capturedBeforeMove.has(pieceMove.pieceId)) {
+                continue;
+            }
+
+            this._byPosition.set(pointToStr(pieceMove.to), pieceMove.pieceId);
+            const piece = this._byId.get(pieceMove.pieceId);
+            if (piece) {
+                piece.position = pieceMove.to;
+            }
         }
 
         for (const spawn of move.pieceSpawns) {
@@ -171,11 +182,6 @@ export default class BoardPieces {
                 to: move.to,
             });
             movedPieceIds.add(mainPieceId);
-        } else {
-            console.warn(
-                "Could not find piece to move at",
-                pointToStr(move.from),
-            );
         }
 
         for (const sideEffect of move.sideEffects) {
