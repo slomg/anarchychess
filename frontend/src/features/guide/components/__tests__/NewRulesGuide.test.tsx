@@ -17,6 +17,7 @@ describe("NewRulesGuide", () => {
         const titles = [
             "King Capture",
             "King Touch = Draw",
+            "Pawn Throwing",
             "Overtime",
             "Forced En Passant",
             "Bouncing Bishop",

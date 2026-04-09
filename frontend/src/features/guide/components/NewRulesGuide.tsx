@@ -16,6 +16,10 @@ import bouncingbishop3 from "@public/assets/examples/bouncingbishop3.png";
 import omnipotentpawn1 from "@public/assets/examples/omnipotentpawn1.png";
 import omnipotentpawn2 from "@public/assets/examples/omnipotentpawn2.png";
 import omnipotentpawn3 from "@public/assets/examples/omnipotentpawn3.png";
+import pawnthrowing1 from "@public/assets/examples/pawnthrowing1.png";
+import pawnthrowing2 from "@public/assets/examples/pawnthrowing2.png";
+import pawnthrowing3 from "@public/assets/examples/pawnthrowing3.png";
+import pawnthrowing4 from "@public/assets/examples/pawnthrowing4.png";
 import bishopcastle1 from "@public/assets/examples/bishopcastle1.png";
 import bishopcastle2 from "@public/assets/examples/bishopcastle2.png";
 import longpassant1 from "@public/assets/examples/longpassant1.png";
@@ -55,6 +59,26 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
                     "The game immediately ends in a draw.",
                 ]}
                 images={[kingtouch1]}
+            />
+
+            <GuideCard
+                title="Pawn Throwing"
+                points={[
+                    "If a pawn has a higher value piece directly behind it, you can throw it in the opposite direction relative to that piece.",
+                    "If the pawn hits an enemy piece, you lose your pawn but that piece is stunned for 1 move.",
+                    "If it doesn't hit anything, the pawn lands normally.",
+                    "To throw, select the pawn and move it as if capturing the piece behind it to start the throw.",
+                    "The screen will darken except for 3 lines. One line will be highlighted to show the throw path.",
+                    "Click the screen to switch lines. Right click or tap with two fingers to cancel.",
+                    "Click and hold to start the throw. A marker will move up the line, speeding up until max power, then oscillate between slightly lower and near max power.",
+                    "Release to throw the pawn.",
+                ]}
+                images={[
+                    pawnthrowing1,
+                    pawnthrowing2,
+                    pawnthrowing3,
+                    pawnthrowing4,
+                ]}
             />
 
             <GuideCard
