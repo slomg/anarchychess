@@ -17,6 +17,7 @@ const ChessPiece = ({ id }: { id: PieceID }) => {
     const {
         pieceType,
         pieceColor,
+        isStunned,
         isSelected,
         isAnimating,
         disableDrag,
@@ -29,6 +30,7 @@ const ChessPiece = ({ id }: { id: PieceID }) => {
         return {
             pieceType: piece?.type,
             pieceColor: piece?.color,
+            isStunned: piece && piece.stunnedForTurns > 0,
             isSelected: x.selectedPieceId === id,
             isAnimating: x.animatingPieceIds.has(id),
             disableDrag: x.disableDrag,
@@ -134,6 +136,7 @@ const ChessPiece = ({ id }: { id: PieceID }) => {
                     isAnimating && "transition-transform duration-100 ease-out",
                     isDragging && "z-30",
                 )}
+                rotation={isStunned ? 90 : 0}
                 ref={pieceRef}
                 style={{
                     backgroundImage: `url("${getPieceImage(pieceType, pieceColor)}")`,
