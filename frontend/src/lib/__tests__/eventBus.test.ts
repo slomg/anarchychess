@@ -56,7 +56,7 @@ describe("EventBus", () => {
     });
 
     describe("emit", () => {
-        it("should call all listeners and return their results in order", async () => {
+        it("should call all listeners and return their results", async () => {
             const listener1 = vi.fn((x: number) => x + 1);
             const listener2 = vi.fn(async (x: number) => x + 2);
 

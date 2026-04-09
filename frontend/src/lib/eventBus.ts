@@ -23,10 +23,11 @@ export default class EventBus<TArgs extends unknown[], TResult = void> {
 
     emit(...args: TArgs): Promise<TResult[]> {
         return this._lock.acquire(async () => {
-            const results: TResult[] = [];
+            const promises: MaybePromise<TResult>[] = [];
             for (const listener of this.listeners) {
-                results.push(await listener(...args));
+                promises.push(listener(...args));
             }
+            const results = await Promise.all(promises);
             return results;
         });
     }
