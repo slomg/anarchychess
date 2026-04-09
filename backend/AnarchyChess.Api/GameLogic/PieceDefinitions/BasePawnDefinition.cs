@@ -70,7 +70,6 @@ public abstract class BasePawnDefinition : IPieceDefinition
                 promotesTo: promotesTo,
                 behaviour
             ),
-            new ThrowingRule(),
         ];
     }
 }

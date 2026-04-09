@@ -11,12 +11,20 @@ public class PawnDefinition : BasePawnDefinition
         IReadOnlyChessBoard board,
         AlgebraicPoint position,
         Piece movingPiece
-    ) =>
-        GetPawnBehaviours(
+    )
+    {
+        var behaviours = GetPawnBehaviours(
             board,
             position,
             movingPiece,
             maxInitialMoveDistance: 3,
             promotesTo: GameLogicConstants.PromotablePieces
         );
+        foreach (var behaviour in behaviours)
+        {
+            yield return behaviour;
+        }
+
+        yield return new ThrowingRule();
+    }
 }

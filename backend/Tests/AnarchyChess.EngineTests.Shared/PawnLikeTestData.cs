@@ -517,24 +517,5 @@ public abstract class PawnLikeTestData : TheoryData<PieceTestCase>
                 .WithDescription("black pawn can promote if it's already on promotion square")
         );
         #endregion
-
-        #region Throw
-        Add(
-            PieceTestCase
-                .From("b7", movedWhitePawn)
-                .SkipAi()
-                .WithPieceAt("b6", PieceFactory.White(PieceType.Rook))
-                .ForEach(
-                    ["a8", "b8", "c8", "a9", "b9", "c9", "a10", "b10", "c10"],
-                    (position, testCase) =>
-                        testCase.GoesTo(
-                            position,
-                            specialMoveType: SpecialMoveType.Throw,
-                            trigger: ["b6"]
-                        )
-                )
-                .GoesTo("b8")
-        );
-        #endregion
     }
 }
