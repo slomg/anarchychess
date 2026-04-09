@@ -71,7 +71,9 @@ const NavMobile = () => {
                     <Image
                         src={LogoText}
                         alt="logo"
-                        className="inline-block w-36.75 rounded align-top"
+                        width={150}
+                        height={50}
+                        className="inline-block h-auto w-40 rounded align-top"
                         loading="eager"
                     />
                 </Link>

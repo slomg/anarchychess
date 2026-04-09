@@ -43,9 +43,9 @@ describe("BoardEffects", () => {
     it("should render a transient effect when present", async () => {
         const effect = createFakePawnThrowEffect();
         const { id } = store.getState().addTransientBoardEffect(effect);
-        const finish = store
+        const { settle, complete } = store
             .getState()
-            .activeTransientBoardEffects.get(id)?.complete;
+            .activeTransientBoardEffects.get(id)!;
 
         await ReactThreeTestRenderer.create(
             <ChessboardStoreContext.Provider value={store}>
@@ -54,7 +54,7 @@ describe("BoardEffects", () => {
         );
 
         expect(pawnThrowMock).toHaveBeenCalledWith(
-            { effect, onFinish: finish },
+            { effect, onComplete: complete, onSettle: settle },
             undefined,
         );
         expect(throwAimLineMock).not.toHaveBeenCalled();
