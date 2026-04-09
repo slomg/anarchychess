@@ -22,6 +22,7 @@ const emptyMove = {
     intermediates: [],
     sideEffects: [],
     pieceSpawns: [],
+    stuns: [],
     promotesTo: null,
     specialType: SpecialMoveType.NONE,
     forcedPriority: ForcedMovePriority.NONE,
@@ -49,11 +50,12 @@ describe("decodeMovePathIntoLegalMoves", () => {
                         posIdx: 8,
                     },
                 ],
+                stuns: [{ posIdx: 9, stunForTurns: 5 }],
                 promotesTo: PieceType.BISHOP,
                 specialType: SpecialMoveType.EN_PASSANT,
                 forcedPriority: ForcedMovePriority.UNDERAGE_PAWN,
                 emphasizeSquare: true,
-                overtimeRemovalIdxs: [9],
+                overtimeRemovalIdxs: [10],
             },
         ];
 
@@ -86,11 +88,14 @@ describe("decodeMovePathIntoLegalMoves", () => {
                     position: logicalPoint({ x: 8, y: 0 }),
                 },
             ],
+            stuns: [
+                { position: logicalPoint({ x: 9, y: 0 }), stunForTurns: 5 },
+            ],
             promotesTo: PieceType.BISHOP,
             specialType: SpecialMoveType.EN_PASSANT,
             forcedPriority: ForcedMovePriority.UNDERAGE_PAWN,
             emphasizeSquare: true,
-            overtimeRemovals: [logicalPoint({ x: 9, y: 0 })],
+            overtimeRemovals: [logicalPoint({ x: 0, y: 1 })],
         });
     });
 
@@ -138,19 +143,7 @@ describe("decodeLegalMoves", () => {
             {
                 fromIdx: 0,
                 toIdx: 1,
-                triggerIdxs: [2],
-                capturedIdxs: [3],
-                intermediateSquares: [{ posIdx: 4, isCapture: false }],
-                sideEffects: [{ fromIdx: 5, toIdx: 6 }],
-                pieceSpawns: [
-                    {
-                        type: PieceType.CHECKER,
-                        color: GameColor.BLACK,
-                        posIdx: 7,
-                    },
-                ],
                 moveKey: "1",
-                overtimeRemovalIdxs: [8],
             },
             {
                 fromIdx: 10,
@@ -174,33 +167,7 @@ describe("decodeLegalMoves", () => {
             from: logicalPoint({ x: 0, y: 0 }),
             to: logicalPoint({ x: 1, y: 0 }),
             moveKey: "1" as MoveKey,
-            triggers: [logicalPoint({ x: 2, y: 0 })],
-            captures: [logicalPoint({ x: 3, y: 0 })],
-            intermediates: [
-                {
-                    position: logicalPoint({ x: 4, y: 0 }),
-                    isCapture: false,
-                },
-            ],
-            sideEffects: [
-                {
-                    from: logicalPoint({ x: 5, y: 0 }),
-                    to: logicalPoint({ x: 6, y: 0 }),
-                },
-            ],
-            pieceSpawns: [
-                {
-                    id: "0",
-                    type: PieceType.CHECKER,
-                    color: GameColor.BLACK,
-                    position: logicalPoint({ x: 7, y: 0 }),
-                },
-            ],
-            promotesTo: null,
-            specialType: SpecialMoveType.NONE,
-            forcedPriority: ForcedMovePriority.NONE,
-            emphasizeSquare: false,
-            overtimeRemovals: [logicalPoint({ x: 8, y: 0 })],
+            ...emptyMove,
         });
         expect(addMoveSpy).toHaveBeenCalledWith<[Move]>({
             from: logicalPoint({ x: 0, y: 1 }),

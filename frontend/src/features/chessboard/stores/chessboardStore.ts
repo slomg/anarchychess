@@ -14,6 +14,10 @@ import {
     UiLegalMovesSliceProps,
 } from "./uiLegalMovesSlice";
 import {
+    createBoardEffectsSlice,
+    BoardEffectsSlice,
+} from "./boardEffectsSlice";
+import {
     AnimationSlice,
     AnimationSliceProps,
     createAnimationSlice,
@@ -31,6 +35,7 @@ import { AudioSlice, AudioSliceProps, createAudioSlice } from "./audioSlice";
 import { createPromotionSlice, PromotionSlice } from "./promotionSlice";
 import { OverlaySlice, createOverlaySlice } from "./overlaySlice";
 import { createPromptSlice, PromptSlice } from "./promptSlice";
+import { createThrowSlice, ThrowSlice } from "./throwSlice";
 import { CoreSlice, createCoreSlice } from "./coreSlice";
 import PositionHistory from "../lib/positionHistory";
 import BoardPieces from "../lib/boardPieces";
@@ -48,7 +53,9 @@ export type ChessboardStore = BoardSlice &
     PromptSlice &
     AnimationSlice &
     AudioSlice &
-    CoreSlice;
+    CoreSlice &
+    ThrowSlice &
+    BoardEffectsSlice;
 export type ChessboardProps = BoardSliceProps &
     PieceSliceProps &
     HistorySliceProps &
@@ -84,6 +91,8 @@ export function createChessboardStore(
                 ...createAnimationSlice(initState)(...a),
                 ...createAudioSlice(initState)(...a),
                 ...createCoreSlice(...a),
+                ...createThrowSlice(...a),
+                ...createBoardEffectsSlice(...a),
             })),
             { name: "chessboardStore" },
         ),

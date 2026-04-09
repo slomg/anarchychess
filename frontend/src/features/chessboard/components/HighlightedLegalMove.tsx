@@ -1,6 +1,6 @@
+import { LogicalPoint, StrPoint } from "@/features/point/types";
 import { useChessboardStore } from "../hooks/useChessboard";
 import { pointToStr } from "@/features/point/pointUtils";
-import { LogicalPoint, StrPoint } from "@/features/point/types";
 import ChessSquare from "./ChessSquare";
 
 const HighlightedLegalMovesRenderer = () => {
@@ -9,10 +9,14 @@ const HighlightedLegalMovesRenderer = () => {
     );
     const pieces = useChessboardStore((x) => x.pieces);
     const selectedPieceId = useChessboardStore((x) => x.selectedPieceId);
-    if (!selectedPieceId) return null;
+    if (!selectedPieceId) {
+        return null;
+    }
 
     const selectedPiece = pieces.getById(selectedPieceId);
-    if (!selectedPiece) return null;
+    if (!selectedPiece) {
+        return null;
+    }
 
     const moveNodes = legalMoves.getFromOrigin(selectedPiece.position);
 
@@ -28,7 +32,6 @@ const HighlightedLegalMovesRenderer = () => {
                     pointToStr(move.intermediates[0].position),
                     move.intermediates[0].position,
                 );
-                continue;
             }
         }
 
@@ -47,7 +50,7 @@ const HighlightedLegalMove = ({ position }: { position: LogicalPoint }) => {
             data-testid="highlightedLegalMove"
             className="z-20
                 bg-[radial-gradient(rgba(0,0,0,0.25)_20%,rgba(0,0,0,0)_23%)]
-                bg-size-[100%_100%] bg-center bg-no-repeat transition-all
+                bg-size-[100%_100%] bg-center bg-no-repeat transition-colors
                 duration-100 ease-out hover:border-5 hover:border-white/50
                 hover:bg-[rgba(105,105,105,0.2)]"
             position={position}

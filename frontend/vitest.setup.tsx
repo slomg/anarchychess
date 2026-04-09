@@ -10,6 +10,14 @@ vi.mock("@microsoft/signalr");
 loadEnvFile();
 
 beforeEach(() => {
+    window.ResizeObserver ??= vi.fn(
+        class {
+            disconnect = vi.fn();
+            observe = vi.fn();
+            unobserve = vi.fn();
+        },
+    );
+
     setWindowInnerWidth(1920);
     mockAudio();
 });

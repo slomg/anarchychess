@@ -3,11 +3,11 @@ using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Models;
-using AnarchyChess.EngineShared;
 using AnarchyChess.Api.TestInfrastructure;
 using AnarchyChess.Api.TestInfrastructure.Factories;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AnarchyChess.Api.TestInfrastructure.TestData;
+using AnarchyChess.EngineShared;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -118,7 +118,12 @@ public class GameCoreTests : BaseIntegrationTest
         // white knooklear fusion explosion captures the white king
         var result = MakeMoves(
             state,
-            new MoveKey(new("a3"), new("a2"), promotesTo: PieceType.Knook)
+            new MoveKey(
+                new("a3"),
+                new("a2"),
+                promotesTo: PieceType.Knook,
+                specialMoveType: SpecialMoveType.KnooklearFusion
+            )
         );
 
         result.EndStatus.Should().Be(_resultDescriber.KingSelfCapture(by: GameColor.White));
@@ -139,7 +144,12 @@ public class GameCoreTests : BaseIntegrationTest
 
         var result = MakeMoves(
             state,
-            new MoveKey(new("b2"), new("b1"), promotesTo: PieceType.Knook)
+            new MoveKey(
+                new("b2"),
+                new("b1"),
+                promotesTo: PieceType.Knook,
+                specialMoveType: SpecialMoveType.KnooklearFusion
+            )
         );
 
         result.EndStatus.Should().Be(_resultDescriber.MutualKingCapture());

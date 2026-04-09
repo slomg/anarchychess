@@ -13,6 +13,7 @@ import { LogicalPoint } from "@/features/point/types";
 
 type ChessSquareProps = {
     position: LogicalPoint;
+    rotation?: number;
     children?: ReactNode;
 } & HTMLAttributes<HTMLDivElement>;
 

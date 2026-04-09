@@ -33,13 +33,19 @@ public class ChessBoard : IReadOnlyChessBoard, IEquatable<ChessBoard>
     [Id(6)]
     public int HalfMoveClock { get; private set; }
 
+    [Id(7)]
+    private readonly Dictionary<AlgebraicPoint, int> _stunnedPieces;
+
+    public IReadOnlyDictionary<AlgebraicPoint, int> StunnedPieces => _stunnedPieces;
+
     public ChessBoard(
         Dictionary<AlgebraicPoint, Piece>? pieces = null,
         int height = GameLogicConstants.BoardHeight,
         int width = GameLogicConstants.BoardWidth,
         GameColor sideToMove = GameColor.White,
         List<Move>? moves = null,
-        int halfMoveClock = 0
+        int halfMoveClock = 0,
+        Dictionary<AlgebraicPoint, int>? stunnedPieces = null
     )
     {
         Height = height;
@@ -47,16 +53,21 @@ public class ChessBoard : IReadOnlyChessBoard, IEquatable<ChessBoard>
         SideToMove = sideToMove;
         _moves = moves ?? [];
         HalfMoveClock = halfMoveClock;
+        _stunnedPieces = stunnedPieces ?? [];
 
         _board = new Piece[height, width];
         if (pieces is not null)
+        {
             InitializeBoard(pieces);
+        }
     }
 
     public ChessBoard(IReadOnlyChessBoard other)
     {
         _board = new Piece[other.Height, other.Width];
         _moves = [.. other.Moves];
+        _stunnedPieces = other.StunnedPieces.ToDictionary();
+
         Width = other.Width;
         Height = other.Height;
         SideToMove = other.SideToMove;
@@ -115,7 +126,7 @@ public class ChessBoard : IReadOnlyChessBoard, IEquatable<ChessBoard>
 
     public void PlayMove(Move move)
     {
-        var steps = move.Flatten().ToList();
+        List<MoveStep> steps = [.. move.Flatten()];
 
         // store each piece along with its final destination before changing the board
         // ensures we don't lose any piece if its original square gets overwritten during moves
@@ -149,6 +160,7 @@ public class ChessBoard : IReadOnlyChessBoard, IEquatable<ChessBoard>
         foreach (var capture in move.Captures)
         {
             RemovePiece(capture.Position);
+            _stunnedPieces.Remove(capture.Position);
         }
 
         // step 2: clear all origin squares of moving pieces
@@ -175,6 +187,19 @@ public class ChessBoard : IReadOnlyChessBoard, IEquatable<ChessBoard>
             ModifyPiece(move.To, piece => piece with { Type = promotesTo, HasMoved = false });
         }
 
+        DecrementStunned();
+        foreach (var stun in move.Stuns)
+        {
+            if (_stunnedPieces.ContainsKey(stun.Position))
+            {
+                _stunnedPieces[stun.Position] += stun.StunForTurns;
+            }
+            else
+            {
+                _stunnedPieces[stun.Position] = stun.StunForTurns;
+            }
+        }
+
         _moves.Add(move);
         SideToMove = SideToMove.Invert();
         UpdateHalfMockClock(move);
@@ -189,6 +214,21 @@ public class ChessBoard : IReadOnlyChessBoard, IEquatable<ChessBoard>
         else
         {
             HalfMoveClock++;
+        }
+    }
+
+    private void DecrementStunned()
+    {
+        foreach (var (position, stunnedForTurns) in _stunnedPieces.ToList())
+        {
+            if (stunnedForTurns <= 1)
+            {
+                _stunnedPieces.Remove(position);
+            }
+            else
+            {
+                _stunnedPieces[position] = stunnedForTurns - 1;
+            }
         }
     }
 

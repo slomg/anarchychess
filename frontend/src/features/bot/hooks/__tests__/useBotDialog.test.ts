@@ -124,7 +124,7 @@ describe("useBotDialog", () => {
             );
 
             result.current.getDialogForMove(
-                createFakeDialogContext({ playerType: 1 }),
+                createFakeDialogContext({ plyNumber: 1 }),
             );
 
             const line = result.current.getDialogForMove(

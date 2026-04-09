@@ -12,6 +12,7 @@ export interface MoveNode {
 
 export default class LegalMoves {
     readonly byOrigin: Map<StrPoint, Map<StrPoint, MoveNode>> = new Map();
+
     _hasForcedMoves: boolean = false;
     _emphasizedSquares: LogicalPoint[] = [];
 
@@ -66,7 +67,9 @@ export default class LegalMoves {
         for (const trigger of move.triggers) {
             this._insertMoveTree(move, movesFromOrigin, trigger);
         }
-        this._insertMoveTree(move, movesFromOrigin, move.to);
+        if (move.triggers.length === 0) {
+            this._insertMoveTree(move, movesFromOrigin, move.to);
+        }
     }
 
     _insertMoveTree(

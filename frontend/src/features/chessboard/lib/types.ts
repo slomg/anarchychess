@@ -5,13 +5,15 @@ import {
     SpecialMoveType,
 } from "@/lib/apiClient";
 import { LogicalPoint } from "@/features/point/types";
-import BoardPieces from "./boardPieces";
+import type BoardPieces from "./boardPieces";
+import { TransientBoardEffect } from "../stores/boardEffectsSlice";
 
 export interface Piece {
     id: PieceID;
     type: PieceType;
     color: GameColor | null;
     position: LogicalPoint;
+    stunnedForTurns: number;
 }
 
 export interface Move {
@@ -24,6 +26,7 @@ export interface Move {
     intermediates: IntermediateSquare[];
     sideEffects: MoveSideEffect[];
     pieceSpawns: Piece[];
+    stuns: MoveStun[];
     promotesTo: PieceType | null;
     forcedPriority: ForcedMovePriority;
     specialType: SpecialMoveType;
@@ -49,6 +52,11 @@ export interface IntermediateSquare {
     isCapture: boolean;
 }
 
+export interface MoveStun {
+    position: LogicalPoint;
+    stunForTurns: number;
+}
+
 export type PieceID = string;
 
 export interface MoveBounds {
@@ -63,11 +71,14 @@ export interface AnimationStep {
     initialSpawnPositions?: BoardPieces;
     fadedPieces?: Map<PieceID, Piece>;
 
+    boardEffect?: TransientBoardEffect;
     moveBounds?: MoveBounds;
     specialType?: SpecialMoveType | null;
     isCapture?: boolean;
     isPromotion?: boolean;
     hasOvertimeRemovals?: boolean;
+
+    disableStepDelay?: boolean;
 }
 
 export interface GameReplay {

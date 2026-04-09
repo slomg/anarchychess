@@ -5,11 +5,11 @@ import { LogicalPoint } from "@/features/point/types";
 import ChessSquare from "./ChessSquare";
 
 const IntermediateSquarePrompt = () => {
-    const { pendingIntermediate, resolveNextIntermediate } = useChessboardStore(
-        (x) => ({
-            pendingIntermediate: x.pendingIntermediate,
-            resolveNextIntermediate: x.resolveNextIntermediate,
-        }),
+    const pendingIntermediate = useChessboardStore(
+        (x) => x.pendingIntermediate,
+    );
+    const resolveNextIntermediate = useChessboardStore(
+        (x) => x.resolveNextIntermediate,
     );
     if (
         pendingIntermediate === null ||

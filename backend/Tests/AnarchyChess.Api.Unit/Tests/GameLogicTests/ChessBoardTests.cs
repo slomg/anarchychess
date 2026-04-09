@@ -386,6 +386,133 @@ public class ChessBoardTests
     }
 
     [Fact]
+    public void PlayMove_with_a_self_capture_where_destination_is_not_origin_removes_piece_correctly()
+    {
+        ChessBoard board = new();
+
+        Piece piece = PieceFactory.White();
+        AlgebraicPoint position = new("a1");
+        AlgebraicPoint dest = new("f6");
+        board.PlacePiece(position, piece);
+
+        Move move = new(
+            from: position,
+            to: dest,
+            piece: piece,
+            captures: [new MoveCapture(piece, position)]
+        );
+        board.PlayMove(move);
+
+        board.PeekPieceAt(position).Should().BeNull();
+        board.PeekPieceAt(dest).Should().BeNull();
+    }
+
+    [Fact]
+    public void PlayMove_with_stun_applies_stun_to_target_piece()
+    {
+        ChessBoard board = new();
+
+        Piece attacker = PieceFactory.White(PieceType.Pawn);
+        Piece target = PieceFactory.Black(PieceType.Rook);
+
+        AlgebraicPoint from = new("a1");
+        AlgebraicPoint to = new("e5");
+
+        board.PlacePiece(from, attacker);
+        board.PlacePiece(to, target);
+
+        Move move = new(
+            from: from,
+            to: to,
+            piece: attacker,
+            captures: [new MoveCapture(attacker, from)],
+            stuns: [new MoveStun(to, Piece: target, StunForTurns: 2)],
+            specialMoveType: SpecialMoveType.Throw
+        );
+
+        board.PlayMove(move);
+
+        board.PeekPieceAt(to).Should().NotBeNull();
+        board.StunnedPieces.Should().ContainKey(to);
+        board.StunnedPieces[to].Should().Be(2);
+
+        board.PeekPieceAt(from).Should().BeNull();
+    }
+
+    [Fact]
+    public void PlayMove_decrements_stun_on_stunned_pieces()
+    {
+        ChessBoard board = new();
+
+        Piece attacker = PieceFactory.White(PieceType.Pawn);
+        Piece target = PieceFactory.Black(PieceType.Rook);
+        Piece otherBlack = PieceFactory.Black();
+
+        AlgebraicPoint attackerAt = new("a1");
+        AlgebraicPoint targetAt = new("e5");
+        AlgebraicPoint otherAt = new("b1");
+
+        board.PlacePiece(attackerAt, attacker);
+        board.PlacePiece(targetAt, target);
+        board.PlacePiece(otherAt, otherBlack);
+
+        Move move1 = new(
+            from: attackerAt,
+            to: new("a2"),
+            piece: attacker,
+            stuns: [new MoveStun(targetAt, Piece: target, StunForTurns: 2)]
+        );
+
+        board.PlayMove(move1);
+        board.StunnedPieces[targetAt].Should().Be(2);
+
+        Move move2 = new(from: otherAt, to: new("b2"), piece: otherBlack);
+        board.PlayMove(move2);
+
+        board.StunnedPieces[targetAt].Should().Be(1);
+
+        Move move3 = new(
+            from: move1.To,
+            to: new("a3"),
+            piece: PieceFactory.White(PieceType.Bishop)
+        );
+        board.PlayMove(move3);
+
+        board.StunnedPieces.ContainsKey(targetAt).Should().BeFalse();
+    }
+
+    [Fact]
+    public void PlayMove_removes_stun_if_a_piece_is_captured_while_stunned()
+    {
+        ChessBoard board = new();
+        Piece attacker = PieceFactory.White(PieceType.Pawn);
+        Piece target = PieceFactory.Black(PieceType.Rook);
+
+        AlgebraicPoint attackerAt = new("a1");
+        AlgebraicPoint targetAt = new("e5");
+        board.PlacePiece(attackerAt, attacker);
+        board.PlacePiece(targetAt, target);
+
+        Move move1 = new(
+            from: attackerAt,
+            to: new("a2"),
+            piece: attacker,
+            stuns: [new MoveStun(targetAt, Piece: target, StunForTurns: 2)]
+        );
+        board.PlayMove(move1);
+        board.StunnedPieces[targetAt].Should().Be(2);
+
+        Move move2 = new(
+            from: move1.To,
+            to: targetAt,
+            piece: PieceFactory.White(PieceType.Bishop),
+            captures: [new MoveCapture(target, targetAt)]
+        );
+        board.PlayMove(move2);
+        board.StunnedPieces.ContainsKey(targetAt).Should().BeFalse();
+    }
+
+    [Fact]
     public void PlayMove_doesnt_treat_promotions_in_place_as_self_captures()
     {
         ChessBoard board = new();

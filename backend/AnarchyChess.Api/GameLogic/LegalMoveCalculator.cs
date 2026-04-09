@@ -54,11 +54,20 @@ public class LegalMoveCalculator : ILegalMoveCalculator
     )
     {
         if (!board.TryGetPieceAt(position, out var piece))
+        {
             yield break;
+        }
+
+        if (board.StunnedPieces.ContainsKey(position))
+        {
+            yield break;
+        }
 
         var isColorMismatch = piece.Color is not null && piece.Color != board.SideToMove;
         if (isColorMismatch)
+        {
             yield break;
+        }
 
         var pieceBehaviours = _pieceDefinitions[piece.Type].GetBehaviours(board, position, piece);
         foreach (var behaviour in pieceBehaviours)

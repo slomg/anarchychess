@@ -7,6 +7,8 @@ import { AnimationStep, MoveBounds } from "../../lib/types";
 import { logicalPoint } from "@/features/point/pointUtils";
 import BoardPieces from "../../lib/boardPieces";
 import constants from "@/lib/constants";
+import { createFakePawnThrowEffect } from "@/lib/testUtils/fakers/pawnThrowEffectFaker";
+import { BoardEffectId } from "../boardEffectsSlice";
 
 describe("AnimationSlice", () => {
     let store: StoreApi<ChessboardStore>;
@@ -226,6 +228,134 @@ describe("AnimationSlice", () => {
             await promise;
 
             expect(store.getState().lastMove).toEqual(moveBounds3);
+        });
+
+        it("should skip step delay if disableStepDelay is true", async () => {
+            const piece1 = createFakePiece({ id: "1" });
+            const piece2 = createFakePiece({ id: "2" });
+
+            const step1: AnimationStep = {
+                newPieces: BoardPieces.fromPieces(piece1),
+                movedPieceIds: [piece1.id],
+                disableStepDelay: true,
+            };
+            const step2: AnimationStep = {
+                newPieces: BoardPieces.fromPieces(piece2),
+                movedPieceIds: [piece2.id],
+            };
+
+            const promise = store.getState().playAnimation([step1, step2]);
+
+            expect(store.getState().animatingPieces).toEqual(step1.newPieces);
+
+            vi.advanceTimersByTime(constants.PIECE_ANIMATION_LENGTH_MS);
+            await flushMicrotasks();
+
+            expect(store.getState().animatingPieces).toEqual(step2.newPieces);
+
+            await promise;
+            expect(store.getState().animatingPieces).toBeNull();
+        });
+
+        it("should skip animation length delay if movedPieceIds is empty", async () => {
+            const piece1 = createFakePiece({ id: "1" });
+            const piece2 = createFakePiece({ id: "2" });
+
+            const step1: AnimationStep = {
+                newPieces: BoardPieces.fromPieces(piece1),
+                movedPieceIds: [], // no pieces to animate
+            };
+            const step2: AnimationStep = {
+                newPieces: BoardPieces.fromPieces(piece2),
+                movedPieceIds: [piece2.id],
+            };
+
+            const promise = store.getState().playAnimation([step1, step2]);
+
+            expect(store.getState().animatingPieces).toEqual(step1.newPieces);
+            await flushMicrotasks();
+            vi.advanceTimersByTime(constants.ANIMATION_STEP_DELAY_MS);
+            await flushMicrotasks();
+
+            expect(store.getState().animatingPieces).toEqual(step2.newPieces);
+
+            vi.advanceTimersByTime(constants.PIECE_ANIMATION_LENGTH_MS);
+            await flushMicrotasks();
+
+            await promise;
+            expect(store.getState().animatingPieces).toBeNull();
+        });
+
+        it("should play board effects", async () => {
+            const piece1 = createFakePiece({ id: "1" });
+            const piece2 = createFakePiece({ id: "2" });
+            const boardEffect = createFakePawnThrowEffect();
+
+            let resolveEffect!: () => void;
+            const effectPromise = new Promise<void>((resolve) => {
+                resolveEffect = resolve;
+            });
+
+            const addTransientBoardEffectMock = vi.fn(() => ({
+                promise: effectPromise,
+                id: "effect" as BoardEffectId,
+            }));
+            store.setState({
+                addTransientBoardEffect: addTransientBoardEffectMock,
+            });
+
+            const step1: AnimationStep = {
+                newPieces: BoardPieces.fromPieces(piece1),
+                movedPieceIds: [piece1.id],
+                boardEffect,
+            };
+            const step2: AnimationStep = {
+                newPieces: BoardPieces.fromPieces(piece2),
+                movedPieceIds: [piece2.id],
+            };
+
+            const animationPromise = store
+                .getState()
+                .playAnimation([step1, step2]);
+
+            expect(store.getState().animatingPieces).toEqual(step1.newPieces);
+            vi.advanceTimersByTime(constants.PIECE_ANIMATION_LENGTH_MS);
+            await flushMicrotasks();
+            vi.advanceTimersByTime(constants.ANIMATION_STEP_DELAY_MS);
+            await flushMicrotasks();
+            // it shouldn't continue until effect promise is resolved
+            expect(store.getState().animatingPieces).toEqual(step1.newPieces);
+
+            resolveEffect();
+            await flushMicrotasks();
+            vi.advanceTimersByTime(constants.PIECE_ANIMATION_LENGTH_MS);
+            await flushMicrotasks();
+            vi.advanceTimersByTime(constants.ANIMATION_STEP_DELAY_MS);
+            await flushMicrotasks();
+
+            expect(store.getState().animatingPieces).toEqual(step2.newPieces);
+
+            await animationPromise;
+            expect(store.getState().animatingPieces).toBeNull();
+        });
+
+        it("should resolve all transient effects at the start of", async () => {
+            const piece = createFakePiece();
+
+            const resolveAllTransientBoardEffectsMock = vi.fn();
+            store.setState({
+                resolveAllTransientBoardEffects:
+                    resolveAllTransientBoardEffectsMock,
+            });
+
+            const animationStep: AnimationStep = {
+                newPieces: BoardPieces.fromPieces(piece),
+                movedPieceIds: [piece.id],
+            };
+
+            await store.getState().playAnimation(animationStep);
+
+            expect(resolveAllTransientBoardEffectsMock).toHaveBeenCalledOnce();
         });
     });
 

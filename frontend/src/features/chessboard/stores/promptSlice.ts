@@ -15,10 +15,12 @@ export const createPromptSlice: StateCreator<
     PromptSlice
 > = (_, get) => ({
     discardAllPrompts() {
-        const { resolvePromotion, resolveNextIntermediate } = get();
+        const { resolvePromotion, resolveNextIntermediate, pendingThrow } =
+            get();
 
         resolvePromotion?.(null);
         resolveNextIntermediate?.(null);
+        pendingThrow?.resolve(null);
     },
 
     discardPromptsForPiece(pieceId) {
@@ -27,6 +29,7 @@ export const createPromptSlice: StateCreator<
             resolvePromotion,
             pendingIntermediate,
             resolveNextIntermediate,
+            pendingThrow,
         } = get();
 
         if (pendingPromotion?.piece.id === pieceId) {
@@ -35,6 +38,10 @@ export const createPromptSlice: StateCreator<
 
         if (pendingIntermediate?.pieceId === pieceId) {
             resolveNextIntermediate?.(null);
+        }
+
+        if (pendingThrow?.piece.id === pieceId) {
+            pendingThrow.resolve(null);
         }
     },
 });

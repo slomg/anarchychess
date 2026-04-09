@@ -143,7 +143,7 @@ public class MoveHandlerTests : BaseIntegrationTest
     {
         var result = await _handler.HandleMoveAsync(
             _gameData.Players.WhitePlayer.UserId,
-            new MoveKey(from: new AlgebraicPoint("e2"), to: new AlgebraicPoint("e8")),
+            new MoveKey(from: new AlgebraicPoint("e1"), to: new AlgebraicPoint("e8")),
             _gameToken,
             _gameData,
             CT

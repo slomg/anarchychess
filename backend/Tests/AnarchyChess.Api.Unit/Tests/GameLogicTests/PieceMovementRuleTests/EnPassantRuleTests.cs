@@ -1,9 +1,9 @@
 ﻿using AnarchyChess.Api.GameLogic;
-using AnarchyChess.EngineShared.Extensions;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameLogic.PieceMovementRules;
 using AnarchyChess.Api.TestInfrastructure.Factories;
 using AnarchyChess.EngineShared;
+using AnarchyChess.EngineShared.Extensions;
 using AwesomeAssertions;
 
 namespace AnarchyChess.Api.Unit.Tests.GameLogicTests.PieceMovementRuleTests;
@@ -110,9 +110,36 @@ public class EnPassantRuleTests
         var result = behaviour.Evaluate(board, origin, pawn).ToList();
 
         if (shouldWork)
+        {
             result.Should().NotBeEmpty();
+        }
         else
+        {
             result.Should().BeEmpty();
+        }
+    }
+
+    [Fact]
+    public void Evaluate_doesnt_allow_en_pasant_if_the_last_move_is_special()
+    {
+        ChessBoard board = new();
+        var pawn = PieceFactory.White(PieceType.Pawn);
+        var enemy = PieceFactory.Black(PieceType.Pawn, hasMoved: false);
+
+        AlgebraicPoint origin = new("e6");
+        AlgebraicPoint enemyOrigin = new("d9");
+        AlgebraicPoint enemyDestination = new("d6");
+
+        board.PlacePiece(origin, pawn);
+        board.PlacePiece(enemyOrigin, enemy);
+        board.PlayMove(
+            new Move(enemyOrigin, enemyDestination, enemy, specialMoveType: SpecialMoveType.Throw)
+        );
+        EnPassantRule behaviour = new(direction: new(X: -1, Y: 1), _nullChain);
+
+        var result = behaviour.Evaluate(board, origin, pawn).ToList();
+
+        result.Should().BeEmpty();
     }
 
     [Fact]

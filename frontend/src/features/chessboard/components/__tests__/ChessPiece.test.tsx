@@ -68,29 +68,39 @@ describe("ChessPiece", () => {
         percentPosition,
         draggingOffset,
         centerOffset,
+        rotation,
     }: {
         percentPosition: Point;
         draggingOffset?: Point;
         centerOffset?: Point;
+        rotation?: number;
     }) {
         draggingOffset ??= { x: 0, y: 0 };
         centerOffset ??= { x: 0, y: 0 };
-        return `translate(
+        return (
+            `translate(
                 clamp(0%, calc(${percentPosition.x}% + ${draggingOffset.x - centerOffset.x}px), 900%),
-                clamp(0%, calc(${percentPosition.y}% + ${draggingOffset.y - centerOffset.y}px), 900%))`;
+                clamp(0%, calc(${percentPosition.y}% + ${draggingOffset.y - centerOffset.y}px), 900%))` +
+            (rotation ? `rotate(${rotation}deg)` : ``)
+        );
     }
 
     function renderPiece({
         logicalPosition,
         legalMoves,
-    }: { logicalPosition?: LogicalPoint; legalMoves?: Move[] } = {}) {
+        pieceInfo,
+    }: {
+        logicalPosition?: LogicalPoint;
+        legalMoves?: Move[];
+        pieceInfo?: Piece;
+    } = {}) {
         logicalPosition ??= logicalPoint({ x: 0, y: 9 });
         legalMoves ??= [];
-
-        const pieceInfo = createFakePiece({
+        pieceInfo ??= createFakePiece({
             position: logicalPosition,
             id: CREATED_PIECE_ID,
         });
+
         const boardPieces = BoardPieces.fromPieces(pieceInfo);
         store.setState({ pieces: boardPieces });
         store.getState().setLatestLegalMoves(new LegalMoves(legalMoves));
@@ -147,9 +157,9 @@ describe("ChessPiece", () => {
             const { pieceInfo, piece } = renderPiece({ logicalPosition });
 
             const expectedTransform = getExpectedTransform({ percentPosition });
-            expect(piece).toHaveStyle(`
-            background-image: url("${getPieceImage(pieceInfo.type, pieceInfo.color)}");
-        `);
+            expect(piece).toHaveStyle(
+                `background-image: url("${getPieceImage(pieceInfo.type, pieceInfo.color)}");`,
+            );
             expect(piece).toHaveStyle({ transform: expectedTransform });
         },
     );
@@ -204,7 +214,7 @@ describe("ChessPiece", () => {
         expect(piece).toHaveStyle({ transform: expectedTransform });
     });
 
-    it("should release reset the position of the piece once released", async () => {
+    it("should reset the position of the piece once released", async () => {
         const { logicalPointToScreenPoint } = store.getState();
         const user = userEvent.setup();
         const { piece, pieceInfo, chessboard } = renderPiece();
@@ -389,5 +399,27 @@ describe("ChessPiece", () => {
         await pressPiece(user, pieceInfo, chessboard);
 
         expect(store.getState().selectedPieceId).toBeNull();
+    });
+
+    it("should rotate the piece 90deg when stunned", () => {
+        const logicalPosition = logicalPoint({ x: 0, y: 9 });
+
+        const stunnedPiece = createFakePiece({
+            position: logicalPosition,
+            id: CREATED_PIECE_ID,
+            stunnedForTurns: 1,
+        });
+
+        const { piece } = renderPiece({
+            logicalPosition,
+            pieceInfo: stunnedPiece,
+        });
+
+        const expectedTransform = getExpectedTransform({
+            percentPosition: { x: 0, y: 0 },
+            rotation: 90,
+        });
+
+        expect(piece).toHaveStyle({ transform: expectedTransform });
     });
 });

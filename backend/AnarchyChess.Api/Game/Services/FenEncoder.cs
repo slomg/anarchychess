@@ -2,9 +2,9 @@
 using System.Text.Json;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.GameLogic;
-using AnarchyChess.EngineShared.Extensions;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.EngineShared;
+using AnarchyChess.EngineShared.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -36,6 +36,9 @@ public class FenEncoder(IPieceLetterMap pieceLetterMap, IOptions<JsonOptions> js
         FenParts parts = new(
             SideToMove: board.SideToMove is GameColor.Black ? GameColor.Black : null,
             MovedPieces: GetMovedPieces(board),
+            StunnedPieces: board.StunnedPieces.Count > 0
+                ? board.StunnedPieces.ToDictionary(kvp => kvp.Key.AsAlgebraic(), kvp => kvp.Value)
+                : null,
             LastMove: FenLastMove.FromMove(board.Moves.Count > 0 ? board.Moves[^1] : null),
             HalfMoveClock: board.HalfMoveClock > 0 ? board.HalfMoveClock : null
         );

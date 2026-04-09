@@ -24,7 +24,7 @@ public class IlVaticanoRule(Offset stepOffset, int partnerDistance = 3) : IPiece
             yield break;
 
         List<MoveCapture> captures = [];
-        List<AlgebraicPoint> triggers = [];
+        List<AlgebraicPoint> triggers = [partnerPiecePosition];
         var stepPoint = position;
         for (var i = 0; i < _partnerDistance - 1; i++)
         {

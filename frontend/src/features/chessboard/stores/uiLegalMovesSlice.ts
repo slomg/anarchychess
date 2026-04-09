@@ -1,10 +1,10 @@
 import { StateCreator } from "zustand";
 
+import { PieceType, SpecialMoveType } from "@/lib/apiClient";
 import { LogicalPoint } from "@/features/point/types";
 import { ChessboardStore } from "./chessboardStore";
 import BoardPieces from "../lib/boardPieces";
 import { PositionId } from "../lib/position";
-import { PieceType } from "@/lib/apiClient";
 import { PieceID } from "../lib/types";
 import { Move } from "../lib/types";
 
@@ -55,6 +55,7 @@ export function createUiLegalMovesSlice(
                 getViewedPositionLegalMoves,
                 disambiguateIntermediates,
                 promptPromotion,
+                promptThrow,
             } = get();
 
             const piece = pieces.getById(pieceId);
@@ -67,7 +68,9 @@ export function createUiLegalMovesSlice(
 
             const legalMoves = getViewedPositionLegalMoves();
             const moveNode = legalMoves.getDirectNode(piece.position, dest);
-            if (!moveNode) return null;
+            if (!moveNode) {
+                return null;
+            }
 
             const movesToDest = await disambiguateIntermediates(
                 dest,
@@ -75,9 +78,18 @@ export function createUiLegalMovesSlice(
                 pieceId,
                 pieces,
             );
-            if (movesToDest.length === 0) return null;
+            if (movesToDest.length === 0) {
+                return null;
+            }
 
-            if (movesToDest.length === 1) return movesToDest[0];
+            if (movesToDest.length === 1) {
+                return movesToDest[0];
+            }
+
+            if (movesToDest[0].specialType === SpecialMoveType.THROW) {
+                const throwResult = await promptThrow(dest, piece, movesToDest);
+                return throwResult;
+            }
 
             // multiple moves to the same destination, must be a promotion
             const availablePromotions = new Map<PieceType | null, Move>();

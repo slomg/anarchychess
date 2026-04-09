@@ -25,9 +25,15 @@ public record LegalMoveSet(
                 moveCaptureMask |= UInt128.One << capture.Position.AsIdx();
             }
 
+            if (move.From.AsIdx() == botMove.From && move.To.AsIdx() == botMove.To)
+            {
+                Console.WriteLine("");
+            }
+
             return move.From.AsIdx() == botMove.From
                 && move.To.AsIdx() == botMove.To
                 && move.PromotesTo == botMove.PromotesTo
-                && moveCaptureMask == botMove.CapturesMask;
+                && moveCaptureMask == botMove.CapturesMask
+                && move.SpecialMoveType == botMove.SpecialMoveType;
         });
 }

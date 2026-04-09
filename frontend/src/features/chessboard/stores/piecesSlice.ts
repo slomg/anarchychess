@@ -1,16 +1,12 @@
 import { StateCreator } from "zustand";
 
-import {
-    simulateMove,
-    simulateMoveWithIntermediates,
-} from "../lib/simulateMove";
-
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
 import { pointEquals, pointToStr } from "@/features/point/pointUtils";
+import { AnimationStep, MoveBounds, PieceID } from "../lib/types";
+import { simulateMoveAnimated } from "../lib/simulateMove";
 import type { ChessboardStore } from "./chessboardStore";
 import { LogicalPoint } from "@/features/point/types";
 import { ScreenPoint } from "@/features/point/types";
-import { AnimationStep, MoveBounds, PieceID } from "../lib/types";
 import BoardPieces from "../lib/boardPieces";
 import { Position } from "../lib/position";
 import EventBus from "@/lib/eventBus";
@@ -33,7 +29,6 @@ export interface PiecesSlice {
     unselectPiece(): void;
 
     applyMoveAnimated(move: Move): Promise<void>;
-    applyMoveImmediate(move: Move): Promise<void>;
     removePieceAt(point: LogicalPoint): Promise<void>;
 
     handleMousePieceDrop(args: {
@@ -60,13 +55,23 @@ export function createPiecesSlice(
     return (set, get) => {
         async function applyMoveTurn(move: Move): Promise<void> {
             const {
-                applyMoveImmediate,
                 unselectPiece,
                 pieces: prevPieces,
                 pieceMovementEvent,
+                playAnimation,
+                pieces,
             } = get();
 
-            const animationPromise = applyMoveImmediate(move);
+            const steps = simulateMoveAnimated(pieces, move, {
+                skipAlreadyPlayedLocally: true,
+            });
+            const lastStep = steps.at(-1);
+            if (!lastStep) {
+                return;
+            }
+
+            commitPositionChange(lastStep.newPieces);
+            const animationPromise = playAnimation(steps);
 
             unselectPiece();
             await pieceMovementEvent.emit(move, prevPieces);
@@ -156,20 +161,14 @@ export function createPiecesSlice(
                 });
             },
 
-            async applyMoveImmediate(move) {
-                const { playAnimation, pieces } = get();
-                const animation = simulateMove(pieces, move);
-
-                commitPositionChange(animation.newPieces);
-                await playAnimation(animation);
-            },
-
             async applyMoveAnimated(move) {
                 const { playAnimation, pieces } = get();
 
-                const steps = simulateMoveWithIntermediates(pieces, move);
+                const steps = simulateMoveAnimated(pieces, move);
                 const lastStep = steps.at(-1);
-                if (!lastStep) return;
+                if (!lastStep) {
+                    return;
+                }
 
                 commitPositionChange(lastStep.newPieces);
                 await playAnimation(steps);
@@ -209,18 +208,23 @@ export function createPiecesSlice(
                     getViewedPositionLegalMoves,
                     isProcessingMove,
                 } = get();
-                if (isProcessingMove) return { success: false };
+                if (isProcessingMove) {
+                    return { success: false };
+                }
 
                 set((state) => {
                     state.isProcessingMove = true;
                 });
                 try {
                     const dest = screenToLogicalPoint(mousePoint);
-                    if (!dest) return { success: false };
+                    if (!dest) {
+                        return { success: false };
+                    }
 
                     const needsDoubleClick = detectNeedsDoubleClick(dest);
-                    if (needsDoubleClick && !isDoubleClick)
+                    if (needsDoubleClick && !isDoubleClick) {
                         return { success: false, needsDoubleClick: true };
+                    }
 
                     const move = await getMoveForSelection(dest);
                     if (move) {

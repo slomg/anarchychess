@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using AnarchyChess.Ai.Evaluation;
 using AnarchyChess.Ai.Helpers;
 using AnarchyChess.Ai.Models;
 using AnarchyChess.EngineShared;
@@ -49,7 +48,12 @@ public partial class BitBoard
 
         if (prevMoveState is not null)
         {
-            ProcessEnPassant(from: prevMoveState.From, to: prevMoveState.To, prevMoveState.Piece);
+            ProcessEnPassant(
+                from: prevMoveState.From,
+                to: prevMoveState.To,
+                prevMoveState.SpecialMoveType,
+                prevMoveState.Piece
+            );
             LastCaptureMask = prevMoveState.CaptureMask;
         }
     }
@@ -405,16 +409,25 @@ public partial class BitBoard
 
     private void ProcessMoveEffects(BitMove move)
     {
-        ProcessEnPassant(move.From, move.To, move.Piece);
+        ProcessEnPassant(move.From, move.To, move.SpecialMoveType, move.Piece);
         LastCaptureMask = move.CapturesMask;
     }
 
-    private void ProcessEnPassant(byte from, byte to, BitPiece piece)
+    private void ProcessEnPassant(
+        byte from,
+        byte to,
+        SpecialMoveType specialMoveType,
+        BitPiece piece
+    )
     {
         EnPassantSquaresMask = 0;
         EnPassantPawnSquare = 0;
 
-        if (!GameLogicConstants.PawnLikePieces.Contains(piece.Type) || from == to)
+        if (
+            specialMoveType is not SpecialMoveType.None
+            || from == to
+            || !GameLogicConstants.PawnLikePieces.Contains(piece.Type)
+        )
         {
             return;
         }

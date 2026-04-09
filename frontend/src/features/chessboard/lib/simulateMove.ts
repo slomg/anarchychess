@@ -1,14 +1,59 @@
+import { TransientBoardEffectType } from "../stores/boardEffectsSlice";
 import { AnimationStep, MoveBounds, Piece, PieceID } from "./types";
+import { SpecialMoveType } from "@/lib/apiClient";
 import BoardPieces from "./boardPieces";
 import { Move } from "./types";
 
-export function simulateMoveWithIntermediates(
+type SpecialMoveAnimationHandler = (
+    basePieces: BoardPieces,
+    move: Move,
+    fromPiece: Piece,
+) => AnimationStep[];
+
+interface SpecialMoveAnimation {
+    handler: SpecialMoveAnimationHandler;
+    alreadyPlayedLocally: boolean;
+}
+
+interface SimulateMoveAnimatedOptions {
+    skipAlreadyPlayedLocally?: boolean;
+}
+
+export function simulateMoveAnimated(
     pieces: BoardPieces,
     move: Move,
+    { skipAlreadyPlayedLocally }: SimulateMoveAnimatedOptions = {},
 ): AnimationStep[] {
-    const fromPiece = pieces.getByPosition(move.from);
-    if (!fromPiece) return [];
+    skipAlreadyPlayedLocally ??= false;
 
+    const fromPiece = pieces.getByPosition(move.from);
+    if (!fromPiece) {
+        return [];
+    }
+
+    const steps: AnimationStep[] = [];
+
+    if (!skipAlreadyPlayedLocally) {
+        steps.push(...animateIntermediates(pieces, move, fromPiece));
+    }
+
+    const specialHandler = specialMoveAnimationHandlers.get(move.specialType);
+    const shouldPlaySpecialHandler =
+        !skipAlreadyPlayedLocally || !specialHandler?.alreadyPlayedLocally;
+    if (specialHandler && shouldPlaySpecialHandler) {
+        steps.push(...specialHandler.handler(pieces, move, fromPiece));
+    }
+
+    const mainMoveStep = simulateMove(pieces, move);
+    steps.push(mainMoveStep);
+    return steps;
+}
+
+function animateIntermediates(
+    pieces: BoardPieces,
+    move: Move,
+    fromPiece: Piece,
+): AnimationStep[] {
     const steps: AnimationStep[] = [];
     const currentPieces = new BoardPieces(pieces);
     const intermediateFadedPieces =
@@ -25,9 +70,41 @@ export function simulateMoveWithIntermediates(
         });
     }
 
-    const mainMoveStep = simulateMove(pieces, move);
-    steps.push(mainMoveStep);
     return steps;
+}
+
+const specialMoveAnimationHandlers = new Map<
+    SpecialMoveType,
+    SpecialMoveAnimation
+>([
+    [
+        SpecialMoveType.THROW,
+        { handler: simulateThrowMove, alreadyPlayedLocally: false },
+    ],
+]);
+
+function simulateThrowMove(
+    basePieces: BoardPieces,
+    move: Move,
+    fromPiece: Piece,
+): AnimationStep[] {
+    const newPieces = new BoardPieces(basePieces);
+    newPieces.removeFrom(move.from);
+
+    return [
+        {
+            newPieces,
+            movedPieceIds: [],
+
+            boardEffect: {
+                type: TransientBoardEffectType.PAWN_THROW,
+                from: move.from,
+                to: move.to,
+                color: fromPiece.color,
+            },
+            disableStepDelay: true,
+        },
+    ];
 }
 
 export function simulateMove(

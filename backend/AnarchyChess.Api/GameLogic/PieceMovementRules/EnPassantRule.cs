@@ -16,7 +16,9 @@ public class EnPassantRule(Offset direction, Offset chainCaptureDirection) : IPi
     {
         var pawnEnPassant = EvaluatePawnEnPassant(board, position, movingPiece);
         if (pawnEnPassant is null)
+        {
             yield break;
+        }
 
         yield return pawnEnPassant;
         foreach (var move in EvaluateEnPassantChain(board, movingPiece, pawnEnPassant))
@@ -33,34 +35,47 @@ public class EnPassantRule(Offset direction, Offset chainCaptureDirection) : IPi
     {
         var targetPos = position + _direction;
         if (!board.IsWithinBoundaries(targetPos))
+        {
             return null;
+        }
 
         var lastMove = board.Moves.Count > 0 ? board.Moves[^1] : null;
         if (
             lastMove is null
             || !GameLogicConstants.PawnLikePieces.Contains(lastMove.Piece.Type)
+            || lastMove.SpecialMoveType is not SpecialMoveType.None
             || lastMove.Piece.Color == movingPiece.Color
         )
+        {
             return null;
+        }
 
-        var verticalDistanceLastPieceMoved = Math.Abs(lastMove.From.Y - lastMove.To.Y);
+        int verticalDistanceLastPieceMoved = Math.Abs(lastMove.From.Y - lastMove.To.Y);
         if (verticalDistanceLastPieceMoved < 2)
+        {
             return null;
+        }
 
-        var horizontalDistanceLastPieceMoved = Math.Abs(lastMove.From.X - lastMove.To.X);
+        int horizontalDistanceLastPieceMoved = Math.Abs(lastMove.From.X - lastMove.To.X);
         if (horizontalDistanceLastPieceMoved != 0)
+        {
             return null;
+        }
 
-        var distanceBetweenFiles = Math.Abs(lastMove.To.X - targetPos.X);
+        int distanceBetweenFiles = Math.Abs(lastMove.To.X - targetPos.X);
         if (distanceBetweenFiles != 0)
+        {
             return null;
+        }
 
         // check if the target position is between last move From and To positions
         if (
             targetPos.Y <= Math.Min(lastMove.From.Y, lastMove.To.Y)
             || targetPos.Y >= Math.Max(lastMove.From.Y, lastMove.To.Y)
         )
+        {
             return null;
+        }
 
         return new Move(
             position,
@@ -88,16 +103,22 @@ public class EnPassantRule(Offset direction, Offset chainCaptureDirection) : IPi
             var capturePosition = to + _chainCaptureDirection;
 
             if (!board.IsWithinBoundaries(to))
+            {
                 yield break;
+            }
 
             if (board.PeekPieceAt(to) is not null)
+            {
                 yield break;
+            }
 
             if (
                 !board.TryGetPieceAt(capturePosition, out var capture)
                 || capture.Color == movingPiece.Color
             )
+            {
                 yield break;
+            }
 
             capturedSquares.Add(new MoveCapture(capturePosition, board));
             yield return new Move(

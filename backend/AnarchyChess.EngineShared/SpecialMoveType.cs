@@ -11,4 +11,5 @@ public enum SpecialMoveType
     KnooklearFusion,
     RadioactiveBetaDecay,
     OmnipotentPawnSpawn,
+    Throw,
 }

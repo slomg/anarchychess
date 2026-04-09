@@ -93,7 +93,7 @@ public class RookTestData : TheoryData<PieceTestCase>
         Add(
             PieceTestCase
                 .From("a1", rook)
-                .WithFriendlyPieceAt("d1")
+                .WithFriendlyPieceAt("d1", excludePieces: [PieceType.Horsey])
                 .WithEnemyPieceAt("e1")
                 .WithFriendlyPieceAt("a4", excludePieces: [PieceType.Horsey])
                 .WithEnemyPieceAt("a5")

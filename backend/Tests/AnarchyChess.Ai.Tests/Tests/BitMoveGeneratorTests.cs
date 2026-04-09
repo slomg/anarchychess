@@ -127,7 +127,8 @@ public class BitMoveGeneratorTests
             From: 0,
             To: BitOmnipotentPawnRule.WhiteSquare,
             Piece: new BitPiece { Type = PieceType.Rook, Color = BitPieceColor.Black },
-            CaptureMask: BitOmnipotentPawnRule.WhiteSquareMask
+            CaptureMask: BitOmnipotentPawnRule.WhiteSquareMask,
+            SpecialMoveType: SpecialMoveType.None
         );
         BitBoard board = BitBoard.FromPieces([], prevMoveState: prevMove);
 

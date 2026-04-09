@@ -1,3 +1,11 @@
-﻿namespace AnarchyChess.Ai.Models;
+﻿using AnarchyChess.EngineShared;
 
-public record PrevMoveState(byte From, byte To, BitPiece Piece, UInt128 CaptureMask);
+namespace AnarchyChess.Ai.Models;
+
+public record PrevMoveState(
+    byte From,
+    byte To,
+    BitPiece Piece,
+    UInt128 CaptureMask,
+    SpecialMoveType SpecialMoveType
+);

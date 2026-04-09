@@ -7,17 +7,28 @@ import {
 } from "@/lib/testUtils/fakers/chessboardFakers";
 import { PieceType } from "@/lib/apiClient";
 import { PendingIntermediate } from "../intermediateSlice";
+import { PendingThrow } from "../throwSlice";
 
 describe("PromptSlice", () => {
     let store: StoreApi<ChessboardStore>;
     const resolvePromotionMock = vi.fn();
     const resolveNextIntermediateMock = vi.fn();
 
+    let pendingThrow: PendingThrow;
+
     beforeEach(() => {
         store = createChessboardStore();
+
+        pendingThrow = {
+            piece: createFakePiece(),
+            points: [createRandomPoint(), createRandomPoint()],
+            throwerOrigin: createRandomPoint(),
+            resolve: vi.fn(),
+        };
         store.setState({
             resolvePromotion: resolvePromotionMock,
             resolveNextIntermediate: resolveNextIntermediateMock,
+            pendingThrow,
         });
     });
 
@@ -29,6 +40,7 @@ describe("PromptSlice", () => {
             expect(resolveNextIntermediateMock).toHaveBeenCalledExactlyOnceWith(
                 null,
             );
+            expect(pendingThrow.resolve).toHaveBeenCalledExactlyOnceWith(null);
         });
     });
 
@@ -44,7 +56,12 @@ describe("PromptSlice", () => {
                 nextOptions: [createRandomPoint(), createRandomPoint()],
                 pieceId: piece.id,
             };
-            store.setState({ pendingPromotion, pendingIntermediate });
+            pendingThrow.piece = piece;
+            store.setState({
+                pendingPromotion,
+                pendingIntermediate,
+                pendingThrow,
+            });
 
             store.getState().discardPromptsForPiece(piece.id);
 
@@ -52,6 +69,7 @@ describe("PromptSlice", () => {
             expect(resolveNextIntermediateMock).toHaveBeenCalledExactlyOnceWith(
                 null,
             );
+            expect(pendingThrow.resolve).toHaveBeenCalledExactlyOnceWith(null);
         });
 
         it("should not discard prompts if they have the wrong piece", () => {
@@ -70,6 +88,7 @@ describe("PromptSlice", () => {
 
             expect(resolvePromotionMock).not.toHaveBeenCalled();
             expect(resolveNextIntermediateMock).not.toHaveBeenCalled();
+            expect(pendingThrow.resolve).not.toHaveBeenCalled();
         });
     });
 });

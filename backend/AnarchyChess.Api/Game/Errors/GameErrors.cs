@@ -56,6 +56,12 @@ public static class GameErrors
             "The provided fen moved pieces is malformed"
         );
 
+    public static Error MalformedFenStunnedPieces =>
+        Error.Validation(
+            ErrorCodes.GameMalformedFenStunnedPieces,
+            "The provided fen stunned pieces is malformed"
+        );
+
     public static Error MalformedFenLastMove =>
         Error.Validation(
             ErrorCodes.GameMalformedFenLastMove,

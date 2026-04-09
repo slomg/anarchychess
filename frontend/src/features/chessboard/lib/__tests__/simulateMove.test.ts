@@ -2,11 +2,13 @@ import {
     createFakeMove,
     createFakePiece,
 } from "@/lib/testUtils/fakers/chessboardFakers";
-import { simulateMove, simulateMoveWithIntermediates } from "../simulateMove";
-import { logicalPoint } from "@/features/point/pointUtils";
-import BoardPieces from "../boardPieces";
+
+import { TransientBoardEffectType } from "../../stores/boardEffectsSlice";
+import { simulateMove, simulateMoveAnimated } from "../simulateMove";
 import { AnimationStep, IntermediateSquare } from "../types";
 import { PieceType, SpecialMoveType } from "@/lib/apiClient";
+import { logicalPoint } from "@/features/point/pointUtils";
+import BoardPieces from "../boardPieces";
 
 describe("simulateMove", () => {
     it("should return a new BoardPieces instance that reflects the result of playMove", () => {
@@ -206,7 +208,7 @@ describe("simulateMove", () => {
     });
 });
 
-describe("simulateMoveWithIntermediates", () => {
+describe("simulateMoveAnimated", () => {
     it("should return intermediate positions and final move", () => {
         const movingPiece = createFakePiece({
             position: logicalPoint({ x: 0, y: 0 }),
@@ -224,7 +226,7 @@ describe("simulateMoveWithIntermediates", () => {
             captures: [],
         });
 
-        const resultSteps = simulateMoveWithIntermediates(pieces, move);
+        const resultSteps = simulateMoveAnimated(pieces, move);
 
         const expected1 = new BoardPieces(pieces);
         expected1.movePiece(movingPiece.id, intermediates[0].position);
@@ -265,7 +267,7 @@ describe("simulateMoveWithIntermediates", () => {
             captures: [capturePiece.position],
         });
 
-        const resultSteps = simulateMoveWithIntermediates(pieces, move);
+        const resultSteps = simulateMoveAnimated(pieces, move);
 
         const expectedFadedPieces = new Map([[capturePiece.id, capturePiece]]);
         expect(
@@ -282,5 +284,72 @@ describe("simulateMoveWithIntermediates", () => {
             resultSteps[2].newPieces.getById(capturePiece.id),
         ).not.toBeDefined();
         expect(resultSteps[2].fadedPieces).toBeUndefined();
+    });
+
+    it("should skip intermediate steps when skipAlreadyPlayedLocally is true", () => {
+        const movingPiece = createFakePiece({
+            position: logicalPoint({ x: 0, y: 0 }),
+        });
+        const pieces = BoardPieces.fromPieces(movingPiece);
+
+        const intermediates: IntermediateSquare[] = [
+            { position: logicalPoint({ x: 1, y: 0 }), isCapture: false },
+            { position: logicalPoint({ x: 2, y: 0 }), isCapture: false },
+        ];
+
+        const move = createFakeMove({
+            from: movingPiece.position,
+            to: logicalPoint({ x: 3, y: 0 }),
+            intermediates,
+        });
+
+        const resultSteps = simulateMoveAnimated(pieces, move, {
+            skipAlreadyPlayedLocally: true,
+        });
+
+        expect(resultSteps).toHaveLength(1);
+
+        const finalStep = resultSteps[0];
+        expect(finalStep.newPieces.getByPosition(move.to)?.id).toEqual(
+            movingPiece.id,
+        );
+        expect(finalStep.movedPieceIds).toEqual([movingPiece.id]);
+    });
+
+    it("should simulate throw moves correctly", () => {
+        const movingPiece = createFakePiece({
+            position: logicalPoint({ x: 1, y: 1 }),
+        });
+        const pieces = BoardPieces.fromPieces(movingPiece);
+
+        const move = createFakeMove({
+            from: movingPiece.position,
+            to: logicalPoint({ x: 4, y: 4 }),
+            specialType: SpecialMoveType.THROW,
+        });
+
+        const resultSteps = simulateMoveAnimated(pieces, move);
+
+        expect(resultSteps).toHaveLength(2);
+
+        const expectedThrowPieces = new BoardPieces(pieces);
+        expectedThrowPieces.removeFrom(move.from);
+        expect(resultSteps[0]).toEqual<AnimationStep>({
+            newPieces: expectedThrowPieces,
+            movedPieceIds: [],
+            boardEffect: {
+                type: TransientBoardEffectType.PAWN_THROW,
+                from: move.from,
+                to: move.to,
+                color: movingPiece.color,
+            },
+            disableStepDelay: true,
+        });
+
+        const expectedFinalPieces = new BoardPieces(pieces);
+        expectedFinalPieces.movePiece(movingPiece.id, move.to);
+        expect(resultSteps[1].newPieces).toEqual(expectedFinalPieces);
+        expect(resultSteps[1].movedPieceIds).toEqual([movingPiece.id]);
+        expect(resultSteps[1].boardEffect).toBeUndefined();
     });
 });

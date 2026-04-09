@@ -9,6 +9,7 @@ export default function expandMinimalMove(minimalMove: MinimalMove): Move {
         intermediates: [],
         sideEffects: [],
         pieceSpawns: [],
+        stuns: [],
         promotesTo: null,
         specialType: SpecialMoveType.NONE,
         forcedPriority: ForcedMovePriority.NONE,

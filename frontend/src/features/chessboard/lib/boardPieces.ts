@@ -1,6 +1,6 @@
 import { LogicalPoint, StrPoint } from "@/features/point/types";
-import { Move, Piece, PieceID } from "./types";
 import { pointToStr } from "@/features/point/pointUtils";
+import { Move, Piece, PieceID } from "./types";
 
 interface SinglePieceMove {
     pieceId: PieceID;
@@ -16,6 +16,7 @@ interface GatheredMoves {
 export default class BoardPieces {
     _byId: Map<PieceID, Piece>;
     _byPosition: Map<StrPoint, PieceID>;
+    _stunnedPieces: Map<PieceID, number> = new Map();
 
     constructor(copy: BoardPieces | null = null) {
         if (copy === null) {
@@ -30,6 +31,7 @@ export default class BoardPieces {
             }),
         );
         this._byPosition = new Map(copy._byPosition);
+        this._stunnedPieces = new Map(copy._stunnedPieces);
     }
 
     static fromPieces(...pieces: Piece[]): BoardPieces {
@@ -58,17 +60,28 @@ export default class BoardPieces {
         // so we don't capture any piece that just moved
         this.removeRemovedPiecesFromMove(move);
 
+        const capturedBeforeMove = new Set<PieceID>();
         // step 2: clear all origin squares of moving pieces
         // this is done before placing pieces to handle swaps correctly
-        for (const move of pieceMoves) {
-            this._byPosition.delete(pointToStr(move.from));
+        for (const pieceMove of pieceMoves) {
+            if (this.getByPosition(pieceMove.from)) {
+                this._byPosition.delete(pointToStr(pieceMove.from));
+            } else {
+                capturedBeforeMove.add(pieceMove.pieceId);
+            }
         }
 
         // step 3: place all pieces on their final destinations
-        for (const move of pieceMoves) {
-            this._byPosition.set(pointToStr(move.to), move.pieceId);
-            const piece = this._byId.get(move.pieceId);
-            if (piece) piece.position = move.to;
+        for (const pieceMove of pieceMoves) {
+            if (capturedBeforeMove.has(pieceMove.pieceId)) {
+                continue;
+            }
+
+            this._byPosition.set(pointToStr(pieceMove.to), pieceMove.pieceId);
+            const piece = this._byId.get(pieceMove.pieceId);
+            if (piece) {
+                piece.position = pieceMove.to;
+            }
         }
 
         for (const spawn of move.pieceSpawns) {
@@ -80,7 +93,36 @@ export default class BoardPieces {
             this.getByPosition(move.to)!.type = move.promotesTo;
         }
 
+        this._decrementStuns();
+        for (const stun of move.stuns) {
+            const piece = this.getByPosition(stun.position);
+            if (!piece) {
+                continue;
+            }
+
+            this._stunnedPieces.set(piece.id, stun.stunForTurns);
+            piece.stunnedForTurns = stun.stunForTurns;
+        }
+
         return [...movedPieceIds];
+    }
+
+    _decrementStuns() {
+        for (const [id, stunnedForTurns] of this._stunnedPieces) {
+            const piece = this.getById(id);
+            if (!piece) {
+                this._stunnedPieces.delete(id);
+                continue;
+            }
+
+            if (stunnedForTurns <= 1) {
+                piece.stunnedForTurns = 0;
+                this._stunnedPieces.delete(id);
+            } else {
+                piece.stunnedForTurns--;
+                this._stunnedPieces.set(id, stunnedForTurns - 1);
+            }
+        }
     }
 
     removeRemovedPiecesFromMove(move: Move): Map<PieceID, Piece> {
@@ -113,12 +155,18 @@ export default class BoardPieces {
     add(piece: Piece): void {
         this._byId.set(piece.id, { ...piece });
         this._byPosition.set(pointToStr(piece.position), piece.id);
+        if (piece.stunnedForTurns > 0) {
+            this._stunnedPieces.set(piece.id, piece.stunnedForTurns);
+        }
     }
 
     addAt(piece: Piece, position: LogicalPoint): void {
         const newPiece = { ...piece, position };
         this._byId.set(newPiece.id, newPiece);
         this._byPosition.set(pointToStr(position), newPiece.id);
+        if (piece.stunnedForTurns > 0) {
+            this._stunnedPieces.set(piece.id, piece.stunnedForTurns);
+        }
     }
 
     remove(pieceId: PieceID): boolean {
@@ -171,11 +219,6 @@ export default class BoardPieces {
                 to: move.to,
             });
             movedPieceIds.add(mainPieceId);
-        } else {
-            console.warn(
-                "Could not find piece to move at",
-                pointToStr(move.from),
-            );
         }
 
         for (const sideEffect of move.sideEffects) {

@@ -11,6 +11,7 @@ public interface IReadOnlyChessBoard
     IReadOnlyList<Move> Moves { get; }
     GameColor SideToMove { get; }
     int HalfMoveClock { get; }
+    IReadOnlyDictionary<AlgebraicPoint, int> StunnedPieces { get; }
 
     bool TryGetPieceAt(AlgebraicPoint point, [NotNullWhen(true)] out Piece? piece);
     Piece? PeekPieceAt(AlgebraicPoint point);

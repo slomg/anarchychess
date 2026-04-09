@@ -14,6 +14,7 @@ import { twMerge } from "tailwind-merge";
 
 export type ChessCoordProps = {
     position: ViewPoint;
+    rotation?: number;
     children?: ReactNode;
 } & HTMLAttributes<HTMLDivElement>;
 
@@ -26,7 +27,7 @@ export interface ChessSquareRef {
  * Render an element in a specific location on the chess board
  */
 const CoordSquare: ForwardRefRenderFunction<ChessSquareRef, ChessCoordProps> = (
-    { position, children, className, style, ...divProps },
+    { position, rotation = 0, children, className, style, ...divProps },
     ref,
 ) => {
     const { boardWidth, boardHeight } = useChessboardStore((x) => ({
@@ -46,9 +47,11 @@ const CoordSquare: ForwardRefRenderFunction<ChessSquareRef, ChessCoordProps> = (
     const maxY = (boardHeight - 1) * 100;
 
     function calculateTransform(offset: Point): string {
-        return `translate(
+        const translate = `translate(
             clamp(0%, calc(${physicalX}% + ${offset.x}px), ${maxX}%),
             clamp(0%, calc(${physicalY}% + ${offset.y}px), ${maxY}%))`;
+        const rotate = rotation != 0 ? `rotate(${rotation}deg)` : "";
+        return translate + " " + rotate;
     }
 
     useImperativeHandle(ref, () => ({

@@ -131,17 +131,29 @@ public class FenDecoder(IPieceLetterMap pieceLetterMap, IOptions<JsonOptions> js
         }
 
         if (fenParts is null)
+        {
             return GameErrors.MalformedFenParts;
+        }
 
         var sideToMove = ParseSideToMove(fenParts);
 
         var movedPiecesResult = ParseMovedPieces(fenParts, pieces, width, height);
         if (movedPiecesResult.IsError)
+        {
             return movedPiecesResult.Errors;
+        }
+
+        var stunnedPiecesResult = ParseStunnedPieces(fenParts, width, height);
+        if (stunnedPiecesResult.IsError)
+        {
+            return stunnedPiecesResult.Errors;
+        }
 
         var lastMoveResult = ParseLastMove(fenParts, pieces, width, height);
         if (lastMoveResult.IsError)
+        {
             return lastMoveResult.Errors;
+        }
         var lastMove = lastMoveResult.Value;
 
         return new ChessBoard(
@@ -150,12 +162,49 @@ public class FenDecoder(IPieceLetterMap pieceLetterMap, IOptions<JsonOptions> js
             height: height,
             sideToMove: sideToMove,
             moves: lastMove is null ? [] : [lastMove],
-            halfMoveClock: fenParts.HalfMoveClock ?? 0
+            halfMoveClock: fenParts.HalfMoveClock ?? 0,
+            stunnedPieces: stunnedPiecesResult.Value
         );
     }
 
     private static GameColor ParseSideToMove(FenParts fenParts) =>
         fenParts.SideToMove ?? GameColor.White;
+
+    private static ErrorOr<Dictionary<AlgebraicPoint, int>> ParseStunnedPieces(
+        FenParts fenParts,
+        int width,
+        int height
+    )
+    {
+        Dictionary<AlgebraicPoint, int> stunnedPieces = [];
+        if (fenParts.StunnedPieces is null)
+        {
+            return stunnedPieces;
+        }
+
+        foreach (var (strPoint, turns) in fenParts.StunnedPieces)
+        {
+            if (
+                !AlgebraicPoint.TryParse(
+                    strPoint,
+                    maxWidth: width,
+                    maxHeight: height,
+                    out var point
+                )
+            )
+            {
+                return GameErrors.MalformedFenStunnedPieces;
+            }
+            if (turns < 0)
+            {
+                return GameErrors.MalformedFenStunnedPieces;
+            }
+
+            stunnedPieces[point] = turns;
+        }
+
+        return stunnedPieces;
+    }
 
     private static ErrorOr<Success> ParseMovedPieces(
         FenParts fenParts,
@@ -165,7 +214,9 @@ public class FenDecoder(IPieceLetterMap pieceLetterMap, IOptions<JsonOptions> js
     )
     {
         if (fenParts.MovedPieces is null)
+        {
             return Result.Success;
+        }
 
         foreach (var strPoint in fenParts.MovedPieces)
         {
@@ -177,10 +228,14 @@ public class FenDecoder(IPieceLetterMap pieceLetterMap, IOptions<JsonOptions> js
                     out var point
                 )
             )
+            {
                 return GameErrors.MalformedFenMovedPieces;
+            }
 
             if (!pieces.TryGetValue(point, out var piece))
+            {
                 continue;
+            }
 
             pieces[point] = piece with { HasMoved = true };
         }

@@ -317,6 +317,7 @@ export type MovePath = {
     intermediateSquares?: Array<IntermediateSquarePath> | null;
     sideEffects?: Array<MoveSideEffectPath> | null;
     pieceSpawns?: Array<PieceSpawnPath> | null;
+    stuns?: Array<MoveStunPath> | null;
     promotesTo?: PieceType | null;
     specialType?: SpecialMoveType | null;
     forcedPriority?: ForcedMovePriority | null;
@@ -391,6 +392,11 @@ export enum PieceType {
     CHECKER = 11,
 }
 
+export type MoveStunPath = {
+    posIdx: number;
+    stunForTurns: number;
+};
+
 export enum SpecialMoveType {
     /**
      * None
@@ -428,6 +434,10 @@ export enum SpecialMoveType {
      * OmnipotentPawnSpawn
      */
     OMNIPOTENT_PAWN_SPAWN = 8,
+    /**
+     * Throw
+     */
+    THROW = 9,
 }
 
 export enum ForcedMovePriority {
@@ -609,6 +619,7 @@ export enum ErrorCode {
     GAME_MALFORMED_FEN_PARTS = "Game.MalformedFen.Parts",
     GAME_MALFORMED_FEN_PIECES = "Game.MalformedFen.Pieces",
     GAME_MALFORMED_FEN_MOVED_PIECES = "Game.MalformedFen.MovedPieces",
+    GAME_MALFORMED_FEN_STUNNED_PIECES = "Game.MalformedFen.StunnedPieces",
     GAME_MALFORMED_FEN_LAST_MOVE = "Game.MalformedFen.LastMove",
     GAME_CHAT_INVALID_USER = "GameChat.InvalidUser",
     GAME_CHAT_INVALID_MESSAGE = "GameChat.InvalidMessage",

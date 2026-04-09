@@ -68,18 +68,18 @@ public class CastleRuleTests
         var result = _rule.Evaluate(board, _kingOrigin, _kingWhite).ToList();
 
         Move kingside = new(
-            _kingOrigin,
-            _kingKingsideDestination,
+            from: _kingOrigin,
+            to: _kingKingsideDestination,
             _kingWhite,
-            triggerSquares: [new("i1")],
+            triggerSquares: [_kingKingsideDestination, new("i1")],
             sideEffects: [new(_rookKingsideOrigin, _rookKingsideDestination, _rookWhite)],
             specialMoveType: SpecialMoveType.KingsideCastle
         );
         Move queenside = new(
-            _kingOrigin,
-            _kingQueensideDestination,
+            from: _kingOrigin,
+            to: _kingQueensideDestination,
             _kingWhite,
-            triggerSquares: [new("c1"), new("b1")],
+            triggerSquares: [_kingQueensideDestination, new("c1"), new("b1")],
             sideEffects: [new(_rookQueensideOrigin, _rookQueensideDestination, _rookWhite)],
             specialMoveType: SpecialMoveType.QueensideCastle
         );
@@ -117,10 +117,10 @@ public class CastleRuleTests
         var result = _rule.Evaluate(board, _kingOrigin, _kingWhite).ToList();
 
         Move expectedMove = new(
-            _kingOrigin,
-            _kingKingsideDestination,
+            from: _kingOrigin,
+            to: _kingKingsideDestination,
             _kingWhite,
-            triggerSquares: [new("i1")],
+            triggerSquares: [_kingKingsideDestination, new("i1")],
             captures: [new MoveCapture(bishop, bishopPosition)],
             sideEffects: [new(_rookKingsideOrigin, _rookKingsideDestination, _rookWhite)],
             specialMoveType: SpecialMoveType.KingsideCastle
@@ -236,19 +236,19 @@ public class CastleRuleTests
         var result = _rule.Evaluate(board, blackKingOrigin, _kingBlack).ToList();
 
         Move kingside = new(
-            blackKingOrigin,
-            kingKingsideDestination,
+            from: blackKingOrigin,
+            to: kingKingsideDestination,
             _kingBlack,
-            triggerSquares: [new("i10")],
+            triggerSquares: [kingKingsideDestination, new("i10")],
             sideEffects: [new(rookKingsideOrigin, rookKingsideDestination, _rookBlack)],
             specialMoveType: SpecialMoveType.KingsideCastle
         );
 
         Move queenside = new(
-            blackKingOrigin,
-            kingQueensideDestination,
+            from: blackKingOrigin,
+            to: kingQueensideDestination,
             _kingBlack,
-            triggerSquares: [new("c10"), new("b10")],
+            triggerSquares: [kingQueensideDestination, new("c10"), new("b10")],
             sideEffects: [new(rookQueensideOrigin, rookQueensideDestination, _rookBlack)],
             specialMoveType: SpecialMoveType.QueensideCastle
         );
@@ -272,10 +272,19 @@ public class CastleRuleTests
         var rookDest = new AlgebraicPoint("f2");
 
         Move expectedMove = new(
-            kingOrigin,
-            kingDest,
+            from: kingOrigin,
+            to: kingDest,
             _kingWhite,
-            triggerSquares: [new("f4"), new("f5"), new("f6"), new("f7"), new("f8"), new("f9")],
+            triggerSquares:
+            [
+                kingDest,
+                new("f4"),
+                new("f5"),
+                new("f6"),
+                new("f7"),
+                new("f8"),
+                new("f9"),
+            ],
             sideEffects: [new MoveSideEffect(rookOrigin, rookDest, _rookWhite)],
             specialMoveType: SpecialMoveType.VerticalCastle
         );
@@ -299,10 +308,19 @@ public class CastleRuleTests
         var rookDest = new AlgebraicPoint("f9");
 
         Move expectedMove = new(
-            kingOrigin,
-            kingDest,
+            from: kingOrigin,
+            to: kingDest,
             _kingBlack,
-            triggerSquares: [new("f2"), new("f3"), new("f4"), new("f5"), new("f6"), new("f7")],
+            triggerSquares:
+            [
+                kingDest,
+                new("f2"),
+                new("f3"),
+                new("f4"),
+                new("f5"),
+                new("f6"),
+                new("f7"),
+            ],
             sideEffects: [new MoveSideEffect(rookOrigin, rookDest, _rookBlack)],
             specialMoveType: SpecialMoveType.VerticalCastle
         );

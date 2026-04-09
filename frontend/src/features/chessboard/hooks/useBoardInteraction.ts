@@ -81,6 +81,9 @@ export default function useBoardInteraction({
         }
 
         async function stopDragging(event: PointerEvent) {
+            window.removeEventListener("pointermove", handleMove);
+            window.removeEventListener("pointerup", stopDragging);
+
             if (!isDraggingRef.current) return;
             isDraggingRef.current = false;
 
@@ -90,8 +93,6 @@ export default function useBoardInteraction({
                     y: event.clientY,
                 }),
             );
-            window.removeEventListener("pointermove", handleMove);
-            window.removeEventListener("pointerup", stopDragging);
 
             setIsDragging(false);
         }

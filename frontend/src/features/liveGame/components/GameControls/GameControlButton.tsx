@@ -1,5 +1,5 @@
 import { XMarkIcon } from "@heroicons/react/24/solid";
-import { useRef, useState } from "react";
+import { createElement, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
 
 const GameControlButton = ({
@@ -13,8 +13,6 @@ const GameControlButton = ({
     icon?: React.ElementType;
     needsConfirmation?: boolean;
 }) => {
-    const Icon = icon;
-
     const [isConfirming, setIsConfirming] = useState(false);
     const timeoutRef = useRef<NodeJS.Timeout>(null);
 
@@ -38,18 +36,20 @@ const GameControlButton = ({
             <button
                 data-testid="gameControlButton"
                 className={twMerge(
-                    `text-md lg:text-md flex w-full cursor-pointer items-center justify-center gap-1
-                    rounded-md p-2 text-nowrap`,
+                    `text-md lg:text-md flex w-full cursor-pointer items-center
+                    justify-center gap-1 rounded-md p-2 text-nowrap`,
                     isConfirming
-                        ? "border-b-4 border-orange-800 bg-orange-600 hover:brightness-75"
-                        : `enabled:hover:bg-secondary enabled:hover:text-neutral-900
+                        ? `border-b-4 border-orange-800 bg-orange-600
+                            hover:brightness-75`
+                        : `enabled:hover:bg-secondary
+                            enabled:hover:text-neutral-900
                             disabled:cursor-not-allowed disabled:brightness-75`,
                     className,
                 )}
                 onClick={confirmClick}
                 {...props}
             >
-                {Icon && <Icon className="h-10 w-10" />}
+                {icon && createElement(icon, { className: "h-10 w-10" })}
                 {children}
             </button>
 

@@ -1,15 +1,16 @@
-import constants from "@/lib/constants";
-import { GameColor, PieceType } from "@/lib/apiClient";
 import { decodeFen } from "../../../chessboard/lib/fenDecoder";
-import { logicalPoint } from "@/features/point/pointUtils";
 import mockSequentialUUID from "@/lib/testUtils/mocks/mockUuids";
+import { logicalPoint } from "@/features/point/pointUtils";
+import { GameColor, PieceType } from "@/lib/apiClient";
+import createDefaultChessboard from "../defaultBoard";
 import BoardPieces from "../boardPieces";
+import constants from "@/lib/constants";
 
 describe("decodeFen", () => {
     it("should parse a standard starting position correctly", () => {
         mockSequentialUUID();
         const board = decodeFen(constants.INITIAL_FEN);
-        expect(board).toEqual(constants.DEFAULT_CHESS_BOARD);
+        expect(board).toEqual(createDefaultChessboard());
     });
 
     it("should parse a custom position", () => {

@@ -69,9 +69,9 @@ export function createHistorySlice(
         async goToPosition(positionId) {
             const { applyMoveAnimated, updatePiecesFromPosition } = get();
 
-            let position: Position | null | undefined;
-            let success: boolean | undefined;
-            let isOneStepForward: boolean | undefined;
+            let position!: Position | null;
+            let success!: boolean;
+            let isOneStepForward!: boolean;
             set((state) => {
                 ({ success, isOneStepForward } =
                     state.positionHistory.goToPosition(positionId));
@@ -92,8 +92,8 @@ export function createHistorySlice(
         async stepPositionForward() {
             const { applyMoveAnimated } = get();
 
-            let success: boolean | undefined;
-            let position: Position | null | undefined;
+            let success!: boolean;
+            let position!: Position | null;
             set((state) => {
                 success = state.positionHistory.stepForward();
                 position = state.positionHistory.viewingPosition;
@@ -107,8 +107,8 @@ export function createHistorySlice(
         async stepPositionBackward() {
             const { updatePiecesFromPosition, updatePieces } = get();
 
-            let success: boolean | undefined;
-            let position: Position | null | undefined;
+            let success!: boolean;
+            let position!: Position | null;
             set((state) => {
                 success = state.positionHistory.stepBackward();
                 position = state.positionHistory.viewingPosition;
@@ -128,7 +128,7 @@ export function createHistorySlice(
         async goToStartPosition() {
             const { positionHistory, updatePieces } = get();
 
-            let success: boolean | undefined;
+            let success!: boolean;
             set((state) => {
                 success = state.positionHistory.goToStart();
             });
@@ -140,9 +140,9 @@ export function createHistorySlice(
         async goToLatestPosition() {
             const { updatePiecesFromPosition, applyMoveAnimated } = get();
 
-            let position: Position | null | undefined;
-            let success: boolean | undefined;
-            let isOneStepForward: boolean | undefined;
+            let position!: Position | null;
+            let success!: boolean;
+            let isOneStepForward!: boolean;
             set((state) => {
                 ({ success, isOneStepForward } =
                     state.positionHistory.goToEnd());
@@ -161,7 +161,7 @@ export function createHistorySlice(
         },
 
         addPosition(props, legalMoves) {
-            let position: Position;
+            let position!: Position;
             set((state) => {
                 position = state.positionHistory.addNextPosition(props);
                 if (legalMoves) {
@@ -172,11 +172,11 @@ export function createHistorySlice(
                 }
             });
 
-            return position!;
+            return position;
         },
 
         addLatestPosition(props, legalMoves) {
-            let position: Position;
+            let position!: Position;
             set((state) => {
                 state.positionHistory.goToEnd();
                 position = state.positionHistory.addNextPosition(props);
@@ -187,11 +187,11 @@ export function createHistorySlice(
                     );
                 }
             });
-            return position!;
+            return position;
         },
 
         addSidelinePosition(props, legalMoves) {
-            let position: Position;
+            let position!: Position;
             set((state) => {
                 position = state.positionHistory.addNextSidelinePosition(props);
                 if (legalMoves) {
@@ -202,7 +202,7 @@ export function createHistorySlice(
                 }
             });
 
-            return position!;
+            return position;
         },
 
         getViewedPositionLegalMoves() {

@@ -180,6 +180,26 @@ public class FenEncoderTests : BaseIntegrationTest
     }
 
     [Fact]
+    public void EncodeFen_returns_correct_fen_with_stunned_pieces()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new AlgebraicPoint("a1")] = new Piece(PieceType.Pawn, GameColor.White),
+            [new AlgebraicPoint("b1")] = new Piece(PieceType.Pawn, GameColor.Black),
+        };
+        ChessBoard board = new(
+            pieces,
+            height: 1,
+            width: 2,
+            stunnedPieces: new() { [new("a2")] = 69 }
+        );
+
+        var result = _fenEncoder.EncodeFen(board);
+
+        result.FullFen.Should().Be("Pp {\"stunnedPieces\":{\"a2\":69}}");
+    }
+
+    [Fact]
     public void EncodeFen_returns_correct_fen_with_halfmove_clock()
     {
         ChessBoard board = new([], height: 2, width: 2, halfMoveClock: 42);

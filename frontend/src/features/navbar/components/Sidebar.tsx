@@ -44,14 +44,21 @@ const Sidebar = ({
                     data-testid="sidebarLogo"
                 >
                     {isCollapsed ? (
-                        <Image src={Logo} alt="Logo" width={60} height={60} />
+                        <Image
+                            src={Logo}
+                            alt="Logo"
+                            width={60}
+                            height={60}
+                            className="w-auto"
+                        />
                     ) : (
                         <Image
                             src={LogoText}
                             alt="Logo with text"
                             height={60}
                             width={200}
-                            className="self-center"
+                            className="w-auto self-center"
+                            loading="eager"
                         />
                     )}
                 </Link>

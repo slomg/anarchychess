@@ -1,6 +1,7 @@
 import { createFakeClockPlayer } from "@/lib/testUtils/fakers/createFakeClockPlayer";
 import { createFakeMoveSnapshot } from "@/lib/testUtils/fakers/moveSnapshotFaker";
 import { decodeMovePath, decodeMovePathIntoLegalMoves } from "../moveDecoder";
+import createDefaultChessboard from "@/features/chessboard/lib/defaultBoard";
 import { createFakeGameState } from "@/lib/testUtils/fakers/gameStateFaker";
 import { createFakeMove } from "@/lib/testUtils/fakers/chessboardFakers";
 import PositionHistory from "@/features/chessboard/lib/positionHistory";
@@ -127,9 +128,10 @@ describe("processGameState", () => {
 
         // moves and clocks from the test setup
         // start position history ids after piece ids
-        mockSequentialUUID({ startAt: constants.DEFAULT_CHESS_BOARD.size });
+        const defaultChessboard = createDefaultChessboard();
+        mockSequentialUUID({ startAt: defaultChessboard.size });
         const baseMs = gameState.pool.timeControl.baseSeconds * 1000;
-        let pieces = new BoardPieces(constants.DEFAULT_CHESS_BOARD);
+        let pieces = new BoardPieces(defaultChessboard);
         const positionHistory = new PositionHistory(new BoardPieces(pieces));
         const moves = [
             {

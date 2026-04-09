@@ -1,16 +1,18 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-
 import { twMerge } from "tailwind-merge";
 
 import { useChessboardStore } from "@/features/chessboard/hooks/useChessboard";
 import HighlightedLegalMovesRenderer from "./HighlightedLegalMove";
 import IntermediateSquarePrompt from "./IntermediateSquarePrompt";
 import EmphasizedSquaresRenderer from "./EmphasizedSquare";
+import BoardEffects from "./boardEffects/BoardEffects";
 import LastMoveHighlight from "./LastMoveHighlight";
 import OverlayRenderer from "./OverlayRenderer";
 import PromotionPrompt from "./PromotionPrompt";
 import PieceRenderer from "./PieceRenderer";
+import ThrowPrompt from "./ThrowPrompt";
 import Coords from "./Coords";
+import { Canvas } from "@react-three/fiber";
 
 export interface PaddingOffset {
     width: number;
@@ -134,14 +136,38 @@ const ChessboardLayout = ({
                 viewBox={`0 0 ${boardDimensions.width} ${boardDimensions.height}`}
                 preserveAspectRatio="none"
                 className="absolute inset-0 h-full w-full rounded-md"
+                shapeRendering="crispEdges"
             >
-                <image
-                    href="/assets/board.svg"
+                <rect
+                    x="0"
+                    y="0"
                     width={boardDimensions.width}
                     height={boardDimensions.height}
-                    preserveAspectRatio="none"
+                    fill="#577298"
+                />
+                <path
+                    fill="#e9e9d4"
+                    d="
+                        M 0,0 H 10 v 1 H 0 z
+                        m 0,2 H 10 v 1 H 0 z
+                        m 0,2 H 10 v 1 H 0 z
+                        m 0,2 H 10 v 1 H 0 z
+                        m 0,2 H 10 v 1 H 0 z
+                        M 1,0 V 10 h 1 V 0 z
+                        m 2,0 V 10 h 1 V 0 z
+                        m 2,0 V 10 h 1 V 0 z
+                        m 2,0 V 10 h 1 V 0 z
+                        m 2,0 V 10 h 1 V 0 z"
                 />
             </svg>
+
+            <Canvas
+                className="pointer-events-none! absolute! inset-0 z-40
+                    touch-none select-none"
+                data-testid="boardEffects"
+            >
+                <BoardEffects />
+            </Canvas>
 
             <HighlightedLegalMovesRenderer />
             <EmphasizedSquaresRenderer />
@@ -150,6 +176,7 @@ const ChessboardLayout = ({
             <OverlayRenderer />
             <PromotionPrompt />
             <PieceRenderer />
+            <ThrowPrompt />
             <Coords />
             {children}
         </div>
