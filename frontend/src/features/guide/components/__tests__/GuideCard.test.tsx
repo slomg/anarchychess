@@ -72,4 +72,17 @@ describe("GuideCard", () => {
             expect(img).toHaveAttribute("alt", `${title} Example ${i + 1}`);
         });
     });
+
+    it("should generate a slugified id from the title", () => {
+        render(
+            <GuideCard
+                title="some rule"
+                points={multiplePoints}
+                images={imagesMock}
+            />,
+        );
+
+        const card = screen.getByTestId("guideCard");
+        expect(card).toHaveAttribute("id", "some-rule");
+    });
 });
