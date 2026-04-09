@@ -17,15 +17,17 @@ namespace AnarchyChess.Api.Game.Models;
 public readonly record struct MoveKey(string Value)
 {
     public MoveKey(Move move)
-        : this(move.From, move.To, move.PromotesTo, move.IntermediateSquares) { }
+        : this(move.From, move.To, move.PromotesTo, move.IntermediateSquares, move.SpecialMoveType)
+    { }
 
     public MoveKey(
         AlgebraicPoint from,
         AlgebraicPoint to,
         PieceType? promotesTo = null,
-        IEnumerable<IntermediateSquare>? intermediateSquares = null
+        IEnumerable<IntermediateSquare>? intermediateSquares = null,
+        SpecialMoveType specialMoveType = SpecialMoveType.None
     )
-        : this(FromParts(from, to, promotesTo, intermediateSquares)) { }
+        : this(FromParts(from, to, promotesTo, intermediateSquares, specialMoveType)) { }
 
     public static implicit operator string(MoveKey id) => id.Value;
 
@@ -37,7 +39,8 @@ public readonly record struct MoveKey(string Value)
         AlgebraicPoint from,
         AlgebraicPoint to,
         PieceType? promotesTo,
-        IEnumerable<IntermediateSquare>? intermediateSquares
+        IEnumerable<IntermediateSquare>? intermediateSquares,
+        SpecialMoveType specialMoveType
     )
     {
         StringBuilder sb = new();
@@ -54,6 +57,8 @@ public readonly record struct MoveKey(string Value)
             sb.Append('~');
             sb.Append(square.Position.AsAlgebraic());
         }
+        sb.Append('-');
+        sb.Append(specialMoveType);
         return sb.ToString();
     }
 }
