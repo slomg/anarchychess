@@ -31,9 +31,7 @@ export interface PawnThrowEffect {
 export const BLACK_PAWN_COLOR = new Color("#575452");
 const UP = new Vector3(0, 1, 0);
 const THROW_SPEED = 7;
-const FLIP_SPEED = 5;
 const SPIN_SPEED = 5;
-const MAX_ROTATION = Math.PI / 18;
 
 const PawnThrow = ({
     effect,
@@ -83,7 +81,6 @@ const PawnThrow = ({
 
     const [hasFinishedThrow, setHasFinishedThrow] = useState(false);
 
-    const flip = useRef(0);
     const spin = useRef(0);
     const progressRef = useRef(0);
     const curveLength = curve.getLength();
@@ -112,27 +109,13 @@ const PawnThrow = ({
             new Euler(Math.PI / 2, 0, 0),
         );
 
-        const rotationFactor = 1 - time;
-
-        // flip forward
-        const axis = new Vector3().crossVectors(UP, forward).normalize();
-        flip.current = Math.min(
-            flip.current + delta * FLIP_SPEED * rotationFactor,
-            MAX_ROTATION,
-        );
-        const flipQuat = new Quaternion().setFromAxisAngle(axis, flip.current);
-
         // spin
-        spin.current = Math.min(
-            spin.current + delta * SPIN_SPEED * rotationFactor,
-            MAX_ROTATION,
-        );
+        spin.current += delta * SPIN_SPEED;
         const spinQuat = new Quaternion().setFromAxisAngle(UP, spin.current);
 
         meshRef.current.quaternion
             .copy(baseQuat)
             .multiply(correctionQuat)
-            .multiply(flipQuat)
             .multiply(spinQuat);
     });
 
