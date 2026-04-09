@@ -212,6 +212,46 @@ describe("BoardPieces", () => {
             expect(pieces.getByPosition(move.to)).toEqual(targetPiece);
             expect(pieces.getById(targetPiece.id)).toEqual(targetPiece);
         });
+
+        it("should apply a stun to a piece", () => {
+            const movingPiece = createFakePiece({
+                position: logicalPoint({ x: 0, y: 0 }),
+            });
+            const targetPiece = createFakePiece({
+                position: logicalPoint({ x: 1, y: 1 }),
+            });
+            const board = BoardPieces.fromPieces(movingPiece, targetPiece);
+
+            const move = createFakeMove({
+                from: movingPiece.position,
+                to: logicalPoint({ x: 0, y: 1 }),
+                stuns: [{ position: targetPiece.position, stunForTurns: 2 }],
+            });
+
+            board.playMove(move);
+
+            const updatedTarget = board.getById(targetPiece.id)!;
+            expect(updatedTarget.stunnedForTurns).toBe(2);
+        });
+
+        it("should decrement stuns on subsequent moves", () => {
+            const movingPiece = createFakePiece({
+                position: logicalPoint({ x: 0, y: 0 }),
+            });
+            const stunnedPiece = createFakePiece({
+                position: logicalPoint({ x: 1, y: 1 }),
+                stunnedForTurns: 1,
+            });
+            const board = BoardPieces.fromPieces(movingPiece, stunnedPiece);
+
+            const move1 = createFakeMove({
+                from: movingPiece.position,
+                to: logicalPoint({ x: 0, y: 1 }),
+            });
+            board.playMove(move1);
+
+            expect(board.getById(stunnedPiece.id)!.stunnedForTurns).toBe(0);
+        });
     });
 
     describe("removeCapturedPiecesFromMove", () => {
@@ -381,6 +421,7 @@ describe("BoardPieces", () => {
         });
         const piece2 = createFakePiece({
             position: logicalPoint({ x: 1, y: 1 }),
+            stunnedForTurns: 5,
         });
         const board = BoardPieces.fromPieces(piece1, piece2);
 

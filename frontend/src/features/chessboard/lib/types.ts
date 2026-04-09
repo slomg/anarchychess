@@ -13,6 +13,7 @@ export interface Piece {
     type: PieceType;
     color: GameColor | null;
     position: LogicalPoint;
+    stunnedForTurns: number;
 }
 
 export interface Move {
