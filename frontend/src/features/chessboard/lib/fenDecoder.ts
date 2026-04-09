@@ -39,6 +39,7 @@ export function decodeFen(fen: string): BoardPieces {
                 position: logicalPoint({ x, y }),
                 type: pieceType,
                 color,
+                stunnedForTurns: 0,
             });
             x++;
         }

@@ -1,14 +1,17 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import ChessboardStoreContext from "../../contexts/chessboardStoreContext";
-import PromotionPrompt from "../PromotionPrompt";
+import userEvent from "@testing-library/user-event";
+import { StoreApi } from "zustand";
+
 import {
     ChessboardStore,
     createChessboardStore,
 } from "../../stores/chessboardStore";
-import { StoreApi } from "zustand";
+
+import ChessboardStoreContext from "../../contexts/chessboardStoreContext";
+import { createFakePiece } from "@/lib/testUtils/fakers/chessboardFakers";
 import { logicalPoint, pointToStr } from "@/features/point/pointUtils";
-import { GameColor, PieceType } from "@/lib/apiClient";
-import userEvent from "@testing-library/user-event";
+import PromotionPrompt from "../PromotionPrompt";
+import { PieceType } from "@/lib/apiClient";
 
 describe("PromotionPrompt", () => {
     let store: StoreApi<ChessboardStore>;
@@ -33,12 +36,9 @@ describe("PromotionPrompt", () => {
         store.setState({
             pendingPromotion: {
                 at: logicalPoint({ x: 4, y: 6 }),
-                piece: {
-                    id: "0",
-                    type: PieceType.PAWN,
-                    color: GameColor.WHITE,
+                piece: createFakePiece({
                     position: logicalPoint({ x: 4, y: 6 }),
-                },
+                }),
                 pieces: [
                     PieceType.QUEEN,
                     PieceType.ROOK,
@@ -58,17 +58,14 @@ describe("PromotionPrompt", () => {
         expect(buttons).toHaveLength(4);
     });
 
-    it("should call resolvePromotion(null) when background is clicked", async () => {
+    it("should cancel promotion when background is clicked", async () => {
         const resolvePromotion = vi.fn();
         store.setState({
             pendingPromotion: {
                 at: logicalPoint({ x: 2, y: 5 }),
-                piece: {
-                    id: "0",
-                    type: PieceType.PAWN,
-                    color: GameColor.WHITE,
+                piece: createFakePiece({
                     position: logicalPoint({ x: 2, y: 5 }),
-                },
+                }),
                 pieces: [PieceType.QUEEN, PieceType.ROOK],
             },
             resolvePromotion,
@@ -89,17 +86,14 @@ describe("PromotionPrompt", () => {
         expect(resolvePromotion).toHaveBeenCalledWith(null);
     });
 
-    it("should call resolvePromotion with the selected piece", async () => {
+    it("should resolve promotion with the selected piece", async () => {
         const resolvePromotion = vi.fn();
         store.setState({
             pendingPromotion: {
                 at: logicalPoint({ x: 1, y: 6 }),
-                piece: {
-                    id: "0",
-                    type: PieceType.PAWN,
-                    color: GameColor.WHITE,
+                piece: createFakePiece({
                     position: logicalPoint({ x: 1, y: 6 }),
-                },
+                }),
                 pieces: [PieceType.QUEEN, PieceType.BISHOP, PieceType.HORSEY],
             },
             resolvePromotion,
@@ -122,12 +116,9 @@ describe("PromotionPrompt", () => {
         store.setState({
             pendingPromotion: {
                 at: logicalPoint({ x: 2, y: 6 }),
-                piece: {
-                    id: "0",
-                    type: PieceType.PAWN,
-                    color: GameColor.WHITE,
+                piece: createFakePiece({
                     position: logicalPoint({ x: 2, y: 6 }),
-                },
+                }),
                 pieces: [PieceType.QUEEN, PieceType.ROOK],
             },
         });
@@ -154,12 +145,9 @@ describe("PromotionPrompt", () => {
         store.setState({
             pendingPromotion: {
                 at: logicalPoint({ x: 5, y: 2 }),
-                piece: {
-                    id: "0",
-                    type: PieceType.PAWN,
-                    color: GameColor.BLACK,
+                piece: createFakePiece({
                     position: logicalPoint({ x: 5, y: 2 }),
-                },
+                }),
                 pieces: [PieceType.QUEEN, PieceType.ROOK],
             },
         });
@@ -187,12 +175,9 @@ describe("PromotionPrompt", () => {
         store.setState({
             pendingPromotion: {
                 at: logicalPoint({ x: 5, y: 2 }),
-                piece: {
-                    id: "0",
-                    type: PieceType.PAWN,
-                    color: GameColor.BLACK,
+                piece: createFakePiece({
                     position: logicalPoint({ x: 5, y: 2 }),
-                },
+                }),
                 pieces: [PieceType.QUEEN, PieceType.ROOK],
             },
             resolvePromotion,

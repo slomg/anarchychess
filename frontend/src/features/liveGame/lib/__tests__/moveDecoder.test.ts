@@ -86,6 +86,7 @@ describe("decodeMovePathIntoLegalMoves", () => {
                     type: PieceType.CHECKER,
                     color: GameColor.BLACK,
                     position: logicalPoint({ x: 8, y: 0 }),
+                    stunnedForTurns: 0,
                 },
             ],
             stuns: [

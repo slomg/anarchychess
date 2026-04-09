@@ -99,6 +99,7 @@ function parsePieceSpawns(path: PieceSpawnPath, boardWidth: number): Piece {
         type: path.type,
         color: path.color ?? null,
         position,
+        stunnedForTurns: 0,
     };
 }
 

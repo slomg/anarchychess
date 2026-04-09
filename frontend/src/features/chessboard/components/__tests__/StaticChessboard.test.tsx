@@ -1,30 +1,8 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
+import createDefaultChessboard from "../../lib/defaultBoard";
 import StaticChessboard from "../StaticChessboard";
-import { GameColor, PieceType } from "@/lib/apiClient";
-import { logicalPoint } from "@/features/point/pointUtils";
-import BoardPieces from "../../lib/boardPieces";
-
-const mockBoard = BoardPieces.fromPieces(
-    {
-        id: "1",
-        position: logicalPoint({ x: 0, y: 0 }),
-        type: PieceType.ROOK,
-        color: GameColor.WHITE,
-    },
-    {
-        id: "2",
-        position: logicalPoint({ x: 1, y: 0 }),
-        type: PieceType.HORSEY,
-        color: GameColor.WHITE,
-    },
-    {
-        id: "3",
-        position: logicalPoint({ x: 5, y: 0 }),
-        type: PieceType.ROOK,
-        color: GameColor.BLACK,
-    },
-);
+import { GameColor } from "@/lib/apiClient";
 
 describe("StaticChessboard", () => {
     it.each([
@@ -34,7 +12,10 @@ describe("StaticChessboard", () => {
         "should render pieces in the correct order depending on the viewing side",
         (side, firstRow, firstColumn) => {
             render(
-                <StaticChessboard position={mockBoard} viewingFrom={side} />,
+                <StaticChessboard
+                    position={createDefaultChessboard()}
+                    viewingFrom={side}
+                />,
             );
 
             const piece = screen.getAllByTestId("piece")[0];

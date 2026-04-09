@@ -23,24 +23,28 @@ describe("decodeFen", () => {
                 position: logicalPoint({ x: 4, y: 0 }),
                 type: PieceType.KING,
                 color: GameColor.WHITE,
+                stunnedForTurns: 0,
             },
             {
                 id: "1",
                 position: logicalPoint({ x: 4, y: 3 }),
                 type: PieceType.ROOK,
                 color: GameColor.WHITE,
+                stunnedForTurns: 0,
             },
             {
                 id: "2",
                 position: logicalPoint({ x: 3, y: 4 }),
                 type: PieceType.BISHOP,
                 color: GameColor.WHITE,
+                stunnedForTurns: 0,
             },
             {
                 id: "3",
                 position: logicalPoint({ x: 4, y: 7 }),
                 type: PieceType.KING,
                 color: GameColor.BLACK,
+                stunnedForTurns: 0,
             },
         );
         const board = decodeFen(fen);
