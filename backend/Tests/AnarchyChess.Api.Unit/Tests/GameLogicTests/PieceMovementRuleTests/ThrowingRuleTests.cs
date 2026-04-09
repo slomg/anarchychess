@@ -291,7 +291,7 @@ public class ThrowingRuleTests
                 to: new("e6"),
                 _whitePawn,
                 specialMoveType: SpecialMoveType.Throw,
-                stuns: [new(Position: new("e6"), stunnedPiece, StunForTurns: 1)],
+                stuns: [new(Position: new("e6"), stunnedPiece, StunForTurns: 2)],
                 captures: [new(_whitePawn, Position: new("f4"))],
                 triggerSquares: [new("f3")]
             ),

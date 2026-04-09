@@ -49,7 +49,7 @@ public sealed class ThrowingRule : IPieceMovementRule
                     : [new MoveCapture(CapturedPiece: movingPiece, Position: position)],
                 stuns: stunnedPiece is null
                     ? null
-                    : [new MoveStun(Position: to, Piece: stunnedPiece, StunForTurns: 1)],
+                    : [new MoveStun(Position: to, Piece: stunnedPiece, StunForTurns: 2)],
                 triggerSquares: origins
             );
         }
