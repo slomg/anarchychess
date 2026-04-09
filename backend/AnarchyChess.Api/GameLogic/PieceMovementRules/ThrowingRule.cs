@@ -142,6 +142,11 @@ public sealed class ThrowingRule : IPieceMovementRule
     )
     {
         AlgebraicPoint throwingPiecePosition = origin - direction;
+        if (board.StunnedPieces.ContainsKey(throwingPiecePosition))
+        {
+            yield break;
+        }
+
         if (!board.TryGetPieceAt(throwingPiecePosition, out var throwingPiece))
         {
             yield break;

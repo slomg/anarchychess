@@ -298,4 +298,21 @@ public class ThrowingRuleTests
         ];
         result.Should().BeEquivalentTo(expectedMoves);
     }
+
+    [Fact]
+    public void Evaluate_creates_no_moves_if_thrower_is_stunned()
+    {
+        ChessBoard board = new(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("f4")] = _whitePawn,
+                [new("f3")] = PieceFactory.White(PieceType.Rook),
+            },
+            stunnedPieces: new Dictionary<AlgebraicPoint, int> { [new("f3")] = 1 }
+        );
+
+        List<Move> result = [.. _rule.Evaluate(board, new("f4"), _whitePawn)];
+
+        result.Should().BeEmpty();
+    }
 }
