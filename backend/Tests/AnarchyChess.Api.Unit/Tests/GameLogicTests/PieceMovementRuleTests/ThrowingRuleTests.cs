@@ -14,6 +14,41 @@ public class ThrowingRuleTests
     private readonly Piece _whitePawn = PieceFactory.White(PieceType.Pawn);
     private readonly Piece _blackPawn = PieceFactory.Black(PieceType.Pawn);
 
+    private static List<Move> CreateExpectedMoves(
+        Piece piece,
+        AlgebraicPoint origin,
+        ChessBoard board,
+        IEnumerable<AlgebraicPoint> expectedDests,
+        IEnumerable<AlgebraicPoint> triggerSquares
+    ) =>
+        [
+            .. expectedDests.Select(dest =>
+            {
+                List<MoveStun> stuns = [];
+                List<MoveCapture> captures = [];
+                if (dest.Y == 1 || dest.Y == 8)
+                {
+                    stuns.Add(new MoveStun(Position: origin, Piece: piece, StunForTurns: 2));
+                }
+
+                if (board.TryGetPieceAt(dest, out var hitPiece))
+                {
+                    stuns.Add(new MoveStun(Position: dest, Piece: hitPiece, StunForTurns: 4));
+                    captures.Add(new MoveCapture(piece, origin));
+                }
+
+                return new Move(
+                    from: origin,
+                    to: dest,
+                    piece,
+                    specialMoveType: SpecialMoveType.Throw,
+                    stuns: stuns,
+                    captures: captures,
+                    triggerSquares: triggerSquares
+                );
+            }),
+        ];
+
     [Fact]
     public void Evaluate_creates_no_moves_if_there_is_no_piece_behind()
     {
@@ -93,21 +128,18 @@ public class ThrowingRuleTests
             new("e9"),
             new("f9"),
             new("g9"),
-            new("e10"),
-            new("f10"),
-            new("g10"),
         ];
-        List<Move> expectedMoves =
-        [
-            .. expectedDests.Select(dest => new Move(
-                from: new("f4"),
-                to: dest,
-                _whitePawn,
-                specialMoveType: SpecialMoveType.Throw,
-                triggerSquares: [new("f3")]
-            )),
-        ];
-        result.Should().BeEquivalentTo(expectedMoves);
+        result
+            .Should()
+            .BeEquivalentTo(
+                CreateExpectedMoves(
+                    _whitePawn,
+                    origin: new("f4"),
+                    board,
+                    expectedDests: expectedDests,
+                    triggerSquares: [new("f3")]
+                )
+            );
     }
 
     [Fact]
@@ -139,19 +171,18 @@ public class ThrowingRuleTests
             new("b9"),
             new("a8"),
             new("a9"),
-            new("a10"),
         ];
-        List<Move> expectedMoves =
-        [
-            .. expectedDests.Select(dest => new Move(
-                from: new("f4"),
-                to: dest,
-                _whitePawn,
-                specialMoveType: SpecialMoveType.Throw,
-                triggerSquares: [new("g3")]
-            )),
-        ];
-        result.Should().BeEquivalentTo(expectedMoves);
+        result
+            .Should()
+            .BeEquivalentTo(
+                CreateExpectedMoves(
+                    _whitePawn,
+                    origin: new("f4"),
+                    board,
+                    expectedDests: expectedDests,
+                    triggerSquares: [new("g3")]
+                )
+            );
     }
 
     [Fact]
@@ -182,17 +213,17 @@ public class ThrowingRuleTests
             new("j8"),
             new("j9"),
         ];
-        List<Move> expectedMoves =
-        [
-            .. expectedDests.Select(dest => new Move(
-                from: new("f4"),
-                to: dest,
-                _whitePawn,
-                specialMoveType: SpecialMoveType.Throw,
-                triggerSquares: [new("e3")]
-            )),
-        ];
-        result.Should().BeEquivalentTo(expectedMoves);
+        result
+            .Should()
+            .BeEquivalentTo(
+                CreateExpectedMoves(
+                    _whitePawn,
+                    origin: new("f4"),
+                    board,
+                    expectedDests: expectedDests,
+                    triggerSquares: [new("e3")]
+                )
+            );
     }
 
     [Fact]
@@ -222,21 +253,18 @@ public class ThrowingRuleTests
             new("e2"),
             new("f2"),
             new("g2"),
-            new("e1"),
-            new("f1"),
-            new("g1"),
         ];
-        List<Move> expectedMoves =
-        [
-            .. expectedDests.Select(dest => new Move(
-                from: new("f6"),
-                to: dest,
-                _blackPawn,
-                specialMoveType: SpecialMoveType.Throw,
-                triggerSquares: [new("f7")]
-            )),
-        ];
-        result.Should().BeEquivalentTo(expectedMoves);
+        result
+            .Should()
+            .BeEquivalentTo(
+                CreateExpectedMoves(
+                    _blackPawn,
+                    origin: new("f6"),
+                    board,
+                    expectedDests: expectedDests,
+                    triggerSquares: [new("f7")]
+                )
+            );
     }
 
     [Fact]
@@ -258,11 +286,12 @@ public class ThrowingRuleTests
 
         List<Move> result = [.. _rule.Evaluate(board, new("f4"), _whitePawn)];
 
-        List<AlgebraicPoint> expectedNormalDests =
+        List<AlgebraicPoint> expectedDests =
         [
             new("e5"),
             new("f5"),
             new("g5"),
+            new("e6"),
             new("f6"),
             new("g6"),
             new("e7"),
@@ -273,30 +302,18 @@ public class ThrowingRuleTests
             new("e9"),
             new("f9"),
             new("g9"),
-            new("e10"),
-            new("f10"),
-            new("g10"),
         ];
-        List<Move> expectedMoves =
-        [
-            .. expectedNormalDests.Select(dest => new Move(
-                from: new("f4"),
-                to: dest,
-                _whitePawn,
-                specialMoveType: SpecialMoveType.Throw,
-                triggerSquares: [new("f3")]
-            )),
-            new Move(
-                from: new("f4"),
-                to: new("e6"),
-                _whitePawn,
-                specialMoveType: SpecialMoveType.Throw,
-                stuns: [new(Position: new("e6"), stunnedPiece, StunForTurns: 2)],
-                captures: [new(_whitePawn, Position: new("f4"))],
-                triggerSquares: [new("f3")]
-            ),
-        ];
-        result.Should().BeEquivalentTo(expectedMoves);
+        result
+            .Should()
+            .BeEquivalentTo(
+                CreateExpectedMoves(
+                    _whitePawn,
+                    origin: new("f4"),
+                    board,
+                    expectedDests: expectedDests,
+                    triggerSquares: [new("f3")]
+                )
+            );
     }
 
     [Fact]

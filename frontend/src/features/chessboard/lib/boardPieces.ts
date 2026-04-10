@@ -56,6 +56,17 @@ export default class BoardPieces {
     playMove(move: Move): PieceID[] {
         const { pieceMoves, movedPieceIds } = this._gatherMoves(move);
 
+        this._decrementStuns();
+        for (const stun of move.stuns) {
+            const piece = this.getByPosition(stun.position);
+            if (!piece) {
+                continue;
+            }
+
+            this._stunnedPieces.set(piece.id, stun.stunForTurns);
+            piece.stunnedForTurns = stun.stunForTurns;
+        }
+
         // step 1: remove all captures first
         // so we don't capture any piece that just moved
         this.removeRemovedPiecesFromMove(move);
@@ -91,17 +102,6 @@ export default class BoardPieces {
 
         if (move.promotesTo !== null) {
             this.getByPosition(move.to)!.type = move.promotesTo;
-        }
-
-        this._decrementStuns();
-        for (const stun of move.stuns) {
-            const piece = this.getByPosition(stun.position);
-            if (!piece) {
-                continue;
-            }
-
-            this._stunnedPieces.set(piece.id, stun.stunForTurns);
-            piece.stunnedForTurns = stun.stunForTurns;
         }
 
         return [...movedPieceIds];

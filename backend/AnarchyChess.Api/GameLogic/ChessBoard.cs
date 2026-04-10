@@ -130,7 +130,7 @@ public class ChessBoard : IReadOnlyChessBoard, IEquatable<ChessBoard>
 
         // store each piece along with its final destination before changing the board
         // ensures we don't lose any piece if its original square gets overwritten during moves
-        List<(Piece piece, AlgebraicPoint newPosition)> finalPositions = [];
+        List<(Piece piece, AlgebraicPoint origin, AlgebraicPoint destination)> finalPositions = [];
         foreach (var step in steps)
         {
             if (!IsWithinBoundaries(step.From) || !IsWithinBoundaries(step.To))
@@ -151,7 +151,20 @@ public class ChessBoard : IReadOnlyChessBoard, IEquatable<ChessBoard>
 
             if (!step.IsSelfCapture)
             {
-                finalPositions.Add((piece, step.To));
+                finalPositions.Add((piece: piece, origin: step.From, destination: step.To));
+            }
+        }
+
+        DecrementStunned();
+        foreach (var stun in move.Stuns)
+        {
+            if (_stunnedPieces.ContainsKey(stun.Position))
+            {
+                _stunnedPieces[stun.Position] += stun.StunForTurns;
+            }
+            else
+            {
+                _stunnedPieces[stun.Position] = stun.StunForTurns;
             }
         }
 
@@ -172,9 +185,14 @@ public class ChessBoard : IReadOnlyChessBoard, IEquatable<ChessBoard>
         }
 
         // step 3: place all pieces in their final destinations
-        foreach (var (piece, newPosition) in finalPositions)
+        foreach (var (piece, origin, destination) in finalPositions)
         {
-            PlacePiece(newPosition, piece with { HasMoved = true });
+            PlacePiece(destination, piece with { HasMoved = true });
+            if (_stunnedPieces.TryGetValue(origin, out var stunsAtOrigin))
+            {
+                _stunnedPieces[destination] = stunsAtOrigin;
+                _stunnedPieces.Remove(origin);
+            }
         }
 
         foreach (var spawn in move.PieceSpawns)
@@ -185,19 +203,6 @@ public class ChessBoard : IReadOnlyChessBoard, IEquatable<ChessBoard>
         if (move.PromotesTo is PieceType promotesTo)
         {
             ModifyPiece(move.To, piece => piece with { Type = promotesTo, HasMoved = false });
-        }
-
-        DecrementStunned();
-        foreach (var stun in move.Stuns)
-        {
-            if (_stunnedPieces.ContainsKey(stun.Position))
-            {
-                _stunnedPieces[stun.Position] += stun.StunForTurns;
-            }
-            else
-            {
-                _stunnedPieces[stun.Position] = stun.StunForTurns;
-            }
         }
 
         _moves.Add(move);

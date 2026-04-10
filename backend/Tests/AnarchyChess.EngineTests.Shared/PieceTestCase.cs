@@ -15,6 +15,7 @@ public record MoveTestCase(
     IEnumerable<IntermediateSquare>? Intermediates = null,
     IEnumerable<MoveSideEffect>? SideEffects = null,
     IEnumerable<PieceSpawn>? Spawns = null,
+    IEnumerable<MoveStun>? Stuns = null,
     SpecialMoveType SpecialMoveType = SpecialMoveType.None,
     ForcedMovePriority ForcedPriority = ForcedMovePriority.None,
     PieceType? PromotesTo = null
@@ -73,6 +74,7 @@ public class PieceTestCase
         IEnumerable<IntermediateSquare>? intermediates = null,
         IEnumerable<MoveSideEffect>? sideEffects = null,
         IEnumerable<PieceSpawn>? spawns = null,
+        IEnumerable<MoveStun>? stuns = null,
         SpecialMoveType specialMoveType = SpecialMoveType.None,
         ForcedMovePriority forcedPriority = ForcedMovePriority.None,
         PieceType? promotesTo = null
@@ -88,6 +90,7 @@ public class PieceTestCase
                 intermediates,
                 sideEffects,
                 spawns,
+                stuns,
                 specialMoveType,
                 forcedPriority,
                 promotesTo
@@ -116,6 +119,7 @@ public class PieceTestCase
                 move.Intermediates,
                 move.SideEffects,
                 move.Spawns,
+                move.Stuns,
                 move.SpecialMoveType,
                 move.ForcedPriority,
                 move.PromotesTo
@@ -168,6 +172,7 @@ public class PieceTestCase
         IEnumerable<IntermediateSquare>? intermediates = null,
         IEnumerable<MoveSideEffect>? sideEffects = null,
         IEnumerable<PieceSpawn>? spawns = null,
+        IEnumerable<MoveStun>? stuns = null,
         SpecialMoveType specialMoveType = SpecialMoveType.None,
         ForcedMovePriority forcedPriority = ForcedMovePriority.None,
         PieceType? promotesTo = null
@@ -186,6 +191,7 @@ public class PieceTestCase
             intermediates,
             sideEffects,
             spawns,
+            stuns,
             specialMoveType,
             forcedPriority,
             promotesTo
@@ -236,14 +242,15 @@ public class PieceTestCase
         string from,
         string to,
         Piece piece,
-        IEnumerable<string>? trigger = null,
-        IEnumerable<string>? captures = null,
-        IEnumerable<IntermediateSquare>? intermediates = null,
-        IEnumerable<MoveSideEffect>? sideEffects = null,
-        IEnumerable<PieceSpawn>? spawns = null,
-        SpecialMoveType specialMoveType = SpecialMoveType.None,
-        ForcedMovePriority forcedPriority = ForcedMovePriority.None,
-        PieceType? promotesTo = null
+        IEnumerable<string>? trigger,
+        IEnumerable<string>? captures,
+        IEnumerable<IntermediateSquare>? intermediates,
+        IEnumerable<MoveSideEffect>? sideEffects,
+        IEnumerable<PieceSpawn>? spawns,
+        IEnumerable<MoveStun>? stuns,
+        SpecialMoveType specialMoveType,
+        ForcedMovePriority forcedPriority,
+        PieceType? promotesTo
     )
     {
         var moveCaptures = captures?.Select(c =>
@@ -265,6 +272,7 @@ public class PieceTestCase
             captures: moveCaptures,
             sideEffects: sideEffects,
             pieceSpawns: spawns,
+            stuns: stuns,
             specialMoveType: specialMoveType,
             forcedPriority: forcedPriority,
             promotesTo: promotesTo

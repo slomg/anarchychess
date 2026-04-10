@@ -244,13 +244,29 @@ describe("BoardPieces", () => {
             });
             const board = BoardPieces.fromPieces(movingPiece, stunnedPiece);
 
-            const move1 = createFakeMove({
+            const move = createFakeMove({
                 from: movingPiece.position,
                 to: logicalPoint({ x: 0, y: 1 }),
             });
-            board.playMove(move1);
+            board.playMove(move);
 
             expect(board.getById(stunnedPiece.id)!.stunnedForTurns).toBe(0);
+        });
+
+        it("should apply self stun", () => {
+            const piece = createFakePiece({
+                position: logicalPoint({ x: 0, y: 0 }),
+            });
+            const board = BoardPieces.fromPieces(piece);
+
+            const move = createFakeMove({
+                from: piece.position,
+                to: logicalPoint({ x: 9, y: 9 }),
+                stuns: [{ position: piece.position, stunForTurns: 4 }],
+            });
+            board.playMove(move);
+
+            expect(board.getById(piece.id)!.stunnedForTurns).toBe(4);
         });
     });
 
