@@ -65,13 +65,23 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
                 title="Pawn Throwing"
                 points={[
                     "If a pawn has a higher value piece directly behind it, you can throw it in the opposite direction relative to that piece.",
-                    "If the pawn hits an enemy piece, you lose your pawn but that piece is stunned for 1 move.",
+                    "If the pawn hits an enemy piece, you lose your pawn but that piece is stunned for 2 moves.",
                     "If it doesn't hit anything, the pawn lands normally.",
-                    "To throw, select the pawn and move it as if capturing the piece behind it to start the throw.",
-                    "The screen will darken except for 3 lines. One line will be highlighted to show the throw path.",
-                    "Click the screen to switch lines. Right click or tap with two fingers to cancel.",
-                    "Click and hold to start the throw. A marker will move up the line, speeding up until max power, then oscillate between slightly lower and near max power.",
-                    "Release to throw the pawn.",
+                    "Pawns can only thrown up to the second-to-last rank, they cannot be thrown to the last rank.",
+                    "If a pawn is thrown to the second-to-last rank, it becomes stunned for 1 move due to emotional shock from being launched so close to promotion.",
+                    {
+                        title: "To Throw:",
+                        points: [
+                            "Select the pawn and move it as if capturing the piece behind it.",
+                            "The screen will darken except for 3 possible trajectory lines.",
+                            "One line is highlighted to indicate the current throw path.",
+                            "Click the screen to cycle between available throw lines.",
+                            "Right click or tap with two fingers to cancel.",
+                            "Click and hold to start the throw.",
+                            "A marker will move up the line, speeding up until max power, then oscillate between slightly lower and near max power.",
+                            "Release to throw the pawn.",
+                        ],
+                    },
                 ]}
                 images={[
                     pawnthrowing1,
