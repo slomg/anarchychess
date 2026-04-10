@@ -43,7 +43,6 @@ public class EnPassantRule(Offset direction, Offset chainCaptureDirection) : IPi
         if (
             lastMove is null
             || !GameLogicConstants.PawnLikePieces.Contains(lastMove.Piece.Type)
-            || lastMove.SpecialMoveType is not SpecialMoveType.None
             || lastMove.Piece.Color == movingPiece.Color
         )
         {
@@ -51,7 +50,10 @@ public class EnPassantRule(Offset direction, Offset chainCaptureDirection) : IPi
         }
 
         int verticalDistanceLastPieceMoved = Math.Abs(lastMove.From.Y - lastMove.To.Y);
-        if (verticalDistanceLastPieceMoved < 2)
+        if (
+            verticalDistanceLastPieceMoved < GameLogicConstants.MinEnPassantTriggerDistance
+            || verticalDistanceLastPieceMoved > GameLogicConstants.MaxEnPassantTriggerDistance
+        )
         {
             return null;
         }

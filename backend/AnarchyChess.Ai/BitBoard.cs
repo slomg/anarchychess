@@ -426,24 +426,39 @@ public partial class BitBoard
         if (
             specialMoveType is not SpecialMoveType.None
             || from == to
-            || !GameLogicConstants.PawnLikePieces.Contains(piece.Type)
+            || (GameLogicConstants.PawnLikeMask & (1 << (int)piece.Type)) == 0
         )
+        {
+            return;
+        }
+
+        int fromFile = from % 10;
+        int toFile = to % 10;
+        if (fromFile != toFile)
         {
             return;
         }
 
         int fromRank = from / 10;
         int toRank = to / 10;
-        if (fromRank == toRank)
+        int step = (toRank > fromRank) ? 1 : -1;
+
+        int rankDistance = (toRank - fromRank) * step;
+        if (
+            rankDistance < GameLogicConstants.MinEnPassantTriggerDistance
+            || rankDistance > GameLogicConstants.MaxEnPassantTriggerDistance
+        )
         {
             return;
         }
 
-        int file = from % 10;
-        int step = (toRank > fromRank) ? 1 : -1;
-        for (int rank = fromRank + step; rank != toRank; rank += step)
+        int rank1 = fromRank + step;
+        EnPassantSquaresMask |= UInt128.One << (rank1 * 10 + toFile);
+
+        if (rankDistance == 3)
         {
-            EnPassantSquaresMask |= UInt128.One << (rank * 10 + file);
+            int rank2 = fromRank + 2 * step;
+            EnPassantSquaresMask |= UInt128.One << (rank2 * 10 + toFile);
         }
 
         EnPassantPawnSquare = to;

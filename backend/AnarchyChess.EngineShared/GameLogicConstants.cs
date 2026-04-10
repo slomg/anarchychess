@@ -5,9 +5,17 @@ public static class GameLogicConstants
     public const int BoardWidth = 10;
     public const int BoardHeight = 10;
 
+    public const int MinEnPassantTriggerDistance = 2;
+    public const int MaxEnPassantTriggerDistance = 3;
+
     public static readonly IReadOnlySet<PieceType> PawnLikePieces = new HashSet<PieceType>(
         [PieceType.Pawn, PieceType.UnderagePawn, PieceType.SterilePawn]
     );
+
+    public const int PawnLikeMask =
+        1 << (int)PieceType.Pawn
+        | 1 << (int)PieceType.UnderagePawn
+        | 1 << (int)PieceType.SterilePawn;
 
     public static readonly IReadOnlyCollection<PieceType> PromotablePieces =
     [

@@ -120,29 +120,6 @@ public class EnPassantRuleTests
     }
 
     [Fact]
-    public void Evaluate_doesnt_allow_en_pasant_if_the_last_move_is_special()
-    {
-        ChessBoard board = new();
-        var pawn = PieceFactory.White(PieceType.Pawn);
-        var enemy = PieceFactory.Black(PieceType.Pawn, hasMoved: false);
-
-        AlgebraicPoint origin = new("e6");
-        AlgebraicPoint enemyOrigin = new("d9");
-        AlgebraicPoint enemyDestination = new("d6");
-
-        board.PlacePiece(origin, pawn);
-        board.PlacePiece(enemyOrigin, enemy);
-        board.PlayMove(
-            new Move(enemyOrigin, enemyDestination, enemy, specialMoveType: SpecialMoveType.Throw)
-        );
-        EnPassantRule behaviour = new(direction: new(X: -1, Y: 1), _nullChain);
-
-        var result = behaviour.Evaluate(board, origin, pawn).ToList();
-
-        result.Should().BeEmpty();
-    }
-
-    [Fact]
     public void Evaluate_allows_en_passant_chain_capture_with_multiple_captures()
     {
         ChessBoard board = new();
@@ -281,10 +258,6 @@ public class EnPassantRuleTestData
         Add(new("e6"), new("f7"), new("f9"), new("f6"), new(1, 1), GameColor.White);
         Add(new("e6"), new("d7"), new("d9"), new("d6"), new(-1, 1), GameColor.White);
 
-        // 4 steps
-        Add(new("e5"), new("f6"), new("f9"), new("f5"), new(1, 1), GameColor.White);
-        Add(new("e5"), new("d6"), new("d9"), new("d5"), new(-1, 1), GameColor.White);
-
         // black capturing white
         // 2 steps
         Add(new("e4"), new("f3"), new("f2"), new("f4"), new(1, -1), GameColor.Black);
@@ -294,12 +267,8 @@ public class EnPassantRuleTestData
         Add(new("e5"), new("f4"), new("f2"), new("f5"), new(1, -1), GameColor.Black);
         Add(new("e5"), new("d4"), new("d2"), new("d5"), new(-1, -1), GameColor.Black);
 
-        // 4 steps
-        Add(new("e6"), new("f5"), new("f2"), new("f6"), new(1, -1), GameColor.Black);
-        Add(new("e6"), new("d5"), new("d2"), new("d6"), new(-1, -1), GameColor.Black);
-
-        // edge case: enemy pawn moved 5 squares, and we are capturing it from the 3rd square
-        Add(new("e7"), new("d8"), new("d9"), new("d5"), new(-1, 1), GameColor.White);
+        // edge case: enemy pawn moved 3 squares, and we are capturing it from the 3rd square
+        Add(new("e7"), new("d8"), new("d9"), new("d6"), new(-1, 1), GameColor.White);
     }
 }
 
@@ -327,5 +296,8 @@ public class InvalidEnPassantTestData
 
         // enemy pawn moves moves a file
         Add(new("e5"), new("c9"), new("d5"), new(-1, 1));
+
+        // enemy pawn moved more than 3 squares
+        Add(new("e5"), new("d9"), new("d5"), new(-1, 1));
     }
 }

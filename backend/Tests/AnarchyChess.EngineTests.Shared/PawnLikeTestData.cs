@@ -225,6 +225,17 @@ public abstract class PawnLikeTestData : TheoryData<PieceTestCase>
 
         Add(
             PieceTestCase
+                .From("e5", movedWhitePawn)
+                .WithPieceAt("d5", blackPawn)
+                .WithPriorMove(from: "d9", to: "d5", specialMoveType: SpecialMoveType.Throw)
+                .GoesTo("e6")
+                .WithDescription(
+                    "En passant is only possible when the prior move moves between 2-3 squares forward"
+                )
+        );
+
+        Add(
+            PieceTestCase
                 .From("e6", movedWhitePawn)
                 .WithPieceAt("d6", blackPawn)
                 .WithEnemyPieceAt("c7")
@@ -439,7 +450,6 @@ public abstract class PawnLikeTestData : TheoryData<PieceTestCase>
                 .GoesTo("f8")
                 .WithDescription("en passant is not allowed when not on the right file")
         );
-
         #endregion
 
         #region promotion
