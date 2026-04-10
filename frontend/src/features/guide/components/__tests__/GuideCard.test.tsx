@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import GuideCard from "../GuideCard";
+import GuideCard, { GuidePoints } from "../GuideCard";
 import Image, { StaticImageData } from "next/image";
 import { mock } from "vitest-mock-extended";
 
@@ -12,53 +12,40 @@ describe("GuideCard", () => {
         mock<StaticImageData>({ src: "image3.jpg" }),
     ];
 
-    const multiplePoints = ["point 1", "point 2"];
-    const singlePoint = ["single point"];
+    const points: GuidePoints = [
+        "level 1",
+        {
+            title: "level 1 parent",
+            points: ["level 2 child"],
+        },
+    ];
     const title = "Test Title";
 
-    it("should render the title and all list points", () => {
-        render(
-            <GuideCard
-                title={title}
-                points={multiplePoints}
-                images={imagesMock}
-            />,
-        );
+    it("renders nested list structure correctly", () => {
+        render(<GuideCard title={title} points={points} images={imagesMock} />);
 
-        const titleEl = screen.getByTestId("guideCardTitle");
-        expect(titleEl).toHaveTextContent(title);
+        const root = screen.getByTestId("guideCard");
 
-        const list = screen.getByTestId("guideCardPoints");
-        const items = list.querySelectorAll("li");
-        expect(items.length).toBe(multiplePoints.length);
-        multiplePoints.forEach((point, i) =>
-            expect(items[i]).toHaveTextContent(point),
-        );
-    });
+        // first-level list
+        const topLevelList = root.querySelector(":scope > div > ul");
+        expect(topLevelList).toBeInTheDocument();
 
-    it("should render a single paragraph if there is only one point", () => {
-        render(
-            <GuideCard
-                title={title}
-                points={singlePoint}
-                images={imagesMock}
-            />,
-        );
+        const topItems = topLevelList!.querySelectorAll(":scope > li");
+        expect(topItems.length).toBe(2);
 
-        const paragraph = screen.getByTestId("guideCardSinglePoint");
-        expect(paragraph).toHaveTextContent(singlePoint[0]);
+        // second item contains nested list
+        const nestedContainer = topItems[1];
 
-        expect(screen.queryByTestId("guideCardPoints")).not.toBeInTheDocument();
+        const nestedList = nestedContainer.querySelector("ul");
+        expect(nestedList).toBeInTheDocument();
+
+        const nestedItems = nestedList!.querySelectorAll("li");
+        expect(nestedItems.length).toBe(1);
+        expect(nestedItems[0]).toHaveTextContent("level 2 child");
     });
 
     it("should render the carousel with the correct images and alt text", () => {
-        render(
-            <GuideCard
-                title={title}
-                points={multiplePoints}
-                images={imagesMock}
-            />,
-        );
+        render(<GuideCard title={title} points={points} images={imagesMock} />);
 
         const carousel = screen.getByTestId("carousel");
         expect(carousel).toBeInTheDocument();
@@ -75,11 +62,7 @@ describe("GuideCard", () => {
 
     it("should generate a slugified id from the title", () => {
         render(
-            <GuideCard
-                title="some rule"
-                points={multiplePoints}
-                images={imagesMock}
-            />,
+            <GuideCard title="some rule" points={points} images={imagesMock} />,
         );
 
         const card = screen.getByTestId("guideCard");

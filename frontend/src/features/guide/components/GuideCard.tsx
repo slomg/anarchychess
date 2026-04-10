@@ -2,6 +2,15 @@
 
 import { StaticImageData } from "next/image";
 import Carousel from "@/components/Carousel";
+import { JSX } from "react";
+import clsx from "clsx";
+
+interface GuideNestedPoint {
+    title: string;
+    points: GuidePoints;
+}
+
+export type GuidePoints = (string | GuideNestedPoint)[];
 
 const GuideCard = ({
     title,
@@ -9,10 +18,32 @@ const GuideCard = ({
     images,
 }: {
     title: string;
-    points: string[];
+    points: GuidePoints;
     images: StaticImageData[];
 }) => {
     const id = title.toLowerCase().replace(/\s+/g, "-");
+
+    function renderPoints(points: GuidePoints, depth = 0): JSX.Element {
+        return (
+            <ul
+                className={clsx(
+                    "list-inside list-disc space-y-3 text-sm text-balance",
+                    depth > 0 && "ml-10",
+                )}
+            >
+                {points.map((point, i) =>
+                    typeof point === "string" ? (
+                        <li key={i}>{point}</li>
+                    ) : (
+                        <li key={i}>
+                            {point.title}
+                            {renderPoints(point.points, depth + 1)}
+                        </li>
+                    ),
+                )}
+            </ul>
+        );
+    }
 
     return (
         <div
@@ -25,24 +56,8 @@ const GuideCard = ({
                 <h1 className="text-3xl" data-testid="guideCardTitle">
                     {title}
                 </h1>
-                {points.length > 1 ? (
-                    <ul
-                        className="list-inside list-disc space-y-3 text-sm
-                            text-balance"
-                        data-testid="guideCardPoints"
-                    >
-                        {points.map((point, i) => (
-                            <li key={i}>{point}</li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p
-                        className="text-sm text-balance"
-                        data-testid="guideCardSinglePoint"
-                    >
-                        {points[0]}
-                    </p>
-                )}
+
+                {renderPoints(points)}
             </div>
 
             <Carousel
