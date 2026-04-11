@@ -178,7 +178,9 @@ public sealed class ThrowingRule : IPieceMovementRule
             AlgebraicPoint current = start;
 
             current += direction;
-            while (board.IsWithinBoundaries(current))
+            while (
+                board.IsWithinBoundaries(current) && current.Y != 0 && current.Y != board.Height - 1
+            )
             {
                 yield return new(From: throwingPiecePosition, To: current);
                 current += direction;
