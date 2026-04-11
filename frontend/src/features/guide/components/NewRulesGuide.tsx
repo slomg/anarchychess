@@ -66,9 +66,8 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
                 points={[
                     "If a pawn has a higher value piece directly behind it, you can throw it in the opposite direction relative to that piece.",
                     "If the pawn hits an enemy piece, you lose your pawn but that piece is stunned for 2 moves.",
-                    "If it doesn't hit anything, the pawn lands normally.",
+                    "If it doesn't hit anything, the pawn lands normally, but is stunned for 1 move.",
                     "Pawns can only thrown up to the second-to-last rank, they cannot be thrown to the last rank.",
-                    "If a pawn is thrown to the second-to-last rank, it becomes stunned for 1 move due to emotional shock from being launched so close to promotion.",
                     {
                         title: "To Throw:",
                         points: [

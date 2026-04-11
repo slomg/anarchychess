@@ -38,16 +38,13 @@ public sealed class ThrowingRule : IPieceMovementRule
                 continue;
             }
 
-            List<MoveStun> stuns = [];
+            List<MoveStun> stuns =
+            [
+                new MoveStun(Position: position, Piece: movingPiece, StunForTurns: 2),
+            ];
             if (stunnedPiece is not null)
             {
                 stuns.Add(new MoveStun(Position: to, Piece: stunnedPiece, StunForTurns: 4));
-            }
-
-            // stun the pawn if it gets to the second to last rank
-            if (to.Y == 1 || to.Y == board.Height - 2)
-            {
-                stuns.Add(new MoveStun(Position: position, Piece: movingPiece, StunForTurns: 2));
             }
 
             yield return new Move(
@@ -181,9 +178,7 @@ public sealed class ThrowingRule : IPieceMovementRule
             AlgebraicPoint current = start;
 
             current += direction;
-            while (
-                board.IsWithinBoundaries(current) && current.Y != 0 && current.Y != board.Height - 1
-            )
+            while (board.IsWithinBoundaries(current))
             {
                 yield return new(From: throwingPiecePosition, To: current);
                 current += direction;

@@ -24,13 +24,11 @@ public class ThrowingRuleTests
         [
             .. expectedDests.Select(dest =>
             {
-                List<MoveStun> stuns = [];
+                List<MoveStun> stuns =
+                [
+                    new MoveStun(Position: origin, Piece: piece, StunForTurns: 2),
+                ];
                 List<MoveCapture> captures = [];
-                if (dest.Y == 1 || dest.Y == 8)
-                {
-                    stuns.Add(new MoveStun(Position: origin, Piece: piece, StunForTurns: 2));
-                }
-
                 if (board.TryGetPieceAt(dest, out var hitPiece))
                 {
                     stuns.Add(new MoveStun(Position: dest, Piece: hitPiece, StunForTurns: 4));
