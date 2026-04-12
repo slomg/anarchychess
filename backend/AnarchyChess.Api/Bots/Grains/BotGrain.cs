@@ -355,18 +355,25 @@ public class BotGrain : Grain, IBotGrain
         );
 
         await _notifier.NotifyGameEndedAsync(_gameToken, resultData);
-        await _gameArchiveService.CreateBotArchiveAsync(
-            _gameToken,
-            pool: new PoolKey(
-                PoolType.Casual,
-                TimeControl: new(BaseSeconds: 0, IncrementSeconds: 0)
-            ),
-            whitePlayer: game.Players.WhitePlayer,
-            blackPlayer: game.Players.BlackPlayer,
-            endStatus: endStatus,
-            token
-        );
-        await _unitOfWork.CompleteAsync(token);
+        try
+        {
+            await _gameArchiveService.CreateBotArchiveAsync(
+                _gameToken,
+                pool: new PoolKey(
+                    PoolType.Casual,
+                    TimeControl: new(BaseSeconds: 0, IncrementSeconds: 0)
+                ),
+                whitePlayer: game.Players.WhitePlayer,
+                blackPlayer: game.Players.BlackPlayer,
+                endStatus: endStatus,
+                token
+            );
+            await _unitOfWork.CompleteAsync(token);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to save bot game");
+        }
 
         game.Result = resultData;
     }
