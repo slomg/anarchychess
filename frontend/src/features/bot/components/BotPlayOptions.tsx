@@ -61,6 +61,37 @@ const BotPlayOptions = () => {
             </div>
 
             <div className="flex flex-1 flex-col justify-end gap-3 text-3xl">
+                <div
+                    tabIndex={0}
+                    className="group relative inline-flex items-center text-xs"
+                >
+                    <span className="text-text/70 cursor-help">
+                        Bots don&apos;t throw pawns yet.{" "}
+                        <span className="underline">(details)</span>
+                    </span>
+
+                    <div
+                        className="pointer-events-none absolute bottom-full
+                            left-0 z-50 mb-2 w-64 rounded-md bg-black/90 p-2
+                            text-xs opacity-0 transition
+                            group-focus-within:opacity-100
+                            group-hover:opacity-100"
+                    >
+                        <p>
+                            Pawn Throwing is not supported in bot evaluation
+                            yet. It significantly increases the number of legal
+                            moves (~4x), and I am not sure how to handle that
+                            yet. It&apos;s planned for a future update!
+                        </p>
+
+                        <p className="mt-4">
+                            You can still play pawn throw moves against the bot,
+                            but it will not consider throw moves or stunned
+                            pieces when evaluating positions.
+                        </p>
+                    </div>
+                </div>
+
                 {error && (
                     <p
                         className="text-error text-lg"
