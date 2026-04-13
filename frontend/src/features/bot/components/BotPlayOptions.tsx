@@ -63,7 +63,7 @@ const BotPlayOptions = () => {
             <div className="flex flex-1 flex-col justify-end gap-3 text-3xl">
                 <div
                     tabIndex={0}
-                    className="group relative inline-flex items-center text-xs"
+                    className="group relative inline-flex items-center text-sm"
                 >
                     <span className="text-text/70 cursor-help">
                         Bots don&apos;t throw pawns yet.{" "}
