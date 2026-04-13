@@ -14,7 +14,7 @@ public class ThrowNotator(IPieceLetterMap pieceLetterMap) : BaseSanNotator(piece
         sb.Append(move.From.AsAlgebraic());
         sb.Append("->");
 
-        if (move.Stuns.Count > 0)
+        if (move.Stuns.Any(x => x.Piece != move.Piece))
         {
             sb.Append('*');
         }

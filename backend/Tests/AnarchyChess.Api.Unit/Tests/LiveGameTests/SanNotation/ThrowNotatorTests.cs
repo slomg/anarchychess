@@ -19,7 +19,13 @@ public class ThrowNotatorTests
     [Fact]
     public void Notate_uses_throw_notation()
     {
-        Move move = new(new("a1"), new("f1"), PieceFactory.White(PieceType.Pawn));
+        Piece piece = PieceFactory.White(PieceType.Pawn);
+        Move move = new(
+            new("a1"),
+            new("f1"),
+            piece,
+            stuns: [new MoveStun(new("a1"), piece, StunForTurns: 1)]
+        );
 
         StringBuilder sb = new();
         _notator.Notate(move, [move], sb);
@@ -30,10 +36,11 @@ public class ThrowNotatorTests
     [Fact]
     public void Notate_notates_stuns()
     {
+        Piece piece = PieceFactory.White(PieceType.Pawn);
         Move move = new(
             new("b2"),
             new("c4"),
-            PieceFactory.White(PieceType.Pawn),
+            piece,
             stuns: [new MoveStun(new("c4"), PieceFactory.Black(), StunForTurns: 1)]
         );
 
