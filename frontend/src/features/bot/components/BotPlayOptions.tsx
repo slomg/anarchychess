@@ -80,8 +80,10 @@ const BotPlayOptions = () => {
                         <p>
                             Pawn Throwing is not supported in bot evaluation
                             yet. It significantly increases the number of legal
-                            moves (~4x), and I am not sure how to handle that
-                            yet. It&apos;s planned for a future update!
+                            moves (~4x) which would take a lot longer to
+                            compute, and I am not sure how to handle that
+                            efficiently yet. It&apos;s planned for a future
+                            update!
                         </p>
 
                         <p className="mt-4">
