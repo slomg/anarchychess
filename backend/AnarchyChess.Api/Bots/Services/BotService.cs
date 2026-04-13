@@ -41,7 +41,7 @@ public class BotService(ILogger<BotService> logger, IAiEngineService aiEngineSer
     {
         PrevMoveState? prevMove = GetPrevMoveState(board);
         AiEngineMoveRequest request = new(
-            Pieces: board.EnumeratePieces().ToDictionary(),
+            Pieces: GetBoardPieces(board),
             IsWhiteToMove: board.SideToMove is GameColor.White,
             prevMove,
             Depth: depth
@@ -79,7 +79,7 @@ public class BotService(ILogger<BotService> logger, IAiEngineService aiEngineSer
     {
         PrevMoveState? prevMove = GetPrevMoveState(board);
         AiEngineMoveRequest request = new(
-            Pieces: board.EnumeratePieces().ToDictionary(),
+            Pieces: GetBoardPieces(board),
             IsWhiteToMove: board.SideToMove is GameColor.White,
             prevMove,
             Depth: depth
@@ -125,7 +125,7 @@ public class BotService(ILogger<BotService> logger, IAiEngineService aiEngineSer
 
     public BitBoard ConvertBoardToBit(IReadOnlyChessBoard board) =>
         BitBoard.FromPieces(
-            board.EnumeratePieces().ToDictionary(),
+            pieces: GetBoardPieces(board),
             isWhiteToMove: board.SideToMove is GameColor.White,
             prevMoveState: GetPrevMoveState(board)
         );
@@ -161,4 +161,11 @@ public class BotService(ILogger<BotService> logger, IAiEngineService aiEngineSer
             SpecialMoveType: lastMove.SpecialMoveType
         );
     }
+
+    private static Dictionary<AlgebraicPoint, Piece> GetBoardPieces(IReadOnlyChessBoard board) =>
+        board
+            .EnumeratePieces()
+            // temporarily remove stunned pieces until I add stuns to the bot
+            .Where(piece => !board.StunnedPieces.ContainsKey(piece.Position))
+            .ToDictionary();
 }
