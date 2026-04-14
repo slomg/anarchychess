@@ -41,11 +41,11 @@ public class BotService(ILogger<BotService> logger, IAiEngineService aiEngineSer
     {
         PrevMoveState? prevMove = GetPrevMoveState(board);
         AiEngineMoveRequest request = new(
-            Pieces: GetBoardPieces(board),
+            Pieces: board.EnumeratePieces().ToDictionary(),
             IsWhiteToMove: board.SideToMove is GameColor.White,
             prevMove,
-            StunnedPositions: [.. board.StunnedPieces.Keys],
-            Depth: depth
+            Depth: depth,
+            StunnedPositions: [.. board.StunnedPieces.Keys]
         );
 
         MoveEvaluation bestMove;
@@ -80,11 +80,11 @@ public class BotService(ILogger<BotService> logger, IAiEngineService aiEngineSer
     {
         PrevMoveState? prevMove = GetPrevMoveState(board);
         AiEngineMoveRequest request = new(
-            Pieces: GetBoardPieces(board),
+            Pieces: board.EnumeratePieces().ToDictionary(),
             IsWhiteToMove: board.SideToMove is GameColor.White,
             prevMove,
-            StunnedPositions: [.. board.StunnedPieces.Keys],
-            Depth: depth
+            Depth: depth,
+            StunnedPositions: [.. board.StunnedPieces.Keys]
         );
 
         EvaluateAllMovesReply reply;
@@ -127,7 +127,7 @@ public class BotService(ILogger<BotService> logger, IAiEngineService aiEngineSer
 
     public BitBoard ConvertBoardToBit(IReadOnlyChessBoard board) =>
         BitBoard.FromPieces(
-            pieces: GetBoardPieces(board),
+            pieces: board.EnumeratePieces().ToDictionary(),
             isWhiteToMove: board.SideToMove is GameColor.White,
             prevMoveState: GetPrevMoveState(board)
         );
@@ -163,11 +163,4 @@ public class BotService(ILogger<BotService> logger, IAiEngineService aiEngineSer
             SpecialMoveType: lastMove.SpecialMoveType
         );
     }
-
-    private static Dictionary<AlgebraicPoint, Piece> GetBoardPieces(IReadOnlyChessBoard board) =>
-        board
-            .EnumeratePieces()
-            // temporarily remove stunned pieces until I add stuns to the bot
-            .Where(piece => !board.StunnedPieces.ContainsKey(piece.Position))
-            .ToDictionary();
 }

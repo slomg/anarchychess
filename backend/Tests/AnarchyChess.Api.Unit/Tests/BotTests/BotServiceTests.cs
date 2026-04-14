@@ -63,7 +63,8 @@ public class BotServiceTests : BaseUnitTest
                 CaptureMask: requestCaptures,
                 SpecialMoveType: SpecialMoveType.KingsideCastle
             ),
-            Depth: 69
+            Depth: 69,
+            StunnedPositions: []
         );
         _aiEngineMock
             .FindBestMoveAsync(
@@ -160,7 +161,8 @@ public class BotServiceTests : BaseUnitTest
             Pieces: pieces,
             IsWhiteToMove: true,
             PrevMoveState: null,
-            Depth: 16
+            Depth: 16,
+            StunnedPositions: []
         );
         _aiEngineMock
             .EvaluateAllMovesAsync(

@@ -7,6 +7,6 @@ public record AiEngineMoveRequest(
     Dictionary<AlgebraicPoint, Piece> Pieces,
     bool IsWhiteToMove,
     PrevMoveState? PrevMoveState,
-    IReadOnlyCollection<AlgebraicPoint> StunnedPositions,
-    int Depth
+    int Depth,
+    IReadOnlyCollection<AlgebraicPoint>? StunnedPositions = null
 );
