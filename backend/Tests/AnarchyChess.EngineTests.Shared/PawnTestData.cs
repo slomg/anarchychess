@@ -21,16 +21,7 @@ public class PawnTestData : PawnLikeTestData
                 .SkipAi()
                 .WithPieceAt("b6", PieceFactory.White(PieceType.Rook))
                 .ForEach(
-                    ["a8", "b8", "c8"],
-                    (position, testCase) =>
-                        testCase.GoesTo(
-                            position,
-                            specialMoveType: SpecialMoveType.Throw,
-                            trigger: ["b6"]
-                        )
-                )
-                .ForEach(
-                    ["a9", "b9", "c9"],
+                    ["a8", "b8", "c8", "a9", "b9", "c9"],
                     (position, testCase) =>
                         testCase.GoesTo(
                             position,

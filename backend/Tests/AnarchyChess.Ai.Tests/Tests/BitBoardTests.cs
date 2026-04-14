@@ -138,7 +138,10 @@ public class BitBoardTests
     [InlineData(false)]
     public void FromPieces_sets_IsWhiteToMove(bool isWhiteToMove)
     {
-        BitBoard board = BitBoard.FromPieces([], isWhiteToMove: isWhiteToMove);
+        BitBoard board = BitBoard.FromPieces(
+            new Dictionary<AlgebraicPoint, Piece>(),
+            isWhiteToMove: isWhiteToMove
+        );
 
         board.IsWhiteToMove.Should().Be(isWhiteToMove);
     }
@@ -155,9 +158,12 @@ public class BitBoardTests
         );
 
         BitBoard board = BitBoard.FromPieces(
-            new() { [new AlgebraicPoint("b2")] = PieceFactory.White(PieceType.Pawn) },
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new AlgebraicPoint("b2")] = PieceFactory.White(PieceType.Pawn),
+            },
             isWhiteToMove: true,
-            prevMoveState
+            prevMoveState: prevMoveState
         );
 
         board
@@ -177,7 +183,7 @@ public class BitBoardTests
         AlgebraicPoint moved2 = new("d7");
         AlgebraicPoint notMoved = new("g8");
         var board = BitBoard.FromPieces(
-            new()
+            new Dictionary<AlgebraicPoint, Piece>()
             {
                 [moved1] = PieceFactory.White(hasMoved: true),
                 [moved2] = PieceFactory.Black(hasMoved: true),
@@ -197,7 +203,7 @@ public class BitBoardTests
         AlgebraicPoint moved2 = new("d7");
         AlgebraicPoint notMoved = new("g8");
         var board = BitBoard.FromPieces(
-            new()
+            new Dictionary<AlgebraicPoint, Piece>()
             {
                 [moved1] = PieceFactory.White(hasMoved: true),
                 [moved2] = PieceFactory.Black(hasMoved: true),
@@ -384,9 +390,12 @@ public class BitBoardTests
             SpecialMoveType: SpecialMoveType.None
         );
         BitBoard board = BitBoard.FromPieces(
-            new() { [new AlgebraicPoint("b2")] = PieceFactory.White(PieceType.Pawn) },
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new AlgebraicPoint("b2")] = PieceFactory.White(PieceType.Pawn),
+            },
             isWhiteToMove: true,
-            prevMoveState
+            prevMoveState: prevMoveState
         );
 
         var undo = board.MakeNullMove();

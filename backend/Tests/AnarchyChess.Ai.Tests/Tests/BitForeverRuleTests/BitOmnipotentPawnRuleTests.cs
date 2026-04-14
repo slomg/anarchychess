@@ -12,7 +12,10 @@ public class BitOmnipotentPawnRuleTests
     [Fact]
     public void GenerateMoves_does_nothing_when_last_capture_mask_is_zero()
     {
-        BitBoard board = BitBoard.FromPieces([], isWhiteToMove: true);
+        BitBoard board = BitBoard.FromPieces(
+            new Dictionary<AlgebraicPoint, Piece>(),
+            isWhiteToMove: true
+        );
         Span<BitMove> moves = stackalloc BitMove[10];
         int moveCount = 0;
 
@@ -31,7 +34,11 @@ public class BitOmnipotentPawnRuleTests
             CaptureMask: BitOmnipotentPawnRule.WhiteSquareMask,
             SpecialMoveType: SpecialMoveType.None
         );
-        BitBoard board = BitBoard.FromPieces([], isWhiteToMove: true, prevMove);
+        BitBoard board = BitBoard.FromPieces(
+            new Dictionary<AlgebraicPoint, Piece>(),
+            isWhiteToMove: true,
+            prevMoveState: prevMove
+        );
         Span<BitMove> moves = stackalloc BitMove[10];
         int moveCount = 0;
 
@@ -62,7 +69,11 @@ public class BitOmnipotentPawnRuleTests
             CaptureMask: BitOmnipotentPawnRule.BlackSquareMask,
             SpecialMoveType: SpecialMoveType.None
         );
-        BitBoard board = BitBoard.FromPieces([], isWhiteToMove: false, prevMove);
+        BitBoard board = BitBoard.FromPieces(
+            new Dictionary<AlgebraicPoint, Piece>(),
+            isWhiteToMove: false,
+            prevMoveState: prevMove
+        );
         Span<BitMove> moves = stackalloc BitMove[10];
         int moveCount = 0;
 
@@ -93,7 +104,11 @@ public class BitOmnipotentPawnRuleTests
             CaptureMask: BitOmnipotentPawnRule.BlackSquareMask,
             SpecialMoveType: SpecialMoveType.None
         );
-        BitBoard board = BitBoard.FromPieces([], isWhiteToMove: true, prevMoveState: prevMove);
+        BitBoard board = BitBoard.FromPieces(
+            new Dictionary<AlgebraicPoint, Piece>(),
+            isWhiteToMove: true,
+            prevMoveState: prevMove
+        );
         Span<BitMove> moves = stackalloc BitMove[10];
         int moveCount = 0;
 
@@ -112,7 +127,11 @@ public class BitOmnipotentPawnRuleTests
             CaptureMask: BitOmnipotentPawnRule.WhiteSquare,
             SpecialMoveType: SpecialMoveType.None
         );
-        BitBoard board = BitBoard.FromPieces([], isWhiteToMove: false, prevMoveState: prevMove);
+        BitBoard board = BitBoard.FromPieces(
+            new Dictionary<AlgebraicPoint, Piece>(),
+            isWhiteToMove: false,
+            prevMoveState: prevMove
+        );
         Span<BitMove> moves = stackalloc BitMove[10];
         int moveCount = 0;
 

@@ -54,7 +54,13 @@ public class AiEngineServiceTests
             .Returns((BestMove: move, EvalForBot: 6969));
 
         var response = await _engine.FindBestMoveAsync(
-            new(pieces, IsWhiteToMove: isWhiteToMove, PrevMoveState: null, Depth: depth),
+            new(
+                pieces,
+                IsWhiteToMove: isWhiteToMove,
+                StunnedPositions: new Dictionary<AlgebraicPoint, int>(),
+                PrevMoveState: null,
+                Depth: depth
+            ),
             TestContext.Current.CancellationToken
         );
 
@@ -116,7 +122,13 @@ public class AiEngineServiceTests
             .Returns((BestMove: move, EvalForBot: -6969));
 
         var response = await _engine.FindBestMoveAsync(
-            new(pieces, IsWhiteToMove: true, PrevMoveState: prevMove, Depth: 123),
+            new(
+                pieces,
+                IsWhiteToMove: true,
+                StunnedPositions: new Dictionary<AlgebraicPoint, int>(),
+                PrevMoveState: prevMove,
+                Depth: 123
+            ),
             TestContext.Current.CancellationToken
         );
 
@@ -134,7 +146,13 @@ public class AiEngineServiceTests
         Func<Task> act = async () =>
             await _engine
                 .FindBestMoveAsync(
-                    new(Pieces: [], IsWhiteToMove: true, PrevMoveState: null, Depth: 123)
+                    new(
+                        Pieces: new Dictionary<AlgebraicPoint, Piece>(),
+                        IsWhiteToMove: true,
+                        StunnedPositions: new Dictionary<AlgebraicPoint, int>(),
+                        PrevMoveState: null,
+                        Depth: 123
+                    )
                 )
                 .AsTask();
 
@@ -187,7 +205,13 @@ public class AiEngineServiceTests
             .Returns(engineMoves);
 
         var response = await _engine.EvaluateAllMovesAsync(
-            new(pieces, IsWhiteToMove: true, PrevMoveState: null, Depth: 69),
+            new(
+                pieces,
+                IsWhiteToMove: true,
+                StunnedPositions: new Dictionary<AlgebraicPoint, int>(),
+                PrevMoveState: null,
+                Depth: 69
+            ),
             TestContext.Current.CancellationToken
         );
 
@@ -203,7 +227,13 @@ public class AiEngineServiceTests
         Func<Task> act = async () =>
             await _engine
                 .EvaluateAllMovesAsync(
-                    new(Pieces: [], IsWhiteToMove: true, PrevMoveState: null, Depth: 123),
+                    new(
+                        Pieces: new Dictionary<AlgebraicPoint, Piece>(),
+                        IsWhiteToMove: true,
+                        StunnedPositions: new Dictionary<AlgebraicPoint, int>(),
+                        PrevMoveState: null,
+                        Depth: 123
+                    ),
                     TestContext.Current.CancellationToken
                 )
                 .AsTask();

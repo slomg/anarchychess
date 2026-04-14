@@ -70,7 +70,7 @@ public class MoveOrderingTests
     public void SortMoves_sorts_captures_by_mvv_lva()
     {
         BitBoard board = BitBoard.FromPieces(
-            new()
+            new Dictionary<AlgebraicPoint, Piece>()
             {
                 [new("e4")] = PieceFactory.White(PieceType.Queen),
                 [new("d5")] = PieceFactory.Black(PieceType.Pawn),

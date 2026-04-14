@@ -12,7 +12,7 @@ public class PawnSpaceEvaluatorTests
     [Fact]
     public void Evaluate_returns_zero_on_empty_board()
     {
-        BitBoard board = BitBoard.FromPieces([]);
+        BitBoard board = new();
 
         (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
 

@@ -248,6 +248,7 @@ public partial class BitBoard
             SpecialMoveType = move.SpecialMoveType,
 
             HasMoved = HasMoved,
+            StunnedPieces = StunnedPieces,
 
             EnPassantSquaresMask = EnPassantSquaresMask,
             EnPassantPawnSquare = EnPassantPawnSquare,
@@ -283,6 +284,7 @@ public partial class BitBoard
         ApplySpecialMove(move);
         ComputeAggregateBitboards();
         ProcessMoveEffects(move);
+        DecrementStunned();
         IsWhiteToMove = !IsWhiteToMove;
 
         return undoState;
@@ -305,11 +307,19 @@ public partial class BitBoard
             SpawnPiece(pieceType, color, position);
         }
 
+        UInt128 prevStunned = undoState.StunnedPieces;
+        while (prevStunned != 0)
+        {
+            byte position = (byte)BitboardHelpers.BitScanForward(ref prevStunned);
+            _stunnedForPlies[position]++;
+        }
+
         WhiteMaterialCount = undoState.WhiteMaterialCount;
         BlackMaterialCount = undoState.BlackMaterialCount;
 
         IsWhiteToMove = undoState.IsWhiteToMove;
         HasMoved = undoState.HasMoved;
+        StunnedPieces = undoState.StunnedPieces;
         EnPassantSquaresMask = undoState.EnPassantSquaresMask;
         EnPassantPawnSquare = undoState.EnPassantPawnSquare;
         LastCaptureMask = undoState.LastCaptureMask;
@@ -444,6 +454,20 @@ public partial class BitBoard
     {
         ProcessEnPassant(move.From, move.To, move.SpecialMoveType, move.Piece);
         LastCaptureMask = move.CapturesMask;
+    }
+
+    private void DecrementStunned()
+    {
+        UInt128 stunned = StunnedPieces;
+        while (stunned != 0)
+        {
+            byte position = (byte)BitboardHelpers.BitScanForward(ref stunned);
+            _stunnedForPlies[position]--;
+            if (_stunnedForPlies[position] == 0)
+            {
+                StunnedPieces &= ~(UInt128.One << position);
+            }
+        }
     }
 
     private void ProcessEnPassant(

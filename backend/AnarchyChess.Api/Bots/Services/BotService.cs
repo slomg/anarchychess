@@ -43,9 +43,9 @@ public class BotService(ILogger<BotService> logger, IAiEngineService aiEngineSer
         AiEngineMoveRequest request = new(
             Pieces: board.EnumeratePieces().ToDictionary(),
             IsWhiteToMove: board.SideToMove is GameColor.White,
+            StunnedPositions: board.StunnedPieces,
             prevMove,
-            Depth: depth,
-            StunnedPositions: [.. board.StunnedPieces.Keys]
+            Depth: depth
         );
 
         MoveEvaluation bestMove;
@@ -82,9 +82,9 @@ public class BotService(ILogger<BotService> logger, IAiEngineService aiEngineSer
         AiEngineMoveRequest request = new(
             Pieces: board.EnumeratePieces().ToDictionary(),
             IsWhiteToMove: board.SideToMove is GameColor.White,
+            StunnedPositions: board.StunnedPieces,
             prevMove,
-            Depth: depth,
-            StunnedPositions: [.. board.StunnedPieces.Keys]
+            Depth: depth
         );
 
         EvaluateAllMovesReply reply;
@@ -129,7 +129,8 @@ public class BotService(ILogger<BotService> logger, IAiEngineService aiEngineSer
         BitBoard.FromPieces(
             pieces: board.EnumeratePieces().ToDictionary(),
             isWhiteToMove: board.SideToMove is GameColor.White,
-            prevMoveState: GetPrevMoveState(board)
+            prevMoveState: GetPrevMoveState(board),
+            stunnedPositions: board.StunnedPieces
         );
 
     private static PrevMoveState? GetPrevMoveState(IReadOnlyChessBoard board)

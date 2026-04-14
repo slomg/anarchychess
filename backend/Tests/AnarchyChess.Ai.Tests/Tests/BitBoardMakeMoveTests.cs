@@ -457,7 +457,10 @@ public class BitBoardMakeMoveTests
     public void MakeMove_sets_en_passant_state_correctly_for_pawn_moves(PieceType pawnType)
     {
         BitBoard board = BitBoard.FromPieces(
-            new() { [new AlgebraicPoint("b2")] = PieceFactory.White(pawnType) },
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new AlgebraicPoint("b2")] = PieceFactory.White(pawnType),
+            },
             isWhiteToMove: true
         );
 
@@ -480,7 +483,10 @@ public class BitBoardMakeMoveTests
     public void MakeMove_doesnt_set_en_passant_state_if_move_is_special()
     {
         BitBoard board = BitBoard.FromPieces(
-            new() { [new AlgebraicPoint("b2")] = PieceFactory.White(PieceType.Pawn) },
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new AlgebraicPoint("b2")] = PieceFactory.White(PieceType.Pawn),
+            },
             isWhiteToMove: true
         );
 
@@ -504,7 +510,10 @@ public class BitBoardMakeMoveTests
     public void MakeMove_sets_en_passant_state_correctly_for_black_pawn(PieceType pawnType)
     {
         BitBoard board = BitBoard.FromPieces(
-            new() { [new AlgebraicPoint("c9")] = PieceFactory.Black(pawnType) },
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new AlgebraicPoint("c9")] = PieceFactory.Black(pawnType),
+            },
             isWhiteToMove: false
         );
 
@@ -526,7 +535,7 @@ public class BitBoardMakeMoveTests
     [Fact]
     public void MakeMove_sets_LastCaptureMask()
     {
-        BitBoard board = BitBoard.FromPieces([]);
+        BitBoard board = new();
 
         BitMove move = new()
         {
@@ -538,6 +547,37 @@ public class BitBoardMakeMoveTests
         board.MakeMove(move);
 
         board.LastCaptureMask.Should().Be(move.CapturesMask);
+    }
+
+    [Fact]
+    public void MakeMove_decrements_stun_and_removes_when_zero()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new("a1")] = PieceFactory.White(PieceType.Rook),
+        };
+        Dictionary<AlgebraicPoint, int> stunned = new() { [new("a1")] = 2 };
+        BitBoard board = BitBoard.FromPieces(pieces, stunnedPositions: stunned);
+
+        BitMove move1 = new()
+        {
+            From = new AlgebraicPoint("a1").AsIdx(),
+            To = new AlgebraicPoint("b1").AsIdx(),
+            Piece = new() { Type = PieceType.Rook, Color = BitPieceColor.White },
+        };
+        board.MakeMove(move1);
+
+        board.StunnedPieces.Should().Be(UInt128.One << new AlgebraicPoint("a1").AsIdx());
+
+        BitMove move2 = new()
+        {
+            From = new AlgebraicPoint("b1").AsIdx(),
+            To = new AlgebraicPoint("c1").AsIdx(),
+            Piece = new() { Type = PieceType.Rook, Color = BitPieceColor.White },
+        };
+        board.MakeMove(move2);
+
+        board.StunnedPieces.Should().Be(0);
     }
 
     private static void AssertPieceAt(

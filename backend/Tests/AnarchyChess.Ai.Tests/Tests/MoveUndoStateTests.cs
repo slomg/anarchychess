@@ -15,6 +15,7 @@ public class MoveUndoStateTests
             PromotedTo = null,
             SpecialMoveType = SpecialMoveType.None,
             HasMoved = 0,
+            StunnedPieces = 0,
             EnPassantSquaresMask = 0,
             EnPassantPawnSquare = 0,
             IsWhiteToMove = true,

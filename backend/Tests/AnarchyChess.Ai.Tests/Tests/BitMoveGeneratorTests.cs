@@ -16,7 +16,7 @@ public class BitMoveGeneratorTests
     public void Generate_returns_expected_moves_for_white()
     {
         BitBoard board = BitBoard.FromPieces(
-            new()
+            new Dictionary<AlgebraicPoint, Piece>()
             {
                 [new AlgebraicPoint("f5")] = PieceFactory.White(PieceType.King),
                 [new AlgebraicPoint("d2")] = PieceFactory.White(PieceType.Pawn, hasMoved: false),
@@ -75,7 +75,7 @@ public class BitMoveGeneratorTests
     public void Generate_returns_expected_moves_for_black()
     {
         BitBoard board = BitBoard.FromPieces(
-            new()
+            new Dictionary<AlgebraicPoint, Piece>()
             {
                 [new AlgebraicPoint("d9")] = PieceFactory.Black(PieceType.Pawn, hasMoved: false),
                 [new AlgebraicPoint("c9")] = new Piece(PieceType.TraitorRook, Color: null),
@@ -130,7 +130,10 @@ public class BitMoveGeneratorTests
             CaptureMask: BitOmnipotentPawnRule.WhiteSquareMask,
             SpecialMoveType: SpecialMoveType.None
         );
-        BitBoard board = BitBoard.FromPieces([], prevMoveState: prevMove);
+        BitBoard board = BitBoard.FromPieces(
+            new Dictionary<AlgebraicPoint, Piece>(),
+            prevMoveState: prevMove
+        );
 
         Span<BitMove> moves = stackalloc BitMove[10];
         int moveCount = 0;

@@ -64,7 +64,7 @@ public class BotServiceTests : BaseUnitTest
                 SpecialMoveType: SpecialMoveType.KingsideCastle
             ),
             Depth: 69,
-            StunnedPositions: []
+            StunnedPositions: new Dictionary<AlgebraicPoint, int>()
         );
         _aiEngineMock
             .FindBestMoveAsync(
@@ -162,7 +162,7 @@ public class BotServiceTests : BaseUnitTest
             IsWhiteToMove: true,
             PrevMoveState: null,
             Depth: 16,
-            StunnedPositions: []
+            StunnedPositions: new Dictionary<AlgebraicPoint, int>()
         );
         _aiEngineMock
             .EvaluateAllMovesAsync(
@@ -260,36 +260,16 @@ public class BotServiceTests : BaseUnitTest
             [new("e2")] = PieceFactory.White(PieceType.Pawn),
             [new("d7")] = PieceFactory.Black(PieceType.Horsey),
         };
-        ChessBoard board = new(pieces);
-
-        BitBoard result = _bot.ConvertBoardToBit(board);
-
-        var expected = BitBoard.FromPieces(pieces, isWhiteToMove: true, prevMoveState: null);
-
-        result.Should().BeEquivalentTo(expected);
-    }
-
-    [Fact]
-    public void ConvertBoardToBit_removes_stunned_pieces()
-    {
-        Dictionary<AlgebraicPoint, Piece> pieces = new()
-        {
-            [new("e2")] = PieceFactory.White(PieceType.Pawn),
-            [new("d7")] = PieceFactory.Black(PieceType.Horsey),
-            [new("a1")] = PieceFactory.White(PieceType.Queen),
-        };
-        Dictionary<AlgebraicPoint, int> stunned = new() { [new("d7")] = 2 };
-
+        Dictionary<AlgebraicPoint, int> stunned = new() { [new("e2")] = 3 };
         ChessBoard board = new(pieces, stunnedPieces: stunned);
 
         BitBoard result = _bot.ConvertBoardToBit(board);
 
-        var expectedPieces = pieces.Where(p => !stunned.ContainsKey(p.Key)).ToDictionary();
-
         var expected = BitBoard.FromPieces(
-            expectedPieces,
+            pieces,
             isWhiteToMove: true,
-            prevMoveState: null
+            prevMoveState: null,
+            stunnedPositions: stunned
         );
 
         result.Should().BeEquivalentTo(expected);

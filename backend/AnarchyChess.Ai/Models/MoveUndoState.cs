@@ -27,10 +27,11 @@ public unsafe struct MoveUndoState
     public required SpecialMoveType SpecialMoveType;
 
     public required UInt128 HasMoved;
+    public required UInt128 StunnedPieces;
+
     public required UInt128 EnPassantSquaresMask;
     public required byte EnPassantPawnSquare;
     public required UInt128 LastCaptureMask;
-
     public required bool IsWhiteToMove;
 
     public required int WhiteMaterialCount;

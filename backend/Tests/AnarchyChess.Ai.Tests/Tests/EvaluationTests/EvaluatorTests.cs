@@ -12,7 +12,7 @@ public class EvaluatorTests
     [Fact]
     public void Evaluate_returns_0_on_empty_board()
     {
-        BitBoard board = BitBoard.FromPieces([]);
+        BitBoard board = new();
 
         int score = _evaluator.Evaluate(board);
 
