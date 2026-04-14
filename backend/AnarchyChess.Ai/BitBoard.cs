@@ -10,7 +10,9 @@ public partial class BitBoard
 {
     public UInt128[,] Bitboards { get; }
     public BitPiece?[] PieceAt { get; }
-    public UInt128 StunnedPieces { get; }
+
+    public UInt128 StunnedPieces { get; private set; }
+    private readonly byte[] _stunnedForPlies;
 
     public UInt128 WhitePieces { get; private set; }
     public UInt128 BlackPieces { get; private set; }
@@ -36,13 +38,15 @@ public partial class BitBoard
     private BitBoard(
         UInt128[,] bitboards,
         BitPiece?[] pieceAt,
-        PrevMoveState? prevMoveState,
-        UInt128 stunnedPieces
+        UInt128 stunnedPieces,
+        byte[] stunnedForPlies,
+        PrevMoveState? prevMoveState
     )
     {
         Bitboards = bitboards;
         PieceAt = pieceAt;
         StunnedPieces = stunnedPieces;
+        _stunnedForPlies = stunnedForPlies;
 
         for (int i = 0; i < Enum.GetValues<PieceType>().Length; i++)
         {
@@ -72,6 +76,7 @@ public partial class BitBoard
             Enum.GetValues<PieceType>().Length
         ];
         PieceAt = new BitPiece?[10 * 10];
+        _stunnedForPlies = new byte[10 * 10];
     }
 
     public BitBoard(BitBoard other)
@@ -90,7 +95,9 @@ public partial class BitBoard
         PieceAt = new BitPiece?[other.PieceAt.Length];
         Array.Copy(other.PieceAt, PieceAt, other.PieceAt.Length);
 
-        StunnedPieces = other.StunnedPieces;
+        _stunnedForPlies = new byte[other._stunnedForPlies.Length];
+        Array.Copy(other._stunnedForPlies, _stunnedForPlies, other._stunnedForPlies.Length);
+
         WhitePieces = other.WhitePieces;
         BlackPieces = other.BlackPieces;
         NeutralPieces = other.NeutralPieces;
@@ -107,21 +114,12 @@ public partial class BitBoard
     }
 
     public static BitBoard FromPieces(
-        Dictionary<AlgebraicPoint, Piece> pieces,
+        IReadOnlyDictionary<AlgebraicPoint, Piece> pieces,
         bool isWhiteToMove = true,
-        PrevMoveState? prevMoveState = null,
-        IEnumerable<AlgebraicPoint>? stunnedPositions = null
+        IReadOnlyDictionary<AlgebraicPoint, int>? stunnedPositions = null,
+        PrevMoveState? prevMoveState = null
     )
     {
-        UInt128 stunnedMask = 0;
-        if (stunnedPositions is not null)
-        {
-            foreach (var position in stunnedPositions)
-            {
-                stunnedMask |= UInt128.One << position.AsIdx();
-            }
-        }
-
         UInt128[,] bitboards = new UInt128[
             Enum.GetValues<BitPieceColor>().Length,
             Enum.GetValues<PieceType>().Length
@@ -158,7 +156,24 @@ public partial class BitBoard
             }
         }
 
-        return new BitBoard(bitboards, pieceAt, prevMoveState, stunnedPieces: stunnedMask)
+        byte[] stunnedForPlies = new byte[10 * 10];
+        UInt128 stunnedPieces = 0;
+        if (stunnedPositions is not null)
+        {
+            foreach (var (position, plyCount) in stunnedPositions)
+            {
+                stunnedPieces |= UInt128.One << position.AsIdx();
+                stunnedForPlies[position.AsIdx()] = (byte)plyCount;
+            }
+        }
+
+        return new BitBoard(
+            bitboards,
+            pieceAt,
+            stunnedPieces: stunnedPieces,
+            stunnedForPlies: stunnedForPlies,
+            prevMoveState
+        )
         {
             HasMoved = hasMoved,
             IsWhiteToMove = isWhiteToMove,
@@ -232,15 +247,15 @@ public partial class BitBoard
             PromotedTo = move.PromotesTo,
             SpecialMoveType = move.SpecialMoveType,
 
-            PrevHasMoved = HasMoved,
+            HasMoved = HasMoved,
 
-            PrevEnPassantSquaresMask = EnPassantSquaresMask,
-            PrevEnPassantPawnSquare = EnPassantPawnSquare,
-            PrevIsWhiteToMove = IsWhiteToMove,
-            PrevLastCaptureMask = LastCaptureMask,
+            EnPassantSquaresMask = EnPassantSquaresMask,
+            EnPassantPawnSquare = EnPassantPawnSquare,
+            IsWhiteToMove = IsWhiteToMove,
+            LastCaptureMask = LastCaptureMask,
 
-            PrevWhiteMaterialCount = WhiteMaterialCount,
-            PrevBlackMaterialCount = BlackMaterialCount,
+            WhiteMaterialCount = WhiteMaterialCount,
+            BlackMaterialCount = BlackMaterialCount,
         };
 
         UInt128 captureMask = move.CapturesMask;
@@ -290,14 +305,14 @@ public partial class BitBoard
             SpawnPiece(pieceType, color, position);
         }
 
-        WhiteMaterialCount = undoState.PrevWhiteMaterialCount;
-        BlackMaterialCount = undoState.PrevBlackMaterialCount;
+        WhiteMaterialCount = undoState.WhiteMaterialCount;
+        BlackMaterialCount = undoState.BlackMaterialCount;
 
-        IsWhiteToMove = undoState.PrevIsWhiteToMove;
-        HasMoved = undoState.PrevHasMoved;
-        EnPassantSquaresMask = undoState.PrevEnPassantSquaresMask;
-        EnPassantPawnSquare = undoState.PrevEnPassantPawnSquare;
-        LastCaptureMask = undoState.PrevLastCaptureMask;
+        IsWhiteToMove = undoState.IsWhiteToMove;
+        HasMoved = undoState.HasMoved;
+        EnPassantSquaresMask = undoState.EnPassantSquaresMask;
+        EnPassantPawnSquare = undoState.EnPassantPawnSquare;
+        LastCaptureMask = undoState.LastCaptureMask;
 
         ComputeAggregateBitboards();
     }

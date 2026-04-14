@@ -26,15 +26,15 @@ public unsafe struct MoveUndoState
     public required PieceType? PromotedTo;
     public required SpecialMoveType SpecialMoveType;
 
-    public required UInt128 PrevHasMoved;
-    public required UInt128 PrevEnPassantSquaresMask;
-    public required byte PrevEnPassantPawnSquare;
-    public required UInt128 PrevLastCaptureMask;
+    public required UInt128 HasMoved;
+    public required UInt128 EnPassantSquaresMask;
+    public required byte EnPassantPawnSquare;
+    public required UInt128 LastCaptureMask;
 
-    public required bool PrevIsWhiteToMove;
+    public required bool IsWhiteToMove;
 
-    public required int PrevWhiteMaterialCount;
-    public required int PrevBlackMaterialCount;
+    public required int WhiteMaterialCount;
+    public required int BlackMaterialCount;
 
     public void AddCapture(byte square, PieceType piece, BitPieceColor color)
     {

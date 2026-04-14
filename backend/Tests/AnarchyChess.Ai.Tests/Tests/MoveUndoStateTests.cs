@@ -14,14 +14,14 @@ public class MoveUndoStateTests
             Piece = new() { Type = PieceType.Queen, Color = BitPieceColor.White },
             PromotedTo = null,
             SpecialMoveType = SpecialMoveType.None,
-            PrevHasMoved = 0,
-            PrevEnPassantSquaresMask = 0,
-            PrevEnPassantPawnSquare = 0,
-            PrevIsWhiteToMove = true,
-            PrevLastCaptureMask = 0,
+            HasMoved = 0,
+            EnPassantSquaresMask = 0,
+            EnPassantPawnSquare = 0,
+            IsWhiteToMove = true,
+            LastCaptureMask = 0,
 
-            PrevWhiteMaterialCount = 0,
-            PrevBlackMaterialCount = 0,
+            WhiteMaterialCount = 0,
+            BlackMaterialCount = 0,
         };
 
     [Fact]
