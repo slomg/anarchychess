@@ -95,6 +95,7 @@ public partial class BitBoard
         PieceAt = new BitPiece?[other.PieceAt.Length];
         Array.Copy(other.PieceAt, PieceAt, other.PieceAt.Length);
 
+        StunnedPieces = other.StunnedPieces;
         _stunnedForPlies = new byte[other._stunnedForPlies.Length];
         Array.Copy(other._stunnedForPlies, _stunnedForPlies, other._stunnedForPlies.Length);
 
