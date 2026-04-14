@@ -325,14 +325,14 @@ public class BitboardUndoMoveTests
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
-            [new("a1")] = PieceFactory.White(PieceType.Rook),
+            [new("a5")] = PieceFactory.White(PieceType.Rook),
         };
-        Dictionary<AlgebraicPoint, int> stunned = new() { [new("a1")] = 2 };
+        Dictionary<AlgebraicPoint, int> stunned = new() { [new("a5")] = 2 };
 
         BitMove move = new()
         {
-            From = new AlgebraicPoint("a1").AsIdx(),
-            To = new AlgebraicPoint("b1").AsIdx(),
+            From = new AlgebraicPoint("a5").AsIdx(),
+            To = new AlgebraicPoint("b5").AsIdx(),
             Piece = new() { Type = PieceType.Rook, Color = BitPieceColor.White },
         };
 
@@ -344,14 +344,14 @@ public class BitboardUndoMoveTests
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
-            [new("a1")] = PieceFactory.White(PieceType.Rook),
+            [new("a5")] = PieceFactory.White(PieceType.Rook),
         };
-        Dictionary<AlgebraicPoint, int> stunned = new() { [new("a1")] = 1 };
+        Dictionary<AlgebraicPoint, int> stunned = new() { [new("a5")] = 1 };
 
         BitMove move = new()
         {
-            From = new AlgebraicPoint("a1").AsIdx(),
-            To = new AlgebraicPoint("b1").AsIdx(),
+            From = new AlgebraicPoint("a5").AsIdx(),
+            To = new AlgebraicPoint("a6").AsIdx(),
             Piece = new() { Type = PieceType.Rook, Color = BitPieceColor.White },
         };
 
