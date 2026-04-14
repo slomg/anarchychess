@@ -143,34 +143,6 @@ public class BotServiceTests : BaseUnitTest
     }
 
     [Fact]
-    public async Task FindBestMoveAsync_does_not_include_stunned_pieces()
-    {
-        Dictionary<AlgebraicPoint, Piece> pieces = new()
-        {
-            [new("e2")] = PieceFactory.White(PieceType.Pawn),
-            [new("d7")] = PieceFactory.Black(PieceType.Horsey),
-            [new("a1")] = PieceFactory.White(PieceType.Queen),
-        };
-
-        Dictionary<AlgebraicPoint, int> stunned = new() { [new("d7")] = 2 };
-
-        ChessBoard board = new(pieces, stunnedPieces: stunned);
-
-        AiEngineMoveRequest? captured = null;
-
-        _aiEngineMock
-            .FindBestMoveAsync(Arg.Do<AiEngineMoveRequest>(x => captured = x), CT)
-            .Returns(new MoveEvaluationFaker().Generate());
-
-        await _bot.FindBestMoveAsync(board, depth: 10, CT);
-
-        captured.Should().NotBeNull();
-        captured.Pieces.Should().NotContainKey(new AlgebraicPoint("d7"));
-        captured.Pieces.Should().ContainKey(new AlgebraicPoint("e2"));
-        captured.Pieces.Should().ContainKey(new AlgebraicPoint("a1"));
-    }
-
-    [Fact]
     public async Task EvaluateAllMovesAsync_returns_moves_correctly()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
@@ -203,34 +175,6 @@ public class BotServiceTests : BaseUnitTest
 
         result.IsError.Should().BeFalse();
         result.Value.Should().BeEquivalentTo(expectedMoves);
-    }
-
-    [Fact]
-    public async Task EvaluateAllMovesAsync_does_not_include_stunned_pieces()
-    {
-        Dictionary<AlgebraicPoint, Piece> pieces = new()
-        {
-            [new("e2")] = PieceFactory.White(PieceType.Pawn),
-            [new("d7")] = PieceFactory.Black(PieceType.Horsey),
-            [new("a1")] = PieceFactory.White(PieceType.Queen),
-        };
-
-        Dictionary<AlgebraicPoint, int> stunned = new() { [new("d7")] = 3 };
-
-        ChessBoard board = new(pieces, stunnedPieces: stunned);
-
-        AiEngineMoveRequest? captured = null;
-
-        _aiEngineMock
-            .EvaluateAllMovesAsync(Arg.Do<AiEngineMoveRequest>(r => captured = r), CT)
-            .Returns(new EvaluateAllMovesReply([]));
-
-        await _bot.EvaluateAllMovesAsync(board, depth: 10, CT);
-
-        captured.Should().NotBeNull();
-        captured.Pieces.Should().NotContainKey(new AlgebraicPoint("d7"));
-        captured.Pieces.Should().ContainKey(new AlgebraicPoint("e2"));
-        captured.Pieces.Should().ContainKey(new AlgebraicPoint("a1"));
     }
 
     [Fact]

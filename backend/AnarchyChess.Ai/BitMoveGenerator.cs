@@ -126,6 +126,11 @@ public sealed class BitMoveGenerator : IBitMoveGenerator
             int squareIndex = BitboardHelpers.BitScanForward(ref bitboard);
             byte position = (byte)squareIndex;
 
+            if ((board.StunnedPieces & (UInt128.One << position)) != 0)
+            {
+                return;
+            }
+
             definition.GenerateMoves(board, piece, position, moves, ref moveCount);
         }
     }

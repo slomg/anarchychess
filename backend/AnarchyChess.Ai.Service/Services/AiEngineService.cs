@@ -16,7 +16,8 @@ public class AiEngineService(IAiEngine aiEngine) : IAiEngineService
         BitBoard board = BitBoard.FromPieces(
             request.Pieces,
             isWhiteToMove: request.IsWhiteToMove,
-            prevMoveState: request.PrevMoveState
+            prevMoveState: request.PrevMoveState,
+            stunnedPositions: request.StunnedPositions
         );
         (BitMove? bestMove, int evalForBot) = _aiEngine.FindBestMove(board, depth: request.Depth);
         if (bestMove is null)
@@ -40,7 +41,8 @@ public class AiEngineService(IAiEngine aiEngine) : IAiEngineService
         BitBoard board = BitBoard.FromPieces(
             request.Pieces,
             isWhiteToMove: request.IsWhiteToMove,
-            prevMoveState: request.PrevMoveState
+            prevMoveState: request.PrevMoveState,
+            stunnedPositions: request.StunnedPositions
         );
         MoveEvaluation[] moves = _aiEngine.EvaluateAllMoves(board, depth: request.Depth);
         if (moves.Length == 0)

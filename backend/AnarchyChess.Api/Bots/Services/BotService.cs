@@ -44,6 +44,7 @@ public class BotService(ILogger<BotService> logger, IAiEngineService aiEngineSer
             Pieces: GetBoardPieces(board),
             IsWhiteToMove: board.SideToMove is GameColor.White,
             prevMove,
+            StunnedPositions: [.. board.StunnedPieces.Keys],
             Depth: depth
         );
 
@@ -82,6 +83,7 @@ public class BotService(ILogger<BotService> logger, IAiEngineService aiEngineSer
             Pieces: GetBoardPieces(board),
             IsWhiteToMove: board.SideToMove is GameColor.White,
             prevMove,
+            StunnedPositions: [.. board.StunnedPieces.Keys],
             Depth: depth
         );
 

@@ -10,6 +10,7 @@ public partial class BitBoard
 {
     public UInt128[,] Bitboards { get; }
     public BitPiece?[] PieceAt { get; }
+    public UInt128 StunnedPieces { get; }
 
     public UInt128 WhitePieces { get; private set; }
     public UInt128 BlackPieces { get; private set; }
@@ -32,10 +33,16 @@ public partial class BitBoard
     public int WhiteMaterialCount { get; private set; }
     public int BlackMaterialCount { get; private set; }
 
-    private BitBoard(UInt128[,] bitboards, BitPiece?[] pieceAt, PrevMoveState? prevMoveState)
+    private BitBoard(
+        UInt128[,] bitboards,
+        BitPiece?[] pieceAt,
+        PrevMoveState? prevMoveState,
+        UInt128 stunnedPieces
+    )
     {
         Bitboards = bitboards;
         PieceAt = pieceAt;
+        StunnedPieces = stunnedPieces;
 
         for (int i = 0; i < Enum.GetValues<PieceType>().Length; i++)
         {
@@ -83,6 +90,7 @@ public partial class BitBoard
         PieceAt = new BitPiece?[other.PieceAt.Length];
         Array.Copy(other.PieceAt, PieceAt, other.PieceAt.Length);
 
+        StunnedPieces = other.StunnedPieces;
         WhitePieces = other.WhitePieces;
         BlackPieces = other.BlackPieces;
         NeutralPieces = other.NeutralPieces;
@@ -101,9 +109,19 @@ public partial class BitBoard
     public static BitBoard FromPieces(
         Dictionary<AlgebraicPoint, Piece> pieces,
         bool isWhiteToMove = true,
-        PrevMoveState? prevMoveState = null
+        PrevMoveState? prevMoveState = null,
+        IEnumerable<AlgebraicPoint>? stunnedPositions = null
     )
     {
+        UInt128 stunnedMask = 0;
+        if (stunnedPositions is not null)
+        {
+            foreach (var position in stunnedPositions)
+            {
+                stunnedMask |= UInt128.One << position.AsIdx();
+            }
+        }
+
         UInt128[,] bitboards = new UInt128[
             Enum.GetValues<BitPieceColor>().Length,
             Enum.GetValues<PieceType>().Length
@@ -140,7 +158,7 @@ public partial class BitBoard
             }
         }
 
-        return new BitBoard(bitboards, pieceAt, prevMoveState)
+        return new BitBoard(bitboards, pieceAt, prevMoveState, stunnedPieces: stunnedMask)
         {
             HasMoved = hasMoved,
             IsWhiteToMove = isWhiteToMove,
