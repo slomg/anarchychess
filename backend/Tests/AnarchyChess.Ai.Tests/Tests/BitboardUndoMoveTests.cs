@@ -339,6 +339,25 @@ public class BitboardUndoMoveTests
         AssertMoveUndo(pieces, move, stunned);
     }
 
+    [Fact]
+    public void UndoMove_restores_stun_state_after_decrement_and_removal()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new("a1")] = PieceFactory.White(PieceType.Rook),
+        };
+        Dictionary<AlgebraicPoint, int> stunned = new() { [new("a1")] = 1 };
+
+        BitMove move = new()
+        {
+            From = new AlgebraicPoint("a1").AsIdx(),
+            To = new AlgebraicPoint("b1").AsIdx(),
+            Piece = new() { Type = PieceType.Rook, Color = BitPieceColor.White },
+        };
+
+        AssertMoveUndo(pieces, move, stunned);
+    }
+
     private static void AssertMoveUndo(
         Dictionary<AlgebraicPoint, Piece> pieces,
         BitMove move,
