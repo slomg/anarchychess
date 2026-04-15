@@ -15,8 +15,8 @@ public sealed class BitTraitorRookDefinition : IBitPieceDefinition
     )
     {
         UInt128 adjacent = PieceMasks.AdjacentMasks[position];
-        UInt128 whiteAdjacent = adjacent & board.WhitePieces;
-        UInt128 blackAdjacent = adjacent & board.BlackPieces;
+        UInt128 whiteAdjacent = adjacent & board.WhitePieces & ~board.StunnedPieces;
+        UInt128 blackAdjacent = adjacent & board.BlackPieces & ~board.StunnedPieces;
 
         if (whiteAdjacent == 0 && blackAdjacent == 0)
         {

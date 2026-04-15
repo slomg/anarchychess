@@ -31,6 +31,24 @@ public class PieceTestCase
     public List<Move> PriorMoves { get; init; } = [];
 
     [JsonIgnore]
+    public Dictionary<AlgebraicPoint, int> Stunned { get; } = [];
+
+    [JsonInclude]
+    [JsonPropertyName(nameof(Stunned))]
+    public Dictionary<string, int> StunnedSurrogate
+    {
+        get => Stunned.ToDictionary(x => x.Key.AsAlgebraic(), x => x.Value);
+        set
+        {
+            Stunned.Clear();
+            foreach (var kvp in value)
+            {
+                Stunned[new AlgebraicPoint(kvp.Key)] = kvp.Value;
+            }
+        }
+    }
+
+    [JsonIgnore]
     public Dictionary<AlgebraicPoint, Piece> BlockedBy { get; } = [];
 
     [JsonInclude]
@@ -42,7 +60,9 @@ public class PieceTestCase
         {
             BlockedBy.Clear();
             foreach (var kvp in value)
+            {
                 BlockedBy[new AlgebraicPoint(kvp.Key)] = kvp.Value;
+            }
         }
     }
 
@@ -163,6 +183,12 @@ public class PieceTestCase
                 )
                 .Generate()
         );
+
+    public PieceTestCase WithStun(string position, int forTurns = 2)
+    {
+        Stunned[new AlgebraicPoint(position)] = forTurns;
+        return this;
+    }
 
     public PieceTestCase WithPriorMove(
         string from,

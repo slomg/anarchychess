@@ -19,11 +19,13 @@ public class BitPieceDefinitionTestBase
         Move? lastMove = testCase.PriorMoves.LastOrDefault();
         BitBoard board = BitBoard.FromPieces(
             testCase.BlockedBy,
-            isWhiteToMove: testCase.MovingPlayer is GameColor.White
+            isWhiteToMove: testCase.MovingPlayer is GameColor.White,
+            stunnedPositions: testCase.Stunned
         );
         BitBoard beforeBoard = BitBoard.FromPieces(
             testCase.BlockedBy,
-            isWhiteToMove: testCase.MovingPlayer is GameColor.White
+            isWhiteToMove: testCase.MovingPlayer is GameColor.White,
+            stunnedPositions: testCase.Stunned
         );
         if (lastMove is not null)
         {
