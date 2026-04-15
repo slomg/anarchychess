@@ -247,6 +247,7 @@ public partial class BitBoard
             Piece = move.Piece,
             PromotedTo = move.PromotesTo,
             SpecialMoveType = move.SpecialMoveType,
+            CaptureMask = move.CapturesMask,
 
             HasMoved = HasMoved,
             StunnedPieces = StunnedPieces,
@@ -271,7 +272,7 @@ public partial class BitBoard
             }
         }
 
-        if (move.To != move.From || move.PromotesTo is not null)
+        if ((move.CapturesMask & (UInt128.One << move.From)) == 0 || move.PromotesTo is not null)
         {
             MovePiece(
                 move.Piece.Type,
@@ -282,10 +283,10 @@ public partial class BitBoard
             );
         }
 
+        DecrementStunned();
         ApplySpecialMove(move);
         ComputeAggregateBitboards();
         ProcessMoveEffects(move);
-        DecrementStunned();
         IsWhiteToMove = !IsWhiteToMove;
 
         return undoState;
@@ -293,13 +294,17 @@ public partial class BitBoard
 
     public void UndoMove(MoveUndoState undoState)
     {
-        MovePiece(
-            undoState.PromotedTo ?? undoState.Piece.Type,
-            undoState.Piece.Color,
-            from: undoState.To,
-            to: undoState.From,
-            promotesTo: undoState.Piece.Type
-        );
+        if ((undoState.CaptureMask & (UInt128.One << undoState.From)) == 0)
+        {
+            MovePiece(
+                undoState.PromotedTo ?? undoState.Piece.Type,
+                undoState.Piece.Color,
+                from: undoState.To,
+                to: undoState.From,
+                promotesTo: undoState.Piece.Type
+            );
+        }
+
         UndoSpecialMove(undoState);
 
         for (int i = 0; i < undoState.CaptureCount; i++)
@@ -440,6 +445,21 @@ public partial class BitBoard
         }
         PieceAt[at] = null;
         HasMoved &= inverseMask;
+    }
+
+    private void AddStun(byte at, byte forTurns)
+    {
+        StunnedPieces |= UInt128.One << at;
+        _stunnedForPlies[at] += forTurns;
+    }
+
+    private void RemoveStun(byte at, byte forTurns)
+    {
+        _stunnedForPlies[at] = (byte)Math.Max(0, _stunnedForPlies[at] - forTurns);
+        if (_stunnedForPlies[at] == 0)
+        {
+            StunnedPieces &= ~(UInt128.One << at);
+        }
     }
 
     private void ComputeAggregateBitboards()

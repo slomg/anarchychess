@@ -358,6 +358,48 @@ public class BitboardUndoMoveTests
         AssertMoveUndo(pieces, move, stunned);
     }
 
+    [Fact]
+    public void UndoMove_restores_throw()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new("e1")] = PieceFactory.White(PieceType.Queen),
+            [new("e2")] = PieceFactory.White(PieceType.Pawn),
+        };
+
+        BitMove move = new()
+        {
+            From = new AlgebraicPoint("e2").AsIdx(),
+            To = new AlgebraicPoint("f7").AsIdx(),
+            Piece = new BitPiece() { Type = PieceType.Pawn, Color = BitPieceColor.White },
+            SpecialMoveType = SpecialMoveType.Throw,
+        };
+
+        AssertMoveUndo(pieces, move);
+    }
+
+    [Fact]
+    public void UndoMove_restores_throw_with_stun()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new("e1")] = PieceFactory.White(PieceType.Queen),
+            [new("e2")] = PieceFactory.White(PieceType.Pawn),
+            [new("e9")] = PieceFactory.Black(PieceType.King),
+        };
+
+        BitMove move = new()
+        {
+            From = new AlgebraicPoint("e2").AsIdx(),
+            To = new AlgebraicPoint("e9").AsIdx(),
+            Piece = new BitPiece() { Type = PieceType.Pawn, Color = BitPieceColor.White },
+            CapturesMask = UInt128.One << new AlgebraicPoint("e2").AsIdx(),
+            SpecialMoveType = SpecialMoveType.Throw,
+        };
+
+        AssertMoveUndo(pieces, move);
+    }
+
     private static void AssertMoveUndo(
         Dictionary<AlgebraicPoint, Piece> pieces,
         BitMove move,
