@@ -5,7 +5,7 @@ using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai;
 
-internal sealed class SearchThread(
+internal class SearchThread(
     IBitMoveGenerator moveGenerator,
     IEvaluator evaluator,
     IMoveOrdering moveOrdering,
@@ -15,7 +15,6 @@ internal sealed class SearchThread(
     private readonly IBitMoveGenerator _moveGenerator = moveGenerator;
     private readonly IEvaluator _evaluator = evaluator;
     private readonly IMoveOrdering _moveOrdering = moveOrdering;
-    private readonly int _maxDepth = maxDepth;
 
     private readonly BitMove[,] _killerMoves = new BitMove[maxDepth + 1, 2];
     private readonly int[,] _historyHeuristic = new int[10 * 10, 10 * 10];
@@ -43,7 +42,7 @@ internal sealed class SearchThread(
 
         Span<BitMove> moves = stackalloc BitMove[EngineConstants.MaxMoves];
         int moveCount = 0;
-        _moveGenerator.Generate(board, moves, ref moveCount, depth: depth, maxDepth: _maxDepth);
+        _moveGenerator.Generate(board, moves, ref moveCount);
 
         bool isForced = moves[0].ForcedMovePriority is not ForcedMovePriority.None;
         if (isForced && depthBeforeReduce is not null)
@@ -167,7 +166,7 @@ internal sealed class SearchThread(
 
         Span<BitMove> moves = stackalloc BitMove[EngineConstants.MaxMoves];
         int moveCount = 0;
-        _moveGenerator.Generate(board, moves, ref moveCount, depth: depth, maxDepth: _maxDepth);
+        _moveGenerator.Generate(board, moves, ref moveCount);
 
         int captureCount = 0;
         Span<BitMove> captures = stackalloc BitMove[moveCount];

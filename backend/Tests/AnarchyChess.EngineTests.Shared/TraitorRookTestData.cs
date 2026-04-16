@@ -134,19 +134,5 @@ public class TraitorRookTestData : TheoryData<PieceTestCase>
                 .GoesTo("a2", captures: ["a2"])
                 .WithDescription("Corner case a1, black majority, black moves")
         );
-
-        Add(
-            PieceTestCase
-                .From("e5", traitorRook)
-                .WithWhitePieceAt("d5")
-                .WithWhitePieceAt("e4")
-                .WithBlackPieceAt("f5")
-                .WithBlackPieceAt("e6")
-                .WithStun("e6")
-                .WithMovingPlayer(GameColor.White)
-                .GoesTo("e6", captures: ["e6"])
-                .GoesTo("f5", captures: ["f5"])
-                .WithDescription("Doesn't count stunned pieces towards majority")
-        );
     }
 }

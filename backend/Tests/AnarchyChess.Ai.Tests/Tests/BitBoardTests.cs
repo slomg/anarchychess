@@ -13,16 +13,12 @@ public class BitBoardTests
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
             [new AlgebraicPoint("e1")] = PieceFactory.White(PieceType.King),
-            [new AlgebraicPoint("d2")] = PieceFactory.White(PieceType.Pawn),
-            [new AlgebraicPoint("d3")] = PieceFactory.White(PieceType.SterilePawn),
-            [new AlgebraicPoint("d4")] = PieceFactory.White(PieceType.UnderagePawn),
+            [new AlgebraicPoint("d1")] = PieceFactory.White(PieceType.Queen),
             [new AlgebraicPoint("a1")] = PieceFactory.White(PieceType.Rook),
             [new AlgebraicPoint("h1")] = PieceFactory.White(PieceType.Rook),
 
             [new AlgebraicPoint("e10")] = PieceFactory.Black(PieceType.King),
-            [new AlgebraicPoint("d9")] = PieceFactory.Black(PieceType.Pawn),
-            [new AlgebraicPoint("d8")] = PieceFactory.Black(PieceType.SterilePawn),
-            [new AlgebraicPoint("d7")] = PieceFactory.Black(PieceType.UnderagePawn),
+            [new AlgebraicPoint("d10")] = PieceFactory.Black(PieceType.Queen),
             [new AlgebraicPoint("a10")] = PieceFactory.Black(PieceType.Rook),
             [new AlgebraicPoint("h10")] = PieceFactory.Black(PieceType.Bishop),
 
@@ -39,19 +35,9 @@ public class BitBoardTests
             .Be(UInt128.One << new AlgebraicPoint("e1").AsIdx());
 
         board
-            .BitboardFor(PieceType.Pawn, BitPieceColor.White)
+            .BitboardFor(PieceType.Queen, BitPieceColor.White)
             .Should()
-            .Be(UInt128.One << new AlgebraicPoint("d2").AsIdx());
-
-        board
-            .BitboardFor(PieceType.SterilePawn, BitPieceColor.White)
-            .Should()
-            .Be(UInt128.One << new AlgebraicPoint("d3").AsIdx());
-
-        board
-            .BitboardFor(PieceType.UnderagePawn, BitPieceColor.White)
-            .Should()
-            .Be(UInt128.One << new AlgebraicPoint("d4").AsIdx());
+            .Be(UInt128.One << new AlgebraicPoint("d1").AsIdx());
 
         board
             .BitboardFor(PieceType.Rook, BitPieceColor.White)
@@ -68,17 +54,9 @@ public class BitBoardTests
             .Be(UInt128.One << new AlgebraicPoint("e10").AsIdx());
 
         board
-            .BitboardFor(PieceType.Pawn, BitPieceColor.Black)
+            .BitboardFor(PieceType.Queen, BitPieceColor.Black)
             .Should()
-            .Be(UInt128.One << new AlgebraicPoint("d9").AsIdx());
-        board
-            .BitboardFor(PieceType.SterilePawn, BitPieceColor.Black)
-            .Should()
-            .Be(UInt128.One << new AlgebraicPoint("d8").AsIdx());
-        board
-            .BitboardFor(PieceType.UnderagePawn, BitPieceColor.Black)
-            .Should()
-            .Be(UInt128.One << new AlgebraicPoint("d7").AsIdx());
+            .Be(UInt128.One << new AlgebraicPoint("d10").AsIdx());
 
         board
             .BitboardFor(PieceType.Rook, BitPieceColor.Black)
@@ -103,49 +81,30 @@ public class BitBoardTests
             .WhitePieces.Should()
             .Be(
                 board.BitboardFor(PieceType.King, BitPieceColor.White)
-                    | board.BitboardFor(PieceType.Pawn, BitPieceColor.White)
-                    | board.BitboardFor(PieceType.SterilePawn, BitPieceColor.White)
-                    | board.BitboardFor(PieceType.UnderagePawn, BitPieceColor.White)
+                    | board.BitboardFor(PieceType.Queen, BitPieceColor.White)
                     | board.BitboardFor(PieceType.Rook, BitPieceColor.White)
             );
+
         board
             .BlackPieces.Should()
             .Be(
                 board.BitboardFor(PieceType.King, BitPieceColor.Black)
-                    | board.BitboardFor(PieceType.Pawn, BitPieceColor.Black)
-                    | board.BitboardFor(PieceType.SterilePawn, BitPieceColor.Black)
-                    | board.BitboardFor(PieceType.UnderagePawn, BitPieceColor.Black)
+                    | board.BitboardFor(PieceType.Queen, BitPieceColor.Black)
                     | board.BitboardFor(PieceType.Rook, BitPieceColor.Black)
                     | board.BitboardFor(PieceType.Bishop, BitPieceColor.Black)
             );
+
         board
             .NeutralPieces.Should()
             .Be(board.BitboardFor(PieceType.TraitorRook, BitPieceColor.Neutral));
+
         board.Occupancy.Should().Be(board.WhitePieces | board.BlackPieces | board.NeutralPieces);
-        board
-            .ValidWhiteThrowers.Should()
-            .Be(
-                board.WhitePieces
-                    & ~board.BitboardFor(PieceType.Pawn, BitPieceColor.White)
-                    & ~board.BitboardFor(PieceType.SterilePawn, BitPieceColor.White)
-                    & ~board.BitboardFor(PieceType.UnderagePawn, BitPieceColor.White)
-            );
-        board
-            .ValidBlackThrowers.Should()
-            .Be(
-                board.BlackPieces
-                    & ~board.BitboardFor(PieceType.Pawn, BitPieceColor.Black)
-                    & ~board.BitboardFor(PieceType.SterilePawn, BitPieceColor.Black)
-                    & ~board.BitboardFor(PieceType.UnderagePawn, BitPieceColor.Black)
-            );
 
         board
             .WhiteMaterialCount.Should()
             .Be(
                 MaterialValue.GetPieceValue(PieceType.King)
-                    + MaterialValue.GetPieceValue(PieceType.Pawn)
-                    + MaterialValue.GetPieceValue(PieceType.SterilePawn)
-                    + MaterialValue.GetPieceValue(PieceType.UnderagePawn)
+                    + MaterialValue.GetPieceValue(PieceType.Queen)
                     + MaterialValue.GetPieceValue(PieceType.Rook)
                     + MaterialValue.GetPieceValue(PieceType.Rook)
             );
@@ -153,9 +112,7 @@ public class BitBoardTests
             .BlackMaterialCount.Should()
             .Be(
                 MaterialValue.GetPieceValue(PieceType.King)
-                    + MaterialValue.GetPieceValue(PieceType.Pawn)
-                    + MaterialValue.GetPieceValue(PieceType.SterilePawn)
-                    + MaterialValue.GetPieceValue(PieceType.UnderagePawn)
+                    + MaterialValue.GetPieceValue(PieceType.Queen)
                     + MaterialValue.GetPieceValue(PieceType.Rook)
                     + MaterialValue.GetPieceValue(PieceType.Bishop)
             );

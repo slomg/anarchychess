@@ -19,7 +19,6 @@ public unsafe struct MoveUndoState
     public required byte From;
     public required byte To;
     public required BitPiece Piece;
-    public required UInt128 CaptureMask;
 
     private fixed ushort _capturesPacked[MaxCaptures];
     public byte CaptureCount;

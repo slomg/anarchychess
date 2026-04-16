@@ -12,69 +12,58 @@ public class MoveOrderingTests
     [Fact]
     public void SortMoves_correctly_prioritizes_all_types()
     {
-        BitBoard board = BitBoard.FromPieces(
-            new Dictionary<AlgebraicPoint, Piece>()
-            {
-                [new("e2")] = PieceFactory.White(PieceType.Pawn),
-                [new("f3")] = PieceFactory.Black(),
-                [new("f5")] = PieceFactory.Black(),
-            }
-        );
-
         BitMove killer = new()
         {
-            From = new AlgebraicPoint("e2").AsIdx(),
-            To = new AlgebraicPoint("e3").AsIdx(),
+            From = 1,
+            To = 2,
             Piece = new BitPiece { Type = PieceType.Rook, Color = BitPieceColor.White },
         };
         BitMove promotion = new()
         {
-            From = new AlgebraicPoint("e2").AsIdx(),
-            To = new AlgebraicPoint("e4").AsIdx(),
+            From = 3,
+            To = 4,
             Piece = new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.White },
             PromotesTo = PieceType.Queen,
         };
         BitMove capture = new()
         {
-            From = new AlgebraicPoint("e2").AsIdx(),
-            To = new AlgebraicPoint("f3").AsIdx(),
+            From = 5,
+            To = 6,
             Piece = new BitPiece { Type = PieceType.Queen, Color = BitPieceColor.White },
             CapturesMask = 1,
         };
-        BitMove stunThrow = new()
+        BitMove special = new()
         {
-            From = new AlgebraicPoint("e2").AsIdx(),
-            To = new AlgebraicPoint("f5").AsIdx(),
-            Piece = new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.White },
-            SpecialMoveType = SpecialMoveType.Throw,
-            CapturesMask = UInt128.One << new AlgebraicPoint("f5").AsIdx(),
-        };
-        BitMove regularThrow = new()
-        {
-            From = new AlgebraicPoint("e2").AsIdx(),
-            To = new AlgebraicPoint("f6").AsIdx(),
-            Piece = new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.White },
-            SpecialMoveType = SpecialMoveType.Throw,
+            From = 7,
+            To = 8,
+            Piece = new BitPiece { Type = PieceType.King, Color = BitPieceColor.White },
+            SpecialMoveType = SpecialMoveType.KingsideCastle,
         };
         BitMove quiet = new()
         {
-            From = new AlgebraicPoint("e2").AsIdx(),
-            To = new AlgebraicPoint("e6").AsIdx(),
+            From = 9,
+            To = 10,
             Piece = new BitPiece { Type = PieceType.Bishop, Color = BitPieceColor.White },
         };
 
         BitMove[,] killers = new BitMove[1, 2];
         killers[0, 0] = killer;
 
-        Span<BitMove> moves = [quiet, stunThrow, promotion, capture, regularThrow, killer];
-        _ordering.SortMoves(board, depth: 0, killers, new int[100, 100], moves, moves.Length);
+        Span<BitMove> moves = [quiet, capture, special, promotion, killer];
+        _ordering.SortMoves(
+            new BitBoard(),
+            depth: 0,
+            killers,
+            new int[100, 100],
+            moves,
+            moves.Length
+        );
 
         moves[0].Should().BeEquivalentTo(killer);
         moves[1].Should().BeEquivalentTo(capture);
         moves[2].Should().BeEquivalentTo(promotion);
-        moves[3].Should().BeEquivalentTo(stunThrow);
-        moves[4].Should().BeEquivalentTo(regularThrow);
-        moves[5].Should().BeEquivalentTo(quiet);
+        moves[3].Should().BeEquivalentTo(special);
+        moves[4].Should().BeEquivalentTo(quiet);
     }
 
     [Fact]
@@ -152,51 +141,6 @@ public class MoveOrderingTests
 
         moves[0].Should().BeEquivalentTo(moveHigh);
         moves[1].Should().BeEquivalentTo(moveLow);
-    }
-
-    [Fact]
-    public void SortMoves_orders_stun_throw_by_stunned_piece_value()
-    {
-        BitBoard board = BitBoard.FromPieces(
-            new Dictionary<AlgebraicPoint, Piece>()
-            {
-                [new("e2")] = PieceFactory.White(PieceType.Pawn),
-                [new("f5")] = PieceFactory.Black(PieceType.Pawn),
-                [new("g5")] = PieceFactory.Black(PieceType.Queen),
-            }
-        );
-
-        BitMove lowStun = new()
-        {
-            From = new AlgebraicPoint("e2").AsIdx(),
-            To = new AlgebraicPoint("f5").AsIdx(),
-            Piece = new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.White },
-            SpecialMoveType = SpecialMoveType.Throw,
-            CapturesMask = UInt128.One << new AlgebraicPoint("f5").AsIdx(),
-        };
-
-        BitMove highStun = new()
-        {
-            From = new AlgebraicPoint("e2").AsIdx(),
-            To = new AlgebraicPoint("g5").AsIdx(),
-            Piece = new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.White },
-            SpecialMoveType = SpecialMoveType.Throw,
-            CapturesMask = UInt128.One << new AlgebraicPoint("g5").AsIdx(),
-        };
-
-        Span<BitMove> moves = [lowStun, highStun];
-
-        _ordering.SortMoves(
-            board,
-            depth: 0,
-            new BitMove[1, 2],
-            new int[100, 100],
-            moves,
-            moves.Length
-        );
-
-        moves[0].Should().BeEquivalentTo(highStun);
-        moves[1].Should().BeEquivalentTo(lowStun);
     }
 
     [Fact]

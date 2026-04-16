@@ -1,6 +1,5 @@
 ﻿using AnarchyChess.Ai.Evaluation;
 using AnarchyChess.Ai.Models;
-using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai;
 
@@ -25,7 +24,7 @@ public class AiEngine(
         BitMove[] moves = new BitMove[EngineConstants.MaxMoves];
         int moveCount = 0;
 
-        _moveGenerator.Generate(board, moves, ref moveCount, depth: depth, maxDepth: depth);
+        _moveGenerator.Generate(board, moves, ref moveCount);
         if (moveCount == 0)
         {
             return (BestMove: null, EvalForBot: 0);
@@ -116,9 +115,7 @@ public class AiEngine(
                 {
                     oldAlpha = alpha;
                     if (score <= oldAlpha)
-                    {
                         break;
-                    }
                 } while (Interlocked.CompareExchange(ref alpha, score, oldAlpha) != oldAlpha);
             }
         );
@@ -135,7 +132,7 @@ public class AiEngine(
         }
 
         Console.WriteLine(
-            $"Eval: {bestAlpha}, move count: {moveCount}, {AlgebraicPoint.FromIdx(bestMove.From)} -> {AlgebraicPoint.FromIdx(bestMove.To)}"
+            $"Eval: {bestAlpha}, move count: {moveCount}, {bestMove.From} {bestMove.To}"
         );
 
         return (BestMove: bestMove, EvalForBot: bestAlpha);
@@ -146,7 +143,7 @@ public class AiEngine(
         BitMove[] moves = new BitMove[EngineConstants.MaxMoves];
         int moveCount = 0;
 
-        _moveGenerator.Generate(board, moves, ref moveCount, depth: depth, maxDepth: depth);
+        _moveGenerator.Generate(board, moves, ref moveCount);
         if (moveCount == 0)
         {
             return [];

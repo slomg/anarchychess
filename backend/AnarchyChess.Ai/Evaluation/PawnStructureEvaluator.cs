@@ -7,7 +7,7 @@ namespace AnarchyChess.Ai.Evaluation;
 public sealed class PawnStructureEvaluator : IEvaluatorFunction
 {
     public const int DoubledPenalty = 12;
-    public const int IsolatedPenalty = 25;
+    public const int IsolatedPenalty = 18;
     public const int BackwardsPenalty = 20;
     public const int PassedBonus = 35;
 
@@ -61,8 +61,8 @@ public sealed class PawnStructureEvaluator : IEvaluatorFunction
     private static int CountWhiteBackwards(UInt128 pawns, UInt128 enemyPawns)
     {
         UInt128 defendedPawns =
-            ((pawns & BitboardConstants.LeftEdgeExcludeMask) << 9)
-            | ((pawns & BitboardConstants.RightEdgeExcludeMask) << 11);
+            ((pawns & BitboardConstants.RightEdgeExcludeMask) << 9)
+            | ((pawns & BitboardConstants.LeftEdgeExcludeMask) << 11);
         UInt128 undefendedPawns = pawns & ~defendedPawns;
 
         UInt128 blockedPawns = enemyPawns >> 10;
@@ -74,8 +74,8 @@ public sealed class PawnStructureEvaluator : IEvaluatorFunction
         undefendedPawns &= ~adjacentFiles;
 
         UInt128 enemyAttacks =
-            ((enemyPawns & BitboardConstants.RightEdgeExcludeMask) >> 9)
-            | ((enemyPawns & BitboardConstants.LeftEdgeExcludeMask) >> 11);
+            ((enemyPawns & BitboardConstants.LeftEdgeExcludeMask) >> 9)
+            | ((enemyPawns & BitboardConstants.RightEdgeExcludeMask) >> 11);
 
         UInt128 front = undefendedPawns << 10;
         UInt128 backwardPawns = front & enemyAttacks;
@@ -86,8 +86,8 @@ public sealed class PawnStructureEvaluator : IEvaluatorFunction
     private static int CountBlackBackwards(UInt128 pawns, UInt128 enemyPawns)
     {
         UInt128 defendedPawns =
-            ((pawns & BitboardConstants.LeftEdgeExcludeMask) >> 11)
-            | ((pawns & BitboardConstants.RightEdgeExcludeMask) >> 9);
+            ((pawns & BitboardConstants.RightEdgeExcludeMask) >> 11)
+            | ((pawns & BitboardConstants.LeftEdgeExcludeMask) >> 9);
         UInt128 undefendedPawns = pawns & ~defendedPawns;
 
         UInt128 blockedPawns = enemyPawns << 10;
@@ -99,8 +99,8 @@ public sealed class PawnStructureEvaluator : IEvaluatorFunction
         undefendedPawns &= ~adjacentFiles;
 
         UInt128 enemyAttacks =
-            ((enemyPawns & BitboardConstants.RightEdgeExcludeMask) << 11)
-            | ((enemyPawns & BitboardConstants.LeftEdgeExcludeMask) << 9);
+            ((enemyPawns & BitboardConstants.LeftEdgeExcludeMask) << 11)
+            | ((enemyPawns & BitboardConstants.RightEdgeExcludeMask) << 9);
 
         UInt128 front = undefendedPawns >> 10;
         UInt128 backwardPawns = front & enemyAttacks;

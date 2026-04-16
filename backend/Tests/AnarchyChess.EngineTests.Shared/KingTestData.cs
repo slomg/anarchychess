@@ -213,5 +213,17 @@ public class KingTestData : TheoryData<PieceTestCase>
                     "Bishop would be self captured if castled, but another piece is blocking"
                 )
         );
+
+        Add(
+            PieceTestCase
+                .From("f1", whiteKing with { HasMoved = false })
+                .SkipAi()
+                .WithPieceAt("f2", PieceFactory.White(PieceType.Pawn))
+                .WithPieceAt("e2", PieceFactory.White(PieceType.Pawn))
+                .WithPieceAt("g2", PieceFactory.White(PieceType.Pawn))
+                .GoesTo("e1", "g1")
+                .GoesTo("f2", captures: ["f2"])
+                .WithDescription("Hyper accelerated bongcloud")
+        );
     }
 }

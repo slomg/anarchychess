@@ -69,18 +69,6 @@ public partial class BitBoard
             case SpecialMoveType.OmnipotentPawnSpawn:
                 SpawnPiece(PieceType.Pawn, move.Piece.Color, at: move.To);
                 break;
-
-            case SpecialMoveType.Throw:
-                UInt128 enemyPieces = BitboardForEnemyOf(move.Piece.Color);
-                if ((enemyPieces & (UInt128.One << move.To)) != 0)
-                {
-                    AddStun(move.To, forTurns: 4);
-                }
-                else
-                {
-                    AddStun(move.To, forTurns: 2);
-                }
-                break;
         }
     }
 
@@ -143,18 +131,6 @@ public partial class BitBoard
                         ? (byte)(undoState.To + 10)
                         : (byte)(undoState.To - 10);
                 RemovePiece(PieceType.SterilePawn, undoState.Piece.Color, at: pawnSpawn);
-                break;
-
-            case SpecialMoveType.Throw:
-                UInt128 enemyPieces = BitboardForEnemyOf(undoState.Piece.Color);
-                if ((enemyPieces & (UInt128.One << undoState.To)) != 0)
-                {
-                    RemoveStun(undoState.To, forTurns: 4);
-                }
-                else
-                {
-                    RemoveStun(undoState.To, forTurns: 2);
-                }
                 break;
         }
     }

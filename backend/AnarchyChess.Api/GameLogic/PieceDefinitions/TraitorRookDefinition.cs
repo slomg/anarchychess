@@ -41,42 +41,24 @@ public class TraitorRookDefinition : IPieceDefinition
             for (var y = -1; y <= 1; y++)
             {
                 if (x == 0 && y == 0)
-                {
                     continue;
-                }
 
                 AlgebraicPoint targetPosition = position + new Offset(x, y);
-                if (board.StunnedPieces.ContainsKey(targetPosition))
-                {
-                    continue;
-                }
                 if (!board.TryGetPieceAt(targetPosition, out var targetPiece))
-                {
                     continue;
-                }
 
                 if (targetPiece.Color is GameColor.White)
-                {
                     whitePieces++;
-                }
                 else if (targetPiece.Color is GameColor.Black)
-                {
                     blackPieces++;
-                }
             }
         }
 
         if (whitePieces > blackPieces && board.SideToMove is GameColor.White)
-        {
             yield return _whiteMajority;
-        }
         else if (blackPieces > whitePieces && board.SideToMove is GameColor.Black)
-        {
             yield return _blackMajority;
-        }
         else if (blackPieces > 0 && whitePieces > 0 && blackPieces == whitePieces)
-        {
             yield return _neutral;
-        }
     }
 }

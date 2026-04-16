@@ -9,21 +9,13 @@ namespace AnarchyChess.Ai;
 
 public interface IBitMoveGenerator
 {
-    void Generate(
-        BitBoard board,
-        Span<BitMove> moves,
-        ref int moveCount,
-        int depth = EngineConstants.MaxDepth,
-        int maxDepth = EngineConstants.MaxDepth
-    );
+    void Generate(BitBoard board, Span<BitMove> moves, ref int moveCount);
     void GenerateForPiece(
         BitBoard board,
         byte position,
         BitPiece piece,
         Span<BitMove> moves,
-        ref int moveCount,
-        int depth = EngineConstants.MaxDepth,
-        int maxDepth = EngineConstants.MaxDepth
+        ref int moveCount
     );
 }
 
@@ -47,16 +39,9 @@ public sealed class BitMoveGenerator : IBitMoveGenerator
 
     private readonly IBitForeverRule[] _foreverRules = [new BitOmnipotentPawnRule()];
 
-    public void Generate(
-        BitBoard board,
-        Span<BitMove> moves,
-        ref int moveCount,
-        int depth = EngineConstants.MaxDepth,
-        int maxDepth = EngineConstants.MaxDepth
-    )
+    public void Generate(BitBoard board, Span<BitMove> moves, ref int moveCount)
     {
         BitPieceColor color = board.IsWhiteToMove ? BitPieceColor.White : BitPieceColor.Black;
-        UInt128 seenThrows = 0;
 
         for (int pieceTypeIdx = 0; pieceTypeIdx < board.Bitboards.GetLength(1); pieceTypeIdx++)
         {
@@ -69,9 +54,6 @@ public sealed class BitMoveGenerator : IBitMoveGenerator
                 colorBitboard,
                 definition,
                 piece: new BitPiece() { Type = pieceType, Color = color },
-                seenThrows: ref seenThrows,
-                depth: depth,
-                maxDepth: maxDepth,
                 moves,
                 ref moveCount
             );
@@ -82,9 +64,6 @@ public sealed class BitMoveGenerator : IBitMoveGenerator
                 neutralBitboard,
                 definition,
                 piece: new BitPiece() { Type = pieceType, Color = BitPieceColor.Neutral },
-                seenThrows: ref seenThrows,
-                depth: depth,
-                maxDepth: maxDepth,
                 moves,
                 ref moveCount
             );
@@ -120,9 +99,7 @@ public sealed class BitMoveGenerator : IBitMoveGenerator
         byte position,
         BitPiece piece,
         Span<BitMove> moves,
-        ref int moveCount,
-        int depth = EngineConstants.MaxDepth,
-        int maxDepth = EngineConstants.MaxDepth
+        ref int moveCount
     )
     {
         UInt128 bitboard = board.BitboardFor(piece.Type, piece.Color);
@@ -130,17 +107,7 @@ public sealed class BitMoveGenerator : IBitMoveGenerator
         IBitPieceDefinition definition = _pieceDefinitions[(int)piece.Type];
         if ((bitboard & (UInt128.One << position)) != 0)
         {
-            UInt128 seenThrows = 0;
-            definition.GenerateMoves(
-                board,
-                piece,
-                position,
-                seenThrows: ref seenThrows,
-                depth: depth,
-                maxDepth: maxDepth,
-                moves: moves,
-                moveCount: ref moveCount
-            );
+            definition.GenerateMoves(board, piece, position, moves, ref moveCount);
         }
     }
 
@@ -150,9 +117,6 @@ public sealed class BitMoveGenerator : IBitMoveGenerator
         UInt128 bitboard,
         IBitPieceDefinition definition,
         BitPiece piece,
-        ref UInt128 seenThrows,
-        int depth,
-        int maxDepth,
         Span<BitMove> moves,
         ref int moveCount
     )
@@ -167,16 +131,7 @@ public sealed class BitMoveGenerator : IBitMoveGenerator
                 return;
             }
 
-            definition.GenerateMoves(
-                board,
-                piece,
-                position,
-                seenThrows: ref seenThrows,
-                depth: depth,
-                maxDepth: maxDepth,
-                moves,
-                ref moveCount
-            );
+            definition.GenerateMoves(board, piece, position, moves, ref moveCount);
         }
     }
 }
