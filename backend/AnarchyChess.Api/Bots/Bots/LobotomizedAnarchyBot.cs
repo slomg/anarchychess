@@ -420,7 +420,12 @@ public class LobotomizedAnarchyBot(
         List<CandidateBotMove> simpleTactics = [];
         foreach (CandidateBotMove move in tactics)
         {
-            if (move.CausesForcedMove || move.IsMultiStep || move.IsHang)
+            if (
+                move.CausesForcedMove
+                || move.IsMultiStep
+                || move.IsHang
+                || move.MoveEval.Move.SpecialMoveType is SpecialMoveType.Throw
+            )
             {
                 complexTactics.Add(move);
             }
