@@ -66,8 +66,6 @@ public class PieceTestCase
         }
     }
 
-    public bool ShouldSkipAi { get; private set; }
-
     public string TestDecription { get; private set; } = "";
 
     private readonly ChessBoard _board = new();
@@ -250,12 +248,6 @@ public class PieceTestCase
         {
             action(item, this);
         }
-        return this;
-    }
-
-    public PieceTestCase SkipAi()
-    {
-        ShouldSkipAi = true;
         return this;
     }
 
