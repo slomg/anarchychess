@@ -28,11 +28,13 @@ export const createThrowSlice: StateCreator<
     [["zustand/immer", never], never],
     [],
     ThrowSlice
-> = (set) => ({
+> = (set, get) => ({
     pendingThrow: null,
     resolveThrow: null,
 
     async promptThrow(throwerOrigin, piece, moves) {
+        get().unselectPiece();
+
         try {
             const result = await new Promise<LogicalPoint | null>((resolve) => {
                 set((state) => {

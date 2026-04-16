@@ -4,6 +4,7 @@ import { ChessboardStore, createChessboardStore } from "../chessboardStore";
 import {
     createFakeMove,
     createFakePiece,
+    createRandomPoint,
 } from "@/lib/testUtils/fakers/chessboardFakers";
 import { logicalPoint } from "@/features/point/pointUtils";
 import { PendingThrow } from "../throwSlice";
@@ -63,6 +64,17 @@ describe("ThrowSlice", () => {
             const result = await promise;
 
             expect(result).toBeNull();
+        });
+
+        it("should unselect piece", () => {
+            const unselectPieceMock = vi.fn();
+            store.setState({ unselectPiece: unselectPieceMock });
+
+            store
+                .getState()
+                .promptThrow(createRandomPoint(), createFakePiece(), []);
+
+            expect(unselectPieceMock).toHaveBeenCalledExactlyOnceWith();
         });
     });
 });
