@@ -1,5 +1,4 @@
-﻿using AnarchyChess.Ai.Evaluation;
-using AnarchyChess.EngineShared;
+﻿using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai;
 
