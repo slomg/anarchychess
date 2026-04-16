@@ -58,6 +58,53 @@ public class BitboardUndoMoveTests
     }
 
     [Fact]
+    public void UndoMove_restores_castle_capture()
+    {
+        BitMove move = new()
+        {
+            From = new AlgebraicPoint("f1").AsIdx(),
+            To = new AlgebraicPoint("h1").AsIdx(),
+            Piece = new() { Type = PieceType.King, Color = BitPieceColor.White },
+            SpecialMoveType = SpecialMoveType.KingsideCastle,
+            CapturesMask = UInt128.One << new AlgebraicPoint("g1").AsIdx(),
+        };
+        AssertMoveUndo(
+            new()
+            {
+                [new AlgebraicPoint("f1")] = PieceFactory.White(PieceType.King),
+                [new AlgebraicPoint("g1")] = PieceFactory.White(PieceType.Bishop),
+                [new AlgebraicPoint("j1")] = PieceFactory.White(PieceType.Rook),
+            },
+            move
+        );
+    }
+
+    [Fact]
+    public void UndoMove_restores_double_castle_capture()
+    {
+        BitMove move = new()
+        {
+            From = new AlgebraicPoint("f1").AsIdx(),
+            To = new AlgebraicPoint("h1").AsIdx(),
+            Piece = new() { Type = PieceType.King, Color = BitPieceColor.White },
+            SpecialMoveType = SpecialMoveType.KingsideCastle,
+            CapturesMask =
+                (UInt128.One << new AlgebraicPoint("g1").AsIdx())
+                | UInt128.One << new AlgebraicPoint("h1").AsIdx(),
+        };
+        AssertMoveUndo(
+            new()
+            {
+                [new AlgebraicPoint("f1")] = PieceFactory.White(PieceType.King),
+                [new AlgebraicPoint("g1")] = PieceFactory.White(PieceType.Bishop),
+                [new AlgebraicPoint("h1")] = PieceFactory.White(PieceType.Bishop),
+                [new AlgebraicPoint("j1")] = PieceFactory.White(PieceType.Rook),
+            },
+            move
+        );
+    }
+
+    [Fact]
     public void UndoMove_restores_white_kingside_castle()
     {
         BitMove move = new()

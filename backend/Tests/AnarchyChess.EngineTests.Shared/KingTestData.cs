@@ -193,6 +193,23 @@ public class KingTestData : TheoryData<PieceTestCase>
             PieceTestCase
                 .From("f1", whiteKing with { HasMoved = false })
                 .WithPieceAt("j1", whiteRook)
+                .WithPieceAt("g1", PieceFactory.White(PieceType.Bishop))
+                .WithPieceAt("h1", PieceFactory.White(PieceType.Bishop))
+                .GoesTo(
+                    "h1",
+                    trigger: ["h1", "i1"],
+                    sideEffects: [new(From: new("j1"), To: new("g1"), whiteRook)],
+                    specialMoveType: SpecialMoveType.KingsideCastle,
+                    captures: ["g1", "h1"]
+                )
+                .GoesTo("e1", "e2", "f2", "g2")
+                .WithDescription("Double self bishop capture while castling")
+        );
+
+        Add(
+            PieceTestCase
+                .From("f1", whiteKing with { HasMoved = false })
+                .WithPieceAt("j1", whiteRook)
                 .WithPieceAt("a1", whiteRook)
                 .WithPieceAt("f10", whiteRook)
                 .WithPieceAt("h1", PieceFactory.Black(PieceType.Bishop))
