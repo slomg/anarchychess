@@ -6,8 +6,8 @@ namespace AnarchyChess.Ai.Evaluation;
 
 public sealed class PawnSpaceEvaluator : IEvaluatorFunction
 {
-    public const int CenterAmplifier = 3;
-    public const int PawnAdvanceValue = 6;
+    public const int CenterAmplifier = 4;
+    public const int PawnAdvanceValue = 4;
 
     public (int WhiteScore, int BlackScore) Evaluate(BitBoard board, float endgameFactor)
     {
