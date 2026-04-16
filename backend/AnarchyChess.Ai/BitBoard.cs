@@ -93,7 +93,13 @@ public partial class BitBoard
         }
 
         PieceAt = new BitPiece?[other.PieceAt.Length];
-        Array.Copy(other.PieceAt, PieceAt, other.PieceAt.Length);
+        for (int i = 0; i < other.PieceAt.Length; i++)
+        {
+            BitPiece? otherPiece = other.PieceAt[i];
+            PieceAt[i] = otherPiece is null
+                ? null
+                : new BitPiece() { Type = otherPiece.Value.Type, Color = otherPiece.Value.Color };
+        }
 
         StunnedPieces = other.StunnedPieces;
         _stunnedForPlies = new byte[other._stunnedForPlies.Length];
@@ -112,6 +118,9 @@ public partial class BitBoard
         EnPassantPawnSquare = other.EnPassantPawnSquare;
         WhiteMaterialCount = other.WhiteMaterialCount;
         BlackMaterialCount = other.BlackMaterialCount;
+        LastCaptureMask = other.LastCaptureMask;
+        ValidBlackThrowers = other.ValidBlackThrowers;
+        ValidWhiteThrowers = other.ValidWhiteThrowers;
     }
 
     public static BitBoard FromPieces(
