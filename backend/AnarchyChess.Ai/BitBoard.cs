@@ -19,6 +19,8 @@ public partial class BitBoard
     public UInt128 NeutralPieces { get; private set; }
     public UInt128 Occupancy { get; private set; }
     public UInt128 Empty { get; private set; }
+    public UInt128 ValidWhiteThrowers { get; private set; }
+    public UInt128 ValidBlackThrowers { get; private set; }
 
     public UInt128 HasMoved { get; private set; }
 
@@ -469,6 +471,18 @@ public partial class BitBoard
 
         WhiteEnemy = BlackPieces | NeutralPieces;
         BlackEnemy = WhitePieces | NeutralPieces;
+
+        ValidWhiteThrowers =
+            WhitePieces
+            & ~BitboardFor(PieceType.Pawn, BitPieceColor.White)
+            & ~BitboardFor(PieceType.UnderagePawn, BitPieceColor.White)
+            & ~BitboardFor(PieceType.SterilePawn, BitPieceColor.White);
+
+        ValidBlackThrowers =
+            BlackPieces
+            & ~BitboardFor(PieceType.Pawn, BitPieceColor.Black)
+            & ~BitboardFor(PieceType.UnderagePawn, BitPieceColor.Black)
+            & ~BitboardFor(PieceType.SterilePawn, BitPieceColor.Black);
     }
 
     private void ProcessMoveEffects(BitMove move)
