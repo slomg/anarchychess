@@ -19,6 +19,8 @@ public partial class BitBoard
     public UInt128 NeutralPieces { get; private set; }
     public UInt128 Occupancy { get; private set; }
     public UInt128 Empty { get; private set; }
+    public UInt128 ValidWhiteThrowers { get; private set; }
+    public UInt128 ValidBlackThrowers { get; private set; }
 
     public UInt128 HasMoved { get; private set; }
 
@@ -256,6 +258,7 @@ public partial class BitBoard
             Piece = move.Piece,
             PromotedTo = move.PromotesTo,
             SpecialMoveType = move.SpecialMoveType,
+            CaptureMask = move.CapturesMask,
 
             HasMoved = HasMoved,
             StunnedPieces = StunnedPieces,
@@ -280,7 +283,7 @@ public partial class BitBoard
             }
         }
 
-        if (move.To != move.From || move.PromotesTo is not null)
+        if ((move.CapturesMask & (UInt128.One << move.From)) == 0 || move.PromotesTo is not null)
         {
             MovePiece(
                 move.Piece.Type,
@@ -291,10 +294,10 @@ public partial class BitBoard
             );
         }
 
+        DecrementStunned();
         ApplySpecialMove(move);
         ComputeAggregateBitboards();
         ProcessMoveEffects(move);
-        DecrementStunned();
         IsWhiteToMove = !IsWhiteToMove;
 
         return undoState;
@@ -302,13 +305,17 @@ public partial class BitBoard
 
     public void UndoMove(MoveUndoState undoState)
     {
-        MovePiece(
-            undoState.PromotedTo ?? undoState.Piece.Type,
-            undoState.Piece.Color,
-            from: undoState.To,
-            to: undoState.From,
-            promotesTo: undoState.Piece.Type
-        );
+        if ((undoState.CaptureMask & (UInt128.One << undoState.From)) == 0)
+        {
+            MovePiece(
+                undoState.PromotedTo ?? undoState.Piece.Type,
+                undoState.Piece.Color,
+                from: undoState.To,
+                to: undoState.From,
+                promotesTo: undoState.Piece.Type
+            );
+        }
+
         UndoSpecialMove(undoState);
 
         for (int i = 0; i < undoState.CaptureCount; i++)
@@ -451,6 +458,21 @@ public partial class BitBoard
         HasMoved &= inverseMask;
     }
 
+    private void AddStun(byte at, byte forTurns)
+    {
+        StunnedPieces |= UInt128.One << at;
+        _stunnedForPlies[at] += forTurns;
+    }
+
+    private void RemoveStun(byte at, byte forTurns)
+    {
+        _stunnedForPlies[at] = (byte)Math.Max(0, _stunnedForPlies[at] - forTurns);
+        if (_stunnedForPlies[at] == 0)
+        {
+            StunnedPieces &= ~(UInt128.One << at);
+        }
+    }
+
     private void ComputeAggregateBitboards()
     {
         Occupancy = WhitePieces | BlackPieces | NeutralPieces;
@@ -458,6 +480,18 @@ public partial class BitBoard
 
         WhiteEnemy = BlackPieces | NeutralPieces;
         BlackEnemy = WhitePieces | NeutralPieces;
+
+        ValidWhiteThrowers =
+            WhitePieces
+            & ~BitboardFor(PieceType.Pawn, BitPieceColor.White)
+            & ~BitboardFor(PieceType.UnderagePawn, BitPieceColor.White)
+            & ~BitboardFor(PieceType.SterilePawn, BitPieceColor.White);
+
+        ValidBlackThrowers =
+            BlackPieces
+            & ~BitboardFor(PieceType.Pawn, BitPieceColor.Black)
+            & ~BitboardFor(PieceType.UnderagePawn, BitPieceColor.Black)
+            & ~BitboardFor(PieceType.SterilePawn, BitPieceColor.Black);
     }
 
     private void ProcessMoveEffects(BitMove move)

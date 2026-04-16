@@ -12,6 +12,7 @@ public class MoveUndoStateTests
             From = 10,
             To = 20,
             Piece = new() { Type = PieceType.Queen, Color = BitPieceColor.White },
+            CaptureMask = 0,
             PromotedTo = null,
             SpecialMoveType = SpecialMoveType.None,
             HasMoved = 0,

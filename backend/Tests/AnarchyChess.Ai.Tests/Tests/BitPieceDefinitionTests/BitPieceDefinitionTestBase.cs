@@ -13,17 +13,17 @@ public class BitPieceDefinitionTestBase
 
     protected void TestMoves(PieceTestCase testCase)
     {
-        Assert.SkipWhen(testCase.ShouldSkipAi, "Test marked as skip ai");
-
         testCase.BlockedBy.Add(testCase.Origin, testCase.Piece);
         Move? lastMove = testCase.PriorMoves.LastOrDefault();
         BitBoard board = BitBoard.FromPieces(
             testCase.BlockedBy,
-            isWhiteToMove: testCase.MovingPlayer is GameColor.White
+            isWhiteToMove: testCase.MovingPlayer is GameColor.White,
+            stunnedPositions: testCase.Stunned
         );
         BitBoard beforeBoard = BitBoard.FromPieces(
             testCase.BlockedBy,
-            isWhiteToMove: testCase.MovingPlayer is GameColor.White
+            isWhiteToMove: testCase.MovingPlayer is GameColor.White,
+            stunnedPositions: testCase.Stunned
         );
         if (lastMove is not null)
         {
@@ -40,12 +40,21 @@ public class BitPieceDefinitionTestBase
             whenNeutral: BitPieceColor.Neutral
         );
         BitPiece piece = new() { Type = testCase.Piece.Type, Color = color };
-        _generator.GenerateForPiece(board, testCase.Origin.AsIdx(), piece, moves, ref moveCount);
+        _generator.GenerateForPiece(
+            board,
+            testCase.Origin.AsIdx(),
+            piece,
+            moves,
+            ref moveCount,
+            depth: testCase.Depth,
+            maxDepth: testCase.MaxDepth
+        );
 
         List<BitMove> expectedMoves = ConvertUiMovesToBitMoves(testCase.ExpectedMoves);
         List<BitMove> result = [.. moves[..moveCount]];
 
         // for better assertion logs
+        AssertionConfiguration.Current.Formatting.MaxLines = int.MaxValue;
         var expectedMoveSorted = expectedMoves.OrderBy(x => x.To);
         var resultSorted = result.OrderBy(x => x.To);
         resultSorted.Should().BeEquivalentTo(expectedMoveSorted);

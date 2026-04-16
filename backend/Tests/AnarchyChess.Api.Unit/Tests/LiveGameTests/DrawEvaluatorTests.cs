@@ -1,9 +1,9 @@
 ﻿using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Models;
-using AnarchyChess.EngineShared;
 using AnarchyChess.Api.TestInfrastructure.Factories;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
+using AnarchyChess.EngineShared;
 using AwesomeAssertions;
 
 namespace AnarchyChess.Api.Unit.Tests.LiveGameTests;
@@ -78,6 +78,29 @@ public class DrawEvaluatorTests
     {
         Move move = new(from: new("a1"), to: new("a2"), piece: PieceFactory.White(PieceType.King));
         _board.PlacePiece(new AlgebraicPoint("a3"), PieceFactory.Black(PieceType.King));
+
+        var result = _drawEvaluator.TryEvaluateDraw(
+            move,
+            new FenNotationFaker().Generate(),
+            _board,
+            _state,
+            out var endStatus
+        );
+
+        result.Should().BeTrue();
+        endStatus.Should().BeEquivalentTo(_describer.KingTouch());
+    }
+
+    [Fact]
+    public void TryEvaluateDraw_returns_true_on_checker_promotion_king_touch()
+    {
+        Move move = new(
+            from: new("b3"),
+            to: new("d1"),
+            piece: PieceFactory.White(PieceType.Checker),
+            promotesTo: PieceType.King
+        );
+        _board.PlacePiece(new AlgebraicPoint("c1"), PieceFactory.Black(PieceType.King));
 
         var result = _drawEvaluator.TryEvaluateDraw(
             move,

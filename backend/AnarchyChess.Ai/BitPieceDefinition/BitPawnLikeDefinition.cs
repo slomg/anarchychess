@@ -6,7 +6,6 @@ using AnarchyChess.EngineShared;
 namespace AnarchyChess.Ai.BitPieceDefinition;
 
 public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitialSteps)
-    : IBitPieceDefinition
 {
     private readonly PieceType[] _promoteTo = promotesTo;
     private readonly int _maxInitialSteps = maxInitialSteps;

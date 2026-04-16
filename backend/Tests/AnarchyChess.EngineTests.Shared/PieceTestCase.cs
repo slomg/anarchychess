@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using AnarchyChess.Ai;
 using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.TestInfrastructure.Factories;
@@ -31,6 +32,24 @@ public class PieceTestCase
     public List<Move> PriorMoves { get; init; } = [];
 
     [JsonIgnore]
+    public Dictionary<AlgebraicPoint, int> Stunned { get; } = [];
+
+    [JsonInclude]
+    [JsonPropertyName(nameof(Stunned))]
+    public Dictionary<string, int> StunnedSurrogate
+    {
+        get => Stunned.ToDictionary(x => x.Key.AsAlgebraic(), x => x.Value);
+        set
+        {
+            Stunned.Clear();
+            foreach (var kvp in value)
+            {
+                Stunned[new AlgebraicPoint(kvp.Key)] = kvp.Value;
+            }
+        }
+    }
+
+    [JsonIgnore]
     public Dictionary<AlgebraicPoint, Piece> BlockedBy { get; } = [];
 
     [JsonInclude]
@@ -42,11 +61,14 @@ public class PieceTestCase
         {
             BlockedBy.Clear();
             foreach (var kvp in value)
+            {
                 BlockedBy[new AlgebraicPoint(kvp.Key)] = kvp.Value;
+            }
         }
     }
 
-    public bool ShouldSkipAi { get; private set; }
+    public int Depth { get; private set; } = EngineConstants.MaxDepth;
+    public int MaxDepth { get; private set; } = EngineConstants.MaxDepth;
 
     public string TestDecription { get; private set; } = "";
 
@@ -164,6 +186,12 @@ public class PieceTestCase
                 .Generate()
         );
 
+    public PieceTestCase WithStun(string position, int forTurns = 2)
+    {
+        Stunned[new AlgebraicPoint(position)] = forTurns;
+        return this;
+    }
+
     public PieceTestCase WithPriorMove(
         string from,
         string to,
@@ -212,6 +240,18 @@ public class PieceTestCase
         return this;
     }
 
+    public PieceTestCase WithDepth(int depth)
+    {
+        Depth = depth;
+        return this;
+    }
+
+    public PieceTestCase WithMaxDepth(int maxDepth)
+    {
+        MaxDepth = maxDepth;
+        return this;
+    }
+
     public PieceTestCase WithDescription(string testDescription)
     {
         TestDecription = testDescription;
@@ -224,12 +264,6 @@ public class PieceTestCase
         {
             action(item, this);
         }
-        return this;
-    }
-
-    public PieceTestCase SkipAi()
-    {
-        ShouldSkipAi = true;
         return this;
     }
 

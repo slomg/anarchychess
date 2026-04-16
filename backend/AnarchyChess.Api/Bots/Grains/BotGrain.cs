@@ -301,9 +301,11 @@ public class BotGrain : Grain, IBotGrain
         if (legalMove is null)
         {
             _logger.LogError(
-                "Anarchy Bot tried to play an illegal move ({BotMove}) on game {BotToken}",
+                "Anarchy Bot tried to play an illegal move ({BotMove}) on game {BotToken} (from {From} to {To})",
                 botMove,
-                _gameToken
+                _gameToken,
+                AlgebraicPoint.FromIdx(botMove.Move.From),
+                AlgebraicPoint.FromIdx(botMove.Move.To)
             );
             await EndGameAsync(_gameResultDescriber.BotIllegalMove(game.BotColor), game, token);
             return;
