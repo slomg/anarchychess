@@ -10,6 +10,9 @@ public sealed class BitHorseyDefinition : IBitPieceDefinition
         BitBoard board,
         BitPiece piece,
         byte position,
+        ref UInt128 seenThrows,
+        int depth,
+        int maxDepth,
         Span<BitMove> moves,
         ref int moveCount
     )
