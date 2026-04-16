@@ -19,7 +19,10 @@ public abstract class BaseSanNotator(IPieceLetterMap pieceLetterMap) : ISanNotat
     ) =>
         // moves where the same piece type moved to the same destination
         legalMoves.Where(x =>
-            x.To == move.To && x.Piece.Type == move.Piece.Type && x.From != move.From
+            x.To == move.To
+            && x.Piece.Type == move.Piece.Type
+            && x.From != move.From
+            && x.SpecialMoveType == move.SpecialMoveType
         );
 
     protected static char FileLetter(int x) => (char)('a' + x);

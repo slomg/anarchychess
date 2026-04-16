@@ -65,6 +65,23 @@ public class RegularNotatorTests
     }
 
     [Fact]
+    public void Notate_doesnt_disambiguate_if_the_moves_have_a_different_special_type()
+    {
+        Move move1 = new(new("f2"), new("f3"), PieceFactory.White(PieceType.Pawn));
+        Move move2 = new(
+            new("e4"),
+            new("f3"),
+            PieceFactory.White(PieceType.Pawn),
+            specialMoveType: SpecialMoveType.Throw
+        );
+
+        StringBuilder sb = new();
+        _notator.Notate(move1, [move1, move2], sb);
+
+        sb.ToString().Should().Be("f3");
+    }
+
+    [Fact]
     public void Notate_doesnt_disambiguate_with_the_same_piece_type_on_different_destination()
     {
         Move move = new(new("b1"), new("c3"), PieceFactory.White(PieceType.Horsey));

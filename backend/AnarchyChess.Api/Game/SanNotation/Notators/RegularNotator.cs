@@ -18,7 +18,9 @@ public class RegularNotator(IPieceLetterMap pieceLetterMap) : BaseSanNotator(pie
 
         // if this is a pawn move AND a capture, add the file
         if (isPawn && isCapture)
+        {
             sb.Append(FileLetter(move.From.X));
+        }
 
         DisambiguatePosition(move, legalMoves, sb);
         NotateIntermediateSquares(move, sb);
