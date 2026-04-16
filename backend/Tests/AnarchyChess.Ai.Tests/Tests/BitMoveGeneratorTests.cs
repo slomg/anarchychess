@@ -130,7 +130,7 @@ public class BitMoveGeneratorTests
             {
                 [new("e2")] = PieceFactory.White(PieceType.Pawn, hasMoved: true),
                 [new("e1")] = PieceFactory.White(PieceType.King),
-                [new("f7")] = PieceFactory.Black(),
+                [new("f7")] = PieceFactory.Black(PieceType.Rook),
             }
         );
 

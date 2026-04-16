@@ -40,12 +40,21 @@ public class BitPieceDefinitionTestBase
             whenNeutral: BitPieceColor.Neutral
         );
         BitPiece piece = new() { Type = testCase.Piece.Type, Color = color };
-        _generator.GenerateForPiece(board, testCase.Origin.AsIdx(), piece, moves, ref moveCount);
+        _generator.GenerateForPiece(
+            board,
+            testCase.Origin.AsIdx(),
+            piece,
+            moves,
+            ref moveCount,
+            depth: testCase.Depth,
+            maxDepth: testCase.MaxDepth
+        );
 
         List<BitMove> expectedMoves = ConvertUiMovesToBitMoves(testCase.ExpectedMoves);
         List<BitMove> result = [.. moves[..moveCount]];
 
         // for better assertion logs
+        AssertionConfiguration.Current.Formatting.MaxLines = int.MaxValue;
         var expectedMoveSorted = expectedMoves.OrderBy(x => x.To);
         var resultSorted = result.OrderBy(x => x.To);
         resultSorted.Should().BeEquivalentTo(expectedMoveSorted);

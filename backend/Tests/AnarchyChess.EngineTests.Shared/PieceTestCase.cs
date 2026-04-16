@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using AnarchyChess.Ai;
 using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.TestInfrastructure.Factories;
@@ -65,6 +66,9 @@ public class PieceTestCase
             }
         }
     }
+
+    public int Depth { get; private set; } = EngineConstants.MaxDepth;
+    public int MaxDepth { get; private set; } = EngineConstants.MaxDepth;
 
     public string TestDecription { get; private set; } = "";
 
@@ -233,6 +237,18 @@ public class PieceTestCase
     public PieceTestCase WithMovingPlayer(GameColor playerColor)
     {
         MovingPlayer = playerColor;
+        return this;
+    }
+
+    public PieceTestCase WithDepth(int depth)
+    {
+        Depth = depth;
+        return this;
+    }
+
+    public PieceTestCase WithMaxDepth(int maxDepth)
+    {
+        MaxDepth = maxDepth;
         return this;
     }
 
