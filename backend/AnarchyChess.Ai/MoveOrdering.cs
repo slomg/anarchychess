@@ -1,5 +1,4 @@
-﻿using AnarchyChess.Ai.Evaluation;
-using AnarchyChess.Ai.Helpers;
+﻿using AnarchyChess.Ai.Helpers;
 using AnarchyChess.Ai.Models;
 using AnarchyChess.EngineShared;
 
@@ -83,7 +82,7 @@ public sealed class MoveOrdering : IMoveOrdering
             return 15_000;
         }
 
-        if (move.CapturesMask != 0)
+        if (move.SpecialMoveType is not SpecialMoveType.Throw && move.CapturesMask != 0)
         {
             UInt128 captureMask = move.CapturesMask;
             int score = 0;
@@ -105,9 +104,19 @@ public sealed class MoveOrdering : IMoveOrdering
             return 8_000 + MaterialValue.GetPieceValue(move.PromotesTo.Value);
         }
 
-        if (move.SpecialMoveType is not SpecialMoveType.None)
+        if (
+            move.SpecialMoveType is SpecialMoveType.Throw
+            && move.CapturesMask != 0
+            && board.TryGetPieceAt(move.To, out var stunnedPiece)
+        )
         {
-            return 7_000;
+            int value = MaterialValue.GetPieceValue(stunnedPiece.Value.Type);
+            return 7_000 + value;
+        }
+
+        if (move.SpecialMoveType is SpecialMoveType.Throw)
+        {
+            return 6_000 + historyHeuristic[move.From, move.To];
         }
 
         return historyHeuristic[move.From, move.To];

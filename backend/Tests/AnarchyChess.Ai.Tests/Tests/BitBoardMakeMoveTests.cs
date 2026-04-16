@@ -580,6 +580,58 @@ public class BitBoardMakeMoveTests
         board.StunnedPieces.Should().Be(0);
     }
 
+    [Fact]
+    public void MakeMove_handles_throw()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new("e1")] = PieceFactory.White(PieceType.Queen),
+            [new("e2")] = PieceFactory.White(PieceType.Pawn),
+        };
+        BitBoard board = BitBoard.FromPieces(pieces);
+
+        BitMove move = new()
+        {
+            From = new AlgebraicPoint("e2").AsIdx(),
+            To = new AlgebraicPoint("f7").AsIdx(),
+            Piece = new BitPiece() { Type = PieceType.Pawn, Color = BitPieceColor.White },
+            SpecialMoveType = SpecialMoveType.Throw,
+        };
+        board.MakeMove(move);
+
+        board.StunnedPieces.Should().Be(UInt128.One << move.To);
+        AssertPieceAtIdx(board, move.To, PieceType.Pawn, BitPieceColor.White);
+        AssertNoPieceAtIdx(board, move.From);
+        AssertPieceAt(board, new("e1"), PieceType.Queen, BitPieceColor.White);
+    }
+
+    [Fact]
+    public void MakeMove_handles_throw_with_stuns()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new("e1")] = PieceFactory.White(PieceType.Queen),
+            [new("e2")] = PieceFactory.White(PieceType.Pawn),
+            [new("e9")] = PieceFactory.Black(PieceType.King),
+        };
+        BitBoard board = BitBoard.FromPieces(pieces);
+
+        BitMove move = new()
+        {
+            From = new AlgebraicPoint("e2").AsIdx(),
+            To = new AlgebraicPoint("e9").AsIdx(),
+            Piece = new BitPiece() { Type = PieceType.Pawn, Color = BitPieceColor.White },
+            CapturesMask = UInt128.One << new AlgebraicPoint("e2").AsIdx(),
+            SpecialMoveType = SpecialMoveType.Throw,
+        };
+        board.MakeMove(move);
+
+        board.StunnedPieces.Should().Be(UInt128.One << move.To);
+        AssertPieceAtIdx(board, move.To, PieceType.King, BitPieceColor.Black);
+        AssertNoPieceAtIdx(board, move.From);
+        AssertPieceAt(board, new("e1"), PieceType.Queen, BitPieceColor.White);
+    }
+
     private static void AssertPieceAt(
         BitBoard board,
         AlgebraicPoint point,
@@ -589,12 +641,12 @@ public class BitBoardMakeMoveTests
 
     private static void AssertPieceAtIdx(
         BitBoard board,
-        byte point,
+        byte idx,
         PieceType type,
         BitPieceColor? color = null
     )
     {
-        var piece = board.GetPieceAt(point);
+        var piece = board.GetPieceAt(idx);
         piece.Should().NotBeNull();
         piece.Value.Type.Should().Be(type);
 
@@ -602,8 +654,17 @@ public class BitBoardMakeMoveTests
         {
             piece.Value.Color.Should().Be(color.Value);
         }
+
+        (board.BitboardFor(type, piece.Value.Color) & (UInt128.One << idx)).Should().NotBe(0);
     }
 
     private static void AssertNoPieceAt(BitBoard board, AlgebraicPoint point) =>
-        board.GetPieceAt(point.AsIdx()).Should().BeNull();
+        AssertNoPieceAtIdx(board, point.AsIdx());
+
+    private static void AssertNoPieceAtIdx(BitBoard board, byte idx)
+    {
+        board.GetPieceAt(idx).Should().BeNull();
+        (board.WhitePieces & (UInt128.One << idx)).Should().Be(0);
+        (board.BlackPieces & (UInt128.One << idx)).Should().Be(0);
+    }
 }

@@ -120,6 +120,36 @@ public class BitMoveGeneratorTests
         }
     }
 
+    [Theory]
+    [InlineData(8, 5, true)]
+    [InlineData(8, 4, false)]
+    public void Generate_passes_depth_and_max_depth(int maxDepth, int depth, bool generateThrows)
+    {
+        BitBoard board = BitBoard.FromPieces(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("e2")] = PieceFactory.White(PieceType.Pawn, hasMoved: true),
+                [new("e1")] = PieceFactory.White(PieceType.King),
+                [new("f7")] = PieceFactory.Black(PieceType.Rook),
+            }
+        );
+
+        Span<BitMove> moves = stackalloc BitMove[256];
+        int moveCount = 0;
+        _generator.Generate(board, moves, ref moveCount, depth: depth, maxDepth: maxDepth);
+
+        if (generateThrows)
+        {
+            // king + 1 pawn + stun + throw
+            moveCount.Should().Be(7);
+        }
+        else
+        {
+            // king + 1 pawn
+            moveCount.Should().Be(5);
+        }
+    }
+
     [Fact]
     public void Generate_applies_forever_rules()
     {

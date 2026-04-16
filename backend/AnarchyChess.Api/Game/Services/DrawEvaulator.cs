@@ -74,8 +74,10 @@ public class DrawEvaulator(IGameResultDescriber gameResultDescriber) : IDrawEvau
 
     private static bool IsKingTouch(Move move, IReadOnlyChessBoard board)
     {
-        if (move.Piece.Type is not PieceType.King)
+        if (move.Piece.Type is not PieceType.King && move.Piece.Type is not PieceType.Checker)
+        {
             return false;
+        }
 
         for (var x = -1; x <= 1; x++)
         {
