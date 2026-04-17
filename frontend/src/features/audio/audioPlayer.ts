@@ -27,4 +27,18 @@ export default class AudioPlayer {
         clone.currentTime = 0;
         await clone.play();
     }
+
+    static preload(...audioTypes: AudioType[]): void {
+        for (const type of audioTypes) {
+            if (this._cachedAudios.has(type)) {
+                continue;
+            }
+
+            const audio = new Audio(type);
+            audio.preload = "auto";
+            audio.load();
+
+            this._cachedAudios.set(type, audio);
+        }
+    }
 }

@@ -1,7 +1,10 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useGLTF, useSpriteLoader } from "@react-three/drei";
+import { Canvas } from "@react-three/fiber";
 import { twMerge } from "tailwind-merge";
 
 import { useChessboardStore } from "@/features/chessboard/hooks/useChessboard";
+import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
 import HighlightedLegalMovesRenderer from "./HighlightedLegalMove";
 import IntermediateSquarePrompt from "./IntermediateSquarePrompt";
 import EmphasizedSquaresRenderer from "./EmphasizedSquare";
@@ -10,9 +13,9 @@ import LastMoveHighlight from "./LastMoveHighlight";
 import OverlayRenderer from "./OverlayRenderer";
 import PromotionPrompt from "./PromotionPrompt";
 import PieceRenderer from "./PieceRenderer";
+import constants from "@/lib/constants";
 import ThrowPrompt from "./ThrowPrompt";
 import Coords from "./Coords";
-import { Canvas } from "@react-three/fiber";
 
 export interface PaddingOffset {
     width: number;
@@ -30,6 +33,19 @@ export interface ChessboardLayoutProps {
     defaultOffset?: PaddingOffset;
     className?: string;
     children?: React.ReactNode;
+}
+
+if (typeof window !== "undefined") {
+    useGLTF.preload(constants.MODELS.PAWN);
+    useSpriteLoader.preload(constants.SPRITE_SHEETS.EXPLOSION);
+    AudioPlayer.preload(
+        AudioType.MOVE,
+        AudioType.CAPTURE,
+        AudioType.ILLEGAL_MOVE,
+        AudioType.PROMOTION,
+        AudioType.EXPLOSION,
+        AudioType.CASTLE,
+    );
 }
 
 const ChessboardLayout = ({
