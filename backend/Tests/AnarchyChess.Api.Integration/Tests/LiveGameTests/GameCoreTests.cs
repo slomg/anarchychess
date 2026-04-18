@@ -209,7 +209,7 @@ public class GameCoreTests : BaseIntegrationTest
         ChessBoard expectedBoard = new(board);
         expectedBoard.RemovePiece(new("a1"));
 
-        var newLegalMoves = new LegalMoveSet(
+        LegalMoveSet newLegalMoves = new(
             MoveMap: new Dictionary<MoveKey, Move>(),
             MovePaths: new MovePathFaker().Generate(3)
         );
@@ -217,6 +217,25 @@ public class GameCoreTests : BaseIntegrationTest
 
         state.Board.Should().BeEquivalentTo(expectedBoard);
         state.LegalMoves.Should().BeEquivalentTo(newLegalMoves);
+    }
+
+    [Fact]
+    public void MakeMove_detects_stalemate()
+    {
+        ChessBoard board = new();
+        board.PlacePiece(new("e9"), PieceFactory.Black(PieceType.King));
+        board.PlacePiece(new("e2"), PieceFactory.White(PieceType.Pawn));
+        board.PlacePiece(new("e1"), PieceFactory.White(PieceType.Queen));
+        board.PlacePiece(new("f1"), PieceFactory.White(PieceType.King));
+        var state = StartGame(new() { Board = board });
+
+        var result = _gameCore.MakeMove(
+            new MoveKey(from: new("e2"), to: new("e9"), specialMoveType: SpecialMoveType.Throw),
+            state
+        );
+
+        result.IsError.Should().BeFalse();
+        result.Value.EndStatus.Should().Be(_resultDescriber.Stalemate());
     }
 
     private MoveResult MakeMoves(GameCoreState state, params IEnumerable<MoveKey> moves)

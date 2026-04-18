@@ -184,4 +184,11 @@ public class GameResultDescriberTests
         var result = _describer.MutualKingCapture();
         result.Should().Be(new GameEndStatus(GameResult.Draw, "Draw by Mutual King Capture"));
     }
+
+    [Fact]
+    public void Stalemate_returns_the_correct_status()
+    {
+        var result = _describer.Stalemate();
+        result.Should().Be(new GameEndStatus(GameResult.Draw, "Draw by Stalemate"));
+    }
 }

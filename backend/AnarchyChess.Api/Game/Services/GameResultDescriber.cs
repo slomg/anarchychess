@@ -18,6 +18,7 @@ public interface IGameResultDescriber
     GameEndStatus FiftyMoves();
     GameEndStatus ThreeFold();
     GameEndStatus KingTouch();
+    GameEndStatus Stalemate();
 
     GameEndStatus BotIllegalMove(GameColor bot);
     GameEndStatus BotOffline(GameColor bot);
@@ -52,6 +53,8 @@ public class GameResultDescriber : IGameResultDescriber
     public GameEndStatus KingTouch() => new(GameResult.Draw, "Draw by King Touch");
 
     public GameEndStatus MutualKingCapture() => new(GameResult.Draw, "Draw by Mutual King Capture");
+
+    public GameEndStatus Stalemate() => new(GameResult.Draw, "Draw by Stalemate");
 
     public GameEndStatus BotIllegalMove(GameColor bot) =>
         new(

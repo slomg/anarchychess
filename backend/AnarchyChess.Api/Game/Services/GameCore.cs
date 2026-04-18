@@ -114,6 +114,14 @@ public class GameCore(
             endStatus = drawReason;
         }
 
+        state.LegalMoves = endStatus is null
+            ? _playableMoveProvider.CalculateAllPlayableMoves(state.Board)
+            : new LegalMoveSet();
+        if (endStatus is null && state.LegalMoves.MovePaths.Count == 0)
+        {
+            endStatus = _resultDescriber.Stalemate();
+        }
+
         var path = MovePath.FromMove(move, state.Board.Width);
         var san = _sanCalculator.CalculateSan(
             move,
@@ -129,10 +137,6 @@ public class GameCore(
             San: san,
             EndStatus: endStatus
         );
-
-        state.LegalMoves = endStatus is null
-            ? _playableMoveProvider.CalculateAllPlayableMoves(state.Board)
-            : new();
         return moveResult;
     }
 

@@ -44,6 +44,10 @@ internal sealed class SearchThread(
         Span<BitMove> moves = stackalloc BitMove[EngineConstants.MaxMoves];
         int moveCount = 0;
         _moveGenerator.Generate(board, moves, ref moveCount, depth: depth, maxDepth: _maxDepth);
+        if (moveCount == 0)
+        {
+            return 0;
+        }
 
         bool isForced = moves[0].ForcedMovePriority is not ForcedMovePriority.None;
         if (isForced && depthBeforeReduce is not null)
@@ -168,6 +172,10 @@ internal sealed class SearchThread(
         Span<BitMove> moves = stackalloc BitMove[EngineConstants.MaxMoves];
         int moveCount = 0;
         _moveGenerator.Generate(board, moves, ref moveCount, depth: depth, maxDepth: _maxDepth);
+        if (moveCount == 0)
+        {
+            return 0;
+        }
 
         int captureCount = 0;
         Span<BitMove> captures = stackalloc BitMove[moveCount];
