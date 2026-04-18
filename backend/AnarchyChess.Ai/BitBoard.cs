@@ -524,11 +524,7 @@ public partial class BitBoard
         EnPassantSquaresMask = 0;
         EnPassantPawnSquare = 0;
 
-        if (
-            specialMoveType is not SpecialMoveType.None
-            || from == to
-            || (GameLogicConstants.PawnLikeMask & (1 << (int)piece.Type)) == 0
-        )
+        if (from == to || (GameLogicConstants.PawnLikeMask & (1 << (int)piece.Type)) == 0)
         {
             return;
         }

@@ -479,30 +479,6 @@ public class BitBoardMakeMoveTests
         board.EnPassantPawnSquare.Should().Be(move.To);
     }
 
-    [Fact]
-    public void MakeMove_doesnt_set_en_passant_state_if_move_is_special()
-    {
-        BitBoard board = BitBoard.FromPieces(
-            new Dictionary<AlgebraicPoint, Piece>()
-            {
-                [new AlgebraicPoint("b2")] = PieceFactory.White(PieceType.Pawn),
-            },
-            isWhiteToMove: true
-        );
-
-        BitMove move = new()
-        {
-            Piece = new BitPiece() { Type = PieceType.Pawn, Color = BitPieceColor.White },
-            From = new AlgebraicPoint("b2").AsIdx(),
-            To = new AlgebraicPoint("b5").AsIdx(),
-            SpecialMoveType = SpecialMoveType.Throw,
-        };
-        board.MakeMove(move);
-
-        board.EnPassantSquaresMask.Should().Be(0);
-        board.EnPassantPawnSquare.Should().Be(0);
-    }
-
     [Theory]
     [InlineData(PieceType.Pawn)]
     [InlineData(PieceType.UnderagePawn)]
