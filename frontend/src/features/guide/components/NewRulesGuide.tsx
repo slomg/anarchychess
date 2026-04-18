@@ -1,37 +1,37 @@
-import hyperacceleratedbongcloud1 from "@public/assets/examples/hyperacceleratedbongcloud1.png";
-import hyperacceleratedbongcloud2 from "@public/assets/examples/hyperacceleratedbongcloud2.png";
-import pawnpawnpromotion1 from "@public/assets/examples/pawnpawnpromotion1.png";
-import pawnpawnpromotion2 from "@public/assets/examples/pawnpawnpromotion2.png";
-import verticalcastling1 from "@public/assets/examples/verticalcastling1.png";
-import verticalcastling2 from "@public/assets/examples/verticalcastling2.png";
-import verticalcastling3 from "@public/assets/examples/verticalcastling3.png";
-import forcedenpassant1 from "@public/assets/examples/forcedenpassant1.png";
-import forcedenpassant2 from "@public/assets/examples/forcedenpassant2.png";
-import forcedenpassant3 from "@public/assets/examples/forcedenpassant3.png";
-import knooklearfusion1 from "@public/assets/examples/knooklearfusion1.png";
-import knooklearfusion2 from "@public/assets/examples/knooklearfusion2.png";
-import queenbetadecay1 from "@public/assets/examples/queenbetadecay1.png";
-import queenbetadecay2 from "@public/assets/examples/queenbetadecay2.png";
-import bouncingbishop1 from "@public/assets/examples/bouncingbishop1.png";
-import bouncingbishop2 from "@public/assets/examples/bouncingbishop2.png";
-import bouncingbishop3 from "@public/assets/examples/bouncingbishop3.png";
-import omnipotentpawn1 from "@public/assets/examples/omnipotentpawn1.png";
-import omnipotentpawn2 from "@public/assets/examples/omnipotentpawn2.png";
-import omnipotentpawn3 from "@public/assets/examples/omnipotentpawn3.png";
-import pawnthrowing1 from "@public/assets/examples/pawnthrowing1.png";
-import pawnthrowing2 from "@public/assets/examples/pawnthrowing2.png";
-import pawnthrowing3 from "@public/assets/examples/pawnthrowing3.png";
-import pawnthrowing4 from "@public/assets/examples/pawnthrowing4.png";
-import bishopcastle1 from "@public/assets/examples/bishopcastle1.png";
-import bishopcastle2 from "@public/assets/examples/bishopcastle2.png";
-import longpassant1 from "@public/assets/examples/longpassant1.png";
-import longpassant2 from "@public/assets/examples/longpassant2.png";
-import longpassant3 from "@public/assets/examples/longpassant3.png";
-import kingcapture1 from "@public/assets/examples/kingcapture1.png";
-import kingcapture2 from "@public/assets/examples/kingcapture2.png";
-import ilvaticano1 from "@public/assets/examples/ilvaticano1.png";
-import ilvaticano2 from "@public/assets/examples/ilvaticano2.png";
-import kingtouch1 from "@public/assets/examples/kingtouch1.png";
+import hyperAcceleratedBongcloud1 from "@public/assets/examples/hyper-accelerated-bongcloud1.png";
+import hyperAcceleratedBongcloud2 from "@public/assets/examples/hyper-accelerated-bongcloud2.png";
+import pawnPawnPromotion1 from "@public/assets/examples/pawn-pawn-promotion1.png";
+import pawnPawnPromotion2 from "@public/assets/examples/pawn-pawn-promotion2.png";
+import verticalCastling1 from "@public/assets/examples/vertical-castling1.png";
+import verticalCastling2 from "@public/assets/examples/vertical-castling2.png";
+import verticalCastling3 from "@public/assets/examples/vertical-castling3.png";
+import forcedEnPassant1 from "@public/assets/examples/forced-en-passant1.png";
+import forcedEnPassant2 from "@public/assets/examples/forced-en-passant2.png";
+import forcedEnPassant3 from "@public/assets/examples/forced-en-passant3.png";
+import knooklearFusion1 from "@public/assets/examples/knooklear-fusion1.png";
+import knooklearFusion2 from "@public/assets/examples/knooklear-fusion2.png";
+import queenBetaDecay1 from "@public/assets/examples/queen-beta-decay1.png";
+import queenBetaDecay2 from "@public/assets/examples/queen-beta-decay2.png";
+import bouncingBishop1 from "@public/assets/examples/bouncing-bishop1.png";
+import bouncingBishop2 from "@public/assets/examples/bouncing-bishop2.png";
+import bouncingBishop3 from "@public/assets/examples/bouncing-bishop3.png";
+import omnipotentPawn1 from "@public/assets/examples/omnipotent-pawn1.png";
+import omnipotentPawn2 from "@public/assets/examples/omnipotent-pawn2.png";
+import omnipotentPawn3 from "@public/assets/examples/omnipotent-pawn3.png";
+import pawnThrowing1 from "@public/assets/examples/pawn-throwing1.png";
+import pawnThrowing2 from "@public/assets/examples/pawn-throwing2.png";
+import pawnThrowing3 from "@public/assets/examples/pawn-throwing3.png";
+import pawnThrowing4 from "@public/assets/examples/pawn-throwing4.png";
+import bishopCastle1 from "@public/assets/examples/bishop-castle1.png";
+import bishopCastle2 from "@public/assets/examples/bishop-castle2.png";
+import longPassant1 from "@public/assets/examples/long-passant1.png";
+import longPassant2 from "@public/assets/examples/long-passant2.png";
+import longPassant3 from "@public/assets/examples/long-passant3.png";
+import kingCapture1 from "@public/assets/examples/king-capture1.png";
+import kingCapture2 from "@public/assets/examples/king-capture2.png";
+import ilVaticano1 from "@public/assets/examples/il-vaticano1.png";
+import ilVaticano2 from "@public/assets/examples/il-vaticano2.png";
+import kingTouch1 from "@public/assets/examples/king-touch1.png";
 import overtime1 from "@public/assets/examples/overtime1.png";
 import overtime2 from "@public/assets/examples/overtime2.png";
 
@@ -51,7 +51,7 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
                     "No check or checkmate.",
                     "You win by physically capturing the opponent's king.",
                 ]}
-                images={[kingcapture1, kingcapture2]}
+                images={[kingCapture1, kingCapture2]}
             />
 
             <GuideCard
@@ -60,7 +60,7 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
                     "The two kings touch (adjacent squares).",
                     "The game immediately ends in a draw.",
                 ]}
-                images={[kingtouch1]}
+                images={[kingTouch1]}
             />
 
             <GuideCard
@@ -85,10 +85,10 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
                     },
                 ]}
                 images={[
-                    pawnthrowing1,
-                    pawnthrowing2,
-                    pawnthrowing3,
-                    pawnthrowing4,
+                    pawnThrowing1,
+                    pawnThrowing2,
+                    pawnThrowing3,
+                    pawnThrowing4,
                 ]}
             />
 
@@ -108,7 +108,7 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
             <GuideCard
                 title="Forced En Passant"
                 points={["If en passant is possible, you must play it."]}
-                images={[forcedenpassant1, forcedenpassant2, forcedenpassant3]}
+                images={[forcedEnPassant1, forcedEnPassant2, forcedEnPassant3]}
             />
 
             <GuideCard
@@ -120,7 +120,7 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
                     "You cannot bounce off other pieces.",
                     "If your bishop is able to capture an Underage Pawn through bouncing, it still must do so.",
                 ]}
-                images={[bouncingbishop1, bouncingbishop2, bouncingbishop3]}
+                images={[bouncingBishop1, bouncingBishop2, bouncingBishop3]}
             />
 
             <GuideCard
@@ -129,7 +129,7 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
                     "Your own bishop is blocking castling by occupying a square your king or rook would land on after castling.",
                     "You may still castle, capturing your own bishop in the process.",
                 ]}
-                images={[bishopcastle1, bishopcastle2]}
+                images={[bishopCastle1, bishopCastle2]}
             />
 
             <GuideCard
@@ -139,7 +139,7 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
                     "If one of your pieces is captured on your Omnipotent Pawn square, you may immediately respond.",
                     "Double click the opponent piece that just captured, and your Omnipotent Pawn spawns on the square and captures it.",
                 ]}
-                images={[omnipotentpawn1, omnipotentpawn2, omnipotentpawn3]}
+                images={[omnipotentPawn1, omnipotentPawn2, omnipotentPawn3]}
             />
 
             <GuideCard
@@ -150,7 +150,7 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
                     "You can continue down the chain in a single move, capturing every piece in the chain.",
                     "If the chain ends on the back rank, your pawn promotes as normal.",
                 ]}
-                images={[longpassant1, longpassant2, longpassant3]}
+                images={[longPassant1, longPassant2, longPassant3]}
             />
 
             <GuideCard
@@ -161,8 +161,8 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
                     "It gives not strategic advantange except asserting dominance.",
                 ]}
                 images={[
-                    hyperacceleratedbongcloud1,
-                    hyperacceleratedbongcloud2,
+                    hyperAcceleratedBongcloud1,
+                    hyperAcceleratedBongcloud2,
                 ]}
             />
 
@@ -171,7 +171,7 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
                 points={[
                     "Once your pawn reaches the last rank, you can promote your pawn to a pawn",
                 ]}
-                images={[pawnpawnpromotion1, pawnpawnpromotion2]}
+                images={[pawnPawnPromotion1, pawnPawnPromotion2]}
             />
 
             <GuideCard
@@ -181,7 +181,7 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
                     "Two enemy pieces occupy those squares.",
                     "Your bishops can swap places and capture both enemy pieces in one move.",
                 ]}
-                images={[ilvaticano1, ilvaticano2]}
+                images={[ilVaticano1, ilVaticano2]}
             />
 
             <GuideCard
@@ -192,9 +192,9 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
                     "Since both your king and rook have not moved, you can castle vertically along the same file.",
                 ]}
                 images={[
-                    verticalcastling1,
-                    verticalcastling2,
-                    verticalcastling3,
+                    verticalCastling1,
+                    verticalCastling2,
+                    verticalCastling3,
                 ]}
             />
 
@@ -205,7 +205,7 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
                     "An explosion occurs, capturing every piece in a 3x3 area around them.",
                     "A knook spawns in the center of the explosion.",
                 ]}
-                images={[knooklearfusion1, knooklearfusion2]}
+                images={[knooklearFusion1, knooklearFusion2]}
             />
 
             <GuideCard
@@ -215,9 +215,10 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
                     "The spawned pawn can promote like a normal pawn, but not to a queen.",
                     "The rook and knight can later perform Knooklear Fusion for massive effect.",
                 ]}
-                images={[queenbetadecay1, queenbetadecay2]}
+                images={[queenBetaDecay1, queenBetaDecay2]}
             />
         </Card>
     );
 };
+
 export default NewRulesGuide;

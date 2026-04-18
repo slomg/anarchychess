@@ -1,13 +1,13 @@
-import knook1 from "@public/assets/examples/knook1.png";
+import underagePawn1 from "@public/assets/examples/underage-pawn1.png";
+import underagePawn2 from "@public/assets/examples/underage-pawn2.png";
+import traitorRook1 from "@public/assets/examples/traitor-rook1.png";
+import traitorRook2 from "@public/assets/examples/traitor-rook2.png";
+import traitorRook3 from "@public/assets/examples/traitor-rook3.png";
+import antiqueen1 from "@public/assets/examples/antiqueen1.png";
 import checker1 from "@public/assets/examples/checker1.png";
 import checker2 from "@public/assets/examples/checker2.png";
 import checker3 from "@public/assets/examples/checker3.png";
-import underagepawn1 from "@public/assets/examples/underagepawn1.png";
-import underagepawn2 from "@public/assets/examples/underagepawn2.png";
-import traitorrook1 from "@public/assets/examples/traitorrook1.png";
-import traitorrook2 from "@public/assets/examples/traitorrook2.png";
-import traitorrook3 from "@public/assets/examples/traitorrook3.png";
-import antiqueen1 from "@public/assets/examples/antiqueen1.png";
+import knook1 from "@public/assets/examples/knook1.png";
 
 import Card from "@/components/ui/Card";
 import GuideCard from "./GuideCard";
@@ -35,7 +35,7 @@ const NewPiecesGuide = ({ id }: { id?: string }) => {
                     "First move = 2 squares (unlike standard pawns which now move 3).",
                     "If seen by a bishop, that bishop MUST capture it. Even if it's your own bishop.",
                 ]}
-                images={[underagepawn1, underagepawn2]}
+                images={[underagePawn1, underagePawn2]}
             />
 
             <GuideCard
@@ -56,7 +56,7 @@ const NewPiecesGuide = ({ id }: { id?: string }) => {
                     "Controlled by whichever side has more ADJACENT pieces (NOT overall pieces on the board, just adjacent ones).",
                     "If tied, both sides can move it but neither can capture with it.",
                 ]}
-                images={[traitorrook1, traitorrook2, traitorrook3]}
+                images={[traitorRook1, traitorRook2, traitorRook3]}
             />
 
             <GuideCard
@@ -70,4 +70,5 @@ const NewPiecesGuide = ({ id }: { id?: string }) => {
         </Card>
     );
 };
+
 export default NewPiecesGuide;
