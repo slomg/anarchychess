@@ -169,7 +169,7 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
             <GuideCard
                 title="Pawn Pawn Promotion"
                 points={[
-                    "Once you reach the last rank, you can promote your pawn to a pawn",
+                    "Once your pawn reaches the last rank, you can promote your pawn to a pawn",
                 ]}
                 images={[pawnpawnpromotion1, pawnpawnpromotion2]}
             />
