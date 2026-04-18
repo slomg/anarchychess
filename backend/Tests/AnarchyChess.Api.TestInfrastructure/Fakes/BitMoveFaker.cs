@@ -13,8 +13,8 @@ public class BitMoveFaker : StructFaker<BitMove>
     )
     {
         StrictMode(true);
-        RuleFor(x => x.From, f => from?.AsIdx() ?? f.Random.Number(min: 0, max: 100));
-        RuleFor(x => x.To, f => to?.AsIdx() ?? f.Random.Number(min: 0, max: 100));
+        RuleFor(x => x.From, f => from?.AsIdx() ?? f.Random.Number(min: 0, max: 99));
+        RuleFor(x => x.To, f => to?.AsIdx() ?? f.Random.Number(min: 0, max: 99));
         RuleFor(x => x.Piece, f => new BitPieceFaker(pieceType, color).Generate());
         RuleFor(x => x.CapturesMask, UInt128.Zero);
         RuleFor(x => x.PromotesTo, (PieceType?)null);
