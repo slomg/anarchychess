@@ -36,7 +36,7 @@ public class AnalysisControllerTests(AnarchyChessWebApplicationFactory factory)
 
         var position = response.Content;
         position.Should().NotBeNull();
-        position.San.Should().Be("Rc1");
+        position.San.Should().Be("Rac1");
         position.SideToMove.Should().Be(GameColor.Black);
         position.LegalMoves.Count.Should().BeGreaterThan(0);
         position.EndStatus.Should().BeNull();
