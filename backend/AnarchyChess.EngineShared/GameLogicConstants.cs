@@ -26,5 +26,6 @@ public static class GameLogicConstants
         PieceType.Knook,
         PieceType.Antiqueen,
         PieceType.Checker,
+        PieceType.Pawn,
     ];
 }

@@ -1,5 +1,7 @@
 import hyperacceleratedbongcloud1 from "@public/assets/examples/hyperacceleratedbongcloud1.png";
 import hyperacceleratedbongcloud2 from "@public/assets/examples/hyperacceleratedbongcloud2.png";
+import pawnpawnpromotion1 from "@public/assets/examples/pawnpawnpromotion1.png";
+import pawnpawnpromotion2 from "@public/assets/examples/pawnpawnpromotion2.png";
 import verticalcastling1 from "@public/assets/examples/verticalcastling1.png";
 import verticalcastling2 from "@public/assets/examples/verticalcastling2.png";
 import verticalcastling3 from "@public/assets/examples/verticalcastling3.png";
@@ -162,6 +164,14 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
                     hyperacceleratedbongcloud1,
                     hyperacceleratedbongcloud2,
                 ]}
+            />
+
+            <GuideCard
+                title="Pawn Pawn Promotion"
+                points={[
+                    "Once you reach the last rank, you can promote your pawn to a pawn",
+                ]}
+                images={[pawnpawnpromotion1, pawnpawnpromotion2]}
             />
 
             <GuideCard
