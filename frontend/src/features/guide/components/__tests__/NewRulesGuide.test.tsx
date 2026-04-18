@@ -25,6 +25,7 @@ describe("NewRulesGuide", () => {
             "Omnipotent Pawn",
             "Long Passant",
             "Hyper Accelerated Bongcloud",
+            "Pawn Pawn Promotion",
             "Il Vaticano",
             "Vertical Castling",
             "Knooklear Fusion",
