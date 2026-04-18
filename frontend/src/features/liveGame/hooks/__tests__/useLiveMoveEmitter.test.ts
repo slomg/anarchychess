@@ -8,13 +8,15 @@ import {
 import createLiveChessStore, {
     LiveChessStore,
 } from "../../stores/liveChessStore";
+import {
+    createFakeBoardPieces,
+    createFakeMove,
+} from "@/lib/testUtils/fakers/chessboardFakers";
 
 import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
 import useMoveEmitterForLiveGames from "../useMoveEmitterForLiveGames";
-
 import useLiveMoveEmitter from "../useLiveMoveEmitter";
 import { useGameEmitter } from "../useGameHub";
-import { MoveKey } from "@/features/chessboard/lib/types";
 
 vi.mock("@/features/liveGame/hooks/useGameHub");
 vi.mock("../useMoveEmitterForLiveGames");
@@ -44,27 +46,16 @@ describe("useLiveMoveEmitter", () => {
         const [, , sendMoveCallback] =
             useMoveEmitterForLiveGamesMock.mock.calls[0];
 
-        sendMoveCallback("move123" as MoveKey);
+        const move = createFakeMove();
+        sendMoveCallback({
+            move,
+            prevPieces: createFakeBoardPieces(),
+            animationPromise: new Promise(() => {}),
+        });
         expect(sendGameEventMock).toHaveBeenCalledWith(
             "MovePieceAsync",
             liveChessStore.getState().gameToken,
-            "move123",
-        );
-    });
-
-    it("should use the gameToken from the store", () => {
-        liveChessStore.setState({ gameToken: "newToken" });
-
-        renderHook(() => useLiveMoveEmitter(liveChessStore, chessboardStore));
-
-        const [, , sendMoveCallback] =
-            useMoveEmitterForLiveGamesMock.mock.calls[0];
-        sendMoveCallback("move456" as MoveKey);
-
-        expect(sendGameEventMock).toHaveBeenCalledWith(
-            "MovePieceAsync",
-            "newToken",
-            "move456",
+            move.moveKey,
         );
     });
 });

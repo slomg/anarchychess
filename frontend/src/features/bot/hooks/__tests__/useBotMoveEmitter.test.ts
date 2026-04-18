@@ -8,10 +8,15 @@ import {
 import createLiveChessStore, {
     LiveChessStore,
 } from "@/features/liveGame/stores/liveChessStore";
+import {
+    createFakeBoardPieces,
+    createFakeMove,
+} from "@/lib/testUtils/fakers/chessboardFakers";
 
 import useMoveEmitterForLiveGames from "@/features/liveGame/hooks/useMoveEmitterForLiveGames";
 import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
-import { MoveKey } from "@/features/chessboard/lib/types";
+import flushMicrotasks from "@/lib/testUtils/flushMicrotasks";
+import createDeferred from "@/lib/testUtils/createDeferred";
 import useBotMoveEmitter from "../useBotMoveEmitter";
 import { useBotEmitter } from "../useBotHub";
 
@@ -23,7 +28,6 @@ describe("useBotMoveEmitter", () => {
     let chessboardStore: StoreApi<ChessboardStore>;
 
     const sendBotEventMock = vi.fn();
-
     const useBotEmitterMock = vi.mocked(useBotEmitter);
     const useMoveEmitterForLiveGamesMock = vi.mocked(
         useMoveEmitterForLiveGames,
@@ -36,34 +40,32 @@ describe("useBotMoveEmitter", () => {
         useBotEmitterMock.mockReturnValue(sendBotEventMock);
     });
 
-    it("should call useMoveEmitterForLiveGames with a wrapped sendGameEvent", () => {
+    it("should call useMoveEmitterForLiveGames with a wrapped sendGameEvent", async () => {
         renderHook(() => useBotMoveEmitter(liveChessStore, chessboardStore));
 
         expect(useMoveEmitterForLiveGames).toHaveBeenCalledOnce();
         const [, , sendMoveCallback] =
             useMoveEmitterForLiveGamesMock.mock.calls[0];
 
-        sendMoveCallback("move123" as MoveKey);
+        const { promise: animationPromise, resolve: resolveAnimation } =
+            createDeferred();
+        const move = createFakeMove();
+        sendMoveCallback({
+            move,
+            prevPieces: createFakeBoardPieces(),
+            animationPromise,
+        });
+        await flushMicrotasks();
+
+        expect(sendBotEventMock).not.toHaveBeenCalled();
+
+        resolveAnimation();
+        await flushMicrotasks();
+
         expect(sendBotEventMock).toHaveBeenCalledWith(
             "MakeMoveAsync",
             liveChessStore.getState().gameToken,
-            "move123",
-        );
-    });
-
-    it("should use the gameToken from the store", () => {
-        liveChessStore.setState({ gameToken: "newToken" });
-
-        renderHook(() => useBotMoveEmitter(liveChessStore, chessboardStore));
-
-        const [, , sendMoveCallback] =
-            useMoveEmitterForLiveGamesMock.mock.calls[0];
-        sendMoveCallback("move456" as MoveKey);
-
-        expect(sendBotEventMock).toHaveBeenCalledWith(
-            "MakeMoveAsync",
-            "newToken",
-            "move456",
+            move.moveKey,
         );
     });
 });

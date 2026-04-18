@@ -1,36 +1,36 @@
-import { ChessboardStore } from "@/features/chessboard/stores/chessboardStore";
-import { LiveChessStore } from "../stores/liveChessStore";
-import { StoreApi } from "zustand";
 import { useCallback, useEffect } from "react";
-import { Move, MoveKey } from "@/features/chessboard/lib/types";
-import BoardPieces from "@/features/chessboard/lib/boardPieces";
+import { StoreApi } from "zustand";
+
 import { addSidelineAnalysisMove } from "@/features/analysis/lib/handleAnalysisMove";
+import { ChessboardStore } from "@/features/chessboard/stores/chessboardStore";
+import { PieceMovementEvent } from "@/features/chessboard/stores/piecesSlice";
+import { LiveChessStore } from "../stores/liveChessStore";
 
 export default function useMoveEmitterForLiveGames(
     liveChessStore: StoreApi<LiveChessStore>,
     chessboardStore: StoreApi<ChessboardStore>,
-    sendMoveEvent: (moveKey: MoveKey) => Promise<void>,
+    sendMoveEvent: (event: PieceMovementEvent) => Promise<void>,
 ) {
     const { pieceMovementEvent } = chessboardStore.getState();
     const { markPendingMoveAck } = liveChessStore.getState();
     const callback = useCallback(
-        (moveKey: MoveKey) => sendMoveEvent(moveKey),
+        (event: PieceMovementEvent) => sendMoveEvent(event),
         [sendMoveEvent],
     );
 
     useEffect(() => {
-        async function emitMove(move: Move, prevPieces: BoardPieces) {
+        async function emitMove(event: PieceMovementEvent) {
             const { resultData, initialFen } = liveChessStore.getState();
 
             if (resultData === null) {
                 markPendingMoveAck();
-                await callback(move.moveKey);
+                await callback(event);
             } else {
                 await addSidelineAnalysisMove({
                     chessboardStore,
                     rootFen: initialFen,
-                    move,
-                    prevPieces,
+                    move: event.move,
+                    prevPieces: event.prevPieces,
                 });
             }
         }

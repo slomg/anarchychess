@@ -17,13 +17,19 @@ export interface PieceSliceProps {
     disableDrag?: boolean;
 }
 
+export interface PieceMovementEvent {
+    move: Move;
+    prevPieces: BoardPieces;
+    animationPromise: Promise<void>;
+}
+
 export interface PiecesSlice {
     pieces: BoardPieces;
     selectedPieceId: PieceID | null;
     disableDrag: boolean;
     isProcessingMove: boolean;
 
-    pieceMovementEvent: EventBus<[move: Move, prevPieces: BoardPieces], void>;
+    pieceMovementEvent: EventBus<[event: PieceMovementEvent], void>;
 
     selectPiece(pieceId: PieceID): boolean;
     unselectPiece(): void;
@@ -74,7 +80,11 @@ export function createPiecesSlice(
             const animationPromise = playAnimation(steps);
 
             unselectPiece();
-            await pieceMovementEvent.emit(move, prevPieces);
+            await pieceMovementEvent.emit({
+                move,
+                prevPieces,
+                animationPromise,
+            });
 
             await animationPromise;
         }

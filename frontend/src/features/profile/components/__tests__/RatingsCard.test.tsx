@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import Chart from "react-apexcharts";
 
-import preloadAll from "@/lib/testUtils/dynamicImportMock";
+import preloadAll from "@/lib/testUtils/mocks/dynamicImportMock";
 
 import RatingCard from "../RatingsCard";
 import { RatingOverview } from "@/lib/apiClient";

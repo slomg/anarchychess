@@ -238,7 +238,7 @@ describe("PiecesSlice", () => {
 
                 let emittedMove: Move | null = null;
                 let emittedPrevPieces: BoardPieces | null = null;
-                pieceMovementEvent.subscribe((move, prevPieces) => {
+                pieceMovementEvent.subscribe(({ move, prevPieces }) => {
                     emittedMove = move;
                     emittedPrevPieces = prevPieces;
                 });

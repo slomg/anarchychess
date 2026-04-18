@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { StoreApi } from "zustand";
 
-import preloadAll from "@/lib/testUtils/dynamicImportMock";
+import preloadAll from "@/lib/testUtils/mocks/dynamicImportMock";
 import { SessionContext } from "@/features/auth/contexts/sessionContext";
 import {
     createSessionStore,

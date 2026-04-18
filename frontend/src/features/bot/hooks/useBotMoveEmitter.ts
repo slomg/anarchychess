@@ -11,7 +11,12 @@ export default function useBotMoveEmitter(
 ) {
     const { gameToken } = liveChessStore.getState();
     const sendBotEvent = useBotEmitter(gameToken);
-    useMoveEmitterForLiveGames(liveChessStore, chessboardStore, (moveKey) =>
-        sendBotEvent("MakeMoveAsync", gameToken, moveKey),
+    useMoveEmitterForLiveGames(
+        liveChessStore,
+        chessboardStore,
+        async ({ move, animationPromise }) => {
+            await animationPromise;
+            sendBotEvent("MakeMoveAsync", gameToken, move.moveKey);
+        },
     );
 }
