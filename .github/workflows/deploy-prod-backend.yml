@@ -12,10 +12,10 @@ jobs:
 
         steps:
             - name: Checkout to the branch
-              uses: actions/checkout@v2
+              uses: actions/checkout@v6.0.2
 
             - name: Azure Login
-              uses: azure/login@v2.3.0
+              uses: azure/login@v3.0.0
               with:
                   client-id: ${{ secrets.ANARCHYCHESS_AZURE_CLIENT_ID }}
                   tenant-id: ${{ secrets.AZURE_TENANT_ID }}

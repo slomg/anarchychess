@@ -12,7 +12,7 @@ jobs:
 
         steps:
             - name: Checkout to the branch
-              uses: actions/checkout@v6
+              uses: actions/checkout@v6.0.2
 
             - name: Login to Docker Hub
               uses: docker/login-action@v3
@@ -29,14 +29,14 @@ jobs:
                   docker push $IMAGE:latest
 
             - name: Login to Azure
-              uses: azure/login@v2.3.0
+              uses: azure/login@v3.0.0
               with:
                   client-id: ${{ secrets.ANACHYBOT_AZURE_CLIENT_ID }}
                   tenant-id: ${{ secrets.AZURE_TENANT_ID }}
                   subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
             - name: Deploy to Azure VMSS
-              uses: azure/cli@v2.2.0
+              uses: azure/cli@v3.0.0
               with:
                   inlineScript: |
                       az vmss delete-instances --resource-group anarchybot-prod-resource --name anarchychess-prod-vmss --instance-ids "*"
