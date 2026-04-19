@@ -69,8 +69,8 @@ const MaterialCount = ({ playerColor }: { playerColor: GameColor }) => {
                     <Image
                         key={`${piece}-${i}`}
                         alt="Material Piece"
-                        width={16}
-                        height={16}
+                        width={64}
+                        height={64}
                         className="mr-0.5 h-5 w-auto bg-contain bg-no-repeat"
                         src={getMaterialPieceImage(piece, opponentColor)}
                         data-testid={`materialCount-${piece}`}
