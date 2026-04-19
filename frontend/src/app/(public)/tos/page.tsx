@@ -114,13 +114,15 @@ const TosPage = () => {
                     <h2 className="text-2xl">7. Intellectual Property</h2>
                     <ul className="list-inside list-disc">
                         <li>
-                            All content, including game mechanics, graphics,
-                            logos, and software, is owned by Anarchy Chess or
-                            its licensors.
+                            The source code for Anarchy Chess is licensed under
+                            the applicable license published in the project
+                            repository. Your use of the code is goverend by that
+                            license, not these terms.
                         </li>
                         <li>
-                            You may not reproduce, distribute, or create
-                            derivative works without explicit permission.
+                            Unless otherwise stated, game assets (including
+                            graphics and sounds) may be used, modified and
+                            shared freely.
                         </li>
                     </ul>
                 </section>
@@ -177,7 +179,7 @@ const TosPage = () => {
                     </p>
                 </section>
 
-                <p className="text-text/70">Last Updated: January 9, 2026</p>
+                <p className="text-text/70">Last Updated: April 19, 2026</p>
             </Card>
         </main>
     );
