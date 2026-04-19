@@ -59,7 +59,7 @@ const MaterialCount = ({ playerColor }: { playerColor: GameColor }) => {
     );
 
     return (
-        <div className="text-text/70 flex h-5 items-center overflow-auto">
+        <div className="text-text/70 flex h-5 items-center">
             {sortedPieceBalance.map(([piece, balance]) => {
                 if (balance <= 0) {
                     return null;
