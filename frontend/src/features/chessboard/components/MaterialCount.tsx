@@ -24,10 +24,10 @@ const MATERIAL_VALUE: Record<PieceType, number> = {
 const MATERIAL_HEIGHT: Record<PieceType, number> = {
     [PieceType.HORSEY]: 123,
     [PieceType.KNOOK]: 120,
+    [PieceType.ANTIQUEEN]: 120,
     [PieceType.KING]: 115,
     [PieceType.ROOK]: 116,
     [PieceType.CHECKER]: 110,
-    [PieceType.ANTIQUEEN]: 110,
     [PieceType.BISHOP]: 97,
     [PieceType.STERILE_PAWN]: 67,
     [PieceType.PAWN]: 67,
@@ -69,8 +69,8 @@ const MaterialCount = ({ playerColor }: { playerColor: GameColor }) => {
                     <Image
                         key={`${piece}-${i}`}
                         alt="Material Piece"
-                        width={2}
-                        height={2}
+                        width={16}
+                        height={16}
                         className="mr-0.5 h-5 w-auto bg-contain bg-no-repeat"
                         src={getMaterialPieceImage(piece, opponentColor)}
                         data-testid={`materialCount-${piece}`}
