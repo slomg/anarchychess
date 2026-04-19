@@ -1,5 +1,5 @@
 import { useChessboardStore } from "../hooks/useChessboard";
-import getPieceImage from "../lib/pieceImage";
+import { getPieceImage } from "../lib/pieceImage";
 import { PieceID } from "../lib/types";
 import ChessSquare from "./ChessSquare";
 
@@ -11,8 +11,7 @@ const RemovingChessPiece = ({ id }: { id: PieceID }) => {
         <ChessSquare
             data-testid="removingPiece"
             position={piece.position}
-            className="bg-size-[100%] bg-no-repeat opacity-50
-                select-none"
+            className="bg-size-[100%] bg-no-repeat opacity-50 select-none"
             style={{
                 backgroundImage: `url("${getPieceImage(piece.type, piece.color)}")`,
             }}

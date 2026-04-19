@@ -1,11 +1,12 @@
-import ProfilePicture from "@/features/profile/components/ProfilePicture";
-import Flag from "@/features/profile/components/Flag";
 import { useChessboardStore } from "@/features/chessboard/hooks/useChessboard";
+import MaterialCount from "@/features/chessboard/components/MaterialCount";
+import ProfilePicture from "@/features/profile/components/ProfilePicture";
+import ProfileTooltip from "@/features/profile/components/ProfileTooltip";
+import useLiveChessStore from "../hooks/useLiveChessStore";
+import Flag from "@/features/profile/components/Flag";
 import { invertColor } from "@/lib/utils/chessUtils";
 import { GameColor } from "@/lib/apiClient";
-import useLiveChessStore from "../hooks/useLiveChessStore";
 import GameClock from "./GameClock";
-import ProfileTooltip from "@/features/profile/components/ProfileTooltip";
 
 export enum ProfileSide {
     CurrentlyPlaying,
@@ -32,18 +33,26 @@ const LiveChessboardProfile = ({ side }: { side: ProfileSide }) => {
                         size={50}
                         minSize={50}
                     />
-                    <p className="truncate">{player.userName}</p>
                 </ProfileTooltip>
-                <Flag countryCode={player.countryCode} size={30} />
+                <div className="flex h-12 min-w-0 flex-col">
+                    <div className="flex min-w-0 items-center gap-2">
+                        <ProfileTooltip userId={player.userId}>
+                            <p className="truncate">{player.userName}</p>
+                        </ProfileTooltip>
 
-                {player.rating && (
-                    <span
-                        className="text-text/80 w-fit rounded bg-white/10 px-2
-                            py-0.5 text-xs"
-                    >
-                        {player.rating}
-                    </span>
-                )}
+                        <Flag countryCode={player.countryCode} size={25} />
+                        {player.rating && (
+                            <span
+                                className="text-text/80 flex items-center
+                                    rounded bg-white/10 px-2 py-1 text-xs"
+                            >
+                                {player.rating}
+                            </span>
+                        )}
+                    </div>
+
+                    <MaterialCount playerColor={color} />
+                </div>
             </div>
             <GameClock color={color} />
         </div>

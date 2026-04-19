@@ -6,7 +6,7 @@ import DoubleClickIndicator, { DoubleClickRef } from "./DoubleClickIndicator";
 import useBoardInteraction from "../hooks/useBoardInteraction";
 import { Point } from "@/features/point/types";
 import { ChessSquareRef } from "./CoordSquare";
-import getPieceImage from "../lib/pieceImage";
+import { getPieceImage } from "../lib/pieceImage";
 import ChessSquare from "./ChessSquare";
 import { PieceID } from "../lib/types";
 
