@@ -22,15 +22,15 @@ const MATERIAL_VALUE: Record<PieceType, number> = {
 
 // piexel height of each piece without things that are hard to see
 const MATERIAL_HEIGHT: Record<PieceType, number> = {
-    [PieceType.KNOOK]: 123,
-    [PieceType.HORSEY]: 120,
+    [PieceType.HORSEY]: 123,
+    [PieceType.KNOOK]: 120,
     [PieceType.KING]: 115,
     [PieceType.ROOK]: 116,
     [PieceType.CHECKER]: 110,
+    [PieceType.ANTIQUEEN]: 110,
     [PieceType.BISHOP]: 97,
     [PieceType.STERILE_PAWN]: 67,
     [PieceType.PAWN]: 67,
-    [PieceType.ANTIQUEEN]: 64,
     [PieceType.QUEEN]: 63,
     [PieceType.UNDERAGE_PAWN]: 24,
     [PieceType.TRAITOR_ROOK]: 0,
