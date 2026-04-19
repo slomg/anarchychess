@@ -16,7 +16,7 @@ import { mockBoundingClientRect } from "@/lib/testUtils/mocks/mockDom";
 import { logicalPoint, pointToStr } from "@/features/point/pointUtils";
 import { LogicalPoint } from "@/features/point/types";
 import ChessboardLayout from "../ChessboardLayout";
-import getPieceImage from "../../lib/pieceImage";
+import { getPieceImage } from "../../lib/pieceImage";
 import BoardPieces from "../../lib/boardPieces";
 import { Point } from "@/features/point/types";
 import { Move, Piece } from "../../lib/types";

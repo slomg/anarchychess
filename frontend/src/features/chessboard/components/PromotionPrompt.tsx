@@ -3,7 +3,7 @@ import { useChessboardStore } from "../hooks/useChessboard";
 import ChessSquare from "./ChessSquare";
 import { PieceType } from "@/lib/apiClient";
 import { logicalPoint } from "@/features/point/pointUtils";
-import getPieceImage from "../lib/pieceImage";
+import { getPieceImage } from "../lib/pieceImage";
 import { PromotionRequest } from "../stores/promotionSlice";
 import { useRef } from "react";
 
@@ -75,9 +75,8 @@ const PromotionPiece = ({
             position={position}
             className={clsx(
                 `border-secondary hover:bg-secondary cursor-pointer rounded-md
-                border-3 bg-size-[90%_90%] bg-center bg-no-repeat
-                transition-all duration-200 hover:rounded-none
-                hover:bg-size-[110%_110%]`,
+                border-3 bg-size-[90%_90%] bg-center bg-no-repeat transition-all
+                duration-200 hover:rounded-none hover:bg-size-[110%_110%]`,
                 isFirst || "border-t-2",
                 isLast || "border-b-2",
             )}

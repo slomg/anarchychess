@@ -7,7 +7,7 @@ import {
 import RemovingChessPiece from "../RemovingChessPiece";
 import { render, screen } from "@testing-library/react";
 import { StoreApi } from "zustand";
-import getPieceImage from "../../lib/pieceImage";
+import { getPieceImage } from "../../lib/pieceImage";
 import { pointToStr } from "@/features/point/pointUtils";
 
 describe("RemovingChessPiece", () => {
