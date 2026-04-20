@@ -9,8 +9,10 @@ import {
 import ChessboardStoreContext from "../../contexts/chessboardStoreContext";
 import { createFakePiece } from "@/lib/testUtils/fakers/chessboardFakers";
 import { GameColor, PieceType } from "@/lib/apiClient";
-import MaterialCount from "../MaterialCount";
 import BoardPieces from "../../lib/boardPieces";
+import MaterialCount from "../MaterialCount";
+import { logicalPoint } from "@/features/point/pointUtils";
+
 describe("MaterialCount", () => {
     let store: StoreApi<ChessboardStore>;
 
@@ -54,8 +56,21 @@ describe("MaterialCount", () => {
     ])("should render piece difference", (playerColor, opponentColor) => {
         store.setState({
             pieces: BoardPieces.fromPieces(
-                createFakePiece({ type: PieceType.ROOK, color: playerColor }),
-                createFakePiece({ type: PieceType.PAWN, color: opponentColor }),
+                createFakePiece({
+                    type: PieceType.ROOK,
+                    color: playerColor,
+                    position: logicalPoint({ x: 4, y: 5 }),
+                }),
+                createFakePiece({
+                    type: PieceType.TRAITOR_ROOK,
+                    color: null,
+                    position: logicalPoint({ x: 5, y: 5 }),
+                }),
+                createFakePiece({
+                    type: PieceType.PAWN,
+                    color: opponentColor,
+                    position: logicalPoint({ x: 7, y: 5 }),
+                }),
             ),
         });
 
@@ -68,10 +83,13 @@ describe("MaterialCount", () => {
         expect(
             screen.getByTestId(`materialCount-${PieceType.ROOK}`),
         ).toBeInTheDocument();
+        expect(
+            screen.getByTestId(`materialCount-${PieceType.TRAITOR_ROOK}`),
+        ).toBeInTheDocument();
 
         expect(
             screen.queryByTestId(`materialCount-${PieceType.PAWN}`),
-        ).toBeNull();
+        ).not.toBeInTheDocument();
     });
 
     it("should render correct number of pieces piece difference", () => {

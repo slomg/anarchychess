@@ -1,5 +1,6 @@
 import Image from "next/image";
 
+import getEffectivePieceColor from "../lib/effectivePieceColor";
 import { useChessboardStore } from "../hooks/useChessboard";
 import { getMaterialPieceImage } from "../lib/pieceImage";
 import { GameColor, PieceType } from "@/lib/apiClient";
@@ -14,10 +15,10 @@ const MATERIAL_VALUE: Record<PieceType, number> = {
     [PieceType.BISHOP]: 3,
     [PieceType.HORSEY]: 3,
     [PieceType.ANTIQUEEN]: 3,
+    [PieceType.TRAITOR_ROOK]: 3,
     [PieceType.UNDERAGE_PAWN]: 1,
     [PieceType.PAWN]: 1,
     [PieceType.STERILE_PAWN]: 0.8,
-    [PieceType.TRAITOR_ROOK]: 0,
 };
 
 // piexel height of each piece without things that are hard to see
@@ -26,6 +27,7 @@ const MATERIAL_HEIGHT: Record<PieceType, number> = {
     [PieceType.KNOOK]: 120,
     [PieceType.ANTIQUEEN]: 120,
     [PieceType.ROOK]: 117,
+    [PieceType.TRAITOR_ROOK]: 117,
     [PieceType.BISHOP]: 116,
     [PieceType.KING]: 115,
     [PieceType.QUEEN]: 110,
@@ -33,8 +35,12 @@ const MATERIAL_HEIGHT: Record<PieceType, number> = {
     [PieceType.STERILE_PAWN]: 67,
     [PieceType.PAWN]: 67,
     [PieceType.UNDERAGE_PAWN]: 24,
-    [PieceType.TRAITOR_ROOK]: 0,
 };
+
+interface PieceBalance {
+    balance: number;
+    color: GameColor | null;
+}
 
 const MaterialCount = ({ playerColor }: { playerColor: GameColor }) => {
     const opponentColor = invertColor(playerColor);
@@ -42,17 +48,24 @@ const MaterialCount = ({ playerColor }: { playerColor: GameColor }) => {
     const pieces = useChessboardStore((x) => x.pieces);
 
     let totalValue = 0;
-    const pieceBalance = new Map<PieceType, number>();
+    const pieceBalance = new Map<PieceType, PieceBalance>();
     for (const piece of pieces) {
-        const prevCount = pieceBalance.get(piece.type) ?? 0;
         const value = MATERIAL_VALUE[piece.type];
-        if (piece.color === playerColor) {
+        const effectiveColor = getEffectivePieceColor(piece, pieces);
+
+        const prevBalance: PieceBalance = pieceBalance.get(piece.type) ?? {
+            balance: 0,
+            color: piece.color === null ? null : opponentColor,
+        };
+        if (effectiveColor === playerColor) {
             totalValue += value;
-            pieceBalance.set(piece.type, prevCount + 1);
-        } else if (piece.color === opponentColor) {
+            prevBalance.balance++;
+        } else if (effectiveColor === opponentColor) {
             totalValue -= value;
-            pieceBalance.set(piece.type, prevCount - 1);
+            prevBalance.balance--;
         }
+
+        pieceBalance.set(piece.type, prevBalance);
     }
     const sortedPieceBalance = [...pieceBalance.entries()].sort(
         ([a], [b]) => MATERIAL_HEIGHT[a] - MATERIAL_HEIGHT[b],
@@ -60,19 +73,19 @@ const MaterialCount = ({ playerColor }: { playerColor: GameColor }) => {
 
     return (
         <div className="text-text/70 flex h-5 items-center">
-            {sortedPieceBalance.map(([piece, balance]) => {
-                if (balance <= 0) {
+            {sortedPieceBalance.map(([piece, pieceBalance]) => {
+                if (pieceBalance.balance <= 0) {
                     return null;
                 }
 
-                return Array.from({ length: balance }, (_, i) => (
+                return Array.from({ length: pieceBalance.balance }, (_, i) => (
                     <Image
                         key={`${piece}-${i}`}
                         alt="Material Piece"
                         width={64}
                         height={64}
                         className="mr-0.5 h-5 w-auto bg-contain bg-no-repeat"
-                        src={getMaterialPieceImage(piece, opponentColor)}
+                        src={getMaterialPieceImage(piece, pieceBalance.color)}
                         data-testid={`materialCount-${piece}`}
                     />
                 ));
