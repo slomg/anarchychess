@@ -34,10 +34,10 @@ export function simulateMoveAnimated(
     const steps: AnimationStep[] = [];
 
     if (!skipAlreadyPlayedLocally) {
-        steps.push(...animateIntermediates(pieces, move, fromPiece));
+        steps.push(...simulateIntermediates(pieces, move, fromPiece));
     }
 
-    const specialHandler = specialMoveAnimationHandlers.get(move.specialType);
+    const specialHandler = SPECIAL_MOVE_ANIMATION_HANDLERS[move.specialType];
     const shouldPlaySpecialHandler =
         !skipAlreadyPlayedLocally || !specialHandler?.alreadyPlayedLocally;
     if (specialHandler && shouldPlaySpecialHandler) {
@@ -49,7 +49,7 @@ export function simulateMoveAnimated(
     return steps;
 }
 
-function animateIntermediates(
+function simulateIntermediates(
     pieces: BoardPieces,
     move: Move,
     fromPiece: Piece,
@@ -73,15 +73,18 @@ function animateIntermediates(
     return steps;
 }
 
-const specialMoveAnimationHandlers = new Map<
-    SpecialMoveType,
-    SpecialMoveAnimation
->([
-    [
-        SpecialMoveType.THROW,
-        { handler: simulateThrowMove, alreadyPlayedLocally: false },
-    ],
-]);
+const SPECIAL_MOVE_ANIMATION_HANDLERS: Partial<
+    Record<SpecialMoveType, SpecialMoveAnimation>
+> = {
+    [SpecialMoveType.THROW]: {
+        handler: simulateThrowMove,
+        alreadyPlayedLocally: false,
+    },
+    [SpecialMoveType.KNOOKLEAR_FUSION]: {
+        handler: simulateKnooklearFusion,
+        alreadyPlayedLocally: false,
+    },
+} as const;
 
 function simulateThrowMove(
     basePieces: BoardPieces,
@@ -103,6 +106,25 @@ function simulateThrowMove(
                 color: fromPiece.color,
             },
             disableStepDelay: true,
+        },
+    ];
+}
+
+function simulateKnooklearFusion(
+    basePieces: BoardPieces,
+    move: Move,
+): AnimationStep[] {
+    const newPieces = new BoardPieces(basePieces);
+    const removedPieces = newPieces.removeRemovedPiecesFromMove(move);
+    return [
+        {
+            newPieces,
+            movedPieceIds: [],
+            fadedPieces: removedPieces,
+            boardEffect: {
+                type: TransientBoardEffectType.EXPLOSION,
+                at: move.to,
+            },
         },
     ];
 }

@@ -9,6 +9,7 @@ import { viewPoint, viewToWorld } from "@/features/point/pointUtils";
 import { useChessboardStore } from "../../hooks/useChessboard";
 import ThrowAimLine from "./ThrowAimLine";
 import PawnThrow from "./PawnThrow";
+import Explosion from "./Explosion";
 
 const BoardEffects = () => {
     const persistentEffects = useChessboardStore(
@@ -39,6 +40,14 @@ const BoardEffects = () => {
                     />,
                 );
                 break;
+            case TransientBoardEffectType.EXPLOSION:
+                result.push(
+                    <Explosion
+                        effect={effect.value}
+                        onSettle={effect.settle}
+                        onComplete={effect.complete}
+                    />,
+                );
         }
     }
 

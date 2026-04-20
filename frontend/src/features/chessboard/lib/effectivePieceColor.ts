@@ -8,15 +8,15 @@ type PieceColorResolver = (
     pieces: BoardPieces,
 ) => GameColor | null;
 
-const pieceColorResolvers: Partial<Record<PieceType, PieceColorResolver>> = {
+const PIECE_COLOR_RESOLVERS: Partial<Record<PieceType, PieceColorResolver>> = {
     [PieceType.TRAITOR_ROOK]: getTraitorRookOwnership,
-};
+} as const;
 
 export default function getEffectivePieceColor(
     piece: Piece,
     pieces: BoardPieces,
 ): GameColor | null {
-    const resolver = pieceColorResolvers[piece.type];
+    const resolver = PIECE_COLOR_RESOLVERS[piece.type];
     return resolver?.(piece, pieces) ?? piece.color;
 }
 

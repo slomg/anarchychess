@@ -1,6 +1,7 @@
 import { StateCreator } from "zustand";
 
 import type { ThrowAimEffect } from "../components/boardEffects/ThrowAimLine";
+import type { ExplosionEffect } from "../components/boardEffects/Explosion";
 import type { PawnThrowEffect } from "../components/boardEffects/PawnThrow";
 import type { ChessboardStore } from "./chessboardStore";
 
@@ -10,10 +11,11 @@ export enum PersistentBoardEffectType {
 
 export enum TransientBoardEffectType {
     PAWN_THROW,
+    EXPLOSION,
 }
 
 export type PersistentBoardEffect = ThrowAimEffect;
-export type TransientBoardEffect = PawnThrowEffect;
+export type TransientBoardEffect = PawnThrowEffect | ExplosionEffect;
 
 export type BoardEffectId = string & "BoardEffect";
 

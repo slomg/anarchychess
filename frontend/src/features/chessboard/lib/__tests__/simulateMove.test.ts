@@ -352,4 +352,46 @@ describe("simulateMoveAnimated", () => {
         expect(resultSteps[1].movedPieceIds).toEqual([movingPiece.id]);
         expect(resultSteps[1].boardEffect).toBeUndefined();
     });
+
+    it("should simulate knooklear fusion moves correctly", () => {
+        const movingPiece = createFakePiece({
+            position: logicalPoint({ x: 2, y: 2 }),
+        });
+        const removedPiece1 = createFakePiece({
+            position: logicalPoint({ x: 3, y: 3 }),
+        });
+        const removedPiece2 = createFakePiece({
+            position: logicalPoint({ x: 4, y: 4 }),
+        });
+
+        const pieces = BoardPieces.fromPieces(
+            movingPiece,
+            removedPiece1,
+            removedPiece2,
+        );
+
+        const move = createFakeMove({
+            from: movingPiece.position,
+            to: logicalPoint({ x: 5, y: 5 }),
+            specialType: SpecialMoveType.KNOOKLEAR_FUSION,
+            captures: [removedPiece1.position, removedPiece2.position],
+        });
+
+        const resultSteps = simulateMoveAnimated(pieces, move);
+
+        expect(resultSteps).toHaveLength(2);
+
+        const expectedFusionPieces = new BoardPieces(pieces);
+        const expectedRemoved =
+            expectedFusionPieces.removeRemovedPiecesFromMove(move);
+        expect(resultSteps[0]).toEqual<AnimationStep>({
+            newPieces: expectedFusionPieces,
+            movedPieceIds: [],
+            fadedPieces: expectedRemoved,
+            boardEffect: {
+                type: TransientBoardEffectType.EXPLOSION,
+                at: move.to,
+            },
+        });
+    });
 });
