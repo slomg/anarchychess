@@ -15,7 +15,7 @@ const MATERIAL_VALUE: Record<PieceType, number> = {
     [PieceType.BISHOP]: 3,
     [PieceType.HORSEY]: 3,
     [PieceType.ANTIQUEEN]: 3,
-    [PieceType.TRAITOR_ROOK]: 3,
+    [PieceType.TRAITOR_ROOK]: 2,
     [PieceType.UNDERAGE_PAWN]: 1,
     [PieceType.PAWN]: 1,
     [PieceType.STERILE_PAWN]: 0.8,
