@@ -8,7 +8,7 @@ describe("getEffectivePieceColor", () => {
     it.each([GameColor.WHITE, GameColor.BLACK])(
         "should return the piece color for normal pieces",
         (color) => {
-            const piece = createFakePiece({ color });
+            const piece = createFakePiece({ color, type: PieceType.ROOK });
             const pieces = BoardPieces.fromPieces(piece);
 
             expect(getEffectivePieceColor(piece, pieces)).toBe(color);
