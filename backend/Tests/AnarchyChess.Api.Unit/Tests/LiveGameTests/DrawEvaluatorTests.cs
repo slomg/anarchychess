@@ -115,6 +115,28 @@ public class DrawEvaluatorTests
     }
 
     [Fact]
+    public void TryEvaluateDraw_returns_false_on_checker_king_touch_without_promotion()
+    {
+        Move move = new(
+            from: new("b3"),
+            to: new("d1"),
+            piece: PieceFactory.White(PieceType.Checker)
+        );
+        _board.PlacePiece(new AlgebraicPoint("c1"), PieceFactory.Black(PieceType.King));
+
+        var result = _drawEvaluator.TryEvaluateDraw(
+            move,
+            new FenNotationFaker().Generate(),
+            _board,
+            _state,
+            out var endStatus
+        );
+
+        result.Should().BeFalse();
+        endStatus.Should().BeNull();
+    }
+
+    [Fact]
     public void TryEvaluateDraw_returns_false_on_friendly_king_touch()
     {
         Move move = new(from: new("a1"), to: new("a2"), piece: PieceFactory.White(PieceType.King));
