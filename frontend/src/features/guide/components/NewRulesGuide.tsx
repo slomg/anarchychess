@@ -74,13 +74,11 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
                         title: "To Throw:",
                         points: [
                             "Select the pawn and move it as if capturing the piece behind it.",
-                            "The screen will darken except for 3 possible trajectory lines.",
-                            "One line is highlighted to indicate the current throw path.",
-                            "Click the screen to cycle between available throw lines.",
-                            "Right click or tap with two fingers to cancel.",
-                            "Click and hold to start the throw.",
-                            "A marker will move up the line, speeding up until max power, then oscillate between slightly lower and near max power.",
-                            "Release to throw the pawn.",
+                            "3 trajectory lines will appear, one will be highlighted.",
+                            "Click or swipe sideways (perpendicular to the throw direction) to change trjactory.",
+                            "Scroll wheel or swipe up / down (relative to the throw direction) to change distance.",
+                            "Hold click to confirm your throw.",
+                            "Right click or 2-finger tap to cancel.",
                         ],
                     },
                 ]}
