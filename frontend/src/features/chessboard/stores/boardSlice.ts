@@ -19,10 +19,21 @@ export interface BoardSliceProps {
     boardDimensions: BoardDimensions;
 }
 
+interface ImmerDOMRect {
+    readonly bottom: number;
+    readonly height: number;
+    readonly left: number;
+    readonly right: number;
+    readonly top: number;
+    readonly width: number;
+    readonly x: number;
+    readonly y: number;
+}
+
 export interface BoardSlice extends BoardSliceProps {
     viewingFrom: GameColor;
     boardDimensions: BoardDimensions;
-    boardRect?: DOMRect;
+    boardRect?: ImmerDOMRect;
 
     screenToLogicalPoint(screenPoint: ScreenPoint): LogicalPoint | undefined;
     screenToViewPoint(screenPoint: ScreenPoint): ViewPoint | undefined;
@@ -119,7 +130,16 @@ export function createBoardSlice(
         },
         setBoardRect(rect) {
             set((state) => {
-                state.boardRect = rect;
+                state.boardRect = {
+                    bottom: rect.bottom,
+                    height: rect.height,
+                    left: rect.left,
+                    right: rect.right,
+                    top: rect.top,
+                    width: rect.width,
+                    x: rect.x,
+                    y: rect.y,
+                };
             });
         },
     });

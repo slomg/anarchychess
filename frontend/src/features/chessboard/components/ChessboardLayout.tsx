@@ -119,11 +119,15 @@ const ChessboardLayout = ({
         function updateRect() {
             clearTimeout(timeoutId);
             timeoutId = setTimeout(() => {
-                if (ref.current)
+                if (ref.current) {
                     setBoardRect(ref.current.getBoundingClientRect());
+                }
             }, 100);
         }
-        if (ref.current) setBoardRect(ref.current.getBoundingClientRect());
+
+        if (ref.current) {
+            setBoardRect(ref.current.getBoundingClientRect());
+        }
 
         window.addEventListener("scroll", updateRect);
         window.addEventListener("resize", updateRect);
