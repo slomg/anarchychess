@@ -376,6 +376,57 @@ describe("ThrowPrompt", () => {
         });
     });
 
+    it.each([
+        {
+            viewingFrom: GameColor.WHITE,
+            pieceColor: GameColor.WHITE,
+            expectedInvert: true,
+        },
+        {
+            viewingFrom: GameColor.BLACK,
+            pieceColor: GameColor.WHITE,
+            expectedInvert: false,
+        },
+        {
+            viewingFrom: GameColor.WHITE,
+            pieceColor: GameColor.BLACK,
+            expectedInvert: false,
+        },
+        {
+            viewingFrom: GameColor.BLACK,
+            pieceColor: GameColor.BLACK,
+            expectedInvert: true,
+        },
+    ])(
+        "should scroll correctly based on viewingFrom relative to piece color",
+        ({ viewingFrom, pieceColor, expectedInvert }) => {
+            const data =
+                pieceColor === GameColor.WHITE
+                    ? WHITE_CENTER_THROWS
+                    : BLACK_CENTER_THROWS;
+
+            store.setState({ viewingFrom });
+            promptThrow(data);
+
+            render(
+                <ChessboardStoreContext.Provider value={store}>
+                    <ThrowPrompt />
+                </ChessboardStoreContext.Provider>,
+            );
+
+            const overlay = screen.getByTestId("throwPromptOverlay");
+            fireEvent.wheel(overlay, { deltaY: 100 });
+
+            const mid = getMidAimIdx({ data, sideIdx: 0 });
+            const expected = expectedInvert ? mid - 1 : mid + 1;
+            assertAimEffect({
+                data,
+                sideIdx: 0,
+                pointIdx: expected,
+            });
+        },
+    );
+
     it("should scroll selected point up to max", () => {
         promptThrow(WHITE_CENTER_THROWS);
 
