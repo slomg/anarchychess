@@ -1,9 +1,10 @@
-import { useEffect, useEffectEvent, useMemo, useState } from "react";
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 
 import {
     idxToLogicalPoint,
     logicalPoint,
     offset,
+    pointDistanceSquared,
     pointToStr,
     sortPointsByDistanceSquared,
 } from "@/features/point/pointUtils";
@@ -50,6 +51,17 @@ const ThrowPrompt = () => {
 
     const throwData = useMemo(() => getThrowData(pendingThrow), [pendingThrow]);
 
+    const selectedSideRef = useRef(selectedSideIdx);
+    const selectedPointRef = useRef(selectedPointIdx);
+
+    useEffect(() => {
+        selectedSideRef.current = selectedSideIdx;
+    }, [selectedSideIdx]);
+
+    useEffect(() => {
+        selectedPointRef.current = selectedPointIdx;
+    }, [selectedPointIdx]);
+
     function updateThrowLine({
         newSelectedSideIdx,
         newSelectedPointIdx,
@@ -66,18 +78,38 @@ const ThrowPrompt = () => {
             return;
         }
 
-        newSelectedSideIdx ??= selectedSideIdx;
-        newSelectedPointIdx ??= selectedPointIdx;
-
+        newSelectedSideIdx ??= selectedSideRef.current;
         newSelectedSideIdx = clampSideIdx(newSelectedSideIdx, throwData);
         setSelectedSide(newSelectedSideIdx);
 
         if (throwData.lanes.length === 0) {
             return;
         }
-        const lane = throwData.lanes[newSelectedSideIdx];
+        const newLane = throwData.lanes[newSelectedSideIdx];
 
-        newSelectedPointIdx = clampPointIdx(newSelectedPointIdx, lane);
+        newSelectedPointIdx ??= selectedPointRef.current;
+        if (
+            newSelectedPointIdx === selectedPointRef.current &&
+            newSelectedSideIdx !== selectedSideRef.current
+        ) {
+            const prevLane = throwData.lanes[selectedSideRef.current];
+            const prevPoint = prevLane.points[selectedPointRef.current];
+            let bestIdx = 0;
+            let bestDist = Infinity;
+
+            for (let i = 0; i < newLane.points.length; i++) {
+                const newPoint = newLane.points[i];
+                const distance = pointDistanceSquared(prevPoint, newPoint);
+
+                if (distance < bestDist) {
+                    bestDist = distance;
+                    bestIdx = i;
+                }
+            }
+            newSelectedPointIdx = bestIdx;
+        }
+
+        newSelectedPointIdx = clampPointIdx(newSelectedPointIdx, newLane);
         setSelectedIdx(newSelectedPointIdx);
     }
 
@@ -148,7 +180,7 @@ const ThrowPrompt = () => {
 
         let stepSize = DEFAULT_THROW_STEP_SIZE;
         if (boardRect) {
-            stepSize = (boardRect.height / boardDimensions.height) * 2;
+            stepSize = (boardRect.height / boardDimensions.height) * 1.5;
         }
 
         const startY = event.clientY;
