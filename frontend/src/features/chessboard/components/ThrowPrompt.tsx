@@ -276,13 +276,14 @@ const ThrowPrompt = () => {
         }
         event.stopPropagation();
 
+        const viewForwardY = viewingFrom === pendingThrow.piece.color ? 1 : -1;
         if (event.deltaY > 0) {
             updateThrowLine({
-                newSelectedPointIdx: selectedPointIdx - 1,
+                newSelectedPointIdx: selectedPointIdx - viewForwardY,
             });
         } else {
             updateThrowLine({
-                newSelectedPointIdx: selectedPointIdx + 1,
+                newSelectedPointIdx: selectedPointIdx + viewForwardY,
             });
         }
     }
