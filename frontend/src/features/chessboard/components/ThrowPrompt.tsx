@@ -4,94 +4,120 @@ import {
     idxToLogicalPoint,
     logicalPoint,
     offset,
-    pointDistanceSquared,
     pointToStr,
+    sortPointsByDistanceSquared,
 } from "@/features/point/pointUtils";
 
 import { PersistentBoardEffectType } from "../stores/boardEffectsSlice";
-import { LogicalPoint, Offset } from "@/features/point/types";
+import { LogicalPoint, Offset, Point } from "@/features/point/types";
 import { useChessboardStore } from "../hooks/useChessboard";
 import { PendingThrow } from "../stores/throwSlice";
 import { GameColor } from "@/lib/apiClient";
 import ChessSquare from "./ChessSquare";
+import clsx from "clsx";
 
-export enum ThrowSide {
-    LEFT,
-    CENTER,
-    RIGHT,
+interface ThrowLane {
+    origin: LogicalPoint;
+    points: LogicalPoint[];
 }
 
 interface ThrowData {
     direction: Offset;
-    [ThrowSide.LEFT]: LogicalPoint;
-    [ThrowSide.CENTER]: LogicalPoint;
-    [ThrowSide.RIGHT]: LogicalPoint;
+    lanes: ThrowLane[];
 }
 
-export const INITIAL_CHARGE_DELAY_MS = 500;
-
-export const CHARGE_STEP_MIN_DELAY_MS = 50;
-export const CHARGE_STEP_MAX_DELAY_MS = 250;
-
-export const CHARGE_OSCILLATION_STEP_DELAY_MS = 100;
-export const CHARGE_OSCILLATION_UPPER_INDEX = 1;
-export const CHARGE_OSCILLATION_LOWER_INDEX = 3;
+export const THROW_COMMIT_DELAY_MS = 1000;
+export const THROW_INTENT_DELAY_MS = 500;
+export const DEFAULT_THROW_STEP_SIZE = 100;
 
 const ThrowPrompt = () => {
     const pendingThrow = useChessboardStore((x) => x.pendingThrow);
     const boardDimensions = useChessboardStore((x) => x.boardDimensions);
-    const { addPersistentBoardEffect, removePersistentBoardEffect } =
-        useChessboardStore((x) => ({
-            addPersistentBoardEffect: x.addPersistentBoardEffect,
-            removePersistentBoardEffect: x.removePersistentBoardEffect,
-        }));
+    const boardRect = useChessboardStore((x) => x.boardRect);
+    const {
+        viewingFrom,
+        addPersistentBoardEffect,
+        removePersistentBoardEffect,
+    } = useChessboardStore((x) => ({
+        viewingFrom: x.viewingFrom,
+        addPersistentBoardEffect: x.addPersistentBoardEffect,
+        removePersistentBoardEffect: x.removePersistentBoardEffect,
+    }));
 
-    const [selectedSide, setSelectedSide] = useState<ThrowSide>(
-        ThrowSide.CENTER,
-    );
-    const [selectedPoint, setSelectedPoint] = useState<LogicalPoint | null>(
-        null,
-    );
+    const [selectedSideIdx, setSelectedSide] = useState<number>(0);
+    const [selectedPointIdx, setSelectedIdx] = useState<number>(0);
+    const [isHolding, setIsHolding] = useState<boolean>(false);
 
     const throwData = useMemo(() => getThrowData(pendingThrow), [pendingThrow]);
+
+    function updateThrowLine({
+        newSelectedSideIdx,
+        newSelectedPointIdx,
+    }:
+        | {
+              newSelectedSideIdx: number;
+              newSelectedPointIdx?: number;
+          }
+        | {
+              newSelectedSideIdx?: number;
+              newSelectedPointIdx: number;
+          }) {
+        if (!pendingThrow || !throwData) {
+            return;
+        }
+
+        newSelectedSideIdx ??= selectedSideIdx;
+        newSelectedPointIdx ??= selectedPointIdx;
+
+        newSelectedSideIdx = clampSideIdx(newSelectedSideIdx, throwData);
+        setSelectedSide(newSelectedSideIdx);
+
+        if (throwData.lanes.length === 0) {
+            return;
+        }
+        const lane = throwData.lanes[newSelectedSideIdx];
+
+        newSelectedPointIdx = clampPointIdx(newSelectedPointIdx, lane);
+        setSelectedIdx(newSelectedPointIdx);
+    }
+
+    const fixSelectedSideEffectEvent = useEffectEvent(
+        (pendingThrow: PendingThrow | null, throwData: ThrowData | null) => {
+            if (!pendingThrow || !throwData) {
+                return;
+            }
+
+            const lane =
+                throwData.lanes[clampSideIdx(selectedSideIdx, throwData)];
+            updateThrowLine({
+                newSelectedPointIdx: Math.floor((lane.points.length - 1) / 2),
+            });
+        },
+    );
+    useEffect(() => {
+        fixSelectedSideEffectEvent(pendingThrow, throwData);
+    }, [pendingThrow, throwData]);
 
     useEffect(() => {
         if (!pendingThrow || !throwData) {
             return;
         }
 
-        const startPoint = throwData[selectedSide];
-
-        let min: LogicalPoint | null = null;
-        let minDistance = Infinity;
-
-        let max: LogicalPoint | null = null;
-        let maxDistance = 0;
-
-        for (const point of pendingThrow.points) {
-            if (!isOnLine(point, selectedSide, throwData)) {
-                continue;
-            }
-
-            const distance = pointDistanceSquared(startPoint, point);
-            if (distance > maxDistance) {
-                max = point;
-                maxDistance = distance;
-            }
-            if (distance < minDistance) {
-                min = point;
-                minDistance = distance;
-            }
+        const lane = throwData.lanes[selectedSideIdx];
+        if (!lane) {
+            return;
         }
-        if (min === null || max === null) {
+
+        const to = lane.points[selectedPointIdx];
+        if (!to) {
             return;
         }
 
         const effectId = addPersistentBoardEffect({
             type: PersistentBoardEffectType.THROW_AIM_LINE,
             from: pendingThrow.piece.position,
-            mid: min,
-            to: max,
+            mid: lane.points[0],
+            to,
         });
 
         return () => {
@@ -100,43 +126,13 @@ const ThrowPrompt = () => {
     }, [
         pendingThrow,
         throwData,
-        selectedSide,
-        addPersistentBoardEffect,
+        selectedPointIdx,
+        selectedSideIdx,
         removePersistentBoardEffect,
+        addPersistentBoardEffect,
     ]);
 
-    const fixSelectedSideEffectEvent = useEffectEvent(
-        (pendingThrow: PendingThrow | null, throwData: ThrowData | null) => {
-            if (!pendingThrow || !throwData) {
-                return;
-            }
-
-            const availableSides = getAvailableSides(pendingThrow, throwData);
-            if (!availableSides.some((x) => x === selectedSide)) {
-                setSelectedSide(availableSides[0]);
-            }
-        },
-    );
-    useEffect(() => {
-        fixSelectedSideEffectEvent(pendingThrow, throwData);
-    }, [pendingThrow, throwData]);
-
-    function getNextSide(
-        current: ThrowSide,
-        pendingThrow: PendingThrow,
-        throwData: ThrowData,
-    ) {
-        const availableSides = getAvailableSides(pendingThrow, throwData);
-        if (availableSides.length === 0) {
-            return current;
-        }
-
-        const currentIdx = availableSides.indexOf(current);
-        const nextIdx = (currentIdx + 1) % availableSides.length;
-        return availableSides[nextIdx];
-    }
-
-    function handlePress(event: React.PointerEvent): void {
+    function handlePointerDown(event: React.PointerEvent): void {
         if (!pendingThrow || !throwData) {
             return;
         }
@@ -150,100 +146,164 @@ const ThrowPrompt = () => {
             return;
         }
 
-        const startPoint = throwData[selectedSide];
-        const pointsFromClosest = pendingThrow.points
-            .filter((x) => isOnLine(x, selectedSide, throwData))
-            .sort((a, b) => {
-                const distanceA = pointDistanceSquared(startPoint, a);
-                const distanceB = pointDistanceSquared(startPoint, b);
-                return distanceA - distanceB;
-            });
-        const numOfSteps = pointsFromClosest.length;
+        let stepSize = DEFAULT_THROW_STEP_SIZE;
+        if (boardRect) {
+            stepSize = (boardRect.height / boardDimensions.height) * 2;
+        }
 
-        let targetIdx = -1;
-        let reachedMaxPower = false;
-        let direction = 1;
-        const maxPowerLowerBound = Math.max(
-            0,
-            numOfSteps - 1 - CHARGE_OSCILLATION_LOWER_INDEX,
-        );
-        const maxPowerUpperBound = Math.max(
-            0,
-            numOfSteps - 1 - CHARGE_OSCILLATION_UPPER_INDEX,
-        );
+        const startY = event.clientY;
+        const startX = event.clientX;
+        const viewForwardY = viewingFrom === GameColor.WHITE ? 1 : -1;
 
-        let timeout = setTimeout(animateThrowPower, INITIAL_CHARGE_DELAY_MS);
-        function animateThrowPower() {
-            if (
-                reachedMaxPower &&
-                direction === 1 &&
-                targetIdx >= maxPowerUpperBound
-            ) {
-                direction = -1;
-            } else if (
-                reachedMaxPower &&
-                direction === -1 &&
-                targetIdx <= maxPowerLowerBound
-            ) {
-                direction = 1;
+        let animationFrameId: number | null = null;
+
+        let lastPointSnap: Point = { x: startX, y: startY };
+        let lastPointIdx = selectedPointIdx;
+        let lastSideSnap: Point = { x: startX, y: startY };
+        let lastSideIdx = selectedSideIdx;
+
+        let lastY = event.clientY;
+        let lastX = event.clientX;
+        let didMove = false;
+
+        const intentTimeout = setTimeout(() => {
+            if (!didMove) {
+                setIsHolding(true);
             }
-
-            targetIdx = Math.max(
-                0,
-                Math.min(numOfSteps - 1, targetIdx + direction),
-            );
-            setSelectedPoint(pointsFromClosest[targetIdx]);
-
-            if (targetIdx >= numOfSteps - 1) {
-                reachedMaxPower = true;
-            }
-
-            if (reachedMaxPower) {
-                timeout = setTimeout(
-                    animateThrowPower,
-                    CHARGE_OSCILLATION_STEP_DELAY_MS,
-                );
+        }, THROW_INTENT_DELAY_MS);
+        const commitTimeout = setTimeout(() => {
+            if (didMove) {
                 return;
             }
 
-            const time = targetIdx / (boardDimensions.height - 1);
-            const delay =
-                CHARGE_STEP_MIN_DELAY_MS +
-                (CHARGE_STEP_MAX_DELAY_MS - CHARGE_STEP_MIN_DELAY_MS) *
-                    (1 - time) ** 2;
-            timeout = setTimeout(animateThrowPower, delay);
-        }
+            pendingThrow.resolve(
+                throwData.lanes[selectedSideIdx]?.points[selectedPointIdx],
+            );
+            cleanup();
+        }, THROW_INTENT_DELAY_MS + THROW_COMMIT_DELAY_MS);
 
-        function onPointerUp() {
-            document.removeEventListener("pointerup", onPointerUp);
-
-            clearTimeout(timeout);
-            setSelectedPoint(null);
-
+        function applyIndexDelta() {
             if (!pendingThrow || !throwData) {
                 return;
             }
 
-            if (targetIdx !== -1) {
-                pendingThrow?.resolve(pointsFromClosest[targetIdx]);
+            const dirX = throwData.direction.x;
+            const dirY = -throwData.direction.y;
+
+            const sideXDir = -dirY;
+            const sideYDir = dirX;
+            const sideXDistance = lastX - lastSideSnap.x;
+            const sideYDistance = lastY - lastSideSnap.y;
+            const sideLen = Math.hypot(sideXDir, sideYDir);
+            const sideDistance =
+                (sideXDistance * sideXDir + sideYDistance * sideYDir) / sideLen;
+            const sideIdxChange =
+                Math.trunc(sideDistance / stepSize) * viewForwardY;
+
+            const pointXDir = dirX;
+            const pointYDir = dirY;
+            const pointXDistance = lastX - lastPointSnap.x;
+            const pointYDistance = lastY - lastPointSnap.y;
+            const pointLen = Math.hypot(pointXDir, pointYDir);
+            const pointDistance =
+                (pointXDistance * pointXDir + pointYDistance * pointYDir) /
+                pointLen;
+            const pointIdxChange =
+                Math.trunc(pointDistance / stepSize) * viewForwardY;
+
+            if (sideIdxChange === 0 && pointIdxChange === 0) {
+                animationFrameId = null;
                 return;
             }
 
-            setSelectedSide(getNextSide(selectedSide, pendingThrow, throwData));
+            if (sideIdxChange !== 0) {
+                lastSideSnap = { x: lastX, y: lastY };
+            }
+            if (pointIdxChange !== 0) {
+                lastPointSnap = { x: lastX, y: lastY };
+            }
+
+            lastPointIdx += pointIdxChange;
+            lastSideIdx += sideIdxChange;
+            updateThrowLine({
+                newSelectedSideIdx: lastSideIdx,
+                newSelectedPointIdx: lastPointIdx,
+            });
+            animationFrameId = null;
+            didMove = true;
+            setIsHolding(false);
         }
 
-        document.addEventListener("pointerup", onPointerUp);
+        function handlePointerMove(event: PointerEvent) {
+            lastY = event.clientY;
+            lastX = event.clientX;
+            if (animationFrameId === null) {
+                animationFrameId = requestAnimationFrame(applyIndexDelta);
+            }
+        }
+
+        function handlePointerUp(event: PointerEvent) {
+            cleanup();
+
+            if (!pendingThrow || !throwData || didMove) {
+                return null;
+            }
+
+            event.stopPropagation();
+            updateThrowLine({
+                newSelectedSideIdx:
+                    (selectedSideIdx + 1) % throwData.lanes.length,
+                newSelectedPointIdx: selectedPointIdx,
+            });
+        }
+
+        function cleanup() {
+            setIsHolding(false);
+            clearTimeout(intentTimeout);
+            clearTimeout(commitTimeout);
+
+            document.removeEventListener("pointermove", handlePointerMove);
+            document.removeEventListener("pointerup", handlePointerUp);
+        }
+
+        document.addEventListener("pointermove", handlePointerMove);
+        document.addEventListener("pointerup", handlePointerUp);
+    }
+
+    function handleWheel(event: React.WheelEvent) {
+        if (!pendingThrow || !throwData) {
+            return;
+        }
+        event.stopPropagation();
+
+        if (event.deltaY > 0) {
+            updateThrowLine({
+                newSelectedPointIdx: selectedPointIdx - 1,
+            });
+        } else {
+            updateThrowLine({
+                newSelectedPointIdx: selectedPointIdx + 1,
+            });
+        }
     }
 
     if (!pendingThrow || !throwData) {
         return null;
     }
+
+    const selectedPoint: LogicalPoint | undefined =
+        throwData.lanes[selectedSideIdx]?.points[selectedPointIdx];
+    if (!selectedPoint) {
+        return null;
+    }
+
     const pointsSet = new Set(pendingThrow.points.map(pointToStr));
     return (
         <div
             data-testid="throwPromptOverlay"
             className="absolute inset-0 z-35"
-            onPointerDown={handlePress}
+            onPointerDown={handlePointerDown}
+            onWheel={handleWheel}
         >
             {[
                 ...Array(
@@ -267,7 +327,7 @@ const ThrowPrompt = () => {
 
             {pendingThrow.points.map(
                 (point, i) =>
-                    isOnLine(point, selectedSide, throwData) && (
+                    isOnThrowLine(point, selectedSideIdx, throwData) && (
                         <ChessSquare
                             key={i}
                             position={point}
@@ -277,43 +337,104 @@ const ThrowPrompt = () => {
                     ),
             )}
 
-            {selectedPoint && (
-                <ChessSquare
-                    position={selectedPoint}
-                    className="bg-red-500"
-                    data-testid="throwPromptSelectedSquare"
-                />
-            )}
+            <ChessSquare
+                position={selectedPoint}
+                data-testid="throwPromptSelectedSquare"
+                className={clsx(
+                    "bg-red-500",
+                    isHolding && "animate-fast-blink",
+                )}
+            />
         </div>
     );
 };
 export default ThrowPrompt;
 
-function isOnLine(
+function isOnThrowLine(
     point: LogicalPoint,
-    side: ThrowSide,
+    sideIdx: number,
     throwData: ThrowData,
 ): boolean {
-    const origin = throwData[side];
+    const origin = throwData.lanes[sideIdx]?.origin;
+    if (!origin) {
+        return false;
+    }
+    return isCollinearWithDirection(point, origin, throwData.direction);
+}
+
+function isCollinearWithDirection(
+    point: LogicalPoint,
+    origin: LogicalPoint,
+    direction: Offset,
+) {
     return (
-        (point.x - origin.x) * throwData.direction.y ===
-        (point.y - origin.y) * throwData.direction.x
+        (point.x - origin.x) * direction.y ===
+        (point.y - origin.y) * direction.x
     );
 }
 
-function getAvailableSides(
+function clampPointIdx(pointIdx: number, throwLane: ThrowLane): number {
+    return Math.max(Math.min(pointIdx, throwLane.points.length - 1), 0);
+}
+
+function clampSideIdx(sideIdx: number, throwData: ThrowData): number {
+    return Math.max(Math.min(sideIdx, throwData.lanes.length - 1), 0);
+}
+
+function buildThrowData(
     pendingThrow: PendingThrow,
-    throwData: ThrowData,
-): ThrowSide[] {
-    const sides: ThrowSide[] = [
-        ThrowSide.LEFT,
-        ThrowSide.CENTER,
-        ThrowSide.RIGHT,
-    ];
-    const availableSides = sides.filter((side) =>
-        pendingThrow.points.some((x) => isOnLine(x, side, throwData)),
-    );
-    return availableSides;
+    direction: Offset,
+    {
+        leftOrigin,
+        centerOrigin,
+        rightOrigin,
+    }: {
+        leftOrigin: LogicalPoint;
+        centerOrigin: LogicalPoint;
+        rightOrigin: LogicalPoint;
+    },
+): ThrowData {
+    const leftPoints: LogicalPoint[] = [];
+    const centerPoints: LogicalPoint[] = [];
+    const rightPoints: LogicalPoint[] = [];
+    for (const point of pendingThrow.points) {
+        if (isCollinearWithDirection(point, leftOrigin, direction)) {
+            leftPoints.push(point);
+        } else if (isCollinearWithDirection(point, centerOrigin, direction)) {
+            centerPoints.push(point);
+        } else if (isCollinearWithDirection(point, rightOrigin, direction)) {
+            rightPoints.push(point);
+        }
+    }
+
+    const lanes: ThrowLane[] = [];
+    if (leftPoints.length > 0) {
+        lanes.push({
+            origin: leftOrigin,
+            points: sortPointsByDistanceSquared(leftOrigin, leftPoints),
+        });
+    }
+    if (centerPoints.length > 0) {
+        lanes.push({
+            origin: centerOrigin,
+            points: sortPointsByDistanceSquared(centerOrigin, centerPoints),
+        });
+    }
+    if (rightPoints.length > 0) {
+        lanes.push({
+            origin: rightOrigin,
+            points: sortPointsByDistanceSquared(rightOrigin, rightPoints),
+        });
+    }
+
+    // this needs to be ordered from the left, from the player non flipped perspective
+    const orderedLanes =
+        pendingThrow.piece.color === GameColor.WHITE ? lanes : lanes.reverse();
+
+    return {
+        direction,
+        lanes: orderedLanes,
+    };
 }
 
 function getThrowData(pendingThrow: PendingThrow | null): ThrowData | null {
@@ -325,48 +446,45 @@ function getThrowData(pendingThrow: PendingThrow | null): ThrowData | null {
 
     if (pendingThrow.throwerOrigin.x - pendingThrow.piece.position.x === 0) {
         // forward
-        return {
-            direction: offset({ x: 0, y: forwardY }),
-            [ThrowSide.LEFT]: logicalPoint({
+        return buildThrowData(pendingThrow, offset({ x: 0, y: forwardY }), {
+            leftOrigin: logicalPoint({
                 x: pendingThrow.piece.position.x - 1,
                 y: pendingThrow.piece.position.y,
             }),
-            [ThrowSide.CENTER]: pendingThrow.piece.position,
-            [ThrowSide.RIGHT]: logicalPoint({
+            centerOrigin: pendingThrow.piece.position,
+            rightOrigin: logicalPoint({
                 x: pendingThrow.piece.position.x + 1,
                 y: pendingThrow.piece.position.y,
             }),
-        };
+        });
     } else if (
         pendingThrow.throwerOrigin.x - pendingThrow.piece.position.x >
         0
     ) {
         // left
-        return {
-            direction: offset({ x: -1, y: forwardY }),
-            [ThrowSide.LEFT]: logicalPoint({
+        return buildThrowData(pendingThrow, offset({ x: -1, y: forwardY }), {
+            leftOrigin: logicalPoint({
                 x: pendingThrow.piece.position.x,
                 y: pendingThrow.piece.position.y - forwardY,
             }),
-            [ThrowSide.CENTER]: pendingThrow.piece.position,
-            [ThrowSide.RIGHT]: logicalPoint({
+            centerOrigin: pendingThrow.piece.position,
+            rightOrigin: logicalPoint({
                 x: pendingThrow.piece.position.x,
                 y: pendingThrow.piece.position.y + forwardY,
             }),
-        };
+        });
     } else {
         // right
-        return {
-            direction: offset({ x: 1, y: forwardY }),
-            [ThrowSide.LEFT]: logicalPoint({
+        return buildThrowData(pendingThrow, offset({ x: 1, y: forwardY }), {
+            leftOrigin: logicalPoint({
                 x: pendingThrow.piece.position.x,
                 y: pendingThrow.piece.position.y + forwardY,
             }),
-            [ThrowSide.CENTER]: pendingThrow.piece.position,
-            [ThrowSide.RIGHT]: logicalPoint({
+            centerOrigin: pendingThrow.piece.position,
+            rightOrigin: logicalPoint({
                 x: pendingThrow.piece.position.x,
                 y: pendingThrow.piece.position.y - forwardY,
             }),
-        };
+        });
     }
 }

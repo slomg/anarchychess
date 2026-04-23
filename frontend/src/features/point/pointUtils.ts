@@ -72,3 +72,13 @@ export function sortPoints<T extends Point>(points: T[]): T[] {
 export function pointDistanceSquared(from: Point, to: Point): number {
     return (to.x - from.x) ** 2 + (to.y - from.y) ** 2;
 }
+
+export function sortPointsByDistanceSquared<T extends Point>(
+    origin: Point,
+    points: T[],
+): T[] {
+    return [...points].sort(
+        (a, b) =>
+            pointDistanceSquared(origin, a) - pointDistanceSquared(origin, b),
+    );
+}

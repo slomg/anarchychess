@@ -10,7 +10,9 @@ import {
     pointArraysEqual,
     sortPoints,
     pointDistanceSquared,
+    sortPointsByDistanceSquared,
 } from "../pointUtils";
+import { Point } from "../types";
 
 describe("pointToStr", () => {
     it("should convert a point to a string", () => {
@@ -108,5 +110,25 @@ describe("pointDistanceSquared", () => {
         expect(pointDistanceSquared(pointStart, pointEnd)).toBe(
             expectedDistance,
         );
+    });
+});
+
+describe("sortPointsByDistanceSquared", () => {
+    it("should sort points by distance squared from origin", () => {
+        const origin: Point = { x: 0, y: 0 };
+
+        const points: Point[] = [
+            { x: 3, y: 4 }, // 25
+            { x: 1, y: 1 }, // 2
+            { x: 2, y: 2 }, // 8
+        ];
+
+        const result = sortPointsByDistanceSquared(origin, points);
+
+        expect(result).toEqual([
+            { x: 1, y: 1 },
+            { x: 2, y: 2 },
+            { x: 3, y: 4 },
+        ]);
     });
 });

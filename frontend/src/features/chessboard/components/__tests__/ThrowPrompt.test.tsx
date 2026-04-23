@@ -1,11 +1,17 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import userEvent, { UserEvent } from "@testing-library/user-event";
 import { StoreApi } from "zustand";
 
 import {
-    createFakeMove,
-    createFakePiece,
-} from "@/lib/testUtils/fakers/chessboardFakers";
+    BLACK_CENTER_THROWS,
+    BLACK_LEFT_THROWS,
+    BLACK_RIGHT_THROWS,
+    createThrowTestData,
+    ThrowTestData,
+    WHITE_CENTER_THROWS,
+    WHITE_LEFT_THROWS,
+    WHITE_RIGHT_THROWS,
+} from "@/lib/testUtils/throwTestData";
 import {
     ChessboardStore,
     createChessboardStore,
@@ -13,274 +19,92 @@ import {
 import {
     idxToLogicalPoint,
     logicalPoint,
+    offset,
     pointToStr,
 } from "@/features/point/pointUtils";
 import ThrowPrompt, {
-    INITIAL_CHARGE_DELAY_MS,
-    CHARGE_OSCILLATION_STEP_DELAY_MS,
-    CHARGE_STEP_MAX_DELAY_MS,
-    CHARGE_STEP_MIN_DELAY_MS,
-    ThrowSide,
-    CHARGE_OSCILLATION_LOWER_INDEX,
-    CHARGE_OSCILLATION_UPPER_INDEX,
+    DEFAULT_THROW_STEP_SIZE,
+    THROW_COMMIT_DELAY_MS,
+    THROW_INTENT_DELAY_MS,
 } from "../ThrowPrompt";
 
 import ChessboardStoreContext from "../../contexts/chessboardStoreContext";
+import { PersistentBoardEffectType } from "../../stores/boardEffectsSlice";
+import { createFakePiece } from "@/lib/testUtils/fakers/chessboardFakers";
+import flushMicrotasks from "@/lib/testUtils/flushMicrotasks";
 import { ThrowAimEffect } from "../boardEffects/ThrowAimLine";
 import { LogicalPoint } from "@/features/point/types";
-import { Move, Piece } from "../../lib/types";
 import { GameColor } from "@/lib/apiClient";
-import { PersistentBoardEffectType } from "../../stores/boardEffectsSlice";
-
-interface ThrowTestMovesData {
-    [ThrowSide.LEFT]: Move[];
-    [ThrowSide.CENTER]: Move[];
-    [ThrowSide.RIGHT]: Move[];
-    all: Move[];
-}
-
-interface ThrowTestPointsData {
-    [ThrowSide.LEFT]: LogicalPoint[];
-    [ThrowSide.CENTER]: LogicalPoint[];
-    [ThrowSide.RIGHT]: LogicalPoint[];
-    all: LogicalPoint[];
-}
-
-interface ThrowTestData {
-    throwerOrigin: LogicalPoint;
-    piece: Piece;
-    moves: ThrowTestMovesData;
-    points: ThrowTestPointsData;
-}
+import { Move } from "../../lib/types";
 
 describe("ThrowPrompt", () => {
     let store: StoreApi<ChessboardStore>;
-
-    const whitePiece = createFakePiece({
-        position: logicalPoint({ x: 5, y: 1 }),
-        color: GameColor.WHITE,
-    });
-    const whiteLeftThrow = createThrowTestData({
-        piece: whitePiece,
-        throwerOrigin: logicalPoint({ x: 6, y: 0 }),
-        leftPoints: [
-            logicalPoint({ x: 3, y: 2 }),
-            logicalPoint({ x: 2, y: 3 }),
-            logicalPoint({ x: 1, y: 4 }),
-            logicalPoint({ x: 0, y: 5 }),
-        ],
-        centerPoints: [
-            logicalPoint({ x: 4, y: 2 }),
-            logicalPoint({ x: 3, y: 3 }),
-            logicalPoint({ x: 2, y: 4 }),
-            logicalPoint({ x: 1, y: 5 }),
-            logicalPoint({ x: 0, y: 6 }),
-        ],
-        rightPoints: [
-            logicalPoint({ x: 4, y: 3 }),
-            logicalPoint({ x: 3, y: 4 }),
-            logicalPoint({ x: 2, y: 5 }),
-            logicalPoint({ x: 1, y: 6 }),
-            logicalPoint({ x: 0, y: 7 }),
-        ],
-    });
-
-    const whiteCenterThrow = createThrowTestData({
-        piece: whitePiece,
-        throwerOrigin: logicalPoint({ x: 5, y: 0 }),
-        leftPoints: [
-            logicalPoint({ x: 4, y: 2 }),
-            logicalPoint({ x: 4, y: 3 }),
-            logicalPoint({ x: 4, y: 4 }),
-            logicalPoint({ x: 4, y: 5 }),
-            logicalPoint({ x: 4, y: 6 }),
-            logicalPoint({ x: 4, y: 7 }),
-            logicalPoint({ x: 4, y: 8 }),
-            logicalPoint({ x: 4, y: 9 }),
-        ],
-        centerPoints: [
-            logicalPoint({ x: 5, y: 2 }),
-            logicalPoint({ x: 5, y: 3 }),
-            logicalPoint({ x: 5, y: 4 }),
-            logicalPoint({ x: 5, y: 5 }),
-            logicalPoint({ x: 5, y: 6 }),
-            logicalPoint({ x: 5, y: 7 }),
-            logicalPoint({ x: 5, y: 8 }),
-            logicalPoint({ x: 5, y: 9 }),
-        ],
-        rightPoints: [
-            logicalPoint({ x: 6, y: 2 }),
-            logicalPoint({ x: 6, y: 3 }),
-            logicalPoint({ x: 6, y: 4 }),
-            logicalPoint({ x: 6, y: 5 }),
-            logicalPoint({ x: 6, y: 6 }),
-            logicalPoint({ x: 6, y: 7 }),
-            logicalPoint({ x: 6, y: 8 }),
-            logicalPoint({ x: 6, y: 9 }),
-        ],
-    });
-
-    const whiteRightThrow = createThrowTestData({
-        piece: whitePiece,
-        throwerOrigin: logicalPoint({ x: 4, y: 0 }),
-        leftPoints: [
-            logicalPoint({ x: 6, y: 3 }),
-            logicalPoint({ x: 7, y: 4 }),
-            logicalPoint({ x: 8, y: 5 }),
-            logicalPoint({ x: 9, y: 6 }),
-        ],
-        centerPoints: [
-            logicalPoint({ x: 6, y: 2 }),
-            logicalPoint({ x: 7, y: 3 }),
-            logicalPoint({ x: 8, y: 4 }),
-            logicalPoint({ x: 9, y: 5 }),
-        ],
-        rightPoints: [
-            logicalPoint({ x: 7, y: 2 }),
-            logicalPoint({ x: 8, y: 3 }),
-            logicalPoint({ x: 9, y: 4 }),
-        ],
-    });
-
-    const blackPiece = createFakePiece({
-        position: logicalPoint({ x: 5, y: 8 }),
-        color: GameColor.BLACK,
-    });
-    const blackLeftThrows = createThrowTestData({
-        piece: blackPiece,
-        throwerOrigin: logicalPoint({ x: 6, y: 9 }),
-        leftPoints: [
-            logicalPoint({ x: 3, y: 7 }),
-            logicalPoint({ x: 2, y: 6 }),
-            logicalPoint({ x: 1, y: 5 }),
-            logicalPoint({ x: 0, y: 4 }),
-        ],
-        centerPoints: [
-            logicalPoint({ x: 4, y: 7 }),
-            logicalPoint({ x: 3, y: 6 }),
-            logicalPoint({ x: 2, y: 5 }),
-            logicalPoint({ x: 1, y: 4 }),
-            logicalPoint({ x: 0, y: 3 }),
-        ],
-        rightPoints: [
-            logicalPoint({ x: 4, y: 6 }),
-            logicalPoint({ x: 3, y: 5 }),
-            logicalPoint({ x: 2, y: 4 }),
-            logicalPoint({ x: 1, y: 3 }),
-            logicalPoint({ x: 0, y: 2 }),
-        ],
-    });
-
-    const blackCenterThrows = createThrowTestData({
-        piece: blackPiece,
-        throwerOrigin: logicalPoint({ x: 5, y: 9 }),
-        leftPoints: [
-            logicalPoint({ x: 4, y: 7 }),
-            logicalPoint({ x: 4, y: 6 }),
-            logicalPoint({ x: 4, y: 5 }),
-            logicalPoint({ x: 4, y: 4 }),
-            logicalPoint({ x: 4, y: 3 }),
-            logicalPoint({ x: 4, y: 2 }),
-            logicalPoint({ x: 4, y: 1 }),
-            logicalPoint({ x: 4, y: 0 }),
-        ],
-        centerPoints: [
-            logicalPoint({ x: 5, y: 7 }),
-            logicalPoint({ x: 5, y: 6 }),
-            logicalPoint({ x: 5, y: 5 }),
-            logicalPoint({ x: 5, y: 4 }),
-            logicalPoint({ x: 5, y: 3 }),
-            logicalPoint({ x: 5, y: 2 }),
-            logicalPoint({ x: 5, y: 1 }),
-            logicalPoint({ x: 5, y: 0 }),
-        ],
-        rightPoints: [
-            logicalPoint({ x: 6, y: 7 }),
-            logicalPoint({ x: 6, y: 6 }),
-            logicalPoint({ x: 6, y: 5 }),
-            logicalPoint({ x: 6, y: 4 }),
-            logicalPoint({ x: 6, y: 3 }),
-            logicalPoint({ x: 6, y: 2 }),
-            logicalPoint({ x: 6, y: 1 }),
-            logicalPoint({ x: 6, y: 0 }),
-        ],
-    });
-
-    const blackRightThrows = createThrowTestData({
-        piece: blackPiece,
-        throwerOrigin: logicalPoint({ x: 4, y: 9 }),
-        leftPoints: [
-            logicalPoint({ x: 6, y: 6 }),
-            logicalPoint({ x: 7, y: 5 }),
-            logicalPoint({ x: 8, y: 4 }),
-            logicalPoint({ x: 9, y: 3 }),
-        ],
-        centerPoints: [
-            logicalPoint({ x: 6, y: 7 }),
-            logicalPoint({ x: 7, y: 6 }),
-            logicalPoint({ x: 8, y: 5 }),
-            logicalPoint({ x: 9, y: 4 }),
-        ],
-        rightPoints: [
-            logicalPoint({ x: 7, y: 7 }),
-            logicalPoint({ x: 8, y: 6 }),
-            logicalPoint({ x: 9, y: 5 }),
-        ],
-    });
 
     beforeEach(() => {
         store = createChessboardStore();
     });
 
-    function createThrowTestData({
-        piece,
-        throwerOrigin,
-        leftPoints,
-        centerPoints,
-        rightPoints,
+    async function swipeInDirection({
+        data,
+        steps,
+        user,
+        direction,
+        down,
+        up,
     }: {
-        piece: Piece;
-        throwerOrigin: LogicalPoint;
-        leftPoints: LogicalPoint[];
-        centerPoints: LogicalPoint[];
-        rightPoints: LogicalPoint[];
-    }): ThrowTestData {
-        const leftMoves = createTestMoves(throwerOrigin, leftPoints);
-        const centerMoves = createTestMoves(throwerOrigin, centerPoints);
-        const rightMoves = createTestMoves(throwerOrigin, rightPoints);
+        data: ThrowTestData;
+        steps: number;
+        user: UserEvent;
+        direction: "forward" | "side";
+        down?: boolean;
+        up?: boolean;
+    }): Promise<void> {
+        down ??= true;
+        down ??= true;
 
-        const allPoints = [...leftPoints, ...centerPoints, ...rightPoints];
-        const allMoves = [...leftMoves, ...centerMoves, ...rightMoves];
+        const overlay = screen.getByTestId("throwPromptOverlay");
 
-        return {
-            throwerOrigin,
-            piece,
-            moves: {
-                [ThrowSide.LEFT]: leftMoves,
-                [ThrowSide.CENTER]: centerMoves,
-                [ThrowSide.RIGHT]: rightMoves,
-                all: allMoves,
-            },
-            points: {
-                [ThrowSide.LEFT]: leftPoints,
-                [ThrowSide.CENTER]: centerPoints,
-                [ThrowSide.RIGHT]: rightPoints,
-                all: allPoints,
-            },
-        };
-    }
+        let dirX: number;
+        let dirY: number;
+        if (direction === "forward") {
+            dirX = data.direction.x;
+            dirY = -data.direction.y;
+        } else {
+            dirX = data.direction.y;
+            dirY = data.direction.x;
+        }
 
-    function createTestMoves(
-        throwerOrigin: LogicalPoint,
-        points: LogicalPoint[],
-    ): Move[] {
-        return points.map((to) =>
-            createFakeMove({
-                from: whitePiece.position,
-                to: logicalPoint(to),
-                triggers: [throwerOrigin],
-            }),
+        const start = { x: 0, y: 0 };
+        if (down) {
+            await act(() =>
+                user.pointer([
+                    {
+                        target: overlay,
+                        coords: { x: start.x, y: start.y },
+                        keys: "[MouseLeft>]",
+                    },
+                ]),
+            );
+        }
+        await act(() =>
+            user.pointer([
+                {
+                    coords: {
+                        x: start.x + dirX * DEFAULT_THROW_STEP_SIZE * steps,
+                        y: start.y + dirY * DEFAULT_THROW_STEP_SIZE * steps,
+                    },
+                },
+            ]),
         );
+        if (up) {
+            await act(() =>
+                user.pointer([
+                    {
+                        keys: "[/MouseLeft]",
+                    },
+                ]),
+            );
+        }
     }
 
     function promptThrow(data: ThrowTestData): Promise<Move | null> {
@@ -289,27 +113,64 @@ describe("ThrowPrompt", () => {
             .promptThrow(data.throwerOrigin, data.piece, data.moves.all);
     }
 
-    async function waitForNextChargeTick(idx: number) {
-        const height = 10;
-        const time = idx / (height - 1);
-        const delay =
-            CHARGE_STEP_MIN_DELAY_MS +
-            (CHARGE_STEP_MAX_DELAY_MS - CHARGE_STEP_MIN_DELAY_MS) *
-                (1 - time) ** 2;
-        await act(() => vi.advanceTimersByTime(delay));
-    }
-
-    function assertAimEffect(data: ThrowTestData, side: ThrowSide): void {
+    function assertAimEffect({
+        data,
+        sideIdx,
+        pointIdx,
+    }: {
+        data: ThrowTestData;
+        sideIdx: number;
+        pointIdx: number;
+    }): void {
         const boardEffects = store.getState().activePersistentBoardEffects;
         expect(boardEffects.size).toBe(1);
 
         const effect = [...boardEffects.values()][0];
+        const to = data.points.sides[sideIdx][pointIdx];
         expect(effect).toEqual<ThrowAimEffect>({
             type: PersistentBoardEffectType.THROW_AIM_LINE,
             from: data.piece.position,
-            mid: data.points[side][0],
-            to: data.points[side].at(-1)!,
+            mid: data.points.sides[sideIdx][0],
+            to,
         });
+
+        const selectedSquare = screen.queryByTestId(
+            "throwPromptSelectedSquare",
+        );
+        expect(selectedSquare).toBeInTheDocument();
+        expect(selectedSquare).toHaveAttribute("data-position", pointToStr(to));
+    }
+
+    function assertCleanedUp() {
+        const boardEffects = store.getState().activePersistentBoardEffects;
+        expect(boardEffects.size).toBe(0);
+        expect(
+            screen.queryByTestId("throwPromptOverlay"),
+        ).not.toBeInTheDocument();
+    }
+
+    function assertMidAimEffect({
+        data,
+        sideIdx,
+    }: {
+        data: ThrowTestData;
+        sideIdx: number;
+    }): void {
+        assertAimEffect({
+            data,
+            sideIdx,
+            pointIdx: getMidAimIdx({ data, sideIdx }),
+        });
+    }
+
+    function getMidAimIdx({
+        data,
+        sideIdx,
+    }: {
+        data: ThrowTestData;
+        sideIdx: number;
+    }) {
+        return Math.floor((data.points.sides[sideIdx].length - 1) / 2);
     }
 
     function assertSquaresEqual(
@@ -333,13 +194,13 @@ describe("ThrowPrompt", () => {
     });
 
     it.each([
-        whiteLeftThrow,
-        whiteCenterThrow,
-        whiteRightThrow,
-        blackLeftThrows,
-        blackCenterThrows,
-        blackRightThrows,
-    ])("should render overlay and throw line when prompted", async (data) => {
+        WHITE_LEFT_THROWS,
+        WHITE_CENTER_THROWS,
+        WHITE_RIGHT_THROWS,
+        BLACK_LEFT_THROWS,
+        BLACK_CENTER_THROWS,
+        BLACK_RIGHT_THROWS,
+    ])("should render overlay when prompted", (data) => {
         promptThrow(data);
 
         render(
@@ -348,12 +209,9 @@ describe("ThrowPrompt", () => {
             </ChessboardStoreContext.Provider>,
         );
 
-        assertAimEffect(data, ThrowSide.CENTER);
-
         const overlaySquares = screen.getAllByTestId(
             "throwPromptOverlaySquare",
         );
-
         const pointsSet = new Set(data.points.all.map(pointToStr));
         const expectedOverlayPoints: LogicalPoint[] = Array.from(
             { length: 100 },
@@ -364,20 +222,38 @@ describe("ThrowPrompt", () => {
         const selectedLineSquares = screen.getAllByTestId(
             "throwPromptSelectedLineSquare",
         );
-        assertSquaresEqual(selectedLineSquares, data.points[ThrowSide.CENTER]);
-
-        expect(
-            screen.queryByTestId("throwPromptSelectedSquare"),
-        ).not.toBeInTheDocument();
+        assertSquaresEqual(selectedLineSquares, data.points.sides[0]);
     });
 
     it.each([
-        whiteLeftThrow,
-        whiteCenterThrow,
-        whiteRightThrow,
-        blackLeftThrows,
-        blackCenterThrows,
-        blackRightThrows,
+        WHITE_LEFT_THROWS,
+        WHITE_CENTER_THROWS,
+        WHITE_RIGHT_THROWS,
+        BLACK_LEFT_THROWS,
+        BLACK_CENTER_THROWS,
+        BLACK_RIGHT_THROWS,
+    ])("should draw a throw aim line", (data) => {
+        promptThrow(data);
+
+        render(
+            <ChessboardStoreContext.Provider value={store}>
+                <ThrowPrompt />
+            </ChessboardStoreContext.Provider>,
+        );
+
+        assertMidAimEffect({
+            data,
+            sideIdx: 0,
+        });
+    });
+
+    it.each([
+        WHITE_LEFT_THROWS,
+        WHITE_CENTER_THROWS,
+        WHITE_RIGHT_THROWS,
+        BLACK_LEFT_THROWS,
+        BLACK_CENTER_THROWS,
+        BLACK_RIGHT_THROWS,
     ])("should cycle through sides when clicking", async (data) => {
         promptThrow(data);
 
@@ -388,38 +264,41 @@ describe("ThrowPrompt", () => {
             </ChessboardStoreContext.Provider>,
         );
 
-        assertAimEffect(data, ThrowSide.CENTER);
+        const originalMid = getMidAimIdx({ data, sideIdx: 0 });
+        assertAimEffect({ data, sideIdx: 0, pointIdx: originalMid });
 
         const overlay = screen.getByTestId("throwPromptOverlay");
         await user.click(overlay);
-        assertAimEffect(data, ThrowSide.RIGHT);
+        assertAimEffect({ data, sideIdx: 1, pointIdx: originalMid });
 
         await user.click(overlay);
-        assertAimEffect(data, ThrowSide.LEFT);
+        assertAimEffect({ data, sideIdx: 2, pointIdx: originalMid });
 
         await user.click(overlay);
-        assertAimEffect(data, ThrowSide.CENTER);
+        assertAimEffect({ data, sideIdx: 0, pointIdx: originalMid });
     });
 
     it("should skip unavailable sides when clicking", async () => {
         const data = createThrowTestData({
+            direction: offset({ x: 0, y: 1 }),
             piece: createFakePiece({
                 position: logicalPoint({ x: 9, y: 1 }),
+                color: GameColor.WHITE,
             }),
             throwerOrigin: logicalPoint({ x: 9, y: 0 }),
-            leftPoints: [],
+            leftPoints: [
+                logicalPoint({ x: 8, y: 2 }),
+                logicalPoint({ x: 8, y: 3 }),
+                logicalPoint({ x: 8, y: 4 }),
+                logicalPoint({ x: 8, y: 5 }),
+            ],
             centerPoints: [
                 logicalPoint({ x: 9, y: 2 }),
                 logicalPoint({ x: 9, y: 3 }),
                 logicalPoint({ x: 9, y: 4 }),
                 logicalPoint({ x: 9, y: 5 }),
             ],
-            rightPoints: [
-                logicalPoint({ x: 8, y: 2 }),
-                logicalPoint({ x: 8, y: 3 }),
-                logicalPoint({ x: 8, y: 4 }),
-                logicalPoint({ x: 8, y: 5 }),
-            ],
+            rightPoints: [],
         });
         promptThrow(data);
 
@@ -430,18 +309,18 @@ describe("ThrowPrompt", () => {
             </ChessboardStoreContext.Provider>,
         );
 
-        assertAimEffect(data, ThrowSide.CENTER);
+        assertMidAimEffect({ data, sideIdx: 0 });
 
         const overlay = screen.getByTestId("throwPromptOverlay");
         await user.click(overlay);
-        assertAimEffect(data, ThrowSide.RIGHT);
+        assertMidAimEffect({ data, sideIdx: 1 });
 
         await user.click(overlay);
-        assertAimEffect(data, ThrowSide.CENTER);
+        assertMidAimEffect({ data, sideIdx: 0 });
     });
 
     it("should discard the prompt when right clicking", async () => {
-        const promptPromise = promptThrow(whiteCenterThrow);
+        const promptPromise = promptThrow(WHITE_CENTER_THROWS);
 
         const user = userEvent.setup();
         render(
@@ -455,19 +334,12 @@ describe("ThrowPrompt", () => {
 
         const result = await promptPromise;
         expect(result).toBeNull();
+
+        assertCleanedUp();
     });
 
-    it.each([
-        whiteLeftThrow,
-        whiteCenterThrow,
-        whiteRightThrow,
-        blackLeftThrows,
-        blackCenterThrows,
-        blackRightThrows,
-    ])("should animate throw power correctly", async (data) => {
-        vi.useFakeTimers();
-
-        const promptPromise = promptThrow(data);
+    it("should scroll selected point down to 0", () => {
+        promptThrow(WHITE_CENTER_THROWS);
 
         render(
             <ChessboardStoreContext.Provider value={store}>
@@ -475,75 +347,331 @@ describe("ThrowPrompt", () => {
             </ChessboardStoreContext.Provider>,
         );
 
+        const mid = getMidAimIdx({ data: WHITE_CENTER_THROWS, sideIdx: 0 });
+
+        assertAimEffect({
+            data: WHITE_CENTER_THROWS,
+            sideIdx: 0,
+            pointIdx: mid,
+        });
+
         const overlay = screen.getByTestId("throwPromptOverlay");
 
-        // fireevent instead of userevent because userevent needs advancing timers
+        let expected = mid;
+        for (let i = 0; i < WHITE_CENTER_THROWS.points.sides[0].length; i++) {
+            fireEvent.wheel(overlay, { deltaY: 100 });
+
+            expected = Math.max(expected - 1, 0);
+            assertAimEffect({
+                data: WHITE_CENTER_THROWS,
+                sideIdx: 0,
+                pointIdx: expected,
+            });
+        }
+
+        assertAimEffect({
+            data: WHITE_CENTER_THROWS,
+            sideIdx: 0,
+            pointIdx: 0,
+        });
+    });
+
+    it("should scroll selected point up to max", () => {
+        promptThrow(WHITE_CENTER_THROWS);
+
+        render(
+            <ChessboardStoreContext.Provider value={store}>
+                <ThrowPrompt />
+            </ChessboardStoreContext.Provider>,
+        );
+
+        const mid = getMidAimIdx({ data: WHITE_CENTER_THROWS, sideIdx: 0 });
+        const max = WHITE_CENTER_THROWS.points.sides[0].length - 1;
+
+        assertAimEffect({
+            data: WHITE_CENTER_THROWS,
+            sideIdx: 0,
+            pointIdx: mid,
+        });
+
+        const overlay = screen.getByTestId("throwPromptOverlay");
+        let expected = mid;
+        for (let i = 0; i < WHITE_CENTER_THROWS.points.sides[0].length; i++) {
+            fireEvent.wheel(overlay, { deltaY: -100 });
+
+            expected = Math.min(expected + 1, max);
+
+            assertAimEffect({
+                data: WHITE_CENTER_THROWS,
+                sideIdx: 0,
+                pointIdx: expected,
+            });
+        }
+
+        assertAimEffect({
+            data: WHITE_CENTER_THROWS,
+            sideIdx: 0,
+            pointIdx: max,
+        });
+    });
+
+    it.each([
+        WHITE_LEFT_THROWS,
+        WHITE_CENTER_THROWS,
+        WHITE_RIGHT_THROWS,
+        BLACK_LEFT_THROWS,
+        BLACK_CENTER_THROWS,
+        BLACK_RIGHT_THROWS,
+    ])(
+        "should move selected point when swiping vertically relative to direction",
+        async (data) => {
+            promptThrow(data);
+
+            const user = userEvent.setup();
+            render(
+                <ChessboardStoreContext.Provider value={store}>
+                    <ThrowPrompt />
+                </ChessboardStoreContext.Provider>,
+            );
+
+            const mid = getMidAimIdx({ data, sideIdx: 0 });
+            const max = data.points.sides[0].length - 1;
+            const expectedUp = Math.min(mid + 2, max);
+            const expectedDown = Math.max(expectedUp - 2, 0);
+
+            await swipeInDirection({
+                data,
+                user,
+                steps: 2,
+                direction: "forward",
+            });
+            assertAimEffect({
+                data,
+                sideIdx: 0,
+                pointIdx: expectedUp,
+            });
+
+            await swipeInDirection({
+                data,
+                user,
+                steps: -2,
+                direction: "forward",
+            });
+            assertAimEffect({
+                data,
+                sideIdx: 0,
+                pointIdx: expectedDown,
+            });
+        },
+    );
+
+    it.each([
+        WHITE_LEFT_THROWS,
+        WHITE_CENTER_THROWS,
+        WHITE_RIGHT_THROWS,
+        BLACK_LEFT_THROWS,
+        BLACK_CENTER_THROWS,
+        BLACK_RIGHT_THROWS,
+    ])(
+        "should change side when swiping horizontally relative to direction",
+        async (data) => {
+            promptThrow(data);
+
+            const user = userEvent.setup();
+            render(
+                <ChessboardStoreContext.Provider value={store}>
+                    <ThrowPrompt />
+                </ChessboardStoreContext.Provider>,
+            );
+
+            const prevMid = getMidAimIdx({ data, sideIdx: 0 });
+
+            await swipeInDirection({
+                data,
+                user,
+                steps: 1,
+                direction: "side",
+            });
+
+            assertAimEffect({
+                data,
+                sideIdx: 1,
+                pointIdx: prevMid,
+            });
+
+            await swipeInDirection({
+                data,
+                user,
+                steps: 1,
+                direction: "side",
+            });
+
+            assertAimEffect({
+                data,
+                sideIdx: 2,
+                pointIdx: prevMid,
+            });
+
+            await swipeInDirection({
+                data,
+                user,
+                steps: -2,
+                direction: "side",
+            });
+
+            assertAimEffect({
+                data,
+                sideIdx: 0,
+                pointIdx: prevMid,
+            });
+        },
+    );
+
+    it("should blink and commit after long press", async () => {
+        const promptPromise = promptThrow(WHITE_CENTER_THROWS);
+        vi.useFakeTimers();
+
+        render(
+            <ChessboardStoreContext.Provider value={store}>
+                <ThrowPrompt />
+            </ChessboardStoreContext.Provider>,
+        );
+
+        // we can't use userEvent because we're faking the timer
+        const overlay = screen.getByTestId("throwPromptOverlay");
         fireEvent.pointerDown(overlay);
 
-        await act(() => vi.advanceTimersByTime(INITIAL_CHARGE_DELAY_MS));
         const selectedSquare = screen.getByTestId("throwPromptSelectedSquare");
-        const firstPoint = data.points[ThrowSide.CENTER][0];
-        expect(selectedSquare.getAttribute("data-position")).toBe(
-            pointToStr(firstPoint),
+        expect(selectedSquare).not.toHaveClass("animate-fast-blink");
+
+        await act(() => vi.advanceTimersByTime(THROW_INTENT_DELAY_MS));
+        expect(selectedSquare).toHaveClass("animate-fast-blink");
+
+        await act(async () => {
+            vi.advanceTimersByTime(THROW_COMMIT_DELAY_MS);
+            await flushMicrotasks();
+        });
+
+        const mid = getMidAimIdx({ data: WHITE_CENTER_THROWS, sideIdx: 0 });
+        expect(await promptPromise).toEqual(
+            WHITE_CENTER_THROWS.moves.sides[0][mid],
+        );
+        assertCleanedUp();
+    });
+
+    it("should cancel confirmation if moved", async () => {
+        promptThrow(WHITE_CENTER_THROWS);
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+
+        const user = userEvent.setup();
+        render(
+            <ChessboardStoreContext.Provider value={store}>
+                <ThrowPrompt />
+            </ChessboardStoreContext.Provider>,
         );
 
-        const pointsFromClosest = data.points[ThrowSide.CENTER];
-        for (let i = 1; i < pointsFromClosest.length; i++) {
-            await waitForNextChargeTick(i - 1);
-            expect(selectedSquare.getAttribute("data-position")).toBe(
-                pointToStr(pointsFromClosest[i]),
-            );
-        }
+        const overlay = screen.getByTestId("throwPromptOverlay");
+        await user.pointer({
+            target: overlay,
+            keys: "[MouseLeft>]",
+        });
 
-        const upperBound = Math.max(
-            0,
-            pointsFromClosest.length - 1 - CHARGE_OSCILLATION_UPPER_INDEX,
+        const selectedSquare = screen.getByTestId("throwPromptSelectedSquare");
+        expect(selectedSquare).not.toHaveClass("animate-fast-blink");
+
+        await act(() => vi.advanceTimersByTime(THROW_INTENT_DELAY_MS));
+        expect(selectedSquare).toHaveClass("animate-fast-blink");
+
+        await swipeInDirection({
+            data: WHITE_CENTER_THROWS,
+            steps: 1,
+            user,
+            direction: "forward",
+        });
+
+        expect(selectedSquare).not.toHaveClass("animate-fast-blink");
+        expect(overlay).toBeInTheDocument();
+    });
+
+    it("should treat each point snap point as a new base", async () => {
+        promptThrow(WHITE_CENTER_THROWS);
+
+        const user = userEvent.setup();
+        render(
+            <ChessboardStoreContext.Provider value={store}>
+                <ThrowPrompt />
+            </ChessboardStoreContext.Provider>,
         );
-        const lowerBound = Math.max(
-            0,
-            pointsFromClosest.length - 1 - CHARGE_OSCILLATION_LOWER_INDEX,
+
+        const mid = getMidAimIdx({ data: WHITE_CENTER_THROWS, sideIdx: 0 });
+
+        await swipeInDirection({
+            data: WHITE_CENTER_THROWS,
+            user,
+            steps: 1,
+            direction: "forward",
+            up: false,
+        });
+
+        assertAimEffect({
+            data: WHITE_CENTER_THROWS,
+            sideIdx: 0,
+            pointIdx: mid + 1,
+        });
+
+        await swipeInDirection({
+            data: WHITE_CENTER_THROWS,
+            user,
+            steps: 0.5,
+            direction: "forward",
+            down: false,
+        });
+
+        assertAimEffect({
+            data: WHITE_CENTER_THROWS,
+            sideIdx: 0,
+            pointIdx: mid + 1,
+        });
+    });
+
+    it("should treat each side snap point as a new base", async () => {
+        promptThrow(WHITE_CENTER_THROWS);
+
+        const user = userEvent.setup();
+        render(
+            <ChessboardStoreContext.Provider value={store}>
+                <ThrowPrompt />
+            </ChessboardStoreContext.Provider>,
         );
-        // get to the upper bound
-        for (let i = pointsFromClosest.length - 1; i > upperBound; i--) {
-            expect(selectedSquare.getAttribute("data-position")).toBe(
-                pointToStr(pointsFromClosest[i]),
-            );
-            await act(() =>
-                vi.advanceTimersByTime(CHARGE_OSCILLATION_STEP_DELAY_MS),
-            );
-        }
 
-        let currentIdx = upperBound;
-        let oscillating = true;
-        let oscillationDirection = -1;
-        while (oscillating) {
-            await act(() =>
-                vi.advanceTimersByTime(CHARGE_OSCILLATION_STEP_DELAY_MS),
-            );
+        const mid = getMidAimIdx({ data: WHITE_CENTER_THROWS, sideIdx: 0 });
 
-            currentIdx =
-                oscillationDirection === 1
-                    ? Math.min(pointsFromClosest.length - 1, currentIdx + 1)
-                    : Math.max(0, currentIdx - 1);
+        await swipeInDirection({
+            data: WHITE_CENTER_THROWS,
+            user,
+            steps: 1,
+            direction: "side",
+            up: false,
+        });
 
-            expect(selectedSquare.getAttribute("data-position")).toBe(
-                pointToStr(pointsFromClosest[currentIdx]),
-            );
+        assertAimEffect({
+            data: WHITE_CENTER_THROWS,
+            sideIdx: 1,
+            pointIdx: mid,
+        });
 
-            if (currentIdx <= lowerBound) {
-                oscillationDirection = 1;
-            } else if (currentIdx >= upperBound) {
-                oscillationDirection = -1;
-            }
+        await swipeInDirection({
+            data: WHITE_CENTER_THROWS,
+            user,
+            steps: 0.5,
+            direction: "side",
+            down: false,
+        });
 
-            // stop after one full back-and-forth cycle
-            if (currentIdx === upperBound && oscillationDirection === -1) {
-                oscillating = false;
-            }
-        }
-
-        fireEvent.pointerUp(overlay);
-        const result = await act(() => promptPromise);
-        expect(result?.to).toEqual(pointsFromClosest[upperBound]);
+        assertAimEffect({
+            data: WHITE_CENTER_THROWS,
+            sideIdx: 1,
+            pointIdx: mid,
+        });
     });
 });

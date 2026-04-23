@@ -26,6 +26,17 @@
     --animate-breathe: breathe 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
     --animate-subtle-ping: subtle-ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
     --animate-fade-in: fade-in 0.2s ease-in-out forwards;
+    --animate-fast-blink: fast-blink 0.2s infinite;
+
+    @keyframes fast-blink {
+        0%,
+        100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0;
+        }
+    }
 
     @keyframes fade-in {
         0% {
