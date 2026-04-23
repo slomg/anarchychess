@@ -75,7 +75,7 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
                         points: [
                             "Select the pawn and move it as if capturing the piece behind it.",
                             "3 trajectory lines will appear, one will be highlighted.",
-                            "Click or swipe sideways (perpendicular to the throw direction) to change trjactory.",
+                            "Click or swipe sideways (perpendicular to the throw direction) to change trajectory.",
                             "Scroll wheel or swipe up / down (relative to the throw direction) to change distance.",
                             "Hold click to confirm your throw.",
                             "Right click or 2-finger tap to cancel.",
