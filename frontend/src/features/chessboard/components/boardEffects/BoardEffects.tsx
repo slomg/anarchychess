@@ -46,6 +46,7 @@ const BoardEffects = () => {
                         effect={effect.value}
                         onSettle={effect.settle}
                         onComplete={effect.complete}
+                        key={id}
                     />,
                 );
         }
