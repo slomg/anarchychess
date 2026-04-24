@@ -4,12 +4,12 @@ import "vitest-dom/extend-expect";
 
 import { mockAudio } from "@/lib/testUtils/mocks/mockAudio";
 
-mockAudio();
-
 vi.mock("next/navigation");
 vi.mock("@microsoft/signalr");
 
 loadEnvFile();
+
+window.HTMLMediaElement.prototype.load = () => {};
 
 beforeEach(() => {
     window.ResizeObserver ??= vi.fn(
@@ -21,6 +21,7 @@ beforeEach(() => {
     );
 
     setWindowInnerWidth(1920);
+    mockAudio();
 });
 
 afterEach(() => {
