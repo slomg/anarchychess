@@ -72,7 +72,7 @@ export function getThrowData(
     }
 }
 
-export function isOnThrowLine(
+export function isOnLane(
     point: LogicalPoint,
     sideIdx: number,
     throwData: ThrowData,
@@ -88,7 +88,7 @@ export function clampPointIdx(pointIdx: number, throwLane: ThrowLane): number {
     return Math.max(Math.min(pointIdx, throwLane.points.length - 1), 0);
 }
 
-export function clampSideIdx(sideIdx: number, throwData: ThrowData): number {
+export function clampLaneIdx(sideIdx: number, throwData: ThrowData): number {
     return Math.max(Math.min(sideIdx, throwData.lanes.length - 1), 0);
 }
 

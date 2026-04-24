@@ -76,34 +76,33 @@ describe("ThrowPrompt", () => {
 
         const start = { x: 0, y: 0 };
         if (down) {
-            await act(() =>
-                user.pointer([
-                    {
-                        target: overlay,
-                        coords: { x: start.x, y: start.y },
-                        keys: "[MouseLeft>]",
-                    },
-                ]),
-            );
-        }
-        await act(() =>
-            user.pointer([
+            await user.pointer([
                 {
-                    coords: {
-                        x: start.x + dirX * DEFAULT_THROW_STEP_SIZE * steps,
-                        y: start.y + dirY * DEFAULT_THROW_STEP_SIZE * steps,
-                    },
+                    target: overlay,
+                    coords: { x: start.x, y: start.y },
+                    keys: "[MouseLeft>]",
                 },
-            ]),
-        );
+            ]);
+            await act(() => flushMicrotasks());
+        }
+
+        await user.pointer([
+            {
+                coords: {
+                    x: start.x + dirX * DEFAULT_THROW_STEP_SIZE * steps,
+                    y: start.y + dirY * DEFAULT_THROW_STEP_SIZE * steps,
+                },
+            },
+        ]);
+        await act(() => flushMicrotasks());
+
         if (up) {
-            await act(() =>
-                user.pointer([
-                    {
-                        keys: "[/MouseLeft]",
-                    },
-                ]),
-            );
+            await user.pointer([
+                {
+                    keys: "[/MouseLeft]",
+                },
+            ]);
+            await act(() => flushMicrotasks());
         }
     }
 

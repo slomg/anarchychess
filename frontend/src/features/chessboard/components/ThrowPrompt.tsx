@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import clsx from "clsx";
 
 import {
@@ -8,22 +8,140 @@ import {
 } from "@/features/point/pointUtils";
 import {
     clampPointIdx,
-    clampSideIdx,
+    clampLaneIdx,
     getThrowData,
-    isOnThrowLine,
+    isOnLane,
     ThrowData,
 } from "../lib/throwUtils";
 
 import { PersistentBoardEffectType } from "../stores/boardEffectsSlice";
 import { LogicalPoint, Point } from "@/features/point/types";
 import { useChessboardStore } from "../hooks/useChessboard";
-import { PendingThrow } from "../stores/throwSlice";
 import { GameColor } from "@/lib/apiClient";
 import ChessSquare from "./ChessSquare";
 
 export const THROW_COMMIT_DELAY_MS = 1000;
 export const THROW_INTENT_DELAY_MS = 500;
 export const DEFAULT_THROW_STEP_SIZE = 100;
+
+type ThrowPromptState =
+    | {
+          selectedLaneIdx: null;
+          selectedPointIdx: null;
+          throwData: null;
+      }
+    | {
+          selectedLaneIdx: number;
+          selectedPointIdx: number;
+          throwData: ThrowData;
+      };
+
+type ThrowPromptAction =
+    | {
+          type: "move";
+          newSelectedLaneIdx: number;
+          newSelectedPointIdx?: number;
+      }
+    | {
+          type: "move";
+          newSelectedLaneIdx?: number;
+          newSelectedPointIdx: number;
+      }
+    | { type: "cycle" }
+    | { type: "updateThrowData"; throwData: ThrowData | null };
+
+function reducer(
+    state: ThrowPromptState,
+    action: ThrowPromptAction,
+): ThrowPromptState {
+    switch (action.type) {
+        case "move":
+            if (state.throwData === null) {
+                return state;
+            }
+
+            let newLaneIdx = action.newSelectedLaneIdx ?? state.selectedLaneIdx;
+            newLaneIdx = clampLaneIdx(newLaneIdx, state.throwData);
+
+            const newLane = state.throwData.lanes[newLaneIdx];
+            const newPointIdx = clampPointIdx(
+                action.newSelectedPointIdx ?? state.selectedPointIdx,
+                newLane,
+            );
+            if (
+                newPointIdx !== state.selectedPointIdx ||
+                newLaneIdx === state.selectedLaneIdx
+            ) {
+                return {
+                    ...state,
+                    selectedLaneIdx: newLaneIdx,
+                    selectedPointIdx: newPointIdx,
+                };
+            }
+
+            const prevLane = state.throwData.lanes[state.selectedLaneIdx];
+            const prevPoint = prevLane.points[state.selectedPointIdx];
+
+            let closestPointIdx = 0;
+            let closestDist = Infinity;
+            for (let i = 0; i < newLane.points.length; i++) {
+                const newPoint = newLane.points[i];
+                const dist = pointDistanceSquared(prevPoint, newPoint);
+
+                if (
+                    dist < closestDist ||
+                    (dist === closestDist &&
+                        Math.abs(i - state.selectedPointIdx) <
+                            Math.abs(closestPointIdx - state.selectedPointIdx))
+                ) {
+                    closestDist = dist;
+                    closestPointIdx = i;
+                }
+            }
+            return {
+                ...state,
+                selectedLaneIdx: newLaneIdx,
+                selectedPointIdx: closestPointIdx,
+            };
+
+        case "cycle":
+            if (state.throwData === null) {
+                return state;
+            }
+
+            const newSelectedLaneIdx =
+                (state.selectedLaneIdx + 1) % state.throwData.lanes.length;
+            return reducer(state, {
+                type: "move",
+                newSelectedLaneIdx,
+            });
+
+        case "updateThrowData":
+            if (action.throwData === null) {
+                return {
+                    selectedLaneIdx: null,
+                    selectedPointIdx: null,
+                    throwData: null,
+                };
+            }
+
+            const newState: ThrowPromptState = {
+                throwData: action.throwData,
+                selectedLaneIdx: 0,
+                selectedPointIdx: Math.floor(
+                    (action.throwData.lanes[0].points.length - 1) / 2,
+                ),
+            };
+
+            return reducer(newState, {
+                type: "move",
+                newSelectedPointIdx: newState.selectedPointIdx,
+            });
+
+        default:
+            return state;
+    }
+}
 
 const ThrowPrompt = () => {
     const pendingThrow = useChessboardStore((x) => x.pendingThrow);
@@ -39,106 +157,25 @@ const ThrowPrompt = () => {
         removePersistentBoardEffect: x.removePersistentBoardEffect,
     }));
 
-    const [selectedSideIdx, setSelectedSide] = useState<number>(0);
-    const [selectedPointIdx, setSelectedIdx] = useState<number>(0);
     const [isHolding, setIsHolding] = useState<boolean>(false);
-
-    const throwData = useMemo(() => getThrowData(pendingThrow), [pendingThrow]);
-
-    const selectedSideRef = useRef(selectedSideIdx);
-    const selectedPointRef = useRef(selectedPointIdx);
-
-    useEffect(() => {
-        selectedSideRef.current = selectedSideIdx;
-    }, [selectedSideIdx]);
+    const [state, dispatch] = useReducer(reducer, {
+        selectedLaneIdx: null,
+        selectedPointIdx: null,
+        throwData: null,
+    });
 
     useEffect(() => {
-        selectedPointRef.current = selectedPointIdx;
-    }, [selectedPointIdx]);
-
-    function updateThrowLine({
-        newSelectedSideIdx,
-        newSelectedPointIdx,
-    }:
-        | {
-              newSelectedSideIdx: number;
-              newSelectedPointIdx?: number;
-          }
-        | {
-              newSelectedSideIdx?: number;
-              newSelectedPointIdx: number;
-          }) {
-        if (!pendingThrow || !throwData) {
-            return;
-        }
-
-        newSelectedSideIdx ??= selectedSideRef.current;
-        newSelectedSideIdx = clampSideIdx(newSelectedSideIdx, throwData);
-        setSelectedSide(newSelectedSideIdx);
-
-        if (throwData.lanes.length === 0) {
-            return;
-        }
-        const newLane = throwData.lanes[newSelectedSideIdx];
-
-        newSelectedPointIdx ??= selectedPointRef.current;
-        if (
-            newSelectedPointIdx === selectedPointRef.current &&
-            newSelectedSideIdx !== selectedSideRef.current
-        ) {
-            const prevLane = throwData.lanes[selectedSideRef.current];
-            const prevPoint = prevLane.points[selectedPointRef.current];
-            let bestIdx = 0;
-            let bestDist = Infinity;
-
-            for (let i = 0; i < newLane.points.length; i++) {
-                const newPoint = newLane.points[i];
-                const distance = pointDistanceSquared(prevPoint, newPoint);
-
-                if (distance < bestDist) {
-                    bestDist = distance;
-                    bestIdx = i;
-                }
-            }
-            newSelectedPointIdx = bestIdx;
-        }
-
-        newSelectedPointIdx = clampPointIdx(newSelectedPointIdx, newLane);
-        setSelectedIdx(newSelectedPointIdx);
-    }
-
-    const fixSelectedSideEffectEvent = useEffectEvent(
-        (pendingThrow: PendingThrow | null, throwData: ThrowData | null) => {
-            if (!pendingThrow || !throwData) {
-                return;
-            }
-
-            const lane =
-                throwData.lanes[clampSideIdx(selectedSideIdx, throwData)];
-            updateThrowLine({
-                newSelectedPointIdx: Math.floor((lane.points.length - 1) / 2),
-            });
-        },
-    );
-    useEffect(() => {
-        fixSelectedSideEffectEvent(pendingThrow, throwData);
-    }, [pendingThrow, throwData]);
+        const throwData = getThrowData(pendingThrow);
+        dispatch({ type: "updateThrowData", throwData });
+    }, [pendingThrow]);
 
     useEffect(() => {
-        if (!pendingThrow || !throwData) {
+        if (!pendingThrow || !state.throwData) {
             return;
         }
 
-        const lane = throwData.lanes[selectedSideIdx];
-        if (!lane) {
-            return;
-        }
-
-        const to = lane.points[selectedPointIdx];
-        if (!to) {
-            return;
-        }
-
+        const lane = state.throwData.lanes[state.selectedLaneIdx];
+        const to = lane.points[state.selectedPointIdx];
         const effectId = addPersistentBoardEffect({
             type: PersistentBoardEffectType.THROW_AIM_LINE,
             from: pendingThrow.piece.position,
@@ -151,15 +188,15 @@ const ThrowPrompt = () => {
         };
     }, [
         pendingThrow,
-        throwData,
-        selectedPointIdx,
-        selectedSideIdx,
+        state.throwData,
+        state.selectedLaneIdx,
+        state.selectedPointIdx,
         removePersistentBoardEffect,
         addPersistentBoardEffect,
     ]);
 
     function handlePointerDown(event: React.PointerEvent): void {
-        if (!pendingThrow || !throwData) {
+        if (!pendingThrow || !state.throwData) {
             return;
         }
         event.stopPropagation();
@@ -184,9 +221,9 @@ const ThrowPrompt = () => {
         let animationFrameId: number | null = null;
 
         let lastPointSnap: Point = { x: startX, y: startY };
-        let lastPointIdx = selectedPointIdx;
-        let lastSideSnap: Point = { x: startX, y: startY };
-        let lastSideIdx = selectedSideIdx;
+        let lastPointIdx = state.selectedPointIdx;
+        let lastLaneSnap: Point = { x: startX, y: startY };
+        let lastLaneIdx = state.selectedLaneIdx;
 
         let lastY = event.clientY;
         let lastX = event.clientX;
@@ -203,28 +240,30 @@ const ThrowPrompt = () => {
             }
 
             pendingThrow.resolve(
-                throwData.lanes[selectedSideIdx]?.points[selectedPointIdx],
+                state.throwData.lanes[state.selectedLaneIdx].points[
+                    state.selectedPointIdx
+                ],
             );
             cleanup();
         }, THROW_INTENT_DELAY_MS + THROW_COMMIT_DELAY_MS);
 
         function applyIndexDelta() {
-            if (!pendingThrow || !throwData) {
+            if (!pendingThrow || !state.throwData) {
                 return;
             }
 
-            const dirX = throwData.direction.x;
-            const dirY = -throwData.direction.y;
+            const dirX = state.throwData.direction.x;
+            const dirY = -state.throwData.direction.y;
 
-            const sideXDir = -dirY;
-            const sideYDir = dirX;
-            const sideXDistance = lastX - lastSideSnap.x;
-            const sideYDistance = lastY - lastSideSnap.y;
-            const sideLen = Math.hypot(sideXDir, sideYDir);
-            const sideDistance =
-                (sideXDistance * sideXDir + sideYDistance * sideYDir) / sideLen;
-            const sideIdxChange =
-                Math.trunc(sideDistance / stepSize) * viewForwardY;
+            const laneXDir = -dirY;
+            const laneYDir = dirX;
+            const laneXDistance = lastX - lastLaneSnap.x;
+            const laneYDistance = lastY - lastLaneSnap.y;
+            const laneLen = Math.hypot(laneXDir, laneYDir);
+            const laneDistance =
+                (laneXDistance * laneXDir + laneYDistance * laneYDir) / laneLen;
+            const laneIdxChange =
+                Math.trunc(laneDistance / stepSize) * viewForwardY;
 
             const pointXDir = dirX;
             const pointYDir = dirY;
@@ -237,22 +276,23 @@ const ThrowPrompt = () => {
             const pointIdxChange =
                 Math.trunc(pointDistance / stepSize) * viewForwardY;
 
-            if (sideIdxChange === 0 && pointIdxChange === 0) {
+            if (laneIdxChange === 0 && pointIdxChange === 0) {
                 animationFrameId = null;
                 return;
             }
 
-            if (sideIdxChange !== 0) {
-                lastSideSnap = { x: lastX, y: lastY };
+            if (laneIdxChange !== 0) {
+                lastLaneSnap = { x: lastX, y: lastY };
             }
             if (pointIdxChange !== 0) {
                 lastPointSnap = { x: lastX, y: lastY };
             }
 
             lastPointIdx += pointIdxChange;
-            lastSideIdx += sideIdxChange;
-            updateThrowLine({
-                newSelectedSideIdx: lastSideIdx,
+            lastLaneIdx += laneIdxChange;
+            dispatch({
+                type: "move",
+                newSelectedLaneIdx: lastLaneIdx,
                 newSelectedPointIdx: lastPointIdx,
             });
             animationFrameId = null;
@@ -270,17 +310,11 @@ const ThrowPrompt = () => {
 
         function handlePointerUp(event: PointerEvent) {
             cleanup();
-
-            if (!pendingThrow || !throwData || didMove) {
-                return null;
-            }
-
             event.stopPropagation();
-            updateThrowLine({
-                newSelectedSideIdx:
-                    (selectedSideIdx + 1) % throwData.lanes.length,
-                newSelectedPointIdx: selectedPointIdx,
-            });
+
+            if (!didMove) {
+                dispatch({ type: "cycle" });
+            }
         }
 
         function cleanup() {
@@ -297,32 +331,33 @@ const ThrowPrompt = () => {
     }
 
     function handleWheel(event: React.WheelEvent) {
-        if (!pendingThrow || !throwData) {
+        if (!pendingThrow || !state.throwData) {
             return;
         }
         event.stopPropagation();
 
         const viewForwardY = viewingFrom === pendingThrow.piece.color ? 1 : -1;
         if (event.deltaY > 0) {
-            updateThrowLine({
-                newSelectedPointIdx: selectedPointIdx - viewForwardY,
+            dispatch({
+                type: "move",
+                newSelectedPointIdx: state.selectedPointIdx - viewForwardY,
             });
         } else {
-            updateThrowLine({
-                newSelectedPointIdx: selectedPointIdx + viewForwardY,
+            dispatch({
+                type: "move",
+                newSelectedPointIdx: state.selectedPointIdx + viewForwardY,
             });
         }
     }
 
-    if (!pendingThrow || !throwData) {
+    if (!pendingThrow || !state.throwData) {
         return null;
     }
 
-    const selectedPoint: LogicalPoint | undefined =
-        throwData.lanes[selectedSideIdx]?.points[selectedPointIdx];
-    if (!selectedPoint) {
-        return null;
-    }
+    const selectedPoint: LogicalPoint =
+        state.throwData.lanes[state.selectedLaneIdx].points[
+            state.selectedPointIdx
+        ];
 
     const pointsSet = new Set(pendingThrow.points.map(pointToStr));
     return (
@@ -354,7 +389,7 @@ const ThrowPrompt = () => {
 
             {pendingThrow.points.map(
                 (point, i) =>
-                    isOnThrowLine(point, selectedSideIdx, throwData) && (
+                    isOnLane(point, state.selectedLaneIdx, state.throwData) && (
                         <ChessSquare
                             key={i}
                             position={point}

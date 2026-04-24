@@ -1,8 +1,8 @@
 import {
     clampPointIdx,
-    clampSideIdx,
+    clampLaneIdx,
     getThrowData,
-    isOnThrowLine,
+    isOnLane,
     ThrowData,
     ThrowLane,
 } from "../throwUtils";
@@ -102,7 +102,7 @@ describe("getThrowData", () => {
     });
 });
 
-describe("isOnThrowLine", () => {
+describe("isOnLane", () => {
     it("should return true for collinear point", () => {
         const throwData: ThrowData = {
             direction: offset({ x: 1, y: 1 }),
@@ -116,7 +116,7 @@ describe("isOnThrowLine", () => {
 
         const point = logicalPoint({ x: 2, y: 2 });
 
-        expect(isOnThrowLine(point, 0, throwData)).toBe(true);
+        expect(isOnLane(point, 0, throwData)).toBe(true);
     });
 
     it("should return false for non-collinear point", () => {
@@ -132,10 +132,10 @@ describe("isOnThrowLine", () => {
 
         const point = logicalPoint({ x: 2, y: 3 });
 
-        expect(isOnThrowLine(point, 0, throwData)).toBe(false);
+        expect(isOnLane(point, 0, throwData)).toBe(false);
     });
 
-    it("should return false for invalid sideIdx", () => {
+    it("should return false for invalid laneIdx", () => {
         const throwData: ThrowData = {
             direction: offset({ x: 1, y: 1 }),
             lanes: [],
@@ -143,7 +143,7 @@ describe("isOnThrowLine", () => {
 
         const point = logicalPoint({ x: 1, y: 1 });
 
-        expect(isOnThrowLine(point, 0, throwData)).toBe(false);
+        expect(isOnLane(point, 0, throwData)).toBe(false);
     });
 });
 
@@ -162,12 +162,12 @@ describe("clampPointIdx", () => {
     });
 });
 
-describe("clampSideIdx", () => {
+describe("clampLaneIdx", () => {
     it.each([
         [5, 3, 2],
         [-1, 3, 0],
         [1, 3, 1],
-    ])("should clamp side index", (inputIdx, length, expectedIdx) => {
+    ])("should clamp lane index", (inputIdx, length, expectedIdx) => {
         const throwData: ThrowData = {
             direction: offset({ x: 0, y: 1 }),
             lanes: new Array(length).fill({
@@ -176,6 +176,6 @@ describe("clampSideIdx", () => {
             }),
         };
 
-        expect(clampSideIdx(inputIdx, throwData)).toBe(expectedIdx);
+        expect(clampLaneIdx(inputIdx, throwData)).toBe(expectedIdx);
     });
 });
