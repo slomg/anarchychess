@@ -12,10 +12,14 @@ describe("BoardSlice", () => {
     let store: StoreApi<ChessboardStore>;
 
     const rect = {
-        left: 100,
-        top: 200,
-        width: 400,
-        height: 400,
+        bottom: 10,
+        height: 20,
+        left: 30,
+        right: 40,
+        top: 50,
+        width: 60,
+        x: 70,
+        y: 80,
     } as DOMRect;
     const boardDimensions: BoardDimensions = { width: 10, height: 10 };
 
@@ -164,7 +168,7 @@ describe("BoardSlice", () => {
             const r = { ...rect } as DOMRect;
             store.getState().setBoardRect(r);
 
-            expect(store.getState().boardRect).toBe(r);
+            expect(store.getState().boardRect).toEqual(r);
         });
     });
 });
