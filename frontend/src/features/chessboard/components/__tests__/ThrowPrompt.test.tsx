@@ -85,7 +85,7 @@ describe("ThrowPrompt", () => {
                     keys: "[MouseLeft>]",
                 },
             ]);
-            vi.advanceTimersToNextFrame();
+            await act(() => vi.advanceTimersToNextFrame());
         }
 
         await user.pointer([
@@ -96,7 +96,7 @@ describe("ThrowPrompt", () => {
                 },
             },
         ]);
-        vi.advanceTimersToNextFrame();
+        await act(() => vi.advanceTimersToNextFrame());
 
         if (up) {
             await user.pointer([
@@ -104,7 +104,7 @@ describe("ThrowPrompt", () => {
                     keys: "[/MouseLeft]",
                 },
             ]);
-            vi.advanceTimersToNextFrame();
+            await act(() => vi.advanceTimersToNextFrame());
         }
     }
 
