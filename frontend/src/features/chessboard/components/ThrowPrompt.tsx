@@ -375,7 +375,7 @@ const ThrowPrompt = () => {
                 data-testid="throwPromptSelectedSquare"
                 className={clsx(
                     "bg-red-500",
-                    isHolding && "animate-fast-blink",
+                    isHolding && "animate-fast-blink transition-opacity",
                 )}
             />
         </div>
