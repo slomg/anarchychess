@@ -4,7 +4,7 @@ import "vitest-dom/extend-expect";
 
 import { mockAudio } from "@/lib/testUtils/mocks/mockAudio";
 
-window.Audio = mockAudio().audioConstructorMock;
+mockAudio();
 
 vi.mock("next/navigation");
 vi.mock("@microsoft/signalr");
