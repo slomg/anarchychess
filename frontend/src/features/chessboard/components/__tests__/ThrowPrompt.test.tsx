@@ -59,6 +59,8 @@ describe("ThrowPrompt", () => {
         down?: boolean;
         up?: boolean;
     }): Promise<void> {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+
         down ??= true;
         down ??= true;
 
@@ -83,7 +85,7 @@ describe("ThrowPrompt", () => {
                     keys: "[MouseLeft>]",
                 },
             ]);
-            await act(() => flushMicrotasks());
+            vi.advanceTimersToNextFrame();
         }
 
         await user.pointer([
@@ -94,7 +96,7 @@ describe("ThrowPrompt", () => {
                 },
             },
         ]);
-        await act(() => flushMicrotasks());
+        vi.advanceTimersToNextFrame();
 
         if (up) {
             await user.pointer([
@@ -102,7 +104,7 @@ describe("ThrowPrompt", () => {
                     keys: "[/MouseLeft]",
                 },
             ]);
-            await act(() => flushMicrotasks());
+            vi.advanceTimersToNextFrame();
         }
     }
 
