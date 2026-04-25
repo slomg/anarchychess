@@ -31,7 +31,7 @@ public class QueenTestData : TheoryData<PieceTestCase>
             .. e5MovesDownRight,
         ];
 
-        MoveTestCase e5RadioactiveBetaDecay = new(
+        MoveTestCase e5WhiteRadioactiveBetaDecay = new(
             "e5",
             Spawns:
             [
@@ -43,11 +43,23 @@ public class QueenTestData : TheoryData<PieceTestCase>
             SpecialMoveType: SpecialMoveType.RadioactiveBetaDecay
         );
 
+        MoveTestCase e5BlackRadioactiveBetaDecay = new(
+            "e5",
+            Spawns:
+            [
+                new PieceSpawn(PieceType.Rook, GameColor.Black, new("d5")),
+                new PieceSpawn(PieceType.SterilePawn, GameColor.Black, new("e6")),
+                new PieceSpawn(PieceType.Horsey, GameColor.Black, new("f5")),
+            ],
+            Captures: ["e5"],
+            SpecialMoveType: SpecialMoveType.RadioactiveBetaDecay
+        );
+
         Add(
             PieceTestCase
                 .From("e5", whiteQueen)
                 .GoesTo(e5Moves)
-                .GoesTo(e5RadioactiveBetaDecay)
+                .GoesTo(e5WhiteRadioactiveBetaDecay)
                 .WithDescription("White queen on open board from e5 with beta decay")
         );
 
@@ -55,7 +67,7 @@ public class QueenTestData : TheoryData<PieceTestCase>
             PieceTestCase
                 .From("e5", blackQueen)
                 .GoesTo(e5Moves)
-                .GoesTo(e5RadioactiveBetaDecay)
+                .GoesTo(e5BlackRadioactiveBetaDecay)
                 .WithDescription("Black queen on open board from e5 with beta decay")
         );
 
@@ -288,7 +300,7 @@ public class QueenTestData : TheoryData<PieceTestCase>
                 .WithPieceAt("c4", blackAntiqueen)
                 .WithFriendlyPieceAt("b4", excludePieces: [PieceType.Antiqueen])
                 .GoesTo(e5Moves)
-                .GoesTo(e5RadioactiveBetaDecay)
+                .GoesTo(e5WhiteRadioactiveBetaDecay)
                 .GoesTo(
                     "g4",
                     sideEffects: [new(From: new("g4"), To: new("e5"), Piece: whiteAntiqueen)],
