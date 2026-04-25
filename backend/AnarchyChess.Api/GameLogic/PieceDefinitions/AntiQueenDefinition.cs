@@ -20,6 +20,7 @@ public class AntiqueenDefinition : IPieceDefinition
             new StepBehaviour(new Offset(X: 2, Y: -1)),
             new StepBehaviour(new Offset(X: -2, Y: -1))
         ),
+        new QueentumTunnelingRule(tunnelWith: PieceType.Queen),
     ];
 
     public IEnumerable<IPieceMovementRule> GetBehaviours(

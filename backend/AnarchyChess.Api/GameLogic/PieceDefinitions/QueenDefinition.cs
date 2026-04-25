@@ -27,6 +27,7 @@ public class QueenDefinition : IPieceDefinition
     )
     {
         yield return _regularQueenMoves;
+        yield return new QueentumTunnelingRule(tunnelWith: PieceType.Antiqueen);
 
         var directionY = board.SideToMove.Match(whenWhite: 1, whenBlack: -1);
         yield return new RadioactiveBetaDecayRule(
