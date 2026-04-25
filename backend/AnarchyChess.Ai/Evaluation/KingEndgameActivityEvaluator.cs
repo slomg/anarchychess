@@ -46,7 +46,7 @@ public sealed class KingEndgameActivityEvaluator : IEvaluatorFunction
 
         while (whiteKings != 0)
         {
-            byte kingPosition = (byte)BitboardHelpers.BitScanForward(ref whiteKings);
+            byte kingPosition = BitboardHelpers.BitScanForward(ref whiteKings);
             whiteScore += DistanceToPassedPawn(kingPosition, passedWhitePawns);
             whiteScore += DistanceToEnemyPawn(
                 kingPosition,
@@ -58,7 +58,7 @@ public sealed class KingEndgameActivityEvaluator : IEvaluatorFunction
 
         while (blackKings != 0)
         {
-            byte kingPosition = (byte)BitboardHelpers.BitScanForward(ref blackKings);
+            byte kingPosition = BitboardHelpers.BitScanForward(ref blackKings);
             blackScore += DistanceToPassedPawn(kingPosition, passedBlackPawns);
             blackScore += DistanceToEnemyPawn(
                 kingPosition,
@@ -81,7 +81,7 @@ public sealed class KingEndgameActivityEvaluator : IEvaluatorFunction
 
         while (passedPawns != 0)
         {
-            byte pawnSquare = (byte)BitboardHelpers.BitScanForward(ref passedPawns);
+            byte pawnSquare = BitboardHelpers.BitScanForward(ref passedPawns);
             minDistance = Math.Min(
                 minDistance,
                 BitboardConstants.BoardDistance[kingPosition, pawnSquare]
@@ -103,7 +103,7 @@ public sealed class KingEndgameActivityEvaluator : IEvaluatorFunction
 
         while (enemyPawns != 0)
         {
-            byte pawnSquare = (byte)BitboardHelpers.BitScanForward(ref enemyPawns);
+            byte pawnSquare = BitboardHelpers.BitScanForward(ref enemyPawns);
             int distance = BitboardConstants.BoardDistance[kingPosition, pawnSquare];
             minTotalDistance = Math.Min(minTotalDistance, distance);
 

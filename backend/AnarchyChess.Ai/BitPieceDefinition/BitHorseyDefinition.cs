@@ -22,7 +22,7 @@ public sealed class BitHorseyDefinition : IBitPieceDefinition
         UInt128 rookAttacks = attacks & board.BitboardFor(PieceType.Rook, piece.Color);
         while (rookAttacks != 0)
         {
-            byte toSquare = (byte)BitboardHelpers.BitScanForward(ref rookAttacks);
+            byte toSquare = BitboardHelpers.BitScanForward(ref rookAttacks);
 
             UInt128 captures = PieceMasks.AdjacentMasks[toSquare];
             captures &= board.Occupancy;

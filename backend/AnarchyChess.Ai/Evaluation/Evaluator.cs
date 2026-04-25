@@ -67,7 +67,7 @@ public sealed class Evaluator(IEnumerable<IEvaluatorFunction>? evaluators = null
 
         while (whiteKings != 0)
         {
-            byte kingPos = (byte)BitboardHelpers.BitScanForward(ref whiteKings);
+            byte kingPos = BitboardHelpers.BitScanForward(ref whiteKings);
             if ((PieceMasks.AdjacentMasks[kingPos] & blackKings) != 0)
             {
                 terminationEval = 0;

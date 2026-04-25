@@ -16,14 +16,14 @@ public sealed class AggressionEvaluator : IEvaluatorFunction
         UInt128 whiteKingBitboard = board.BitboardFor(PieceType.King, BitPieceColor.White);
         if (whiteKingBitboard != 0)
         {
-            byte whiteKingSquare = (byte)BitboardHelpers.BitScanForward(ref whiteKingBitboard);
+            byte whiteKingSquare = BitboardHelpers.BitScanForward(ref whiteKingBitboard);
             blackScore += EvaluatePieceAggression(board, BitPieceColor.Black, whiteKingSquare);
         }
 
         UInt128 blackKingBitboard = board.BitboardFor(PieceType.King, BitPieceColor.Black);
         if (blackKingBitboard != 0)
         {
-            byte blackKingSquare = (byte)BitboardHelpers.BitScanForward(ref blackKingBitboard);
+            byte blackKingSquare = BitboardHelpers.BitScanForward(ref blackKingBitboard);
             whiteScore += EvaluatePieceAggression(board, BitPieceColor.White, blackKingSquare);
         }
 
@@ -49,7 +49,7 @@ public sealed class AggressionEvaluator : IEvaluatorFunction
 
         while (pieces != 0)
         {
-            byte square = (byte)BitboardHelpers.BitScanForward(ref pieces);
+            byte square = BitboardHelpers.BitScanForward(ref pieces);
             int distance = BitboardConstants.BoardDistance[square, targetKingSquare];
             score += Math.Max(0, MaxDistanceBonus - distance);
         }

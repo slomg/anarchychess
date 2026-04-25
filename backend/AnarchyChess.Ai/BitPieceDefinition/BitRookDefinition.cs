@@ -28,7 +28,7 @@ public sealed class BitRookDefinition : IBitPieceDefinition
         UInt128 notPositionBit = ~(UInt128.One << position);
         while (horseyAttacks != 0)
         {
-            byte toSquare = (byte)BitboardHelpers.BitScanForward(ref horseyAttacks);
+            byte toSquare = BitboardHelpers.BitScanForward(ref horseyAttacks);
 
             UInt128 captures = PieceMasks.AdjacentMasks[toSquare];
             captures &= board.Occupancy;

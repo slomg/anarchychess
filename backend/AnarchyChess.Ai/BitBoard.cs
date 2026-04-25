@@ -275,7 +275,7 @@ public partial class BitBoard
         UInt128 captureMask = move.CapturesMask;
         while (captureMask != 0)
         {
-            byte captureSquare = (byte)BitboardHelpers.BitScanForward(ref captureMask);
+            byte captureSquare = BitboardHelpers.BitScanForward(ref captureMask);
             if (TryGetPieceAt(captureSquare, out var piece))
             {
                 RemovePiece(piece.Value.Type, piece.Value.Color, captureSquare);
@@ -327,7 +327,7 @@ public partial class BitBoard
         UInt128 prevStunned = undoState.StunnedPieces;
         while (prevStunned != 0)
         {
-            byte position = (byte)BitboardHelpers.BitScanForward(ref prevStunned);
+            byte position = BitboardHelpers.BitScanForward(ref prevStunned);
             _stunnedForPlies[position]++;
         }
 
@@ -505,7 +505,7 @@ public partial class BitBoard
         UInt128 stunned = StunnedPieces;
         while (stunned != 0)
         {
-            byte position = (byte)BitboardHelpers.BitScanForward(ref stunned);
+            byte position = BitboardHelpers.BitScanForward(ref stunned);
             _stunnedForPlies[position]--;
             if (_stunnedForPlies[position] == 0)
             {

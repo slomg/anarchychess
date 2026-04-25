@@ -159,7 +159,7 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
 
         while (edges != 0)
         {
-            byte edgeSquare = (byte)BitboardHelpers.BitScanForward(ref edges);
+            byte edgeSquare = BitboardHelpers.BitScanForward(ref edges);
             GenerateBounces(
                 board,
                 piece,
@@ -209,7 +209,7 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
                     ? ForcedMovePriority.UnderagePawn
                     : ForcedMovePriority.None;
 
-            byte targetBishopSquare = (byte)BitboardHelpers.BitScanForward(ref targetBishopMask);
+            byte targetBishopSquare = BitboardHelpers.BitScanForward(ref targetBishopMask);
             BitMove move = new()
             {
                 From = position,
@@ -237,7 +237,7 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
         attacks &= ~underagePawnsBitboard;
         while (underagePawnCapture != 0)
         {
-            byte toSquare = (byte)BitboardHelpers.BitScanForward(ref underagePawnCapture);
+            byte toSquare = BitboardHelpers.BitScanForward(ref underagePawnCapture);
 
             BitMove move = new()
             {

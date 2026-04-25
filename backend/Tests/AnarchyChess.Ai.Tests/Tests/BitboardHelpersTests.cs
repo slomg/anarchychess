@@ -11,7 +11,7 @@ public class BitboardHelpersTests
     public void BitScanForward_returns_the_index_of_the_least_significant_bit()
     {
         UInt128 bitboard = 0b10010;
-        int index = BitboardHelpers.BitScanForward(ref bitboard);
+        byte index = BitboardHelpers.BitScanForward(ref bitboard);
 
         index.Should().Be(1);
         bitboard.Should().Be(0b10000);
@@ -21,7 +21,7 @@ public class BitboardHelpersTests
     public void BitScanForward_handles_a_single_bit_set()
     {
         UInt128 bitboard = 0b10000000;
-        int index = BitboardHelpers.BitScanForward(ref bitboard);
+        byte index = BitboardHelpers.BitScanForward(ref bitboard);
 
         index.Should().Be(7);
         bitboard.Should().Be(0);
@@ -31,7 +31,7 @@ public class BitboardHelpersTests
     public void BitScanForward_handles_high_bit_set()
     {
         UInt128 bitboard = UInt128.One << 67;
-        int index = BitboardHelpers.BitScanForward(ref bitboard);
+        byte index = BitboardHelpers.BitScanForward(ref bitboard);
 
         index.Should().Be(67);
         bitboard.Should().Be(0);
@@ -51,7 +51,7 @@ public class BitboardHelpersTests
     public void BitScanBackward_returns_the_index_of_the_most_significant_bit()
     {
         UInt128 bitboard = 0b10010;
-        int index = BitboardHelpers.BitScanBackward(ref bitboard);
+        byte index = BitboardHelpers.BitScanBackward(ref bitboard);
 
         index.Should().Be(4);
         bitboard.Should().Be(0b10);
@@ -61,7 +61,7 @@ public class BitboardHelpersTests
     public void BitScanBackward_handles_a_single_bit_set()
     {
         UInt128 bitboard = 0b10000000;
-        int index = BitboardHelpers.BitScanBackward(ref bitboard);
+        byte index = BitboardHelpers.BitScanBackward(ref bitboard);
 
         index.Should().Be(7);
         bitboard.Should().Be(0);
@@ -71,7 +71,7 @@ public class BitboardHelpersTests
     public void BitScanBackward_handles_high_bit_set()
     {
         UInt128 bitboard = UInt128.One << 67;
-        int index = BitboardHelpers.BitScanBackward(ref bitboard);
+        byte index = BitboardHelpers.BitScanBackward(ref bitboard);
 
         index.Should().Be(67);
         bitboard.Should().Be(0);

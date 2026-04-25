@@ -71,7 +71,7 @@ public sealed class KingSafetyEvaluator : IEvaluatorFunction
 
         while (kingBitboard != 0)
         {
-            byte square = (byte)BitboardHelpers.BitScanForward(ref kingBitboard);
+            byte square = BitboardHelpers.BitScanForward(ref kingBitboard);
 
             UInt128 kingAdjacent = PieceMasks.AdjacentMasks[square];
             int numOfPawnsAroundKing = BitboardHelpers.CountBits(kingAdjacent & pawnBitboard);
