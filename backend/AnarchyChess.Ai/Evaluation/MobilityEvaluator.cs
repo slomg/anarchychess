@@ -84,7 +84,7 @@ public sealed class MobilityEvaluator : IEvaluatorFunction
         UInt128 enemyPieces = board.BitboardForEnemyOf(color);
         while (bitboard != 0)
         {
-            byte position = (byte)BitboardHelpers.BitScanForward(ref bitboard);
+            byte position = BitboardHelpers.BitScanForward(ref bitboard);
             UInt128 attacks = GetEvalMaskForPiece(pieceType, position, board.Occupancy);
             UInt128 quiets = attacks & board.Empty;
             UInt128 captures = attacks & enemyPieces;

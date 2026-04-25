@@ -17,7 +17,7 @@ public sealed class MaterialEvaluator : IEvaluatorFunction
         );
         while (traitorRookBitboard != 0)
         {
-            byte position = (byte)BitboardHelpers.BitScanForward(ref traitorRookBitboard);
+            byte position = BitboardHelpers.BitScanForward(ref traitorRookBitboard);
             EvaluateTraitorRookValue(board, position, ref whiteScore, ref blackScore);
         }
 

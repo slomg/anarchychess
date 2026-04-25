@@ -322,8 +322,8 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
         {
             // scan forward / backwards to make sure captures are right
             byte captureSquare = isWhite
-                ? (byte)BitboardHelpers.BitScanForward(ref longPassantCaptures)
-                : (byte)BitboardHelpers.BitScanBackward(ref longPassantCaptures);
+                ? BitboardHelpers.BitScanForward(ref longPassantCaptures)
+                : BitboardHelpers.BitScanBackward(ref longPassantCaptures);
 
             if ((reachableLongPassantSquares & (UInt128.One << captureSquare)) == 0)
             {

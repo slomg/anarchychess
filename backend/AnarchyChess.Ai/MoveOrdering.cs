@@ -89,7 +89,7 @@ public sealed class MoveOrdering : IMoveOrdering
             int attackerValue = MaterialValue.GetPieceValue(move.Piece.Type);
             while (captureMask != 0)
             {
-                byte captureSquare = (byte)BitboardHelpers.BitScanForward(ref captureMask);
+                byte captureSquare = BitboardHelpers.BitScanForward(ref captureMask);
                 if (board.TryGetPieceAt(captureSquare, out var capturePiece))
                 {
                     int victimValue = MaterialValue.GetPieceValue(capturePiece.Value.Type);

@@ -189,7 +189,7 @@ internal sealed class SearchThread(
             }
 
             UInt128 capturesMask = move.CapturesMask;
-            byte firstCaptureAt = (byte)BitboardHelpers.BitScanForward(ref capturesMask);
+            byte firstCaptureAt = BitboardHelpers.BitScanForward(ref capturesMask);
             BitPiece? capturedPiece = board.GetPieceAt(firstCaptureAt);
             if (capturedPiece is null)
             {

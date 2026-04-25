@@ -110,7 +110,7 @@ public sealed class BotSee(IBitMoveGenerator bitMoveGenerator) : IBotSee
         int captureValue = 0;
         while (capturesMask != 0)
         {
-            byte capturePosition = (byte)BitboardHelpers.BitScanForward(ref capturesMask);
+            byte capturePosition = BitboardHelpers.BitScanForward(ref capturesMask);
             if (!board.TryGetPieceAt(capturePosition, out var capturedPiece))
             {
                 continue;
@@ -176,7 +176,7 @@ public sealed class BotSee(IBitMoveGenerator bitMoveGenerator) : IBotSee
         UInt128 traitorRooks = board.BitboardFor(PieceType.TraitorRook, BitPieceColor.Neutral);
         while (traitorRooks != 0)
         {
-            byte position = (byte)BitboardHelpers.BitScanForward(ref traitorRooks);
+            byte position = BitboardHelpers.BitScanForward(ref traitorRooks);
             UInt128 adjacent = PieceMasks.AdjacentMasks[position];
             UInt128 whiteAdjacent = adjacent & board.WhitePieces;
             UInt128 blackAdjacent = adjacent & board.BlackPieces;

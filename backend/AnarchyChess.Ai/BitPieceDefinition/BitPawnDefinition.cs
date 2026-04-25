@@ -62,7 +62,7 @@ public sealed class BitPawnDefinition : IBitPieceDefinition
 
         while (throwMask != 0)
         {
-            byte throwTo = (byte)BitboardHelpers.BitScanForward(ref throwMask);
+            byte throwTo = BitboardHelpers.BitScanForward(ref throwMask);
             moves[moveCount++] = new BitMove()
             {
                 From = position,
@@ -74,7 +74,7 @@ public sealed class BitPawnDefinition : IBitPieceDefinition
 
         while (stuns != 0)
         {
-            byte stunAt = (byte)BitboardHelpers.BitScanForward(ref stuns);
+            byte stunAt = BitboardHelpers.BitScanForward(ref stuns);
             moves[moveCount++] = new BitMove()
             {
                 From = position,

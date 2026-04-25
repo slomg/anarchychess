@@ -32,7 +32,7 @@ public sealed class PawnSpaceEvaluator : IEvaluatorFunction
 
         while (pawnBitboard != 0)
         {
-            byte square = (byte)BitboardHelpers.BitScanForward(ref pawnBitboard);
+            byte square = BitboardHelpers.BitScanForward(ref pawnBitboard);
 
             int rank = square / 10;
             int file = square % 10;
