@@ -33,7 +33,7 @@ public class AntiqueenDefinitionTestData : TheoryData<PieceTestCase>
                 .GoesTo("j3", "h3", "g2")
                 .GoesTo(
                     "e1",
-                    sideEffects: [new(From: new("i1"), To: new("e1"), Piece: whiteQueen)],
+                    sideEffects: [new(From: new("e1"), To: new("i1"), Piece: whiteQueen)],
                     specialMoveType: SpecialMoveType.QueentumTunnel
                 )
                 .WithDescription("Antiqueen queentum tunneling")
