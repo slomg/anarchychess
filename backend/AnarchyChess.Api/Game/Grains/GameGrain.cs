@@ -138,6 +138,15 @@ public class GameGrain : Grain, IGameGrain, IRemindable
         return Task.FromResult<ErrorOr<GameState>>(gameState);
     }
 
+    public async Task<bool> IsGameOngoingAsync()
+    {
+        if (!TryGetCurrentGame(out var game))
+        {
+            return false;
+        }
+        return game.Result is null;
+    }
+
     public Task<ErrorOr<PlayerRoster>> GetPlayersAsync() =>
         Task.FromResult(
             TryGetCurrentGame(out var game) ? game.Players.ToErrorOr() : GameErrors.GameNotFound

@@ -1,4 +1,5 @@
-﻿using AnarchyChess.Api.Game.Models;
+﻿using AnarchyChess.Api.Game.Grains;
+using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Lobby.Errors;
 using AnarchyChess.Api.Lobby.Grains;
@@ -619,6 +620,53 @@ public class PlayerSessionGrainTests : BaseGrainTest
         );
 
         _state.OngoingGames.Should().NotContainKey(ongoingGame.GameToken);
+    }
+
+    [Fact]
+    public async Task OnActivateAsync_removes_games_that_ended()
+    {
+        var startedStreamProbe = ProbeGameStartedStream();
+        var grain = await Silo.CreateGrainAsync<PlayerSessionGrain>(_userId);
+
+        var ongoingGame = new OngoingGameFaker().Generate();
+        IGameGrain gameGrainMock = Substitute.For<IGameGrain>();
+        gameGrainMock.IsGameOngoingAsync().Returns(true);
+        Silo.AddProbe(id =>
+            id.ToString() == ongoingGame.GameToken ? gameGrainMock : Substitute.For<IGameGrain>()
+        );
+        await startedStreamProbe.OnNextAsync(
+            new(ongoingGame, GameSource.Rematch),
+            new EventSequenceToken(0, 0)
+        );
+
+        (await grain.GetOngoingGamesAsync()).Should().HaveCount(1);
+
+        gameGrainMock.IsGameOngoingAsync().Returns(false);
+        await grain.OnActivateAsync(CT);
+
+        (await grain.GetOngoingGamesAsync()).Should().HaveCount(0);
+    }
+
+    [Fact]
+    public async Task OnActivateAsync_doesnt_remove_games_that_havent_ended()
+    {
+        var startedStreamProbe = ProbeGameStartedStream();
+        var grain = await Silo.CreateGrainAsync<PlayerSessionGrain>(_userId);
+
+        var ongoingGame = new OngoingGameFaker().Generate();
+        IGameGrain gameGrainMock = Substitute.For<IGameGrain>();
+        gameGrainMock.IsGameOngoingAsync().Returns(true);
+        Silo.AddProbe(id =>
+            id.ToString() == ongoingGame.GameToken ? gameGrainMock : Substitute.For<IGameGrain>()
+        );
+        await startedStreamProbe.OnNextAsync(
+            new(ongoingGame, GameSource.Rematch),
+            new EventSequenceToken(0, 0)
+        );
+
+        (await grain.GetOngoingGamesAsync()).Should().HaveCount(1);
+        await grain.OnActivateAsync(CT);
+        (await grain.GetOngoingGamesAsync()).Should().HaveCount(1);
     }
 
     private async Task FillGameLimitAsync(
