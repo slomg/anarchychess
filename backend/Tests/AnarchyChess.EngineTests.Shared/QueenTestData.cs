@@ -48,7 +48,7 @@ public class QueenTestData : TheoryData<PieceTestCase>
             Spawns:
             [
                 new PieceSpawn(PieceType.Rook, GameColor.Black, new("d5")),
-                new PieceSpawn(PieceType.SterilePawn, GameColor.Black, new("e6")),
+                new PieceSpawn(PieceType.SterilePawn, GameColor.Black, new("e4")),
                 new PieceSpawn(PieceType.Horsey, GameColor.Black, new("f5")),
             ],
             Captures: ["e5"],
