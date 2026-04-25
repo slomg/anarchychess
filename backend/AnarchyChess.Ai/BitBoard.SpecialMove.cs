@@ -81,6 +81,10 @@ public partial class BitBoard
                     AddStun(move.To, forTurns: 2);
                 }
                 break;
+
+            case SpecialMoveType.QueentumTunnel:
+                AddExistingPiece(PieceType.Antiqueen, move.Piece.Color, at: move.From);
+                break;
         }
     }
 
@@ -155,6 +159,10 @@ public partial class BitBoard
                 {
                     RemoveStun(undoState.To, forTurns: 2);
                 }
+                break;
+
+            case SpecialMoveType.QueentumTunnel:
+                AddExistingPiece(PieceType.Antiqueen, undoState.Piece.Color, at: undoState.To);
                 break;
         }
     }

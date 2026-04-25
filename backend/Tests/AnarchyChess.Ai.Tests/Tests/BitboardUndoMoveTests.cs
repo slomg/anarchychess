@@ -284,6 +284,26 @@ public class BitboardUndoMoveTests
     }
 
     [Fact]
+    public void UndoMove_restores_queen_tunneling()
+    {
+        BitMove move = new()
+        {
+            From = new AlgebraicPoint("f4").AsIdx(),
+            To = new AlgebraicPoint("g5").AsIdx(),
+            Piece = new() { Type = PieceType.Queen, Color = BitPieceColor.White },
+            SpecialMoveType = SpecialMoveType.QueentumTunnel,
+        };
+        AssertMoveUndo(
+            new()
+            {
+                [new AlgebraicPoint("f4")] = PieceFactory.White(PieceType.Queen),
+                [new AlgebraicPoint("g5")] = PieceFactory.White(PieceType.Antiqueen),
+            },
+            move
+        );
+    }
+
+    [Fact]
     public void UndoMove_restores_omnipotent_pawn()
     {
         BitMove move = new()
