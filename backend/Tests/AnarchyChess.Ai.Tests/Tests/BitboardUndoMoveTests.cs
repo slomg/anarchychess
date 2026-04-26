@@ -264,7 +264,7 @@ public class BitboardUndoMoveTests
         BitMove move = new()
         {
             From = new AlgebraicPoint("d5").AsIdx(),
-            To = new AlgebraicPoint("g5").AsIdx(),
+            To = new AlgebraicPoint("d5").AsIdx(),
             Piece = new() { Type = PieceType.Bishop, Color = BitPieceColor.White },
             SpecialMoveType = SpecialMoveType.IlVaticano,
             CapturesMask =
@@ -284,7 +284,7 @@ public class BitboardUndoMoveTests
     }
 
     [Fact]
-    public void UndoMove_restores_queen_tunneling()
+    public void UndoMove_restores_queentum_tunneling()
     {
         BitMove move = new()
         {
@@ -298,6 +298,7 @@ public class BitboardUndoMoveTests
             {
                 [new AlgebraicPoint("f4")] = PieceFactory.White(PieceType.Queen),
                 [new AlgebraicPoint("g5")] = PieceFactory.White(PieceType.Antiqueen),
+                [new AlgebraicPoint("e4")] = PieceFactory.White(PieceType.Antiqueen),
             },
             move
         );

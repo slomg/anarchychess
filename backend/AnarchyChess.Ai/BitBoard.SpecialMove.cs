@@ -51,10 +51,6 @@ public partial class BitBoard
                 );
                 break;
 
-            case SpecialMoveType.IlVaticano:
-                AddExistingPiece(PieceType.Bishop, move.Piece.Color, at: move.From);
-                break;
-
             case SpecialMoveType.RadioactiveBetaDecay:
                 SpawnPiece(PieceType.Rook, move.Piece.Color, at: (byte)(move.To - 1));
                 SpawnPiece(PieceType.Horsey, move.Piece.Color, at: (byte)(move.To + 1));
@@ -83,7 +79,7 @@ public partial class BitBoard
                 break;
 
             case SpecialMoveType.QueentumTunnel:
-                AddExistingPiece(PieceType.Antiqueen, move.Piece.Color, at: move.From);
+                SpawnPiece(PieceType.Antiqueen, move.Piece.Color, at: move.From);
                 break;
         }
     }
@@ -134,10 +130,6 @@ public partial class BitBoard
                 );
                 break;
 
-            case SpecialMoveType.IlVaticano:
-                AddExistingPiece(PieceType.Bishop, undoState.Piece.Color, at: undoState.To);
-                break;
-
             case SpecialMoveType.RadioactiveBetaDecay:
                 RemovePiece(PieceType.Rook, undoState.Piece.Color, at: (byte)(undoState.To - 1));
                 RemovePiece(PieceType.Horsey, undoState.Piece.Color, at: (byte)(undoState.To + 1));
@@ -162,7 +154,7 @@ public partial class BitBoard
                 break;
 
             case SpecialMoveType.QueentumTunnel:
-                AddExistingPiece(PieceType.Antiqueen, undoState.Piece.Color, at: undoState.To);
+                SpawnPiece(PieceType.Antiqueen, undoState.Piece.Color, at: undoState.To);
                 break;
         }
     }

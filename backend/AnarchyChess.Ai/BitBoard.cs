@@ -283,7 +283,10 @@ public partial class BitBoard
             }
         }
 
-        if ((move.CapturesMask & (UInt128.One << move.From)) == 0 || move.PromotesTo is not null)
+        bool isSelfCapture = (move.CapturesMask & (UInt128.One << move.From)) != 0;
+        // either the piece has moved to a different square, or a promotion
+        bool isMeaningfulMove = move.From != move.To || move.PromotesTo is not null;
+        if (!isSelfCapture && isMeaningfulMove)
         {
             MovePiece(
                 move.Piece.Type,
@@ -359,6 +362,11 @@ public partial class BitBoard
             return;
         }
 
+        if (TryGetPieceAt(to, out var piece))
+        {
+            RemovePiece(piece.Value.Type, piece.Value.Color, to);
+        }
+
         ref UInt128 bitboard = ref BitboardFor(pieceType, color);
 
         UInt128 fromMask = UInt128.One << from;
@@ -404,28 +412,6 @@ public partial class BitBoard
             case BitPieceColor.Black:
                 BlackPieces |= mask;
                 BlackMaterialCount += MaterialValue.GetPieceValue(pieceType);
-                break;
-            case BitPieceColor.Neutral:
-                NeutralPieces |= mask;
-                break;
-        }
-        PieceAt[at] = new BitPiece() { Type = pieceType, Color = color };
-    }
-
-    private void AddExistingPiece(PieceType pieceType, BitPieceColor color, byte at)
-    {
-        UInt128 mask = UInt128.One << at;
-        ref UInt128 bitboard = ref BitboardFor(pieceType, color);
-        bitboard |= mask;
-        HasMoved |= mask;
-
-        switch (color)
-        {
-            case BitPieceColor.White:
-                WhitePieces |= mask;
-                break;
-            case BitPieceColor.Black:
-                BlackPieces |= mask;
                 break;
             case BitPieceColor.Neutral:
                 NeutralPieces |= mask;
