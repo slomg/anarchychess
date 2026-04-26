@@ -1,5 +1,7 @@
 import { Mock } from "vitest";
 
+type AudioEvent = "ended";
+
 interface AudioMock {
     play: Mock;
     pause: Mock;
@@ -7,12 +9,21 @@ interface AudioMock {
     load: Mock;
     currentTime: number;
     preload: "none" | "metadata" | "auto" | "";
+    addEventListener(event: string, callback: () => void): void;
 }
 
-export function mockAudio(): {
+interface MockAudioOptions {
+    manuallyTriggerEnded?: boolean;
+}
+
+export function mockAudio({ manuallyTriggerEnded }: MockAudioOptions = {}): {
     audioMock: AudioMock;
     audioConstructorMock: Mock;
+    listeners: Partial<Record<AudioEvent, () => void>>;
 } {
+    manuallyTriggerEnded ??= false;
+
+    const listeners: Partial<Record<AudioEvent, () => void>> = {};
     const audioMock: AudioMock = {
         play: vi.fn(),
         pause: vi.fn(),
@@ -20,6 +31,14 @@ export function mockAudio(): {
         load: vi.fn(),
         currentTime: 0,
         preload: "",
+
+        addEventListener: vi.fn((event: AudioEvent, callback: () => void) => {
+            listeners[event] = callback;
+
+            if (event === "ended" && !manuallyTriggerEnded) {
+                callback();
+            }
+        }),
     };
 
     const audioConstructorMock = vi.fn().mockImplementation(function () {
@@ -27,5 +46,5 @@ export function mockAudio(): {
     });
     vi.stubGlobal("Audio", audioConstructorMock);
 
-    return { audioMock, audioConstructorMock };
+    return { audioMock, audioConstructorMock, listeners };
 }

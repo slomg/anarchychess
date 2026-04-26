@@ -26,6 +26,10 @@ export default class AudioPlayer {
         const clone = audio.cloneNode() as HTMLAudioElement;
         clone.currentTime = 0;
         await clone.play();
+
+        await new Promise<void>((resolve) => {
+            clone.addEventListener("ended", () => resolve(), { once: true });
+        });
     }
 
     static preload(...audioTypes: AudioType[]): void {

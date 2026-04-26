@@ -32,6 +32,7 @@ import { EventHandlers } from "@/features/signalR/hooks/useSignalREvent";
 import { createFakeClocks } from "@/lib/testUtils/fakers/clocksFaker";
 import { GameClientEvents, useGameEvent } from "../useGameHub";
 import LegalMoves from "@/features/chessboard/lib/legalMoves";
+import gameStartRedirect from "../../lib/gameStartRedirect";
 import { refetchGame } from "../../lib/gameStateProcessor";
 import { logicalPoint } from "@/features/point/pointUtils";
 import handleMoveUpdate from "../../lib/handleMoveUpdate";
@@ -41,6 +42,7 @@ import constants from "@/lib/constants";
 vi.mock("@/features/liveGame/hooks/useGameHub");
 vi.mock("@/features/liveGame/lib/gameStateProcessor");
 vi.mock("@/features/liveGame/lib/handleMoveUpdate");
+vi.mock("@/features/liveGame/lib/gameStartRedirect");
 
 describe("useLiveChessEvents", () => {
     let liveChessStore: StoreApi<LiveChessStore>;
@@ -522,6 +524,22 @@ describe("useLiveChessEvents", () => {
             expect(refetchGame).toHaveBeenCalledExactlyOnceWith(
                 liveChessStore,
                 chessboardStore,
+            );
+        });
+    });
+
+    describe("RematchAcceptedAsync", () => {
+        it("should navigate when RematchAccepted fires", async () => {
+            renderLiveChessEvents();
+            const newGameToken = "new-game-token-999";
+
+            await act(() =>
+                gameEventHandlers.RematchAcceptedAsync?.(newGameToken),
+            );
+
+            expect(gameStartRedirect).toHaveBeenCalledExactlyOnceWith(
+                newGameToken,
+                expect.anything(),
             );
         });
     });

@@ -1,4 +1,5 @@
 import { StoreApi, useStore } from "zustand";
+import { useRouter } from "next/navigation";
 import { useRef } from "react";
 
 import { ChessboardStore } from "@/features/chessboard/stores/chessboardStore";
@@ -6,11 +7,12 @@ import { decodeMovePath, decodeLegalMoves } from "../lib/moveDecoder";
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
 import LegalMoves from "@/features/chessboard/lib/legalMoves";
 import { LiveChessStore } from "../stores/liveChessStore";
+import gameStartRedirect from "../lib/gameStartRedirect";
 import { refetchGame } from "../lib/gameStateProcessor";
+import handleMoveUpdate from "../lib/handleMoveUpdate";
 import { Clocks, MoveSnapshot } from "@/lib/apiClient";
 import { LogicalPoint } from "@/features/point/types";
 import { useGameEvent } from "./useGameHub";
-import handleMoveUpdate from "../lib/handleMoveUpdate";
 
 export default function useLiveChessEvents(
     liveChessStore: StoreApi<LiveChessStore>,
@@ -18,6 +20,7 @@ export default function useLiveChessEvents(
 ) {
     const boardDimensions = useStore(chessboardStore, (x) => x.boardDimensions);
     const gameToken = useStore(liveChessStore, (x) => x.gameToken);
+    const router = useRouter();
 
     const queuedOvertimeRef = useRef<
         Map<
@@ -170,4 +173,12 @@ export default function useLiveChessEvents(
         setAllowHistoryChanges(true);
         AudioPlayer.playAudio(AudioType.GAME_END);
     });
+
+    useGameEvent(
+        gameToken,
+        "RematchAcceptedAsync",
+        async (createdGameToken) => {
+            await gameStartRedirect(createdGameToken, router);
+        },
+    );
 }

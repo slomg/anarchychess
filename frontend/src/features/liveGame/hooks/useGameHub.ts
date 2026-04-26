@@ -44,7 +44,7 @@ export type GameClientEvents = {
 
     RematchRequestedAsync: [];
     RematchCancelledAsync: [];
-    RematchAccepted: [createdGameToken: string];
+    RematchAcceptedAsync: [createdGameToken: string];
 
     ReceiveErrorAsync: [errors: SignalRError[]];
 };

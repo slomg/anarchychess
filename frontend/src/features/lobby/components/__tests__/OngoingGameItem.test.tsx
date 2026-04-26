@@ -1,11 +1,11 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
 import { createFakeOngoingGame } from "@/lib/testUtils/fakers/ongoingGameFaker";
-import { mockRouter } from "@/lib/testUtils/mocks/mockRouter";
-import OngoingGameItem from "../OngoingGameItem";
-import { PoolType, TimeControl } from "@/lib/apiClient";
 import { createFakePoolKey } from "@/lib/testUtils/fakers/poolKeyFaker";
-import userEvent from "@testing-library/user-event";
+import { mockRouter } from "@/lib/testUtils/mocks/mockRouter";
+import { PoolType, TimeControl } from "@/lib/apiClient";
+import OngoingGameItem from "../OngoingGameItem";
 import constants from "@/lib/constants";
 
 describe("OngoingGameItem", () => {

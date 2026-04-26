@@ -51,13 +51,13 @@ public class RematchNotifierTests
     }
 
     [Fact]
-    public async Task NotifyRematchAccepted_notifies_both_users_with_game_token()
+    public async Task NotifyRematchAcceptedAsync_notifies_both_users_with_game_token()
     {
         GameToken gameToken = "game-token-abc";
 
-        await _notifier.NotifyRematchAccepted(gameToken, _user1Id, _user2Id);
+        await _notifier.NotifyRematchAcceptedAsync(gameToken, _user1Id, _user2Id);
 
-        await _user1ProxyMock.Received(1).RematchAccepted(gameToken);
-        await _user2ProxyMock.Received(1).RematchAccepted(gameToken);
+        await _user1ProxyMock.Received(1).RematchAcceptedAsync(gameToken);
+        await _user2ProxyMock.Received(1).RematchAcceptedAsync(gameToken);
     }
 }

@@ -1,8 +1,9 @@
-import { StoreApi } from "zustand";
-import { ChallengeStore } from "../stores/challengeStore";
-import { useChallengeInstanceEvent } from "./useChallengeHub";
 import { useRouter } from "next/navigation";
-import constants from "@/lib/constants";
+import { StoreApi } from "zustand";
+
+import gameStartRedirect from "@/features/liveGame/lib/gameStartRedirect";
+import { useChallengeInstanceEvent } from "./useChallengeHub";
+import { ChallengeStore } from "../stores/challengeStore";
 
 export default function useChallengeEvents(
     challengeStore: StoreApi<ChallengeStore>,
@@ -13,14 +14,14 @@ export default function useChallengeEvents(
     useChallengeInstanceEvent(
         challengeToken,
         "ChallengeAcceptedAsync",
-        (gameToken, challengeToken) => {
+        async (gameToken, challengeToken) => {
             const currentChallengeToken =
                 challengeStore.getState().challenge.challengeToken;
             if (challengeToken !== currentChallengeToken) {
                 return;
             }
 
-            router.push(`${constants.PATHS.GAME}/${gameToken}`);
+            await gameStartRedirect(gameToken, router);
         },
     );
 
@@ -40,7 +41,7 @@ export default function useChallengeEvents(
     useChallengeInstanceEvent(
         challengeToken,
         "ReceiveUpdatedChallengeAsync",
-        (challenge) => {
+        async (challenge) => {
             const { challenge: currentChallenge, setChallenge } =
                 challengeStore.getState();
             if (challenge.challengeToken !== currentChallenge.challengeToken) {
@@ -49,9 +50,7 @@ export default function useChallengeEvents(
 
             setChallenge(challenge);
             if (challenge.resolvedGame) {
-                router.push(
-                    `${constants.PATHS.GAME}/${challenge.resolvedGame}`,
-                );
+                await gameStartRedirect(challenge.resolvedGame, router);
             }
         },
     );

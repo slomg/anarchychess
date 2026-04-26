@@ -7,7 +7,7 @@ namespace AnarchyChess.Api.Game.Services;
 
 public interface IRematchNotifier
 {
-    Task NotifyRematchAccepted(GameToken gameToken, UserId user1, UserId user2);
+    Task NotifyRematchAcceptedAsync(GameToken gameToken, UserId user1, UserId user2);
     Task NotifyRematchCancelledAsync(UserId user1, UserId user2);
     Task NotifyRematchRequestedAsync(UserId recipient);
 }
@@ -25,9 +25,9 @@ public class RematchNotifier(IHubContext<GameHub, IGameHubClient> hub) : IRematc
         await _hub.Clients.User(user2).RematchCancelledAsync();
     }
 
-    public async Task NotifyRematchAccepted(GameToken gameToken, UserId user1, UserId user2)
+    public async Task NotifyRematchAcceptedAsync(GameToken gameToken, UserId user1, UserId user2)
     {
-        await _hub.Clients.User(user1).RematchAccepted(gameToken);
-        await _hub.Clients.User(user2).RematchAccepted(gameToken);
+        await _hub.Clients.User(user1).RematchAcceptedAsync(gameToken);
+        await _hub.Clients.User(user2).RematchAcceptedAsync(gameToken);
     }
 }

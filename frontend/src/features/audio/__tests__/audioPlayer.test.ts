@@ -1,3 +1,4 @@
+import flushMicrotasks from "@/lib/testUtils/flushMicrotasks";
 import AudioPlayer, { AudioType } from "../audioPlayer";
 import { mockAudio } from "@/lib/testUtils/mocks/mockAudio";
 
@@ -40,6 +41,27 @@ describe("AudioPlayer", () => {
 
             expect(audioMock.currentTime).toBe(0);
             expect(audioMock.play).toHaveBeenCalled();
+        });
+
+        it("should wait for ended event before resolving", async () => {
+            const { audioMock, listeners } = mockAudio({
+                manuallyTriggerEnded: true,
+            });
+
+            let resolved = false;
+            const promise = AudioPlayer.playAudio(AudioType.MOVE).then(() => {
+                resolved = true;
+            });
+
+            expect(resolved).toBe(false);
+            expect(audioMock.play).toHaveBeenCalledOnce();
+
+            await flushMicrotasks();
+            listeners["ended"]?.();
+
+            await promise;
+
+            expect(resolved).toBe(true);
         });
     });
 

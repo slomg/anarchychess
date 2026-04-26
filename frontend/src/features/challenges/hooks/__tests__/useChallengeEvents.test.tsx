@@ -1,21 +1,23 @@
+import { act, renderHook } from "@testing-library/react";
 import { StoreApi } from "zustand";
+
 import {
     ChallengeStore,
     createChallengeStore,
 } from "../../stores/challengeStore";
-import { ChallengeRequest } from "@/lib/apiClient";
-import { createFakeChallengeRequest } from "@/lib/testUtils/fakers/challengeRequestFaker";
 import {
     ChallengeClientEvents,
     useChallengeInstanceEvent,
 } from "../useChallengeHub";
+
+import { createFakeChallengeRequest } from "@/lib/testUtils/fakers/challengeRequestFaker";
+import gameStartRedirect from "@/features/liveGame/lib/gameStartRedirect";
 import { EventHandlers } from "@/features/signalR/hooks/useSignalREvent";
-import { mockRouter } from "@/lib/testUtils/mocks/mockRouter";
-import { act, renderHook } from "@testing-library/react";
 import useChallengeEvents from "../useChallengeEvents";
-import constants from "@/lib/constants";
+import { ChallengeRequest } from "@/lib/apiClient";
 
 vi.mock("@/features/challenges/hooks/useChallengeHub");
+vi.mock("@/features/liveGame/lib/gameStartRedirect");
 
 describe("useChallengeEvents", () => {
     let challengeStore: StoreApi<ChallengeStore>;
@@ -38,7 +40,6 @@ describe("useChallengeEvents", () => {
 
     describe("ChallengeAcceptedAsync", () => {
         it("should redirect if the challenge token is correct", async () => {
-            const routerMock = mockRouter();
             const gameToken = "test game token";
             renderHook(() =>
                 useChallengeEvents(
@@ -54,13 +55,13 @@ describe("useChallengeEvents", () => {
                 ),
             );
 
-            expect(routerMock.push).toHaveBeenCalledExactlyOnceWith(
-                `${constants.PATHS.GAME}/${gameToken}`,
+            expect(gameStartRedirect).toHaveBeenCalledExactlyOnceWith(
+                gameToken,
+                expect.anything(),
             );
         });
 
         it("should not redirect if the challenge token is incorrect", async () => {
-            const routerMock = mockRouter();
             renderHook(() =>
                 useChallengeEvents(
                     challengeStore,
@@ -75,7 +76,7 @@ describe("useChallengeEvents", () => {
                 ),
             );
 
-            expect(routerMock.push).not.toHaveBeenCalled();
+            expect(gameStartRedirect).not.toHaveBeenCalled();
         });
     });
 
@@ -124,7 +125,6 @@ describe("useChallengeEvents", () => {
 
     describe("ReceiveUpdatedChallengeAsync", () => {
         it("should set the challenge if the challenge token is correct", async () => {
-            const routerMock = mockRouter();
             const newChallenge = createFakeChallengeRequest({
                 challengeToken: challengeMock.challengeToken,
             });
@@ -144,11 +144,10 @@ describe("useChallengeEvents", () => {
             const setChallenge = challengeStore.getState().challenge;
             expect(setChallenge).toEqual(newChallenge);
             expect(setChallenge).not.toEqual(challengeMock);
-            expect(routerMock.push).not.toHaveBeenCalled();
+            expect(gameStartRedirect).not.toHaveBeenCalled();
         });
 
         it("should redirect if resolvedGame is defined", async () => {
-            const routerMock = mockRouter();
             const newChallenge = createFakeChallengeRequest({
                 challengeToken: challengeMock.challengeToken,
                 resolvedGame: "game token",
@@ -166,13 +165,13 @@ describe("useChallengeEvents", () => {
                 ),
             );
 
-            expect(routerMock.push).toHaveBeenCalledExactlyOnceWith(
-                `${constants.PATHS.GAME}/${newChallenge.resolvedGame}`,
+            expect(gameStartRedirect).toHaveBeenCalledExactlyOnceWith(
+                newChallenge.resolvedGame,
+                expect.anything(),
             );
         });
 
         it("should do nothing if the challenge token is incorrect", async () => {
-            const routerMock = mockRouter();
             const newChallenge = createFakeChallengeRequest({
                 challengeToken: "different token",
             });
@@ -190,7 +189,7 @@ describe("useChallengeEvents", () => {
             );
 
             expect(challengeStore.getState().challenge).toEqual(challengeMock);
-            expect(routerMock.push).not.toHaveBeenCalled();
+            expect(gameStartRedirect).not.toHaveBeenCalled();
         });
     });
 });
