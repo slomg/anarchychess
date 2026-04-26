@@ -40,6 +40,7 @@ const Sidebar = ({
             >
                 <Link
                     href="/"
+                    prefetch={false}
                     className="hidden pb-3 md:flex"
                     data-testid="sidebarLogo"
                 >

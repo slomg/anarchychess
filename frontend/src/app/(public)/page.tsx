@@ -27,8 +27,8 @@ async function HomePage() {
                 grid-rows-[min-content_min-content_min-content_1fr]"
         >
             <HomeHero />
-            <HomeIntroSection />
             <HomeDiscordSection />
+            <HomeIntroSection />
             <HomeFooter />
         </main>
     );

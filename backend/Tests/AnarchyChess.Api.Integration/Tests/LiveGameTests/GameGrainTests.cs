@@ -3,7 +3,6 @@ using AnarchyChess.Api.Game.Grains;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.GameLogic.Models;
-using AnarchyChess.EngineShared;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.Shared.Models;
@@ -12,6 +11,7 @@ using AnarchyChess.Api.Streaming;
 using AnarchyChess.Api.TestInfrastructure;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AnarchyChess.Api.TestInfrastructure.NSubtituteExtenstion;
+using AnarchyChess.EngineShared;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -173,6 +173,23 @@ public class GameGrainTests : BaseOrleansIntegrationTest
             LegalMoves: legalMoves.MovePaths
         );
         result.Value.Should().BeEquivalentTo(expectedGameState);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task IsGameOngoingAsync_returns_correct_result(bool isOngoing)
+    {
+        var grain = await CreateGrainAsync();
+        await StartGameAsync(grain);
+        if (!isOngoing)
+        {
+            await grain.RequestGameEndAsync(byUserId: _whitePlayer.UserId, ApiTestBase.CT);
+        }
+
+        bool result = await grain.IsGameOngoingAsync();
+
+        result.Should().Be(isOngoing);
     }
 
     [Fact]

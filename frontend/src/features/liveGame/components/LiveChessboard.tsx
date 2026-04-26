@@ -25,7 +25,6 @@ import LiveChessStoreContext from "../contexts/liveChessContext";
 import GameControlsCard from "./GameControls/GameControlsCard";
 import useLiveMoveEmitter from "../hooks/useLiveMoveEmitter";
 import useLiveChessEvents from "../hooks/useLiveChessEvents";
-import useGameStartAudio from "../hooks/useGameStartAudio";
 import { GameState, Preferences } from "@/lib/apiClient";
 import LiveGameOverPopup from "./LiveGameOverPopup";
 import OvertimeAlert from "./OvertimeAlert";
@@ -59,7 +58,6 @@ const LiveChessboard = ({
     useSyncBoardInteraction(liveChessStore, chessboardStore);
     useLiveChessEvents(liveChessStore, chessboardStore);
     useLiveMoveEmitter(liveChessStore, chessboardStore);
-    useGameStartAudio(gameState);
     useInvalidateOnNavigate();
 
     return (

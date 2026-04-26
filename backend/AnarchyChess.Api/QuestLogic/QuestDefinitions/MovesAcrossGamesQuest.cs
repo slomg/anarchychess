@@ -7,9 +7,9 @@ public class MovesAcrossGamesQuest : IQuestDefinition
 {
     public IEnumerable<QuestVariant> Variants { get; } =
         [
-            CreateVariant(300, QuestDifficulty.Easy),
-            CreateVariant(600, QuestDifficulty.Medium),
-            CreateVariant(800, QuestDifficulty.Hard),
+            CreateVariant(100, QuestDifficulty.Easy),
+            CreateVariant(200, QuestDifficulty.Medium),
+            CreateVariant(300, QuestDifficulty.Hard),
         ];
 
     private static QuestVariant CreateVariant(int numOfMoves, QuestDifficulty difficulty) =>

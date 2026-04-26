@@ -135,7 +135,7 @@ public class RematchGrainTests : BaseGrainTest
         result.IsError.Should().BeFalse();
         await _rematchNotifierMock
             .Received(1)
-            .NotifyRematchAccepted(
+            .NotifyRematchAcceptedAsync(
                 createdGameToken,
                 _gameState.WhitePlayer.UserId,
                 _gameState.BlackPlayer.UserId

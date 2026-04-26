@@ -2,6 +2,7 @@ import { setWindowInnerWidth } from "@/lib/testUtils/mocks/mockDom";
 import { loadEnvFile } from "node:process";
 import "vitest-dom/extend-expect";
 
+import { mockRouter } from "@/lib/testUtils/mocks/mockRouter";
 import { mockAudio } from "@/lib/testUtils/mocks/mockAudio";
 
 vi.mock("next/navigation");
@@ -22,6 +23,7 @@ beforeEach(() => {
 
     setWindowInnerWidth(1920);
     mockAudio();
+    mockRouter();
 });
 
 afterEach(() => {

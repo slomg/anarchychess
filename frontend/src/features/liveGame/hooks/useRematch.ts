@@ -1,8 +1,5 @@
-import { useRouter } from "next/navigation";
-
 import { useGameEmitter, useGameEvent } from "./useGameHub";
 import useLiveChessStore from "./useLiveChessStore";
-import constants from "@/lib/constants";
 
 export default function useRematch() {
     const {
@@ -19,7 +16,6 @@ export default function useRematch() {
         setRequestingRematch: x.setRequestingRematch,
     }));
     const sendGameEvent = useGameEmitter(gameToken);
-    const router = useRouter();
 
     useGameEvent(gameToken, "RematchRequestedAsync", () =>
         setRematchRequested(true),
@@ -27,9 +23,6 @@ export default function useRematch() {
     useGameEvent(gameToken, "RematchCancelledAsync", () =>
         setRematchRequested(false),
     );
-    useGameEvent(gameToken, "RematchAccepted", (createdGameToken) => {
-        router.push(`${constants.PATHS.GAME}/${createdGameToken}`);
-    });
 
     async function requestRematch() {
         await sendGameEvent("RequestRematchAsync", gameToken);

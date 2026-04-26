@@ -29,6 +29,9 @@ public interface IGameGrain : IGrainWithStringKey
     [Alias("GetStateAsync")]
     Task<ErrorOr<GameState>> GetStateAsync();
 
+    [Alias("IsGameOngoingAsync")]
+    Task<bool> IsGameOngoingAsync();
+
     [Alias("GetPlayersAsync")]
     Task<ErrorOr<PlayerRoster>> GetPlayersAsync();
 

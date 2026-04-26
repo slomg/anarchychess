@@ -11,10 +11,9 @@ import {
 
 import TimeControlIcon from "@/features/lobby/components/TimeControlIcon";
 import ProfileTooltip from "@/features/profile/components/ProfileTooltip";
+import gameStartRedirect from "@/features/liveGame/lib/gameStartRedirect";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
-
-import constants from "@/lib/constants";
 
 const ChallengeNotification = ({
     challenge,
@@ -63,7 +62,7 @@ const ChallengeNotification = ({
             }
 
             removeChallenge(challenge.challengeToken);
-            router.push(`${constants.PATHS.GAME}/${gameToken}`);
+            await gameStartRedirect(gameToken, router);
         } finally {
             setIsInAction(false);
         }

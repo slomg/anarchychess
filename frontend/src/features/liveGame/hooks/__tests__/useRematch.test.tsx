@@ -1,15 +1,15 @@
-import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
+import { act, renderHook } from "@testing-library/react";
+import { StoreApi } from "zustand";
+
 import createLiveChessStore, {
     LiveChessStore,
 } from "../../stores/liveChessStore";
-import useRematch from "../useRematch";
-import { act, renderHook } from "@testing-library/react";
-import LiveChessStoreContext from "../../contexts/liveChessContext";
-import { StoreApi } from "zustand";
-import { EventHandlers } from "@/features/signalR/hooks/useSignalREvent";
+
+import { createFakeLiveChessStoreProps } from "@/lib/testUtils/fakers/liveChessStoreFaker";
 import { GameClientEvents, useGameEmitter, useGameEvent } from "../useGameHub";
-import { mockRouter } from "@/lib/testUtils/mocks/mockRouter";
-import constants from "@/lib/constants";
+import { EventHandlers } from "@/features/signalR/hooks/useSignalREvent";
+import LiveChessStoreContext from "../../contexts/liveChessContext";
+import useRematch from "../useRematch";
 
 vi.mock("@/features/liveGame/hooks/useGameHub");
 
@@ -115,17 +115,5 @@ describe("useRematch", () => {
 
         await act(() => gameHandlers["RematchCancelledAsync"]?.());
         expect(result.current.isRematchRequested).toBe(false);
-    });
-
-    it("should navigate when RematchAccepted fires", async () => {
-        const routerMock = mockRouter();
-        renderRematchHook();
-        const newGameToken = "new-game-token-999";
-
-        await act(() => gameHandlers["RematchAccepted"]?.(newGameToken));
-
-        expect(routerMock.push).toHaveBeenCalledWith(
-            `${constants.PATHS.GAME}/${newGameToken}`,
-        );
     });
 });

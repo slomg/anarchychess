@@ -2,10 +2,10 @@
 
 import { useEffect } from "react";
 
+import gameStartRedirect from "@/features/liveGame/lib/gameStartRedirect";
 import { useLobbyEmitter, useLobbyEvent } from "../hooks/useLobbyHub";
 import { usePathname, useRouter } from "next/navigation";
 import useLobbyStore from "../stores/lobbyStore";
-import constants from "@/lib/constants";
 
 const LobbyHandler = () => {
     const router = useRouter();
@@ -13,8 +13,8 @@ const LobbyHandler = () => {
 
     const sendLobbyEvents = useLobbyEmitter();
 
-    useLobbyEvent("MatchFoundAsync", (token) => {
-        router.push(`${constants.PATHS.GAME}/${token}`);
+    useLobbyEvent("MatchFoundAsync", async (token) => {
+        await gameStartRedirect(token, router);
     });
 
     useLobbyEvent("ReceiveOngoingGamesAsync", (games) => {

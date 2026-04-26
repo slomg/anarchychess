@@ -38,7 +38,7 @@ public interface IGameHubClient : IAnarchyChessHubClient
 
     Task RematchRequestedAsync();
     Task RematchCancelledAsync();
-    Task RematchAccepted(GameToken createdGameToken);
+    Task RematchAcceptedAsync(GameToken createdGameToken);
 }
 
 [Authorize(AuthPolicies.ActiveSession)]

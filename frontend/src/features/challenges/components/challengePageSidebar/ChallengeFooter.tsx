@@ -8,6 +8,7 @@ import {
 } from "@/features/auth/hooks/useSessionUser";
 
 import { acceptChallenge, cancelChallenge, PoolType } from "@/lib/apiClient";
+import gameStartRedirect from "@/features/liveGame/lib/gameStartRedirect";
 import useChallengeStore from "../../hooks/useChallengeStore";
 import CountdownText from "@/components/CountdownText";
 import Button from "@/components/ui/Button";
@@ -43,7 +44,7 @@ const ChallengeFooter = () => {
                 return;
             }
 
-            router.push(`${constants.PATHS.GAME}/${gameToken}`);
+            await gameStartRedirect(gameToken, router);
         } finally {
             setIsInAction(false);
         }

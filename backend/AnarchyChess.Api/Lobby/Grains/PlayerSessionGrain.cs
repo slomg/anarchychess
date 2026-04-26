@@ -1,4 +1,5 @@
-﻿using AnarchyChess.Api.Game.Models;
+﻿using AnarchyChess.Api.Game.Grains;
+using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Infrastructure.Extensions;
 using AnarchyChess.Api.Lobby.Errors;
 using AnarchyChess.Api.Lobby.Models;
@@ -228,6 +229,8 @@ public class PlayerSessionGrain
             this.GetPrimaryKeyString()
         );
         await endedStream.SubscribeAsync(OnNextAsync, _endStreamState.State.SequenceToken);
+
+        await PruneOverGamesAsync();
     }
 
     public async Task OnNextAsync(GameStartedEvent @event, StreamSequenceToken? token = null)
@@ -311,4 +314,17 @@ public class PlayerSessionGrain
     private bool HasReachedGameLimit() =>
         _state.State.OngoingGames.Count + _poolConnectionReservations.Count
         >= _settings.MaxActiveGames;
+
+    private async Task PruneOverGamesAsync()
+    {
+        foreach (var gameToken in _state.State.OngoingGames.Keys.ToArray())
+        {
+            IGameGrain gameGrain = GrainFactory.GetGrain<IGameGrain>(gameToken);
+            bool isGameOngoing = await gameGrain.IsGameOngoingAsync();
+            if (!isGameOngoing)
+            {
+                _state.State.OngoingGames.Remove(gameToken);
+            }
+        }
+    }
 }

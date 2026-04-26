@@ -1,10 +1,10 @@
 ﻿using AnarchyChess.Api.Game.Errors;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
-using AnarchyChess.EngineShared.Extensions;
 using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Shared.Models;
+using AnarchyChess.EngineShared.Extensions;
 using ErrorOr;
 using Microsoft.Extensions.Options;
 
@@ -190,7 +190,7 @@ public class RematchGrain(
             gameSource: GameSource.Rematch,
             token: token
         );
-        await _rematchNotifier.NotifyRematchAccepted(
+        await _rematchNotifier.NotifyRematchAcceptedAsync(
             gameToken,
             request.Players.WhitePlayer.UserId,
             request.Players.BlackPlayer.UserId
