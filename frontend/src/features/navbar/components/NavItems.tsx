@@ -30,6 +30,7 @@ export const UpperNavItems = ({
         <>
             <NavItem
                 as={Link}
+                prefetch={false}
                 href={constants.PATHS.PLAY}
                 icon={<PlayIcon />}
                 isCollapsed={isCollapsed}
@@ -39,6 +40,7 @@ export const UpperNavItems = ({
 
             <NavItem
                 as={Link}
+                prefetch={false}
                 href={constants.PATHS.BOT}
                 icon={<CpuChipIcon />}
                 isCollapsed={isCollapsed}
@@ -48,6 +50,7 @@ export const UpperNavItems = ({
 
             <NavItem
                 as={Link}
+                prefetch={false}
                 href={constants.PATHS.ANALYSIS}
                 icon={<MagnifyingGlassIcon />}
                 isCollapsed={isCollapsed}
@@ -57,6 +60,7 @@ export const UpperNavItems = ({
 
             <NavItem
                 as={Link}
+                prefetch={false}
                 href={constants.PATHS.QUESTS}
                 icon={<CalendarIcon />}
                 isCollapsed={isCollapsed}
@@ -67,6 +71,7 @@ export const UpperNavItems = ({
             {isLoggedIn && (
                 <NavItem
                     as={Link}
+                    prefetch={false}
                     href="/profile"
                     icon={<UserCircleIcon />}
                     isCollapsed={isCollapsed}
@@ -76,6 +81,7 @@ export const UpperNavItems = ({
             )}
             <NavItem
                 as={Link}
+                prefetch={false}
                 href={constants.PATHS.DONATE}
                 icon={<HeartIcon color="red" />}
                 isCollapsed={isCollapsed}
@@ -86,6 +92,7 @@ export const UpperNavItems = ({
             {isLoggedIn === false && (
                 <NavItem
                     as={Link}
+                    prefetch={false}
                     href={constants.PATHS.SIGNIN}
                     icon={<ArrowLeftEndOnRectangleIcon />}
                     isCollapsed={isCollapsed}
@@ -111,6 +118,7 @@ export const LowerNavItems = ({
         <>
             <NavItem
                 as={Link}
+                prefetch={false}
                 href={constants.PATHS.SETTINGS_BASE}
                 icon={<Cog6ToothIcon />}
                 isCollapsed={isCollapsed}
@@ -120,6 +128,7 @@ export const LowerNavItems = ({
 
             <NavItem
                 as={Link}
+                prefetch={false}
                 href={constants.PATHS.LOGOUT}
                 icon={<BoltSlashIcon />}
                 isCollapsed={isCollapsed}
@@ -132,6 +141,7 @@ export const LowerNavItems = ({
         <>
             <NavItem
                 as={Link}
+                prefetch={false}
                 href={constants.PATHS.GUIDE}
                 icon={<BookOpenIcon />}
                 isCollapsed={isCollapsed}

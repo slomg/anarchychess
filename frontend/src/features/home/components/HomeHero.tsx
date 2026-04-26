@@ -55,7 +55,11 @@ const HomeHero = () => {
                         </p>
                     </div>
 
-                    <Link href={constants.PATHS.PLAY} className="w-full">
+                    <Link
+                        href={constants.PATHS.PLAY}
+                        className="w-full"
+                        prefetch={false}
+                    >
                         <Button className="bg-accent w-full text-3xl text-black">
                             PLAY NOW
                         </Button>
@@ -73,7 +77,11 @@ const HomeHero = () => {
                         </p>
                     </div>
 
-                    <Link href={constants.PATHS.QUESTS} className="w-full">
+                    <Link
+                        href={constants.PATHS.QUESTS}
+                        className="w-full"
+                        prefetch={false}
+                    >
                         <Button
                             className="mt-auto w-full
                                 text-[clamp(0.8rem,4vw,2rem)] sm:text-3xl"
@@ -94,7 +102,11 @@ const HomeHero = () => {
                         </p>
                     </div>
 
-                    <Link href={constants.PATHS.GUIDE} className="w-full">
+                    <Link
+                        href={constants.PATHS.GUIDE}
+                        className="w-full"
+                        prefetch={false}
+                    >
                         <Button
                             className="mt-auto w-full
                                 text-[clamp(0.8rem,4vw,2rem)] sm:text-3xl"

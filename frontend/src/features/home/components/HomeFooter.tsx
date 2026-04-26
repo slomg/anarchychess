@@ -32,7 +32,9 @@ const HomeFooter = () => {
                     <h2 className="text-2xl font-bold">Quick Links</h2>
                     <ul className="text-text/70 flex flex-col gap-3">
                         <li>
-                            <Link href={constants.PATHS.PLAY}>Play Now</Link>
+                            <Link href={constants.PATHS.PLAY} prefetch={false}>
+                                Play Now
+                            </Link>
                         </li>
                         <li>
                             <Link href={constants.PATHS.DONATE}>Donate</Link>
@@ -43,12 +45,15 @@ const HomeFooter = () => {
                             </Link>
                         </li>
                         <li>
-                            <Link href={constants.PATHS.TOS}>
+                            <Link href={constants.PATHS.TOS} prefetch={false}>
                                 Terms of Service
                             </Link>
                         </li>
                         <li>
-                            <Link href={constants.PATHS.PRIVACY}>
+                            <Link
+                                href={constants.PATHS.PRIVACY}
+                                prefetch={false}
+                            >
                                 Privacy Policy
                             </Link>
                         </li>
