@@ -26,8 +26,7 @@ const HomeDiscordSection = () => {
                 </h2>
 
                 <p className="text-text/80 text-xl text-balance">
-                    Join the Discord server to suggest new pieces, rules, report
-                    bugs or just chat about anything you like!
+                    Join the Discord server to stay updated!
                 </p>
 
                 <Link
