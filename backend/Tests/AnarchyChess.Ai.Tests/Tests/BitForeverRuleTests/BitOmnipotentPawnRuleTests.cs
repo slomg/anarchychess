@@ -29,9 +29,9 @@ public class BitOmnipotentPawnRuleTests
     {
         PrevMoveState prevMove = new(
             From: 0,
-            To: BitOmnipotentPawnRule.WhiteSquare,
+            To: GameLogicConstants.WhiteOmnipotentPawnIdx,
             Piece: new BitPiece { Type = PieceType.Rook, Color = BitPieceColor.Black },
-            CaptureMask: BitOmnipotentPawnRule.WhiteSquareMask,
+            CaptureMask: GameLogicConstants.WhiteOmnipotentPawnMask | (UInt128.One << 69),
             SpecialMoveType: SpecialMoveType.None
         );
         BitBoard board = BitBoard.FromPieces(
@@ -50,10 +50,10 @@ public class BitOmnipotentPawnRuleTests
             .BeEquivalentTo(
                 new BitMove
                 {
-                    From = BitOmnipotentPawnRule.WhiteSquare,
-                    To = BitOmnipotentPawnRule.WhiteSquare,
+                    From = GameLogicConstants.WhiteOmnipotentPawnIdx,
+                    To = GameLogicConstants.WhiteOmnipotentPawnIdx,
                     Piece = new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.White },
-                    CapturesMask = BitOmnipotentPawnRule.WhiteSquareMask,
+                    CapturesMask = GameLogicConstants.WhiteOmnipotentPawnMask,
                     SpecialMoveType = SpecialMoveType.OmnipotentPawnSpawn,
                 }
             );
@@ -64,9 +64,9 @@ public class BitOmnipotentPawnRuleTests
     {
         PrevMoveState prevMove = new(
             From: 0,
-            To: BitOmnipotentPawnRule.BlackSquare,
+            To: GameLogicConstants.BlackOmnipotentPawnIdx,
             Piece: new BitPiece { Type = PieceType.Rook, Color = BitPieceColor.White },
-            CaptureMask: BitOmnipotentPawnRule.BlackSquareMask,
+            CaptureMask: GameLogicConstants.BlackOmnipotentPawnMask | (UInt128.One << 69),
             SpecialMoveType: SpecialMoveType.None
         );
         BitBoard board = BitBoard.FromPieces(
@@ -85,10 +85,10 @@ public class BitOmnipotentPawnRuleTests
             .BeEquivalentTo(
                 new BitMove
                 {
-                    From = BitOmnipotentPawnRule.BlackSquare,
-                    To = BitOmnipotentPawnRule.BlackSquare,
+                    From = GameLogicConstants.BlackOmnipotentPawnIdx,
+                    To = GameLogicConstants.BlackOmnipotentPawnIdx,
                     Piece = new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.Black },
-                    CapturesMask = BitOmnipotentPawnRule.BlackSquareMask,
+                    CapturesMask = GameLogicConstants.BlackOmnipotentPawnMask,
                     SpecialMoveType = SpecialMoveType.OmnipotentPawnSpawn,
                 }
             );
@@ -99,9 +99,9 @@ public class BitOmnipotentPawnRuleTests
     {
         PrevMoveState prevMove = new(
             From: 0,
-            To: BitOmnipotentPawnRule.BlackSquare,
+            To: GameLogicConstants.BlackOmnipotentPawnIdx,
             Piece: new BitPiece { Type = PieceType.Rook, Color = BitPieceColor.Black },
-            CaptureMask: BitOmnipotentPawnRule.BlackSquareMask,
+            CaptureMask: GameLogicConstants.BlackOmnipotentPawnMask,
             SpecialMoveType: SpecialMoveType.None
         );
         BitBoard board = BitBoard.FromPieces(
@@ -122,9 +122,9 @@ public class BitOmnipotentPawnRuleTests
     {
         PrevMoveState prevMove = new(
             From: 0,
-            To: BitOmnipotentPawnRule.WhiteSquare,
+            To: GameLogicConstants.WhiteOmnipotentPawnIdx,
             Piece: new BitPiece { Type = PieceType.Rook, Color = BitPieceColor.White },
-            CaptureMask: BitOmnipotentPawnRule.WhiteSquare,
+            CaptureMask: GameLogicConstants.WhiteOmnipotentPawnMask,
             SpecialMoveType: SpecialMoveType.None
         );
         BitBoard board = BitBoard.FromPieces(

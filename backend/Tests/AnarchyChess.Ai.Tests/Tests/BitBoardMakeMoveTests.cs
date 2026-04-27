@@ -533,7 +533,7 @@ public class BitBoardMakeMoveTests
     }
 
     [Fact]
-    public void MakeMove_sets_LastCaptureMask()
+    public void MakeMove_sets_CanSpawnOmnipotentPawn()
     {
         BitBoard board = new();
 
@@ -542,11 +542,11 @@ public class BitBoardMakeMoveTests
             From = 1,
             To = 2,
             Piece = default,
-            CapturesMask = (UInt128.One << 1) | (UInt128.One << 15),
+            CapturesMask = GameLogicConstants.BlackOmnipotentPawnMask,
         };
         board.MakeMove(move);
 
-        board.LastCaptureMask.Should().Be(move.CapturesMask);
+        board.CanSpawnOmnipotentPawn.Should().BeTrue();
     }
 
     [Fact]

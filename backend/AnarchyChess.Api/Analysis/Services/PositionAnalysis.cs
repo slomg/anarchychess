@@ -1,4 +1,5 @@
 ﻿using AnarchyChess.Api.Analysis.Models;
+using AnarchyChess.Api.Bots.Services;
 using AnarchyChess.Api.Game.Errors;
 using AnarchyChess.Api.Game.Services;
 using AnarchyChess.Api.GameSnapshot.Models;
@@ -16,7 +17,8 @@ public interface IPositionAnalysis
 public class PositionAnalysis(
     IFenDecoder fenDecoder,
     IPlayableMoveProvider playableMoveProvider,
-    IGameCore gameCore
+    IGameCore gameCore,
+    IBotService botService
 ) : IPositionAnalysis
 {
     private readonly IFenDecoder _fenDecoder = fenDecoder;
@@ -69,6 +71,7 @@ public class PositionAnalysis(
         var board = boardResult.Value;
 
         var legalMoves = _playableMoveProvider.CalculateAllPlayableMoves(board);
+        botService.FindBestMoveAsync(board, 8);
 
         return legalMoves.MovePaths.ToErrorOr();
     }

@@ -11,6 +11,7 @@ public interface IMoveOrdering
         int depth,
         BitMove[,] killerMoves,
         int[,] historyHeuristic,
+        int ttMove,
         Span<int> scores,
         Span<BitMove> moves,
         int moveCount
@@ -33,6 +34,7 @@ public sealed class MoveOrdering : IMoveOrdering
         int depth,
         BitMove[,] killerMoves,
         int[,] historyHeuristic,
+        int packedTtMove,
         Span<int> scores,
         Span<BitMove> moves,
         int moveCount
@@ -40,7 +42,14 @@ public sealed class MoveOrdering : IMoveOrdering
     {
         for (int i = 0; i < moveCount; i++)
         {
-            scores[i] = ScoreMove(moves[i], board, depth, killerMoves, historyHeuristic);
+            scores[i] = ScoreMove(
+                moves[i],
+                board,
+                depth,
+                killerMoves,
+                historyHeuristic,
+                packedTtMove
+            );
         }
     }
 
@@ -71,9 +80,16 @@ public sealed class MoveOrdering : IMoveOrdering
         BitBoard board,
         int depth,
         BitMove[,] killerMoves,
-        int[,] historyHeuristic
+        int[,] historyHeuristic,
+        int packedTtMove
     )
     {
+        int packedMove = move.Pack();
+        if (packedMove == packedTtMove)
+        {
+            return 20_000;
+        }
+
         if (
             (move.From == killerMoves[depth, 0].From && move.To == killerMoves[depth, 0].To)
             || (move.From == killerMoves[depth, 1].From && move.To == killerMoves[depth, 1].To)
@@ -132,7 +148,7 @@ public sealed class MoveOrdering : IMoveOrdering
     )
     {
         Span<int> scores = stackalloc int[moveCount];
-        ScoreMoves(board, depth, killers, history, scores, moves, moveCount);
+        ScoreMoves(board, depth, killers, history, -1, scores, moves, moveCount);
 
         QuickSort(moves, scores, 0, moveCount - 1);
     }

@@ -13,8 +13,8 @@ public class OmnipotentPawnRule : IForeveRule
         var lastMove = board.Moves[^1];
 
         var spawnPosition = movingPlayer.Match(
-            whenWhite: new AlgebraicPoint("h3"),
-            whenBlack: new AlgebraicPoint("h8")
+            whenWhite: GameLogicConstants.WhiteOmnipotentPawnSquare,
+            whenBlack: GameLogicConstants.BlackOmnipotentPawnSquare
         );
         if (
             lastMove.To != spawnPosition

@@ -213,7 +213,7 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
             BitMove move = new()
             {
                 From = position,
-                To = targetBishopSquare,
+                To = position,
                 Piece = piece,
                 CapturesMask = captures,
                 SpecialMoveType = SpecialMoveType.IlVaticano,

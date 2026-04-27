@@ -44,7 +44,14 @@ public class AiEngine(
         BitMove olderMove = moves[0];
         olderBoardCopy.MakeMove(olderMove);
 
-        int alpha = -new SearchThread(_moveGenerator, _evaluator, _moveOrdering, depth).Negamax(
+        TranspositionTable transpositionTable = new();
+        int alpha = -new SearchThread(
+            _moveGenerator,
+            _evaluator,
+            _moveOrdering,
+            transpositionTable,
+            depth
+        ).Negamax(
             olderBoardCopy,
             depth - 1,
             alpha: EngineConstants.AlphaStart,
@@ -64,7 +71,13 @@ public class AiEngine(
                 BitBoard boardCopy = new(board);
                 boardCopy.MakeMove(move);
 
-                SearchThread search = new(_moveGenerator, _evaluator, _moveOrdering, depth);
+                SearchThread search = new(
+                    _moveGenerator,
+                    _evaluator,
+                    _moveOrdering,
+                    transpositionTable,
+                    depth
+                );
 
                 int localAlpha = alpha;
                 int score = -search.Negamax(
@@ -152,6 +165,7 @@ public class AiEngine(
             return [];
         }
 
+        TranspositionTable transpositionTable = new();
         MoveEvaluation[] moveScores = new MoveEvaluation[moveCount];
         Parallel.For(
             0,
@@ -163,7 +177,13 @@ public class AiEngine(
                 BitBoard boardCopy = new(board);
                 boardCopy.MakeMove(move);
 
-                SearchThread search = new(_moveGenerator, _evaluator, _moveOrdering, depth);
+                SearchThread search = new(
+                    _moveGenerator,
+                    _evaluator,
+                    _moveOrdering,
+                    transpositionTable,
+                    depth
+                );
 
                 int score = -search.Negamax(
                     boardCopy,

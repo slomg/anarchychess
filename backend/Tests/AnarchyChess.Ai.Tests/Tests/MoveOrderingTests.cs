@@ -236,6 +236,7 @@ public class MoveOrderingTests
             historyHeuristic: history,
             scores: scores,
             moves: moves,
+            packedTtMove: -1,
             moveCount: moves.Length
         );
 

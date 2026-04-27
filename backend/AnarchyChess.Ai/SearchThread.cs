@@ -1,4 +1,5 @@
-﻿using AnarchyChess.Ai.Evaluation;
+﻿using System.Diagnostics;
+using AnarchyChess.Ai.Evaluation;
 using AnarchyChess.Ai.Helpers;
 using AnarchyChess.Ai.Models;
 using AnarchyChess.EngineShared;
@@ -9,6 +10,7 @@ internal sealed class SearchThread(
     IBitMoveGenerator moveGenerator,
     IEvaluator evaluator,
     IMoveOrdering moveOrdering,
+    TranspositionTable transpositionTable,
     int maxDepth
 )
 {
@@ -19,6 +21,7 @@ internal sealed class SearchThread(
 
     private readonly BitMove[,] _killerMoves = new BitMove[maxDepth + 1, 2];
     private readonly int[,] _historyHeuristic = new int[10 * 10, 10 * 10];
+    private readonly TranspositionTable _transpositionTable = transpositionTable;
 
     public int Negamax(
         BitBoard board,
@@ -29,6 +32,20 @@ internal sealed class SearchThread(
         int? depthBeforeReduce = null
     )
     {
+        if (
+            _transpositionTable.TryProbe(
+                board.ZobristKey,
+                depth,
+                alpha,
+                beta,
+                out int ttScore,
+                out int ttMove
+            )
+        )
+        {
+            return ttScore;
+        }
+
         if (_evaluator.TryEvaluateTermination(board, depth, out int terminationEval))
         {
             return terminationEval;
@@ -78,11 +95,14 @@ internal sealed class SearchThread(
             depth,
             _killerMoves,
             _historyHeuristic,
+            ttMove: ttMove,
             scores,
             moves,
             moveCount
         );
 
+        int originalAlpha = alpha;
+        int bestMovePacked = 0;
         for (int i = 0; i < moveCount; i++)
         {
             BitMove move = _moveOrdering.GetNextHighestMove(i, moves, scores, moveCount);
@@ -133,15 +153,52 @@ internal sealed class SearchThread(
                 {
                     _historyHeuristic[move.From, move.To] += depth * depth;
                 }
+                bestMovePacked = move.Pack();
                 break;
             }
         }
+
+        NodeType type;
+
+        if (alpha <= originalAlpha)
+        {
+            type = NodeType.UpperBound;
+        }
+        else if (alpha >= beta)
+        {
+            type = NodeType.LowerBound;
+        }
+        else
+        {
+            type = NodeType.Exact;
+        }
+
+        _transpositionTable.Store(board.ZobristKey, depth, alpha, type, bestMovePacked);
 
         return alpha;
     }
 
     private int Quiescence(BitBoard board, int alpha, int beta, int depth, int initialDepth)
     {
+        if (board.ZobristKey != Zobrist.Compute(board))
+        {
+            Debugger.Break();
+        }
+
+        if (
+            _transpositionTable.TryProbe(
+                board.ZobristKey,
+                depth,
+                alpha,
+                beta,
+                out int ttScore,
+                out int ttMove
+            )
+        )
+        {
+            return ttScore;
+        }
+
         if (
             _evaluator.TryEvaluateTermination(
                 board,
@@ -217,6 +274,7 @@ internal sealed class SearchThread(
             initialDepth,
             _killerMoves,
             _historyHeuristic,
+            ttMove: ttMove,
             scores,
             captures,
             captureCount
