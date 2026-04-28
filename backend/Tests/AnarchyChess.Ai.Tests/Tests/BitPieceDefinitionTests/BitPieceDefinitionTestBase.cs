@@ -48,7 +48,9 @@ public class BitPieceDefinitionTestBase
             maxDepth: testCase.MaxDepth
         );
 
-        List<BitMove> expectedMoves = ConvertUiMovesToBitMoves(testCase.ExpectedMoves);
+        List<BitMove> expectedMoves = ConvertUiMovesToBitMoves(
+            [.. testCase.ExpectedMoves, .. testCase.ExpectedAiMoves]
+        );
         List<BitMove> result = [.. moves[..moveCount]];
 
         // for better assertion logs
