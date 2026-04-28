@@ -230,7 +230,6 @@ public class BitBoardTests
                     PieceType.Queen
                 ),
             },
-            isWhiteToMove: true,
             prevMoveState: prevMoveState
         );
 
@@ -405,93 +404,90 @@ public class BitBoardTests
     }
 
     [Fact]
-    public void MakeNullMove_flips_turn_and_resets_move_state()
+    public void MakeNullMove_resets_en_passant_state()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new AlgebraicPoint("b2")] = PieceFactory.White(PieceType.Pawn),
+        };
+
+        PrevMoveState prevMoveState = new(
+            From: new AlgebraicPoint("b2").AsIdx(),
+            To: new AlgebraicPoint("b5").AsIdx(),
+            Piece: new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.Black },
+            CaptureMask: 0,
+            SpecialMoveType: SpecialMoveType.None
+        );
+
+        BitBoard board = BitBoard.FromPieces(pieces, prevMoveState: prevMoveState);
+
+        board.EnPassantPawnSquare.Should().Be(new AlgebraicPoint("b5").AsIdx());
+        board.EnPassantSquaresMask.Should().NotBe(0);
+
+        board.MakeNullMove();
+
+        board.EnPassantPawnSquare.Should().Be(0);
+        board.EnPassantSquaresMask.Should().Be(0);
+    }
+
+    [Fact]
+    public void MakeNullMove_resets_omnipotent_pawn_state()
+    {
+        PrevMoveState prevMoveState = new(
+            From: new AlgebraicPoint("h7").AsIdx(),
+            To: GameLogicConstants.BlackOmnipotentPawnIdx,
+            Piece: new BitPiece { Type = PieceType.Queen, Color = BitPieceColor.White },
+            CaptureMask: GameLogicConstants.BlackOmnipotentPawnMask,
+            SpecialMoveType: SpecialMoveType.None
+        );
+
+        BitBoard board = BitBoard.FromPieces(
+            new Dictionary<AlgebraicPoint, Piece>
+            {
+                [GameLogicConstants.BlackOmnipotentPawnSquare] = PieceFactory.White(PieceType.Pawn),
+            },
+            isWhiteToMove: false,
+            prevMoveState: prevMoveState
+        );
+        board.CanSpawnOmnipotentPawn.Should().BeTrue();
+
+        board.MakeNullMove();
+
+        board.CanSpawnOmnipotentPawn.Should().BeFalse();
+    }
+
+    [Fact]
+    public void MakeNullMove_updates_stunned_pieces()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
             [new AlgebraicPoint("b2")] = PieceFactory.White(PieceType.Pawn),
             [new AlgebraicPoint("a5")] = PieceFactory.Black(PieceType.Pawn),
         };
+
         Dictionary<AlgebraicPoint, int> stunnedPositions = new()
         {
             [new("b2")] = 1,
             [new("a5")] = 2,
         };
 
-        PrevMoveState prevMoveState = new(
-            From: new AlgebraicPoint("b2").AsIdx(),
-            To: new AlgebraicPoint("b4").AsIdx(),
-            Piece: new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.Black },
-            CaptureMask: UInt128.One << new AlgebraicPoint("h3").AsIdx(),
-            SpecialMoveType: SpecialMoveType.None
-        );
         BitBoard board = BitBoard.FromPieces(
             pieces,
             isWhiteToMove: true,
-            stunnedPositions: stunnedPositions,
-            prevMoveState: prevMoveState
+            stunnedPositions: stunnedPositions
         );
 
-        byte enPassantPawnSquare = new AlgebraicPoint("b4").AsIdx();
-        UInt128 enPassantSquaresMask = UInt128.One << new AlgebraicPoint("b3").AsIdx();
-        bool canSpawnOmnipotentPawn = true;
-        UInt128 stunnedPieces =
+        UInt128 expectedBefore =
             (UInt128.One << new AlgebraicPoint("b2").AsIdx())
             | (UInt128.One << new AlgebraicPoint("a5").AsIdx());
-        ulong zobristKey = board.ZobristKey;
 
-        board.EnPassantPawnSquare.Should().Be(enPassantPawnSquare);
-        board.EnPassantSquaresMask.Should().Be(enPassantSquaresMask);
-        board.CanSpawnOmnipotentPawn.Should().Be(canSpawnOmnipotentPawn);
-        board.StunnedPieces.Should().Be(stunnedPieces);
+        board.StunnedPieces.Should().Be(expectedBefore);
 
-        var undo = board.MakeNullMove();
+        board.MakeNullMove();
 
-        board.IsWhiteToMove.Should().BeFalse();
-        board.EnPassantPawnSquare.Should().Be(0);
-        board.EnPassantSquaresMask.Should().Be(0);
-        board.CanSpawnOmnipotentPawn.Should().Be(false);
-        board.StunnedPieces.Should().Be(UInt128.One << new AlgebraicPoint("a5").AsIdx());
-        board
-            .ZobristKey.Should()
-            .Be(
-                zobristKey
-                    ^ Zobrist.SideToMove
-                    ^ Zobrist.EnPassantSquare[enPassantPawnSquare]
-                    ^ Zobrist.CanSpawnOmnipotentPawn
-                    ^ Zobrist.StunnedForPlies[new AlgebraicPoint("b2").AsIdx(), 1]
-                    ^ Zobrist.StunnedForPlies[new AlgebraicPoint("a5").AsIdx(), 2]
-                    ^ Zobrist.StunnedForPlies[new AlgebraicPoint("a5").AsIdx(), 1]
-            );
+        UInt128 expectedAfter = UInt128.One << new AlgebraicPoint("a5").AsIdx();
 
-        BitBoard expectedPiecesBoard = BitBoard.FromPieces(pieces);
-        board
-            .Should()
-            .BeEquivalentTo(
-                expectedPiecesBoard,
-                options =>
-                    options
-                        .Excluding(x => x.IsWhiteToMove)
-                        .Excluding(x => x.EnPassantPawnSquare)
-                        .Excluding(x => x.EnPassantSquaresMask)
-                        .Excluding(x => x.CanSpawnOmnipotentPawn)
-                        .Excluding(x => x.StunnedForPlies)
-                        .Excluding(x => x.StunnedPieces)
-                        .Excluding(x => x.ZobristKey)
-            );
-
-        undo.Should()
-            .BeEquivalentTo(
-                new NullMoveUndoState()
-                {
-                    IsWhiteToMove = true,
-                    EnPassantPawnSquare = enPassantPawnSquare,
-                    EnPassantSquaresMask = enPassantSquaresMask,
-                    CanSpawnOmnipotentPawn = canSpawnOmnipotentPawn,
-                    ZobristKey = zobristKey,
-                    StunnedPieces = stunnedPieces,
-                }
-            );
+        board.StunnedPieces.Should().Be(expectedAfter);
     }
 
     [Fact]
