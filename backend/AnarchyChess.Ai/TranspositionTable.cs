@@ -23,7 +23,7 @@ public sealed class TranspositionTable
     private readonly TTEntry[] _table;
     private readonly int _mask;
 
-    public TranspositionTable(int sizeMb = 64)
+    public TranspositionTable(int sizeMb = 512)
     {
         int entrySize = Unsafe.SizeOf<TTEntry>();
         int entryCount = sizeMb * 1024 * 1024 / entrySize;
