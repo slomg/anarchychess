@@ -1,6 +1,5 @@
 ﻿using AnarchyChess.Ai.Evaluation;
 using AnarchyChess.Ai.Models;
-using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai;
 
@@ -19,8 +18,64 @@ public class AiEngine(
     private readonly IBitMoveGenerator _moveGenerator = moveGenerator ?? new BitMoveGenerator();
     private readonly IEvaluator _evaluator = evaluator ?? new Evaluator();
     private readonly IMoveOrdering _moveOrdering = moveOrdering ?? new MoveOrdering();
+    private static readonly TranspositionTable _transpositionTable = new();
 
     public (BitMove? BestMove, int EvalForBot) FindBestMove(BitBoard board, int depth)
+    {
+        int score = 0;
+        BitMove? bestMove = null;
+
+        for (int iterativeDepth = 1; iterativeDepth <= depth; iterativeDepth++)
+        {
+            int aspirationDelta = 50;
+            int aspirationAlpha;
+            int aspirationBeta;
+            if (iterativeDepth < 4)
+            {
+                aspirationAlpha = EngineConstants.AlphaStart;
+                aspirationBeta = EngineConstants.BetaStart;
+            }
+            else
+            {
+                aspirationAlpha = score - aspirationDelta;
+                aspirationBeta = score + aspirationDelta;
+            }
+
+            while (true)
+            {
+                (bestMove, score) = SearchRoot(
+                    board,
+                    iterativeDepth,
+                    aspirationAlpha,
+                    aspirationBeta
+                );
+
+                if (score <= aspirationAlpha)
+                {
+                    aspirationAlpha -= aspirationDelta;
+                    aspirationDelta *= 2;
+                }
+                else if (score >= aspirationBeta)
+                {
+                    aspirationBeta += aspirationDelta;
+                    aspirationDelta *= 2;
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+
+        return (bestMove, score);
+    }
+
+    public (BitMove? BestMove, int EvalForBot) SearchRoot(
+        BitBoard board,
+        int depth,
+        int alpha,
+        int beta
+    )
     {
         BitMove[] moves = new BitMove[EngineConstants.MaxMoves];
         int moveCount = 0;
@@ -44,19 +99,13 @@ public class AiEngine(
         BitMove olderMove = moves[0];
         olderBoardCopy.MakeMove(olderMove);
 
-        TranspositionTable transpositionTable = new();
-        int alpha = -new SearchThread(
+        alpha = -new SearchThread(
             _moveGenerator,
             _evaluator,
             _moveOrdering,
-            transpositionTable,
+            _transpositionTable,
             depth
-        ).Negamax(
-            olderBoardCopy,
-            depth - 1,
-            alpha: EngineConstants.AlphaStart,
-            beta: EngineConstants.BetaStart
-        );
+        ).Negamax(olderBoardCopy, depth - 1, alpha: -beta, beta: -alpha);
 
         int[] scores = new int[moveCount];
         scores[0] = alpha;
@@ -75,7 +124,7 @@ public class AiEngine(
                     _moveGenerator,
                     _evaluator,
                     _moveOrdering,
-                    transpositionTable,
+                    _transpositionTable,
                     depth
                 );
 
@@ -102,28 +151,6 @@ public class AiEngine(
                     scores[i] = int.MinValue;
                 }
 
-                // maybe I'll add this someday
-                //int score = 0;
-                //for (int iterativeDepth = 1; iterativeDepth <= depth - 1; iterativeDepth++)
-                //{
-                //    score = -search.Negamax(
-                //        boardCopy,
-                //        iterativeDepth,
-                //        alpha: -alpha - 1,
-                //        beta: -alpha
-                //    );
-
-                //    if (score > alpha)
-                //    {
-                //        score = -search.Negamax(
-                //            boardCopy,
-                //            iterativeDepth,
-                //            alpha: EngineConstants.AlphaStart,
-                //            beta: EngineConstants.BetaStart
-                //        );
-                //    }
-                //}
-
                 int oldAlpha;
                 do
                 {
@@ -147,10 +174,6 @@ public class AiEngine(
             }
         }
 
-        Console.WriteLine(
-            $"Eval: {bestAlpha}, move count: {moveCount}, {AlgebraicPoint.FromIdx(bestMove.From)} -> {AlgebraicPoint.FromIdx(bestMove.To)}"
-        );
-
         return (BestMove: bestMove, EvalForBot: bestAlpha);
     }
 
@@ -165,7 +188,6 @@ public class AiEngine(
             return [];
         }
 
-        TranspositionTable transpositionTable = new();
         MoveEvaluation[] moveScores = new MoveEvaluation[moveCount];
         Parallel.For(
             0,
@@ -181,7 +203,7 @@ public class AiEngine(
                     _moveGenerator,
                     _evaluator,
                     _moveOrdering,
-                    transpositionTable,
+                    _transpositionTable,
                     depth
                 );
 
