@@ -264,7 +264,7 @@ public class BitboardUndoMoveTests
         BitMove move = new()
         {
             From = new AlgebraicPoint("d5").AsIdx(),
-            To = new AlgebraicPoint("g5").AsIdx(),
+            To = new AlgebraicPoint("d5").AsIdx(),
             Piece = new() { Type = PieceType.Bishop, Color = BitPieceColor.White },
             SpecialMoveType = SpecialMoveType.IlVaticano,
             CapturesMask =
@@ -344,18 +344,18 @@ public class BitboardUndoMoveTests
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
-            [new("a1")] = PieceFactory.White(PieceType.Rook),
-            [new("a2")] = PieceFactory.Black(PieceType.Pawn),
+            [new("h4")] = PieceFactory.White(PieceType.Rook),
+            [new("h8")] = PieceFactory.Black(PieceType.Pawn),
         };
         BitBoard board = BitBoard.FromPieces(pieces);
         BitBoard original = BitBoard.FromPieces(pieces);
 
         BitMove move = new()
         {
-            From = new AlgebraicPoint("a1").AsIdx(),
-            To = GameLogicConstants.BlackOmnipotentPawnIdx,
+            From = new AlgebraicPoint("h4").AsIdx(),
+            To = new AlgebraicPoint("h8").AsIdx(),
             Piece = new() { Type = PieceType.Rook, Color = BitPieceColor.White },
-            CapturesMask = GameLogicConstants.BlackOmnipotentPawnMask,
+            CapturesMask = UInt128.One << new AlgebraicPoint("h8").AsIdx(),
         };
 
         MoveUndoState undo = board.MakeMove(move);
