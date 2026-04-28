@@ -7,17 +7,15 @@ namespace AnarchyChess.Ai.Tests.Tests.EvaluationTests;
 
 public class PawnStructureEvaluatorTests
 {
-    private readonly PawnStructureEvaluator _evaluator = new();
-
     [Fact]
     public void Evaluate_returns_zero_on_empty_board()
     {
         BitBoard board = new();
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = PawnStructureEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be(0);
-        blackScore.Should().Be(0);
+        evaluation.WhiteScore.Should().Be(0);
+        evaluation.BlackScore.Should().Be(0);
     }
 
     [Fact]
@@ -47,10 +45,10 @@ public class PawnStructureEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = PawnStructureEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be(0);
-        blackScore.Should().Be(0);
+        evaluation.WhiteScore.Should().Be(0);
+        evaluation.BlackScore.Should().Be(0);
     }
 
     [Fact]
@@ -67,11 +65,11 @@ public class PawnStructureEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = PawnStructureEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be(0);
-        blackScore
-            .Should()
+        evaluation.WhiteScore.Should().Be(0);
+        evaluation
+            .BlackScore.Should()
             .Be(
                 -PawnStructureEvaluator.DoubledPenalty
                     - (PawnStructureEvaluator.IsolatedPenalty * 3)
@@ -92,16 +90,16 @@ public class PawnStructureEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = PawnStructureEvaluator.Evaluate(board);
 
-        whiteScore
-            .Should()
+        evaluation
+            .WhiteScore.Should()
             .Be(
                 -(PawnStructureEvaluator.DoubledPenalty * 2)
                     - (PawnStructureEvaluator.IsolatedPenalty * 3)
             );
-        blackScore
-            .Should()
+        evaluation
+            .BlackScore.Should()
             .Be(
                 -PawnStructureEvaluator.DoubledPenalty
                     - (PawnStructureEvaluator.IsolatedPenalty * 2)
@@ -121,7 +119,7 @@ public class PawnStructureEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        int whiteScore = _evaluator.Evaluate(board, endgameFactor: 0).WhiteScore;
+        int whiteScore = PawnStructureEvaluator.Evaluate(board).WhiteScore;
 
         whiteScore.Should().Be(-PawnStructureEvaluator.DoubledPenalty);
     }
@@ -150,7 +148,7 @@ public class PawnStructureEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        int whiteScore = _evaluator.Evaluate(board, endgameFactor: 0).WhiteScore;
+        int whiteScore = PawnStructureEvaluator.Evaluate(board).WhiteScore;
 
         whiteScore.Should().Be(-PawnStructureEvaluator.IsolatedPenalty * 3);
     }
@@ -168,7 +166,7 @@ public class PawnStructureEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        int whiteScore = _evaluator.Evaluate(board, endgameFactor: 0).WhiteScore;
+        int whiteScore = PawnStructureEvaluator.Evaluate(board).WhiteScore;
 
         whiteScore.Should().Be(-PawnStructureEvaluator.IsolatedPenalty * 2);
     }
@@ -191,7 +189,7 @@ public class PawnStructureEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        int whiteScore = _evaluator.Evaluate(board, endgameFactor: 0).WhiteScore;
+        int whiteScore = PawnStructureEvaluator.Evaluate(board).WhiteScore;
 
         whiteScore.Should().Be(-PawnStructureEvaluator.BackwardsPenalty);
     }
@@ -214,7 +212,7 @@ public class PawnStructureEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces, isWhiteToMove: false);
 
-        int blackScore = _evaluator.Evaluate(board, endgameFactor: 0).BlackScore;
+        int blackScore = PawnStructureEvaluator.Evaluate(board).BlackScore;
 
         blackScore.Should().Be(-PawnStructureEvaluator.BackwardsPenalty);
     }
@@ -238,7 +236,7 @@ public class PawnStructureEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        int whiteScore = _evaluator.Evaluate(board, endgameFactor: 0).WhiteScore;
+        int whiteScore = PawnStructureEvaluator.Evaluate(board).WhiteScore;
 
         whiteScore.Should().Be(PawnStructureEvaluator.PassedBonus * 4);
     }
@@ -262,7 +260,7 @@ public class PawnStructureEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces, isWhiteToMove: false);
 
-        int blackScore = _evaluator.Evaluate(board, endgameFactor: 0).BlackScore;
+        int blackScore = PawnStructureEvaluator.Evaluate(board).BlackScore;
 
         blackScore.Should().Be(PawnStructureEvaluator.PassedBonus * 4);
     }

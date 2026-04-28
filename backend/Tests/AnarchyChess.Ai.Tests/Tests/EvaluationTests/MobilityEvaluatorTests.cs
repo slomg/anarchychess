@@ -7,17 +7,15 @@ namespace AnarchyChess.Ai.Tests.Tests.EvaluationTests;
 
 public class MobilityEvaluatorTests
 {
-    private readonly MobilityEvaluator _evaluator = new();
-
     [Fact]
     public void Evaluate_returns_zero_on_empty_board()
     {
         BitBoard board = new();
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = MobilityEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be(0);
-        blackScore.Should().Be(0);
+        evaluation.WhiteScore.Should().Be(0);
+        evaluation.BlackScore.Should().Be(0);
     }
 
     [Fact]
@@ -32,10 +30,10 @@ public class MobilityEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = MobilityEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be(0);
-        blackScore.Should().Be(0);
+        evaluation.WhiteScore.Should().Be(0);
+        evaluation.BlackScore.Should().Be(0);
     }
 
     [Fact]
@@ -47,10 +45,10 @@ public class MobilityEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = MobilityEvaluator.Evaluate(board);
 
-        whiteScore.Should().BeGreaterThan(0);
-        blackScore.Should().Be(0);
+        evaluation.WhiteScore.Should().BeGreaterThan(0);
+        evaluation.BlackScore.Should().Be(0);
     }
 
     [Fact]
@@ -62,10 +60,10 @@ public class MobilityEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = MobilityEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be(0);
-        blackScore.Should().BeGreaterThan(0);
+        evaluation.WhiteScore.Should().Be(0);
+        evaluation.BlackScore.Should().BeGreaterThan(0);
     }
 
     [Fact]
@@ -78,7 +76,7 @@ public class MobilityEvaluatorTests
         };
         BitBoard boardWithCapture = BitBoard.FromPieces(piecesWithCapture);
 
-        int scoreWithCapture = _evaluator.Evaluate(boardWithCapture, 0).WhiteScore;
+        int scoreWithCapture = MobilityEvaluator.Evaluate(boardWithCapture).WhiteScore;
 
         Dictionary<AlgebraicPoint, Piece> piecesWithoutCapture = new()
         {
@@ -87,7 +85,7 @@ public class MobilityEvaluatorTests
         };
         BitBoard boardWithoutCapture = BitBoard.FromPieces(piecesWithoutCapture);
 
-        int scoreWithoutCapture = _evaluator.Evaluate(boardWithoutCapture, 0).WhiteScore;
+        int scoreWithoutCapture = MobilityEvaluator.Evaluate(boardWithoutCapture).WhiteScore;
 
         scoreWithCapture.Should().BeGreaterThan(scoreWithoutCapture);
     }
@@ -105,8 +103,10 @@ public class MobilityEvaluatorTests
             [new("d5")] = PieceFactory.White(PieceType.Pawn),
         };
 
-        int openScore = _evaluator.Evaluate(BitBoard.FromPieces(openPieces), 0).WhiteScore;
-        int blockedScore = _evaluator.Evaluate(BitBoard.FromPieces(blockedPieces), 0).WhiteScore;
+        int openScore = MobilityEvaluator.Evaluate(BitBoard.FromPieces(openPieces)).WhiteScore;
+        int blockedScore = MobilityEvaluator
+            .Evaluate(BitBoard.FromPieces(blockedPieces))
+            .WhiteScore;
 
         openScore.Should().BeGreaterThan(0);
         blockedScore.Should().BeGreaterThan(0);

@@ -5,9 +5,9 @@ using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai.Evaluation;
 
-public sealed class MobilityEvaluator : IEvaluatorFunction
+public static class MobilityEvaluator
 {
-    public (int WhiteScore, int BlackScore) Evaluate(BitBoard board, float endgameFactor)
+    public static EvaluationResult Evaluate(BitBoard board)
     {
         int whiteScore = 0;
         int blackScore = 0;
@@ -68,7 +68,7 @@ public sealed class MobilityEvaluator : IEvaluatorFunction
             board.BitboardFor(PieceType.Knook, BitPieceColor.Black)
         );
 
-        return (WhiteScore: whiteScore, BlackScore: blackScore);
+        return new() { WhiteScore = whiteScore, BlackScore = blackScore };
     }
 
     private static int CalculateMobilityScoreForPiece(

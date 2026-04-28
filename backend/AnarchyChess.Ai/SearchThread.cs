@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using AnarchyChess.Ai.Evaluation;
+﻿using AnarchyChess.Ai.Evaluation;
 using AnarchyChess.Ai.Helpers;
 using AnarchyChess.Ai.Models;
 using AnarchyChess.EngineShared;
@@ -180,11 +179,6 @@ internal sealed class SearchThread(
 
     private int Quiescence(BitBoard board, int alpha, int beta, int depth, int initialDepth)
     {
-        if (board.ZobristKey != Zobrist.Compute(board))
-        {
-            Debugger.Break();
-        }
-
         if (
             _transpositionTable.TryProbe(
                 board.ZobristKey,

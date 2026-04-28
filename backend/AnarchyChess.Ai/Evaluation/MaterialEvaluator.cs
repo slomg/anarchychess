@@ -4,9 +4,9 @@ using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai.Evaluation;
 
-public sealed class MaterialEvaluator : IEvaluatorFunction
+public static class MaterialEvaluator
 {
-    public (int WhiteScore, int BlackScore) Evaluate(BitBoard board, float endgameFactor)
+    public static EvaluationResult Evaluate(BitBoard board)
     {
         int whiteScore = board.WhiteMaterialCount;
         int blackScore = board.BlackMaterialCount;
@@ -21,7 +21,7 @@ public sealed class MaterialEvaluator : IEvaluatorFunction
             EvaluateTraitorRookValue(board, position, ref whiteScore, ref blackScore);
         }
 
-        return (WhiteScore: whiteScore, BlackScore: blackScore);
+        return new() { WhiteScore = whiteScore, BlackScore = blackScore };
     }
 
     private static void EvaluateTraitorRookValue(

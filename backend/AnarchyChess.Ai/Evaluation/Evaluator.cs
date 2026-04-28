@@ -10,35 +10,48 @@ public interface IEvaluator
     bool TryEvaluateTermination(BitBoard board, int depth, out int eval);
 }
 
-public sealed class Evaluator(IEnumerable<IEvaluatorFunction>? evaluators = null) : IEvaluator
+public struct EvaluationResult
 {
-    private readonly IEvaluatorFunction[] _evaluators = evaluators is not null
-        ? [.. evaluators]
-        :
-        [
-            new ActivityEvaluator(),
-            new AggressionEvaluator(),
-            new KingSafetyEvaluator(),
-            new MaterialEvaluator(),
-            new MobilityEvaluator(),
-            new PawnSpaceEvaluator(),
-            new PawnStructureEvaluator(),
-            new KingEndgameActivityEvaluator(),
-        ];
+    public int WhiteScore;
+    public int BlackScore;
+}
 
+public sealed class Evaluator : IEvaluator
+{
     public int Evaluate(BitBoard board)
     {
         float endgameFactor = EndgameFactorCalculator.EndgameFactor(board);
 
-        int whiteScore = 0;
-        int blackScore = 0;
+        EvaluationResult activity = ActivityEvaluator.Evaluate(board);
+        EvaluationResult aggression = AggressionEvaluator.Evaluate(board);
+        EvaluationResult kingSafety = KingSafetyEvaluator.Evaluate(board, endgameFactor);
+        EvaluationResult material = MaterialEvaluator.Evaluate(board);
+        EvaluationResult mobility = MobilityEvaluator.Evaluate(board);
+        EvaluationResult pawnSpace = PawnSpaceEvaluator.Evaluate(board);
+        EvaluationResult pawnStructure = PawnStructureEvaluator.Evaluate(board);
+        EvaluationResult kingEndgameActivity = KingEndgameActivityEvaluator.Evaluate(
+            board,
+            endgameFactor
+        );
 
-        foreach (var evaluator in _evaluators)
-        {
-            (int whiteResult, int blackResult) = evaluator.Evaluate(board, endgameFactor);
-            whiteScore += whiteResult;
-            blackScore += blackResult;
-        }
+        int whiteScore =
+            activity.WhiteScore
+            + aggression.WhiteScore
+            + kingSafety.WhiteScore
+            + material.WhiteScore
+            + mobility.WhiteScore
+            + pawnSpace.WhiteScore
+            + pawnStructure.WhiteScore
+            + kingEndgameActivity.WhiteScore;
+        int blackScore =
+            activity.BlackScore
+            + aggression.BlackScore
+            + kingSafety.BlackScore
+            + material.BlackScore
+            + mobility.BlackScore
+            + pawnSpace.BlackScore
+            + pawnStructure.BlackScore
+            + kingEndgameActivity.BlackScore;
 
         return board.IsWhiteToMove ? whiteScore - blackScore : blackScore - whiteScore;
     }

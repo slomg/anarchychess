@@ -7,17 +7,15 @@ namespace AnarchyChess.Ai.Tests.Tests.EvaluationTests;
 
 public class AggressionEvaluatorTests
 {
-    private readonly AggressionEvaluator _evaluator = new();
-
     [Fact]
     public void Evaluate_returns_zero_on_empty_board()
     {
         BitBoard board = new();
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = AggressionEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be(0);
-        blackScore.Should().Be(0);
+        evaluation.WhiteScore.Should().Be(0);
+        evaluation.BlackScore.Should().Be(0);
     }
 
     [Fact]
@@ -30,10 +28,10 @@ public class AggressionEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = AggressionEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be(0);
-        blackScore.Should().Be(0);
+        evaluation.WhiteScore.Should().Be(0);
+        evaluation.BlackScore.Should().Be(0);
     }
 
     [Fact]
@@ -47,10 +45,10 @@ public class AggressionEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = AggressionEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be(AggressionEvaluator.MaxDistanceBonus - 3);
-        blackScore.Should().Be(0);
+        evaluation.WhiteScore.Should().Be(AggressionEvaluator.MaxDistanceBonus - 3);
+        evaluation.BlackScore.Should().Be(0);
     }
 
     [Fact]
@@ -64,10 +62,10 @@ public class AggressionEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = AggressionEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be(0);
-        blackScore.Should().Be(AggressionEvaluator.MaxDistanceBonus - 3);
+        evaluation.WhiteScore.Should().Be(0);
+        evaluation.BlackScore.Should().Be(AggressionEvaluator.MaxDistanceBonus - 3);
     }
 
     [Fact]
@@ -82,10 +80,10 @@ public class AggressionEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = AggressionEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be(AggressionEvaluator.MaxDistanceBonus - 2);
-        blackScore.Should().Be(AggressionEvaluator.MaxDistanceBonus - 2);
+        evaluation.WhiteScore.Should().Be(AggressionEvaluator.MaxDistanceBonus - 2);
+        evaluation.BlackScore.Should().Be(AggressionEvaluator.MaxDistanceBonus - 2);
     }
 
     [Fact]
@@ -103,22 +101,16 @@ public class AggressionEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        // White pieces distances to black king:
-        // d7 -> e8 = 1
-        // f7 -> e8 = 1
-        // Black pieces distances to white king:
-        // f2 -> e1 = 1
-        // c3 -> e1 = 2
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = AggressionEvaluator.Evaluate(board);
 
-        whiteScore
-            .Should()
+        evaluation
+            .WhiteScore.Should()
             .Be(
                 (AggressionEvaluator.MaxDistanceBonus - 1)
                     + (AggressionEvaluator.MaxDistanceBonus - 1)
             );
-        blackScore
-            .Should()
+        evaluation
+            .BlackScore.Should()
             .Be(
                 (AggressionEvaluator.MaxDistanceBonus - 1)
                     + (AggressionEvaluator.MaxDistanceBonus - 2)
