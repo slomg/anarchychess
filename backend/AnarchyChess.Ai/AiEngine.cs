@@ -12,62 +12,20 @@ public class AiEngine : IAiEngine
 {
     private static readonly TranspositionTable _transpositionTable = new();
 
-    public (BitMove? BestMove, int EvalForBot) FindBestMove(BitBoard board, int depth)
+    public (BitMove? BestMove, int EvalForBot) FindBestMove(BitBoard board, int maxDepth)
     {
-        int score = 0;
         BitMove? bestMove = null;
+        int evalForBot = 0;
 
-        for (int iterativeDepth = 1; iterativeDepth <= depth; iterativeDepth++)
+        for (int depth = 1; depth <= maxDepth; depth++)
         {
-            int aspirationDelta = 50;
-            int aspirationAlpha;
-            int aspirationBeta;
-            if (iterativeDepth < 4)
-            {
-                aspirationAlpha = EngineConstants.AlphaStart;
-                aspirationBeta = EngineConstants.BetaStart;
-            }
-            else
-            {
-                aspirationAlpha = score - aspirationDelta;
-                aspirationBeta = score + aspirationDelta;
-            }
-
-            while (true)
-            {
-                (bestMove, score) = SearchRoot(
-                    board,
-                    iterativeDepth,
-                    aspirationAlpha,
-                    aspirationBeta
-                );
-
-                if (score <= aspirationAlpha)
-                {
-                    aspirationAlpha -= aspirationDelta;
-                    aspirationDelta *= 2;
-                }
-                else if (score >= aspirationBeta)
-                {
-                    aspirationBeta += aspirationDelta;
-                    aspirationDelta *= 2;
-                }
-                else
-                {
-                    break;
-                }
-            }
+            (bestMove, evalForBot) = SearchRoot(board, depth);
         }
 
-        return (bestMove, score);
+        return (bestMove, evalForBot);
     }
 
-    public (BitMove? BestMove, int EvalForBot) SearchRoot(
-        BitBoard board,
-        int depth,
-        int alpha,
-        int beta
-    )
+    private static (BitMove? BestMove, int EvalForBot) SearchRoot(BitBoard board, int depth)
     {
         BitMove[] moves = new BitMove[EngineConstants.MaxMoves];
         int moveCount = 0;
@@ -91,11 +49,11 @@ public class AiEngine : IAiEngine
         BitMove olderMove = moves[0];
         olderBoardCopy.MakeMove(olderMove);
 
-        alpha = -new SearchThread(_transpositionTable, depth).Negamax(
+        int alpha = -new SearchThread(_transpositionTable, depth).Negamax(
             olderBoardCopy,
             depth - 1,
-            alpha: -beta,
-            beta: -alpha
+            alpha: EngineConstants.AlphaStart,
+            beta: EngineConstants.BetaStart
         );
 
         int[] scores = new int[moveCount];
