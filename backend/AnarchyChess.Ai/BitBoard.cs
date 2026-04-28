@@ -76,8 +76,9 @@ public partial class BitBoard
                 prevMoveState.Piece
             );
             ProcessOmnipotentPawnSquare(
-                prevMoveState.Piece.Color is BitPieceColor.White,
-                prevMoveState.CaptureMask
+                moveByWhite: prevMoveState.Piece.Color is BitPieceColor.White,
+                to: prevMoveState.To,
+                captureMask: prevMoveState.CaptureMask
             );
         }
 
@@ -452,28 +453,6 @@ public partial class BitBoard
         ZobristKey ^= Zobrist.PieceSquare[(int)pieceType, (int)color, at];
     }
 
-    private void AddExistingPiece(PieceType pieceType, BitPieceColor color, byte at)
-    {
-        UInt128 mask = UInt128.One << at;
-        ref UInt128 bitboard = ref BitboardFor(pieceType, color);
-        bitboard |= mask;
-        HasMoved |= mask;
-
-        switch (color)
-        {
-            case BitPieceColor.White:
-                WhitePieces |= mask;
-                break;
-            case BitPieceColor.Black:
-                BlackPieces |= mask;
-                break;
-            case BitPieceColor.Neutral:
-                NeutralPieces |= mask;
-                break;
-        }
-        PieceAt[at] = new BitPiece() { Type = pieceType, Color = color };
-    }
-
     private void RemovePiece(PieceType pieceType, BitPieceColor color, byte at)
     {
         UInt128 atMask = UInt128.One << at;
@@ -596,14 +575,26 @@ public partial class BitBoard
     private void ProcessMoveEffects(BitMove move)
     {
         ProcessEnPassant(move.From, move.To, move.SpecialMoveType, move.Piece);
-        ProcessOmnipotentPawnSquare(move.Piece.Color is BitPieceColor.White, move.CapturesMask);
+        ProcessOmnipotentPawnSquare(
+            moveByWhite: move.Piece.Color is BitPieceColor.White,
+            to: move.To,
+            captureMask: move.CapturesMask
+        );
     }
 
-    private void ProcessOmnipotentPawnSquare(bool moveByWhite, UInt128 captureMask)
+    private void ProcessOmnipotentPawnSquare(bool moveByWhite, byte to, UInt128 captureMask)
     {
         bool triggersOmnipotentPawn =
-            (moveByWhite && (captureMask & GameLogicConstants.BlackOmnipotentPawnMask) != 0)
-            || (!moveByWhite && (captureMask & GameLogicConstants.WhiteOmnipotentPawnMask) != 0);
+            (
+                moveByWhite
+                && to == GameLogicConstants.BlackOmnipotentPawnIdx
+                && (captureMask & GameLogicConstants.BlackOmnipotentPawnMask) != 0
+            )
+            || (
+                !moveByWhite
+                && to == GameLogicConstants.WhiteOmnipotentPawnIdx
+                && (captureMask & GameLogicConstants.WhiteOmnipotentPawnMask) != 0
+            );
         if (triggersOmnipotentPawn && !CanSpawnOmnipotentPawn)
         {
             CanSpawnOmnipotentPawn = true;

@@ -101,7 +101,9 @@ public class ZobristTests
         );
 
         BitBoard board1 = BitBoard.FromPieces(pieces, prevMoveState: prevMoveState1);
+        board1.EnPassantPawnSquare.Should().Be(new AlgebraicPoint("e6").AsIdx());
         BitBoard board2 = BitBoard.FromPieces(pieces, prevMoveState: prevMoveState2);
+        board2.EnPassantPawnSquare.Should().Be(0);
 
         Zobrist.Compute(board1).Should().NotBe(Zobrist.Compute(board2));
     }
@@ -130,7 +132,9 @@ public class ZobristTests
         );
 
         BitBoard board1 = BitBoard.FromPieces(pieces, prevMoveState: prevMoveState1);
+        board1.CanSpawnOmnipotentPawn.Should().BeTrue();
         BitBoard board2 = BitBoard.FromPieces(pieces, prevMoveState: prevMoveState2);
+        board2.CanSpawnOmnipotentPawn.Should().BeFalse();
 
         Zobrist.Compute(board1).Should().NotBe(Zobrist.Compute(board2));
     }
