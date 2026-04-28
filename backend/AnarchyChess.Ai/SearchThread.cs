@@ -5,17 +5,8 @@ using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai;
 
-internal sealed class SearchThread(
-    IBitMoveGenerator moveGenerator,
-    IEvaluator evaluator,
-    IMoveOrdering moveOrdering,
-    TranspositionTable transpositionTable,
-    int maxDepth
-)
+internal sealed class SearchThread(TranspositionTable transpositionTable, int maxDepth)
 {
-    private readonly IBitMoveGenerator _moveGenerator = moveGenerator;
-    private readonly IEvaluator _evaluator = evaluator;
-    private readonly IMoveOrdering _moveOrdering = moveOrdering;
     private readonly int _maxDepth = maxDepth;
 
     private readonly BitMove[,] _killerMoves = new BitMove[maxDepth + 1, 2];
@@ -45,7 +36,7 @@ internal sealed class SearchThread(
             return ttScore;
         }
 
-        if (_evaluator.TryEvaluateTermination(board, depth, out int terminationEval))
+        if (Evaluator.TryEvaluateTermination(board, depth, out int terminationEval))
         {
             return terminationEval;
         }
@@ -54,12 +45,12 @@ internal sealed class SearchThread(
         {
             return isLastMoveCapture
                 ? Quiescence(board, alpha, beta, depth: 4, initialDepth: depth)
-                : _evaluator.Evaluate(board);
+                : Evaluator.Evaluate(board);
         }
 
         Span<BitMove> moves = stackalloc BitMove[EngineConstants.MaxMoves];
         int moveCount = 0;
-        _moveGenerator.Generate(board, moves, ref moveCount, depth: depth, maxDepth: _maxDepth);
+        BitMoveGenerator.Generate(board, moves, ref moveCount, depth: depth, maxDepth: _maxDepth);
         if (moveCount == 0)
         {
             return 0;
@@ -89,12 +80,12 @@ internal sealed class SearchThread(
         }
 
         Span<int> scores = stackalloc int[moveCount];
-        _moveOrdering.ScoreMoves(
+        MoveOrdering.ScoreMoves(
             board,
             depth,
             _killerMoves,
             _historyHeuristic,
-            ttMove: ttMove,
+            packedTtMove: ttMove,
             scores,
             moves,
             moveCount
@@ -104,7 +95,7 @@ internal sealed class SearchThread(
         int bestMovePacked = 0;
         for (int i = 0; i < moveCount; i++)
         {
-            BitMove move = _moveOrdering.GetNextHighestMove(i, moves, scores, moveCount);
+            BitMove move = MoveOrdering.GetNextHighestMove(i, moves, scores, moveCount);
             bool isCapture = move.CapturesMask != 0;
             bool isQuiet = !isCapture && !isForced && move.PromotesTo is null;
 
@@ -194,7 +185,7 @@ internal sealed class SearchThread(
         }
 
         if (
-            _evaluator.TryEvaluateTermination(
+            Evaluator.TryEvaluateTermination(
                 board,
                 depth: initialDepth - depth,
                 out int terminationEval
@@ -204,7 +195,7 @@ internal sealed class SearchThread(
             return terminationEval;
         }
 
-        int standPat = _evaluator.Evaluate(board);
+        int standPat = Evaluator.Evaluate(board);
 
         if (standPat >= beta)
         {
@@ -222,7 +213,7 @@ internal sealed class SearchThread(
 
         Span<BitMove> moves = stackalloc BitMove[EngineConstants.MaxMoves];
         int moveCount = 0;
-        _moveGenerator.Generate(board, moves, ref moveCount, depth: depth, maxDepth: _maxDepth);
+        BitMoveGenerator.Generate(board, moves, ref moveCount, depth: depth, maxDepth: _maxDepth);
         if (moveCount == 0)
         {
             return 0;
@@ -263,12 +254,12 @@ internal sealed class SearchThread(
         }
 
         Span<int> scores = stackalloc int[captureCount];
-        _moveOrdering.ScoreMoves(
+        MoveOrdering.ScoreMoves(
             board,
             initialDepth,
             _killerMoves,
             _historyHeuristic,
-            ttMove: ttMove,
+            packedTtMove: ttMove,
             scores,
             captures,
             captureCount
@@ -276,7 +267,7 @@ internal sealed class SearchThread(
 
         for (int i = 0; i < captureCount; i++)
         {
-            BitMove move = _moveOrdering.GetNextHighestMove(i, captures, scores, captureCount);
+            BitMove move = MoveOrdering.GetNextHighestMove(i, captures, scores, captureCount);
 
             MoveUndoState undo = board.MakeMove(move);
             int score = -Quiescence(board, -beta, -alpha, depth - 1, initialDepth);

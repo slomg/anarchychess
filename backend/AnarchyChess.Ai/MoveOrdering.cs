@@ -4,32 +4,9 @@ using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai;
 
-public interface IMoveOrdering
+public static class MoveOrdering
 {
-    void ScoreMoves(
-        BitBoard board,
-        int depth,
-        BitMove[,] killerMoves,
-        int[,] historyHeuristic,
-        int ttMove,
-        Span<int> scores,
-        Span<BitMove> moves,
-        int moveCount
-    );
-    BitMove GetNextHighestMove(int i, Span<BitMove> moves, Span<int> scores, int moveCount);
-    void SortMoves(
-        BitBoard board,
-        int depth,
-        BitMove[,] killers,
-        int[,] history,
-        Span<BitMove> moves,
-        int moveCount
-    );
-}
-
-public sealed class MoveOrdering : IMoveOrdering
-{
-    public void ScoreMoves(
+    public static void ScoreMoves(
         BitBoard board,
         int depth,
         BitMove[,] killerMoves,
@@ -53,7 +30,12 @@ public sealed class MoveOrdering : IMoveOrdering
         }
     }
 
-    public BitMove GetNextHighestMove(int i, Span<BitMove> moves, Span<int> scores, int moveCount)
+    public static BitMove GetNextHighestMove(
+        int i,
+        Span<BitMove> moves,
+        Span<int> scores,
+        int moveCount
+    )
     {
         int bestIndex = i;
         int bestScore = scores[i];
@@ -138,7 +120,7 @@ public sealed class MoveOrdering : IMoveOrdering
         return historyHeuristic[move.From, move.To];
     }
 
-    public void SortMoves(
+    public static void SortMoves(
         BitBoard board,
         int depth,
         BitMove[,] killers,

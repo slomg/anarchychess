@@ -1,5 +1,4 @@
 using AnarchyChess.Ai;
-using AnarchyChess.Ai.Evaluation;
 using AnarchyChess.Ai.Service.DTO;
 using AnarchyChess.Ai.Service.Services;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -30,11 +29,7 @@ builder.Services.AddSerilog();
 builder.Services.AddGrpc();
 
 builder.Services.AddScoped<IAiEngineService, AiEngineService>();
-
 builder.Services.AddScoped<IAiEngine, AiEngine>();
-builder.Services.AddSingleton<IBitMoveGenerator, BitMoveGenerator>();
-builder.Services.AddSingleton<IMoveOrdering, MoveOrdering>();
-builder.Services.AddSingleton<IEvaluator, Evaluator>();
 
 RuntimeTypeModel
     .Default.Add<UInt128>(applyDefaultBehaviour: false)

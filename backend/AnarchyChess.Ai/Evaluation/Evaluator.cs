@@ -4,21 +4,15 @@ using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai.Evaluation;
 
-public interface IEvaluator
-{
-    int Evaluate(BitBoard board);
-    bool TryEvaluateTermination(BitBoard board, int depth, out int eval);
-}
-
 public struct EvaluationResult
 {
     public int WhiteScore;
     public int BlackScore;
 }
 
-public sealed class Evaluator : IEvaluator
+public static class Evaluator
 {
-    public int Evaluate(BitBoard board)
+    public static int Evaluate(BitBoard board)
     {
         float endgameFactor = EndgameFactorCalculator.EndgameFactor(board);
 
@@ -56,7 +50,7 @@ public sealed class Evaluator : IEvaluator
         return board.IsWhiteToMove ? whiteScore - blackScore : blackScore - whiteScore;
     }
 
-    public bool TryEvaluateTermination(BitBoard board, int depth, out int terminationEval)
+    public static bool TryEvaluateTermination(BitBoard board, int depth, out int terminationEval)
     {
         UInt128 whiteKings = board.BitboardFor(PieceType.King, BitPieceColor.White);
         UInt128 blackKings = board.BitboardFor(PieceType.King, BitPieceColor.Black);
