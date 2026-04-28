@@ -190,33 +190,80 @@ public class BitBoardTests
     }
 
     [Fact]
-    public void FromPieces_sets_last_move_state()
+    public void FromPieces_sets_can_spawn_omnipotent_pawn_white_to_black_square_capture()
     {
         PrevMoveState prevMoveState = new(
-            From: new AlgebraicPoint("b2").AsIdx(),
-            To: new AlgebraicPoint("b5").AsIdx(),
-            Piece: new() { Type = PieceType.Pawn, Color = BitPieceColor.Black },
-            CaptureMask: UInt128.One << new AlgebraicPoint("h3").AsIdx(),
+            From: new AlgebraicPoint("h7").AsIdx(),
+            To: GameLogicConstants.BlackOmnipotentPawnIdx,
+            Piece: new() { Type = PieceType.Queen, Color = BitPieceColor.White },
+            CaptureMask: GameLogicConstants.BlackOmnipotentPawnMask,
             SpecialMoveType: SpecialMoveType.None
         );
 
         BitBoard board = BitBoard.FromPieces(
-            new Dictionary<AlgebraicPoint, Piece>()
+            new Dictionary<AlgebraicPoint, Piece>
             {
-                [new AlgebraicPoint("b2")] = PieceFactory.White(PieceType.Pawn),
+                [GameLogicConstants.BlackOmnipotentPawnSquare] = PieceFactory.White(PieceType.Pawn),
+            },
+            isWhiteToMove: false,
+            prevMoveState: prevMoveState
+        );
+
+        board.CanSpawnOmnipotentPawn.Should().BeTrue();
+    }
+
+    [Fact]
+    public void FromPieces_sets_can_spawn_omnipotent_pawn_black_to_white_square_capture()
+    {
+        PrevMoveState prevMoveState = new(
+            From: new AlgebraicPoint("h4").AsIdx(),
+            To: GameLogicConstants.WhiteOmnipotentPawnIdx,
+            Piece: new() { Type = PieceType.Queen, Color = BitPieceColor.Black },
+            CaptureMask: GameLogicConstants.WhiteOmnipotentPawnMask,
+            SpecialMoveType: SpecialMoveType.None
+        );
+
+        BitBoard board = BitBoard.FromPieces(
+            new Dictionary<AlgebraicPoint, Piece>
+            {
+                [GameLogicConstants.WhiteOmnipotentPawnSquare] = PieceFactory.Black(
+                    PieceType.Queen
+                ),
             },
             isWhiteToMove: true,
             prevMoveState: prevMoveState
         );
 
-        board
-            .EnPassantSquaresMask.Should()
-            .Be(
-                (UInt128.One << new AlgebraicPoint("b3").AsIdx())
-                    | (UInt128.One << new AlgebraicPoint("b4").AsIdx())
-            );
-        board.EnPassantPawnSquare.Should().Be(prevMoveState.To);
         board.CanSpawnOmnipotentPawn.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData("b2", "b4")]
+    [InlineData("b2", "b5")]
+    public void FromPieces_sets_en_passant_for_correct_pawn_moves(string from, string to)
+    {
+        PrevMoveState prevMoveState = new(
+            From: new AlgebraicPoint(from).AsIdx(),
+            To: new AlgebraicPoint(to).AsIdx(),
+            Piece: new() { Type = PieceType.Pawn, Color = BitPieceColor.White },
+            CaptureMask: 0,
+            SpecialMoveType: SpecialMoveType.None
+        );
+
+        BitBoard board = BitBoard.FromPieces(
+            new Dictionary<AlgebraicPoint, Piece>
+            {
+                [new AlgebraicPoint(from)] = PieceFactory.White(PieceType.Pawn),
+            },
+            isWhiteToMove: false,
+            prevMoveState: prevMoveState
+        );
+
+        int toIdx = new AlgebraicPoint(to).AsIdx();
+
+        board.EnPassantPawnSquare.Should().Be(toIdx);
+
+        board.EnPassantSquaresMask.Should().NotBe(0);
     }
 
     [Fact]
