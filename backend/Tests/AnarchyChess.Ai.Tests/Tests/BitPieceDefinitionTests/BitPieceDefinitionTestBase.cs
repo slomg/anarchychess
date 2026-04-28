@@ -9,8 +9,6 @@ namespace AnarchyChess.Ai.Tests.Tests.BitPieceDefinitionTests;
 
 public class BitPieceDefinitionTestBase
 {
-    private readonly BitMoveGenerator _generator = new();
-
     protected void TestMoves(PieceTestCase testCase)
     {
         testCase.BlockedBy.Add(testCase.Origin, testCase.Piece);
@@ -40,7 +38,7 @@ public class BitPieceDefinitionTestBase
             whenNeutral: BitPieceColor.Neutral
         );
         BitPiece piece = new() { Type = testCase.Piece.Type, Color = color };
-        _generator.GenerateForPiece(
+        BitMoveGenerator.GenerateForPiece(
             board,
             testCase.Origin.AsIdx(),
             piece,

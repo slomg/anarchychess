@@ -7,8 +7,6 @@ namespace AnarchyChess.Ai.Tests.Tests;
 
 public class BitMoveGeneratorTests
 {
-    private readonly BitMoveGenerator _generator = new();
-
     private readonly int PieceCount = Enum.GetValues<PieceType>().Length;
 
     [Fact]
@@ -29,7 +27,7 @@ public class BitMoveGeneratorTests
         Span<BitMove> moves = stackalloc BitMove[256];
         int moveCount = 0;
 
-        _generator.Generate(board, moves, ref moveCount);
+        BitMoveGenerator.Generate(board, moves, ref moveCount);
 
         HashSet<byte> expectedDestinations =
         [
@@ -87,7 +85,7 @@ public class BitMoveGeneratorTests
         Span<BitMove> moves = stackalloc BitMove[256];
         int moveCount = 0;
 
-        _generator.Generate(board, moves, ref moveCount);
+        BitMoveGenerator.Generate(board, moves, ref moveCount);
 
         HashSet<byte> expectedDestinations =
         [
@@ -135,7 +133,7 @@ public class BitMoveGeneratorTests
 
         Span<BitMove> moves = stackalloc BitMove[256];
         int moveCount = 0;
-        _generator.Generate(board, moves, ref moveCount, depth: depth, maxDepth: maxDepth);
+        BitMoveGenerator.Generate(board, moves, ref moveCount, depth: depth, maxDepth: maxDepth);
 
         if (generateThrows)
         {
@@ -167,7 +165,7 @@ public class BitMoveGeneratorTests
         Span<BitMove> moves = stackalloc BitMove[10];
         int moveCount = 0;
 
-        _generator.Generate(board, moves, ref moveCount);
+        BitMoveGenerator.Generate(board, moves, ref moveCount);
 
         moveCount.Should().Be(1);
         moves[0]
@@ -199,7 +197,7 @@ public class BitMoveGeneratorTests
         Span<BitMove> moves = stackalloc BitMove[256];
         int moveCount = 0;
 
-        _generator.Generate(board, moves, ref moveCount);
+        BitMoveGenerator.Generate(board, moves, ref moveCount);
 
         foreach (var move in moves[..moveCount])
         {
