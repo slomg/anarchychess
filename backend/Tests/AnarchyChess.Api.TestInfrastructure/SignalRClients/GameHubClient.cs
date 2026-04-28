@@ -47,7 +47,7 @@ public class GameHubClient : BaseHubClient
             () => _rematchCancelledChannel.Writer.TryWrite(true)
         );
         Connection.On<GameToken>(
-            "RematchAccepted",
+            "RematchAcceptedAsync",
             gameToken => _rematchAcceptedChannel.Writer.TryWrite(gameToken)
         );
     }
