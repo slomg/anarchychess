@@ -259,10 +259,7 @@ public class BitBoardTests
             prevMoveState: prevMoveState
         );
 
-        int toIdx = new AlgebraicPoint(to).AsIdx();
-
-        board.EnPassantPawnSquare.Should().Be(toIdx);
-
+        board.EnPassantPawnSquare.Should().Be(new AlgebraicPoint(to).AsIdx());
         board.EnPassantSquaresMask.Should().NotBe(0);
     }
 
