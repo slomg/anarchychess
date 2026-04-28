@@ -164,7 +164,7 @@ public sealed class BitMoveGenerator : IBitMoveGenerator
 
             if ((board.StunnedPieces & (UInt128.One << position)) != 0)
             {
-                return;
+                continue;
             }
 
             definition.GenerateMoves(
