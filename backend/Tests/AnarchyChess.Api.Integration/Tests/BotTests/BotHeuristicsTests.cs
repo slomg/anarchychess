@@ -15,16 +15,12 @@ namespace AnarchyChess.Api.Integration.Tests.BotTests;
 public class BotHeuristicsTests : BaseIntegrationTest
 {
     private readonly IBotHeuristics _botHeuristics;
-
-    private readonly IBitMoveGenerator _bitMoveGenerator;
     private readonly IBotService _botService;
 
     public BotHeuristicsTests(AnarchyChessWebApplicationFactory factory)
         : base(factory)
     {
         _botHeuristics = Scope.ServiceProvider.GetRequiredService<IBotHeuristics>();
-
-        _bitMoveGenerator = Scope.ServiceProvider.GetRequiredService<IBitMoveGenerator>();
         _botService = Scope.ServiceProvider.GetRequiredService<IBotService>();
     }
 
@@ -37,7 +33,7 @@ public class BotHeuristicsTests : BaseIntegrationTest
 
         BitMove[] opponentMoves = new BitMove[EngineConstants.MaxMoves];
         int opponentMoveCount = 0;
-        _bitMoveGenerator.Generate(bitboardAfterMove, opponentMoves, ref opponentMoveCount);
+        BitMoveGenerator.Generate(bitboardAfterMove, opponentMoves, ref opponentMoveCount);
 
         return new(
             Board: board,
