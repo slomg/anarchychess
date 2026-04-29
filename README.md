@@ -112,7 +112,7 @@ NEXT_PUBLIC_OAUTH_URL="https://localhost:7266"
 NEXT_PUBLIC_ASSETS_URL="http://127.0.0.1:10000/devstoreaccount1/assets"
 ```
 
-4. Upload pieces and sfx to your blob storage emulator (upload /sfx to /assets/sfx and /pieces/png to /assets/pieces)
+4. Upload pieces and sfx to your blob storage emulator (upload `/sfx` to `/assets/sfx`, `/pieces/full-png` to `/assets/pieces` and `/pieces/full-material` to `/assets/material-pieces`)
 
 5. Run the development server:
 
