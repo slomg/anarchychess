@@ -48,6 +48,7 @@ const BotPlayOptions = () => {
                     selected={selectedBotType === BotType.ANARCHY_BOT}
                     select={() => setSelectedBotType(BotType.ANARCHY_BOT)}
                 />
+
                 <Bot
                     label="Lobotomized Anarchy Bot"
                     userId="bot:lobotomized-anarchybot"
@@ -56,6 +57,20 @@ const BotPlayOptions = () => {
                     }
                     select={() =>
                         setSelectedBotType(BotType.LOBOTOMIZED_ANARCHY_BOT)
+                    }
+                />
+
+                <Bot
+                    label="Lobotomized Lobotomized Anarchy Bot"
+                    userId="bot:lobotomized-lobotomized-anarchybot"
+                    selected={
+                        selectedBotType ===
+                        BotType.LOBOTOMIZED_LOBOTOMIZED_ANARCHY_BOT
+                    }
+                    select={() =>
+                        setSelectedBotType(
+                            BotType.LOBOTOMIZED_LOBOTOMIZED_ANARCHY_BOT,
+                        )
                     }
                 />
             </div>
