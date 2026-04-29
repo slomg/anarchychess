@@ -109,9 +109,12 @@ npm install
 ```
 NEXT_PUBLIC_API_URL="https://localhost:7266"
 NEXT_PUBLIC_OAUTH_URL="https://localhost:7266"
+NEXT_PUBLIC_ASSETS_URL="http://127.0.0.1:10000/devstoreaccount1/assets"
 ```
 
-4. Run the development server:
+4. Upload pieces and sfx to your blob storage emulator (upload /sfx to /assets/sfx and /pieces/png to /assets/pieces)
+
+5. Run the development server:
 
 ```bash
 npm run dev
