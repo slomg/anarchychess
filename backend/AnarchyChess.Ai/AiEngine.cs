@@ -12,14 +12,14 @@ public class AiEngine : IAiEngine
 {
     private static readonly TranspositionTable _transpositionTable = new();
 
-    public (BitMove? BestMove, int EvalForBot) FindBestMove(BitBoard board, int maxDepth)
+    public (BitMove? BestMove, int EvalForBot) FindBestMove(BitBoard board, int depth)
     {
         BitMove? bestMove = null;
         int evalForBot = 0;
 
-        for (int depth = 1; depth <= maxDepth; depth++)
+        for (int currentDepth = 1; currentDepth <= depth; currentDepth++)
         {
-            (bestMove, evalForBot) = SearchRoot(board, depth);
+            (bestMove, evalForBot) = SearchRoot(board, currentDepth);
         }
 
         return (bestMove, evalForBot);
@@ -41,6 +41,7 @@ public class AiEngine : IAiEngine
             depth,
             new BitMove[depth + 1, 2],
             new int[10 * 10, 10 * 10],
+            packedTtMove: 0,
             moves,
             moveCount
         );

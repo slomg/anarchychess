@@ -125,12 +125,13 @@ public static class MoveOrdering
         int depth,
         BitMove[,] killers,
         int[,] history,
+        int packedTtMove,
         Span<BitMove> moves,
         int moveCount
     )
     {
         Span<int> scores = stackalloc int[moveCount];
-        ScoreMoves(board, depth, killers, history, -1, scores, moves, moveCount);
+        ScoreMoves(board, depth, killers, history, packedTtMove, scores, moves, moveCount);
 
         QuickSort(moves, scores, 0, moveCount - 1);
     }

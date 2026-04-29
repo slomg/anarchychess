@@ -19,6 +19,12 @@ public class MoveOrderingTests
             }
         );
 
+        BitMove ttMove = new()
+        {
+            From = new AlgebraicPoint("e2").AsIdx(),
+            To = new AlgebraicPoint("e5").AsIdx(),
+            Piece = new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.White },
+        };
         BitMove killer = new()
         {
             From = new AlgebraicPoint("e2").AsIdx(),
@@ -64,15 +70,24 @@ public class MoveOrderingTests
         BitMove[,] killers = new BitMove[1, 2];
         killers[0, 0] = killer;
 
-        Span<BitMove> moves = [quiet, stunThrow, promotion, capture, regularThrow, killer];
-        MoveOrdering.SortMoves(board, depth: 0, killers, new int[100, 100], moves, moves.Length);
+        Span<BitMove> moves = [quiet, stunThrow, promotion, capture, regularThrow, killer, ttMove];
+        MoveOrdering.SortMoves(
+            board,
+            depth: 0,
+            killers,
+            new int[100, 100],
+            packedTtMove: ttMove.Pack(),
+            moves,
+            moves.Length
+        );
 
-        moves[0].Should().BeEquivalentTo(killer);
-        moves[1].Should().BeEquivalentTo(capture);
-        moves[2].Should().BeEquivalentTo(promotion);
-        moves[3].Should().BeEquivalentTo(stunThrow);
-        moves[4].Should().BeEquivalentTo(regularThrow);
-        moves[5].Should().BeEquivalentTo(quiet);
+        moves[0].Should().BeEquivalentTo(ttMove);
+        moves[1].Should().BeEquivalentTo(killer);
+        moves[2].Should().BeEquivalentTo(capture);
+        moves[3].Should().BeEquivalentTo(promotion);
+        moves[4].Should().BeEquivalentTo(stunThrow);
+        moves[5].Should().BeEquivalentTo(regularThrow);
+        moves[6].Should().BeEquivalentTo(quiet);
     }
 
     [Fact]
@@ -110,6 +125,7 @@ public class MoveOrderingTests
             depth: 0,
             new BitMove[1, 2],
             new int[100, 100],
+            packedTtMove: 0,
             moves,
             moves.Length
         );
@@ -144,6 +160,7 @@ public class MoveOrderingTests
             depth: 0,
             new BitMove[1, 2],
             history,
+            packedTtMove: 0,
             moves,
             moves.Length
         );
@@ -189,6 +206,7 @@ public class MoveOrderingTests
             depth: 0,
             new BitMove[1, 2],
             new int[100, 100],
+            packedTtMove: 0,
             moves,
             moves.Length
         );
