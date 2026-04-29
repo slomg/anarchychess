@@ -8,10 +8,10 @@ import {
 
 import ChessboardStoreContext from "../../contexts/chessboardStoreContext";
 import { createFakePiece } from "@/lib/testUtils/fakers/chessboardFakers";
+import { logicalPoint } from "@/features/point/pointUtils";
 import { GameColor, PieceType } from "@/lib/apiClient";
 import BoardPieces from "../../lib/boardPieces";
 import MaterialCount from "../MaterialCount";
-import { logicalPoint } from "@/features/point/pointUtils";
 
 describe("MaterialCount", () => {
     let store: StoreApi<ChessboardStore>;
