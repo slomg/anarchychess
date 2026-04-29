@@ -1,24 +1,21 @@
 import { StoreApi } from "zustand";
 
 import { ChessboardStore, createChessboardStore } from "../chessboardStore";
-import { mockAudio } from "@/lib/testUtils/mocks/mockAudio";
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
 import { SpecialMoveType } from "@/lib/apiClient";
 import { AnimationStep } from "../../lib/types";
 import BoardPieces from "../../lib/boardPieces";
+
+vi.mock("@/features/audio/audioPlayer");
 
 describe("AudioSlice", () => {
     let store: StoreApi<ChessboardStore>;
 
     beforeEach(() => {
         store = createChessboardStore();
-        // @ts-expect-error reset private static property for testing
-        AudioPlayer._cachedAudios = new Map();
     });
 
     it("should not play audio if movedPieceIds is empty", async () => {
-        const { audioMock, audioConstructorMock } = mockAudio();
-
         const step: AnimationStep = {
             newPieces: new BoardPieces(),
             movedPieceIds: [],
@@ -26,12 +23,10 @@ describe("AudioSlice", () => {
 
         await store.getState().playAudioForAnimationStep(step);
 
-        expect(audioConstructorMock).not.toHaveBeenCalled();
-        expect(audioMock.play).not.toHaveBeenCalled();
+        expect(AudioPlayer.playAudio).not.toHaveBeenCalled();
     });
 
     it("should not play audio if muteAudio is true", async () => {
-        const { audioMock, audioConstructorMock } = mockAudio();
         store.setState({ muteAudio: true });
         const step: AnimationStep = {
             newPieces: new BoardPieces(),
@@ -40,12 +35,10 @@ describe("AudioSlice", () => {
 
         await store.getState().playAudioForAnimationStep(step);
 
-        expect(audioConstructorMock).not.toHaveBeenCalled();
-        expect(audioMock.play).not.toHaveBeenCalled();
+        expect(AudioPlayer.playAudio).not.toHaveBeenCalled();
     });
 
     it("should play special move audio if step has specialMoveType", async () => {
-        const { audioMock, audioConstructorMock } = mockAudio();
         const step: AnimationStep = {
             newPieces: new BoardPieces(),
             movedPieceIds: ["1"],
@@ -55,14 +48,12 @@ describe("AudioSlice", () => {
 
         await store.getState().playAudioForAnimationStep(step);
 
-        expect(audioConstructorMock).toHaveBeenCalledExactlyOnceWith(
+        expect(AudioPlayer.playAudio).toHaveBeenCalledExactlyOnceWith(
             AudioType.EXPLOSION,
         );
-        expect(audioMock.play).toHaveBeenCalledOnce();
     });
 
     it("should play capture audio if isCapture is true and no special move", async () => {
-        const { audioMock, audioConstructorMock } = mockAudio();
         const step: AnimationStep = {
             newPieces: new BoardPieces(),
             movedPieceIds: ["1"],
@@ -71,14 +62,12 @@ describe("AudioSlice", () => {
 
         await store.getState().playAudioForAnimationStep(step);
 
-        expect(audioConstructorMock).toHaveBeenCalledExactlyOnceWith(
+        expect(AudioPlayer.playAudio).toHaveBeenCalledExactlyOnceWith(
             AudioType.CAPTURE,
         );
-        expect(audioMock.play).toHaveBeenCalledOnce();
     });
 
     it("should play normal move audio if no capture or special move", async () => {
-        const { audioMock, audioConstructorMock } = mockAudio();
         const step: AnimationStep = {
             newPieces: new BoardPieces(),
             movedPieceIds: ["1"],
@@ -86,14 +75,12 @@ describe("AudioSlice", () => {
 
         await store.getState().playAudioForAnimationStep(step);
 
-        expect(audioConstructorMock).toHaveBeenCalledExactlyOnceWith(
+        expect(AudioPlayer.playAudio).toHaveBeenCalledExactlyOnceWith(
             AudioType.MOVE,
         );
-        expect(audioMock.play).toHaveBeenCalledOnce();
     });
 
     it("should play both promotion and move audio when promotion", async () => {
-        const { audioMock, audioConstructorMock } = mockAudio();
         const step: AnimationStep = {
             newPieces: new BoardPieces(),
             movedPieceIds: ["1"],
@@ -102,8 +89,8 @@ describe("AudioSlice", () => {
 
         await store.getState().playAudioForAnimationStep(step);
 
-        expect(audioConstructorMock).toHaveBeenCalledWith(AudioType.PROMOTION);
-        expect(audioConstructorMock).toHaveBeenCalledWith(AudioType.MOVE);
-        expect(audioMock.play).toBeCalledTimes(2);
+        expect(AudioPlayer.playAudio).toHaveBeenCalledWith(AudioType.PROMOTION);
+        expect(AudioPlayer.playAudio).toHaveBeenCalledWith(AudioType.MOVE);
+        expect(AudioPlayer.playAudio).toBeCalledTimes(2);
     });
 });

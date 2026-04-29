@@ -1,17 +1,19 @@
 export enum AudioType {
-    MOVE = "/assets/sfx/move.webm",
-    CAPTURE = "/assets/sfx/capture.webm",
-    ILLEGAL_MOVE = "/assets/sfx/illegal.webm",
-    PROMOTION = "/assets/sfx/promotion.webm",
+    MOVE = "move.webm",
+    CAPTURE = "capture.webm",
+    ILLEGAL_MOVE = "illegal.webm",
+    PROMOTION = "promotion.webm",
 
-    EXPLOSION = "/assets/sfx/explosion.webm",
-    CASTLE = "/assets/sfx/castle.webm",
+    EXPLOSION = "explosion.webm",
+    CASTLE = "castle.webm",
 
-    LOW_TIME = "/assets/sfx/low_time.webm",
+    LOW_TIME = "low_time.webm",
 
-    GAME_START = "/assets/sfx/game_start.webm",
-    GAME_END = "/assets/sfx/game_end.webm",
+    GAME_START = "game_start.webm",
+    GAME_END = "game_end.webm",
 }
+
+const AUDIO_PATH = `${process.env.NEXT_PUBLIC_ASSETS_URL}/sfx/`;
 
 export default class AudioPlayer {
     private static _cachedAudios: Map<AudioType, HTMLAudioElement> = new Map();
@@ -19,7 +21,7 @@ export default class AudioPlayer {
     static async playAudio(audioType: AudioType): Promise<void> {
         let audio = this._cachedAudios.get(audioType);
         if (!audio) {
-            audio = new Audio(audioType);
+            audio = new Audio(AUDIO_PATH + audioType);
             this._cachedAudios.set(audioType, audio);
         }
 
@@ -38,7 +40,7 @@ export default class AudioPlayer {
                 continue;
             }
 
-            const audio = new Audio(type);
+            const audio = new Audio(AUDIO_PATH + type);
             audio.preload = "auto";
             audio.load();
 
