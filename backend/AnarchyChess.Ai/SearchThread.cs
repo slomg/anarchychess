@@ -134,6 +134,7 @@ internal sealed class SearchThread(TranspositionTable transpositionTable, int ma
             if (score > alpha)
             {
                 alpha = score;
+                bestMovePacked = move.Pack();
             }
             if (alpha >= beta)
             {
@@ -143,7 +144,6 @@ internal sealed class SearchThread(TranspositionTable transpositionTable, int ma
                 {
                     _historyHeuristic[move.From, move.To] += depth * depth;
                 }
-                bestMovePacked = move.Pack();
                 break;
             }
         }
