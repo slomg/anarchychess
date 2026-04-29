@@ -18,12 +18,6 @@ public class AnarchyBot(IBotService botService) : IBot
 
     private readonly IBotService _botService = botService;
 
-    public Task<ErrorOr<MoveEvaluation>> FindMoveAsync(
-        IReadOnlyChessBoard board,
-        int lastEval,
-        CancellationToken token = default
-    ) => _botService.FindBestMoveAsync(board, depth: Depth, token);
-
     public GamePlayer CreateBotPlayer(GameColor color) =>
         new(
             UserId: BotId,
@@ -32,4 +26,10 @@ public class AnarchyBot(IBotService botService) : IBot
             CountryCode: "XX",
             Rating: 161660
         );
+
+    public Task<ErrorOr<MoveEvaluation>> FindMoveAsync(
+        IReadOnlyChessBoard board,
+        int lastEval,
+        CancellationToken token = default
+    ) => _botService.FindBestMoveAsync(board, depth: Depth, token);
 }

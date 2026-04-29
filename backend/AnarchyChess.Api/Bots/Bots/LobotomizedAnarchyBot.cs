@@ -46,12 +46,6 @@ public class LobotomizedAnarchyBot(IBotDecisionServiceFactory botDecisionService
         )
     );
 
-    public Task<ErrorOr<MoveEvaluation>> FindMoveAsync(
-        IReadOnlyChessBoard board,
-        int lastEval,
-        CancellationToken token = default
-    ) => _botDecision.DecideMoveAsync(board, lastEval, token);
-
     public GamePlayer CreateBotPlayer(GameColor color) =>
         new(
             UserId: BotId,
@@ -60,4 +54,10 @@ public class LobotomizedAnarchyBot(IBotDecisionServiceFactory botDecisionService
             CountryCode: "FR",
             Rating: -161660
         );
+
+    public Task<ErrorOr<MoveEvaluation>> FindMoveAsync(
+        IReadOnlyChessBoard board,
+        int lastEval,
+        CancellationToken token = default
+    ) => _botDecision.DecideMoveAsync(board, lastEval, token);
 }
