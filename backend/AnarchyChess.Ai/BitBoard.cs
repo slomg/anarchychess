@@ -12,7 +12,7 @@ public partial class BitBoard
     public BitPiece?[] PieceAt { get; }
 
     public UInt128 StunnedPieces { get; private set; }
-    private readonly byte[] _stunnedForPlies;
+    public byte[] StunnedForPlies { get; }
 
     public UInt128 WhitePieces { get; private set; }
     public UInt128 BlackPieces { get; private set; }
@@ -21,34 +21,42 @@ public partial class BitBoard
     public UInt128 Empty { get; private set; }
     public UInt128 ValidWhiteThrowers { get; private set; }
     public UInt128 ValidBlackThrowers { get; private set; }
-
-    public UInt128 HasMoved { get; private set; }
-
     public UInt128 WhiteEnemy { get; private set; }
     public UInt128 BlackEnemy { get; private set; }
+
+    public UInt128 HasMoved { get; private set; }
 
     public bool IsWhiteToMove { get; private set; } = true;
 
     public UInt128 EnPassantSquaresMask { get; private set; }
     public byte EnPassantPawnSquare { get; private set; }
-
-    public UInt128 LastCaptureMask { get; private set; }
+    public bool CanSpawnOmnipotentPawn { get; private set; }
 
     public int WhiteMaterialCount { get; private set; }
     public int BlackMaterialCount { get; private set; }
 
+    public ulong ZobristKey { get; private set; }
+
     private BitBoard(
         UInt128[,] bitboards,
         BitPiece?[] pieceAt,
+        bool isWhiteToMove,
+        UInt128 hasMoved,
         UInt128 stunnedPieces,
         byte[] stunnedForPlies,
+        int whiteMaterialCount,
+        int blackMaterialCount,
         PrevMoveState? prevMoveState
     )
     {
         Bitboards = bitboards;
         PieceAt = pieceAt;
         StunnedPieces = stunnedPieces;
-        _stunnedForPlies = stunnedForPlies;
+        StunnedForPlies = stunnedForPlies;
+        IsWhiteToMove = isWhiteToMove;
+        HasMoved = hasMoved;
+        WhiteMaterialCount = whiteMaterialCount;
+        BlackMaterialCount = blackMaterialCount;
 
         for (int i = 0; i < Enum.GetValues<PieceType>().Length; i++)
         {
@@ -67,8 +75,14 @@ public partial class BitBoard
                 prevMoveState.SpecialMoveType,
                 prevMoveState.Piece
             );
-            LastCaptureMask = prevMoveState.CaptureMask;
+            ProcessOmnipotentPawnSquare(
+                moveByWhite: prevMoveState.Piece.Color is BitPieceColor.White,
+                to: prevMoveState.To,
+                captureMask: prevMoveState.CaptureMask
+            );
         }
+
+        ZobristKey = Zobrist.Compute(this);
     }
 
     public BitBoard()
@@ -78,7 +92,7 @@ public partial class BitBoard
             Enum.GetValues<PieceType>().Length
         ];
         PieceAt = new BitPiece?[10 * 10];
-        _stunnedForPlies = new byte[10 * 10];
+        StunnedForPlies = new byte[10 * 10];
     }
 
     public BitBoard(BitBoard other)
@@ -104,8 +118,8 @@ public partial class BitBoard
         }
 
         StunnedPieces = other.StunnedPieces;
-        _stunnedForPlies = new byte[other._stunnedForPlies.Length];
-        Array.Copy(other._stunnedForPlies, _stunnedForPlies, other._stunnedForPlies.Length);
+        StunnedForPlies = new byte[other.StunnedForPlies.Length];
+        Array.Copy(other.StunnedForPlies, StunnedForPlies, other.StunnedForPlies.Length);
 
         WhitePieces = other.WhitePieces;
         BlackPieces = other.BlackPieces;
@@ -120,9 +134,10 @@ public partial class BitBoard
         EnPassantPawnSquare = other.EnPassantPawnSquare;
         WhiteMaterialCount = other.WhiteMaterialCount;
         BlackMaterialCount = other.BlackMaterialCount;
-        LastCaptureMask = other.LastCaptureMask;
+        CanSpawnOmnipotentPawn = other.CanSpawnOmnipotentPawn;
         ValidBlackThrowers = other.ValidBlackThrowers;
         ValidWhiteThrowers = other.ValidWhiteThrowers;
+        ZobristKey = other.ZobristKey;
     }
 
     public static BitBoard FromPieces(
@@ -182,16 +197,14 @@ public partial class BitBoard
         return new BitBoard(
             bitboards,
             pieceAt,
+            isWhiteToMove: isWhiteToMove,
+            hasMoved: hasMoved,
             stunnedPieces: stunnedPieces,
             stunnedForPlies: stunnedForPlies,
+            whiteMaterialCount: whiteScore,
+            blackMaterialCount: blackScore,
             prevMoveState
-        )
-        {
-            HasMoved = hasMoved,
-            IsWhiteToMove = isWhiteToMove,
-            WhiteMaterialCount = whiteScore,
-            BlackMaterialCount = blackScore,
-        };
+        );
     }
 
     public ref UInt128 BitboardFor(PieceType pieceType, BitPieceColor color) =>
@@ -229,24 +242,44 @@ public partial class BitBoard
     {
         NullMoveUndoState undo = new()
         {
-            PrevIsWhiteToMove = IsWhiteToMove,
-            PrevEnPassantPawnSquare = EnPassantPawnSquare,
-            PrevEnPassantSquaresMask = EnPassantSquaresMask,
-            PrevLastCaptureMask = LastCaptureMask,
+            IsWhiteToMove = IsWhiteToMove,
+            EnPassantPawnSquare = EnPassantPawnSquare,
+            EnPassantSquaresMask = EnPassantSquaresMask,
+            CanSpawnOmnipotentPawn = CanSpawnOmnipotentPawn,
+            ZobristKey = ZobristKey,
+            StunnedPieces = StunnedPieces,
         };
+
+        ZobristKey ^= Zobrist.SideToMove;
         IsWhiteToMove = !IsWhiteToMove;
+
+        if (EnPassantSquaresMask != 0)
+        {
+            ZobristKey ^= Zobrist.EnPassantSquare[EnPassantPawnSquare];
+        }
         EnPassantPawnSquare = 0;
         EnPassantSquaresMask = 0;
-        LastCaptureMask = 0;
+
+        if (CanSpawnOmnipotentPawn)
+        {
+            ZobristKey ^= Zobrist.CanSpawnOmnipotentPawn;
+        }
+        CanSpawnOmnipotentPawn = false;
+
+        DecrementStunned();
+
         return undo;
     }
 
     public void UndoNullMove(NullMoveUndoState undo)
     {
-        IsWhiteToMove = undo.PrevIsWhiteToMove;
-        EnPassantPawnSquare = undo.PrevEnPassantPawnSquare;
-        EnPassantSquaresMask = undo.PrevEnPassantSquaresMask;
-        LastCaptureMask = undo.PrevLastCaptureMask;
+        IsWhiteToMove = undo.IsWhiteToMove;
+        EnPassantPawnSquare = undo.EnPassantPawnSquare;
+        EnPassantSquaresMask = undo.EnPassantSquaresMask;
+        CanSpawnOmnipotentPawn = undo.CanSpawnOmnipotentPawn;
+        ZobristKey = undo.ZobristKey;
+
+        UndoDecrementStun(undo.StunnedPieces);
     }
 
     public MoveUndoState MakeMove(BitMove move)
@@ -266,10 +299,11 @@ public partial class BitBoard
             EnPassantSquaresMask = EnPassantSquaresMask,
             EnPassantPawnSquare = EnPassantPawnSquare,
             IsWhiteToMove = IsWhiteToMove,
-            LastCaptureMask = LastCaptureMask,
+            CanSpawnOmnipotentPawn = CanSpawnOmnipotentPawn,
 
             WhiteMaterialCount = WhiteMaterialCount,
             BlackMaterialCount = BlackMaterialCount,
+            ZobristKey = ZobristKey,
         };
 
         UInt128 captureMask = move.CapturesMask;
@@ -301,6 +335,7 @@ public partial class BitBoard
         ApplySpecialMove(move);
         ComputeAggregateBitboards();
         ProcessMoveEffects(move);
+        ZobristKey ^= Zobrist.SideToMove;
         IsWhiteToMove = !IsWhiteToMove;
 
         return undoState;
@@ -327,13 +362,6 @@ public partial class BitBoard
             SpawnPiece(pieceType, color, position);
         }
 
-        UInt128 prevStunned = undoState.StunnedPieces;
-        while (prevStunned != 0)
-        {
-            byte position = BitboardHelpers.BitScanForward(ref prevStunned);
-            _stunnedForPlies[position]++;
-        }
-
         WhiteMaterialCount = undoState.WhiteMaterialCount;
         BlackMaterialCount = undoState.BlackMaterialCount;
 
@@ -342,8 +370,10 @@ public partial class BitBoard
         StunnedPieces = undoState.StunnedPieces;
         EnPassantSquaresMask = undoState.EnPassantSquaresMask;
         EnPassantPawnSquare = undoState.EnPassantPawnSquare;
-        LastCaptureMask = undoState.LastCaptureMask;
+        CanSpawnOmnipotentPawn = undoState.CanSpawnOmnipotentPawn;
+        ZobristKey = undoState.ZobristKey;
 
+        UndoDecrementStun(undoState.StunnedPieces);
         ComputeAggregateBitboards();
     }
 
@@ -371,6 +401,7 @@ public partial class BitBoard
 
         UInt128 fromMask = UInt128.One << from;
         UInt128 toMask = UInt128.One << to;
+        bool hasMoved = (HasMoved & fromMask) != 0;
 
         bitboard &= ~fromMask;
         HasMoved &= ~fromMask;
@@ -390,6 +421,15 @@ public partial class BitBoard
                 break;
         }
         (PieceAt[from], PieceAt[to]) = (null, PieceAt[from]);
+
+        ZobristKey ^= Zobrist.PieceSquare[(int)pieceType, (int)color, from];
+        ZobristKey ^= Zobrist.PieceSquare[(int)pieceType, (int)color, to];
+
+        if (hasMoved)
+        {
+            ZobristKey ^= Zobrist.HasMoved[from];
+        }
+        ZobristKey ^= Zobrist.HasMoved[to];
     }
 
     private void SpawnPiece(PieceType pieceType, BitPieceColor color, byte at)
@@ -418,11 +458,14 @@ public partial class BitBoard
                 break;
         }
         PieceAt[at] = new BitPiece() { Type = pieceType, Color = color };
+        ZobristKey ^= Zobrist.PieceSquare[(int)pieceType, (int)color, at];
     }
 
     private void RemovePiece(PieceType pieceType, BitPieceColor color, byte at)
     {
-        UInt128 inverseMask = ~(UInt128.One << at);
+        UInt128 atMask = UInt128.One << at;
+        UInt128 inverseMask = ~atMask;
+
         ref UInt128 bitboard = ref BitboardFor(pieceType, color);
         bitboard &= inverseMask;
 
@@ -441,21 +484,78 @@ public partial class BitBoard
                 break;
         }
         PieceAt[at] = null;
+
+        bool hasMoved = (HasMoved & atMask) != 0;
         HasMoved &= inverseMask;
+
+        ZobristKey ^= Zobrist.PieceSquare[(int)pieceType, (int)color, at];
+        if (hasMoved)
+        {
+            ZobristKey ^= Zobrist.HasMoved[at];
+        }
     }
 
     private void AddStun(byte at, byte forTurns)
     {
+        byte prevStun = StunnedForPlies[at];
+        byte newStun = (byte)(prevStun + forTurns);
+
         StunnedPieces |= UInt128.One << at;
-        _stunnedForPlies[at] += forTurns;
+        StunnedForPlies[at] = newStun;
+
+        UpdateZobristForStunChange(at, prevStun, newStun);
     }
 
     private void RemoveStun(byte at, byte forTurns)
     {
-        _stunnedForPlies[at] = (byte)Math.Max(0, _stunnedForPlies[at] - forTurns);
-        if (_stunnedForPlies[at] == 0)
+        byte prevStun = StunnedForPlies[at];
+        byte newStun = (byte)Math.Max(0, StunnedForPlies[at] - forTurns);
+        StunnedForPlies[at] = newStun;
+        if (StunnedForPlies[at] == 0)
         {
             StunnedPieces &= ~(UInt128.One << at);
+        }
+
+        UpdateZobristForStunChange(at, prevStun, newStun);
+    }
+
+    private void DecrementStunned()
+    {
+        UInt128 stunned = StunnedPieces;
+        while (stunned != 0)
+        {
+            byte position = BitboardHelpers.BitScanForward(ref stunned);
+            byte prevStun = StunnedForPlies[position];
+            byte newStun = (byte)(prevStun - 1);
+            StunnedForPlies[position] = newStun;
+            if (StunnedForPlies[position] == 0)
+            {
+                StunnedPieces &= ~(UInt128.One << position);
+            }
+
+            UpdateZobristForStunChange(position, prevStun, newStun);
+        }
+    }
+
+    private void UpdateZobristForStunChange(byte position, byte prevStun, byte newStun)
+    {
+        if (prevStun > 0)
+        {
+            ZobristKey ^= Zobrist.StunnedForPlies[position, prevStun];
+        }
+        if (newStun > 0)
+        {
+            ZobristKey ^= Zobrist.StunnedForPlies[position, newStun];
+        }
+    }
+
+    private void UndoDecrementStun(UInt128 prevStunned)
+    {
+        StunnedPieces = prevStunned;
+        while (prevStunned != 0)
+        {
+            byte position = BitboardHelpers.BitScanForward(ref prevStunned);
+            StunnedForPlies[position]++;
         }
     }
 
@@ -483,20 +583,35 @@ public partial class BitBoard
     private void ProcessMoveEffects(BitMove move)
     {
         ProcessEnPassant(move.From, move.To, move.SpecialMoveType, move.Piece);
-        LastCaptureMask = move.CapturesMask;
+        ProcessOmnipotentPawnSquare(
+            moveByWhite: move.Piece.Color is BitPieceColor.White,
+            to: move.To,
+            captureMask: move.CapturesMask
+        );
     }
 
-    private void DecrementStunned()
+    private void ProcessOmnipotentPawnSquare(bool moveByWhite, byte to, UInt128 captureMask)
     {
-        UInt128 stunned = StunnedPieces;
-        while (stunned != 0)
+        bool triggersOmnipotentPawn =
+            (
+                moveByWhite
+                && to == GameLogicConstants.BlackOmnipotentPawnIdx
+                && (captureMask & GameLogicConstants.BlackOmnipotentPawnMask) != 0
+            )
+            || (
+                !moveByWhite
+                && to == GameLogicConstants.WhiteOmnipotentPawnIdx
+                && (captureMask & GameLogicConstants.WhiteOmnipotentPawnMask) != 0
+            );
+        if (triggersOmnipotentPawn && !CanSpawnOmnipotentPawn)
         {
-            byte position = BitboardHelpers.BitScanForward(ref stunned);
-            _stunnedForPlies[position]--;
-            if (_stunnedForPlies[position] == 0)
-            {
-                StunnedPieces &= ~(UInt128.One << position);
-            }
+            CanSpawnOmnipotentPawn = true;
+            ZobristKey ^= Zobrist.CanSpawnOmnipotentPawn;
+        }
+        else if (CanSpawnOmnipotentPawn)
+        {
+            ZobristKey ^= Zobrist.CanSpawnOmnipotentPawn;
+            CanSpawnOmnipotentPawn = false;
         }
     }
 
@@ -507,6 +622,11 @@ public partial class BitBoard
         BitPiece piece
     )
     {
+        if (EnPassantSquaresMask != 0)
+        {
+            ZobristKey ^= Zobrist.EnPassantSquare[EnPassantPawnSquare];
+        }
+
         EnPassantSquaresMask = 0;
         EnPassantPawnSquare = 0;
 
@@ -549,5 +669,6 @@ public partial class BitBoard
         }
 
         EnPassantPawnSquare = to;
+        ZobristKey ^= Zobrist.EnPassantSquare[to];
     }
 }

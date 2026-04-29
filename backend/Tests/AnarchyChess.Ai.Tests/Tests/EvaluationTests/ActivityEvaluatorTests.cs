@@ -7,17 +7,15 @@ namespace AnarchyChess.Ai.Tests.Tests.EvaluationTests;
 
 public class ActivityEvaluatorTests
 {
-    private readonly ActivityEvaluator _evaluator = new();
-
     [Fact]
     public void Evaluate_returns_0_on_empty_board()
     {
         BitBoard board = new();
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = ActivityEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be(0);
-        blackScore.Should().Be(0);
+        evaluation.WhiteScore.Should().Be(0);
+        evaluation.BlackScore.Should().Be(0);
     }
 
     [Fact]
@@ -30,12 +28,12 @@ public class ActivityEvaluatorTests
             }
         );
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = ActivityEvaluator.Evaluate(board);
 
-        whiteScore
-            .Should()
+        evaluation
+            .WhiteScore.Should()
             .Be(ActivityEvaluator.HorseyActivityTable[new AlgebraicPoint("e5").AsIdx()]);
-        blackScore.Should().Be(0);
+        evaluation.BlackScore.Should().Be(0);
     }
 
     [Fact]
@@ -47,11 +45,11 @@ public class ActivityEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = ActivityEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be(0);
-        blackScore
-            .Should()
+        evaluation.WhiteScore.Should().Be(0);
+        evaluation
+            .BlackScore.Should()
             .Be(ActivityEvaluator.HorseyActivityTable[new AlgebraicPoint("e5").AsIdx()]);
     }
 
@@ -65,12 +63,12 @@ public class ActivityEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = ActivityEvaluator.Evaluate(board);
 
-        whiteScore
-            .Should()
+        evaluation
+            .WhiteScore.Should()
             .Be(ActivityEvaluator.BishopActivityTable[new AlgebraicPoint("d5").AsIdx()]);
-        blackScore.Should().Be(whiteScore);
+        evaluation.BlackScore.Should().Be(evaluation.WhiteScore);
     }
 
     [Fact]
@@ -84,16 +82,16 @@ public class ActivityEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = ActivityEvaluator.Evaluate(board);
 
-        whiteScore
-            .Should()
+        evaluation
+            .WhiteScore.Should()
             .Be(
                 ActivityEvaluator.HorseyActivityTable[new AlgebraicPoint("e5").AsIdx()]
                     + ActivityEvaluator.HorseyActivityTable[new AlgebraicPoint("d4").AsIdx()]
                     + ActivityEvaluator.HorseyActivityTable[new AlgebraicPoint("f4").AsIdx()]
             );
-        blackScore.Should().Be(0);
+        evaluation.BlackScore.Should().Be(0);
     }
 
     [Fact]
@@ -106,15 +104,15 @@ public class ActivityEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = ActivityEvaluator.Evaluate(board);
 
-        whiteScore
-            .Should()
+        evaluation
+            .WhiteScore.Should()
             .Be(
                 ActivityEvaluator.HorseyActivityTable[new AlgebraicPoint("e5").AsIdx()]
                     + ActivityEvaluator.BishopActivityTable[new AlgebraicPoint("c6").AsIdx()]
             );
-        blackScore.Should().Be(0);
+        evaluation.BlackScore.Should().Be(0);
     }
 
     [Fact]
@@ -127,13 +125,13 @@ public class ActivityEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = ActivityEvaluator.Evaluate(board);
 
-        whiteScore
-            .Should()
+        evaluation
+            .WhiteScore.Should()
             .Be(ActivityEvaluator.HorseyActivityTable[new AlgebraicPoint("e5").AsIdx()]);
-        blackScore
-            .Should()
+        evaluation
+            .BlackScore.Should()
             .Be(ActivityEvaluator.CheckerActivityTable[new AlgebraicPoint("a1").AsIdx()]);
     }
 
@@ -147,9 +145,9 @@ public class ActivityEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = ActivityEvaluator.Evaluate(board);
 
-        whiteScore.Should().BeGreaterThan(blackScore);
+        evaluation.WhiteScore.Should().BeGreaterThan(evaluation.BlackScore);
     }
 
     [Fact]
@@ -161,9 +159,9 @@ public class ActivityEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = ActivityEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be(0);
-        blackScore.Should().Be(0);
+        evaluation.WhiteScore.Should().Be(0);
+        evaluation.BlackScore.Should().Be(0);
     }
 }

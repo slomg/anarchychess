@@ -295,7 +295,14 @@ public class BishopTestData : TheoryData<PieceTestCase>
                     [
                         new MoveSideEffect(From: new("h5"), To: new("e5"), partnerIlVaticano),
                     ],
-                    specialMoveType: SpecialMoveType.IlVaticano
+                    specialMoveType: SpecialMoveType.IlVaticano,
+                    engineType: EngineType.Website
+                )
+                .GoesTo(
+                    "e5",
+                    captures: ["f5", "g5"],
+                    specialMoveType: SpecialMoveType.IlVaticano,
+                    engineType: EngineType.Ai
                 )
                 .WithDescription("Il vaticano right moves")
         );
@@ -315,7 +322,14 @@ public class BishopTestData : TheoryData<PieceTestCase>
                     [
                         new MoveSideEffect(From: new("b5"), To: new("e5"), partnerIlVaticano),
                     ],
-                    specialMoveType: SpecialMoveType.IlVaticano
+                    specialMoveType: SpecialMoveType.IlVaticano,
+                    engineType: EngineType.Website
+                )
+                .GoesTo(
+                    "e5",
+                    captures: ["c5", "d5"],
+                    specialMoveType: SpecialMoveType.IlVaticano,
+                    engineType: EngineType.Ai
                 )
                 .WithDescription("Il vaticano left moves")
         );
@@ -338,7 +352,14 @@ public class BishopTestData : TheoryData<PieceTestCase>
                     [
                         new MoveSideEffect(From: new("e8"), To: new("e5"), partnerIlVaticano),
                     ],
-                    specialMoveType: SpecialMoveType.IlVaticano
+                    specialMoveType: SpecialMoveType.IlVaticano,
+                    engineType: EngineType.Website
+                )
+                .GoesTo(
+                    "e5",
+                    captures: ["e6", "e7"],
+                    specialMoveType: SpecialMoveType.IlVaticano,
+                    engineType: EngineType.Ai
                 )
                 .WithDescription("Il vaticano up moves")
         );
@@ -358,7 +379,14 @@ public class BishopTestData : TheoryData<PieceTestCase>
                     [
                         new MoveSideEffect(From: new("e2"), To: new("e5"), partnerIlVaticano),
                     ],
-                    specialMoveType: SpecialMoveType.IlVaticano
+                    specialMoveType: SpecialMoveType.IlVaticano,
+                    engineType: EngineType.Website
+                )
+                .GoesTo(
+                    "e5",
+                    captures: ["e3", "e4"],
+                    specialMoveType: SpecialMoveType.IlVaticano,
+                    engineType: EngineType.Ai
                 )
                 .WithDescription("Il vaticano down moves")
         );
@@ -382,7 +410,15 @@ public class BishopTestData : TheoryData<PieceTestCase>
                         new MoveSideEffect(From: new("h5"), To: new("e5"), partnerIlVaticano),
                     ],
                     forcedPriority: ForcedMovePriority.UnderagePawn,
-                    specialMoveType: SpecialMoveType.IlVaticano
+                    specialMoveType: SpecialMoveType.IlVaticano,
+                    engineType: EngineType.Website
+                )
+                .GoesTo(
+                    "e5",
+                    captures: ["f5", "g5"],
+                    forcedPriority: ForcedMovePriority.UnderagePawn,
+                    specialMoveType: SpecialMoveType.IlVaticano,
+                    engineType: EngineType.Ai
                 )
                 .WithDescription("Forced il vaticano with underage pawn")
         );

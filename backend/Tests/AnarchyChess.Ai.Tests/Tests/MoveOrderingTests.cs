@@ -7,8 +7,6 @@ namespace AnarchyChess.Ai.Tests.Tests;
 
 public class MoveOrderingTests
 {
-    private readonly MoveOrdering _ordering = new();
-
     [Fact]
     public void SortMoves_correctly_prioritizes_all_types()
     {
@@ -21,6 +19,12 @@ public class MoveOrderingTests
             }
         );
 
+        BitMove ttMove = new()
+        {
+            From = new AlgebraicPoint("e2").AsIdx(),
+            To = new AlgebraicPoint("e5").AsIdx(),
+            Piece = new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.White },
+        };
         BitMove killer = new()
         {
             From = new AlgebraicPoint("e2").AsIdx(),
@@ -66,15 +70,24 @@ public class MoveOrderingTests
         BitMove[,] killers = new BitMove[1, 2];
         killers[0, 0] = killer;
 
-        Span<BitMove> moves = [quiet, stunThrow, promotion, capture, regularThrow, killer];
-        _ordering.SortMoves(board, depth: 0, killers, new int[100, 100], moves, moves.Length);
+        Span<BitMove> moves = [quiet, stunThrow, promotion, capture, regularThrow, killer, ttMove];
+        MoveOrdering.SortMoves(
+            board,
+            depth: 0,
+            killers,
+            new int[100, 100],
+            packedTtMove: ttMove.Pack(),
+            moves,
+            moves.Length
+        );
 
-        moves[0].Should().BeEquivalentTo(killer);
-        moves[1].Should().BeEquivalentTo(capture);
-        moves[2].Should().BeEquivalentTo(promotion);
-        moves[3].Should().BeEquivalentTo(stunThrow);
-        moves[4].Should().BeEquivalentTo(regularThrow);
-        moves[5].Should().BeEquivalentTo(quiet);
+        moves[0].Should().BeEquivalentTo(ttMove);
+        moves[1].Should().BeEquivalentTo(killer);
+        moves[2].Should().BeEquivalentTo(capture);
+        moves[3].Should().BeEquivalentTo(promotion);
+        moves[4].Should().BeEquivalentTo(stunThrow);
+        moves[5].Should().BeEquivalentTo(regularThrow);
+        moves[6].Should().BeEquivalentTo(quiet);
     }
 
     [Fact]
@@ -107,11 +120,12 @@ public class MoveOrderingTests
         };
 
         Span<BitMove> moves = [badCapture, goodCapture];
-        _ordering.SortMoves(
+        MoveOrdering.SortMoves(
             board,
             depth: 0,
             new BitMove[1, 2],
             new int[100, 100],
+            packedTtMove: 0,
             moves,
             moves.Length
         );
@@ -141,11 +155,12 @@ public class MoveOrderingTests
         history[moveHigh.From, moveHigh.To] = 50;
 
         Span<BitMove> moves = [moveLow, moveHigh];
-        _ordering.SortMoves(
+        MoveOrdering.SortMoves(
             new BitBoard(),
             depth: 0,
             new BitMove[1, 2],
             history,
+            packedTtMove: 0,
             moves,
             moves.Length
         );
@@ -186,11 +201,12 @@ public class MoveOrderingTests
 
         Span<BitMove> moves = [lowStun, highStun];
 
-        _ordering.SortMoves(
+        MoveOrdering.SortMoves(
             board,
             depth: 0,
             new BitMove[1, 2],
             new int[100, 100],
+            packedTtMove: 0,
             moves,
             moves.Length
         );
@@ -229,13 +245,14 @@ public class MoveOrderingTests
         history[move2.From, move2.To] = 10;
         history[move3.From, move3.To] = 20;
 
-        _ordering.ScoreMoves(
+        MoveOrdering.ScoreMoves(
             new BitBoard(),
             depth: 0,
             killerMoves: new BitMove[1, 2],
             historyHeuristic: history,
             scores: scores,
             moves: moves,
+            packedTtMove: -1,
             moveCount: moves.Length
         );
 
@@ -269,7 +286,7 @@ public class MoveOrderingTests
         Span<BitMove> moves = [move1, move2, move3];
         Span<int> scores = [10, 30, 20];
 
-        BitMove best0 = _ordering.GetNextHighestMove(0, moves, scores, moves.Length);
+        BitMove best0 = MoveOrdering.GetNextHighestMove(0, moves, scores, moves.Length);
 
         best0.Should().Be(move2);
         moves[0].Should().Be(move2);
@@ -305,7 +322,7 @@ public class MoveOrderingTests
         Span<BitMove> moves = [move1, move2, move3];
         Span<int> scores = [30, 10, 20];
 
-        BitMove best1 = _ordering.GetNextHighestMove(1, moves, scores, moves.Length);
+        BitMove best1 = MoveOrdering.GetNextHighestMove(1, moves, scores, moves.Length);
 
         best1.Should().Be(move3);
         moves[0].Should().Be(move1);

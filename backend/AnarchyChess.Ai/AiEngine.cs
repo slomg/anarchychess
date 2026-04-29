@@ -1,6 +1,4 @@
-﻿using AnarchyChess.Ai.Evaluation;
-using AnarchyChess.Ai.Models;
-using AnarchyChess.EngineShared;
+﻿using AnarchyChess.Ai.Models;
 
 namespace AnarchyChess.Ai;
 
@@ -10,32 +8,40 @@ public interface IAiEngine
     (BitMove? BestMove, int EvalForBot) FindBestMove(BitBoard board, int depth);
 }
 
-public class AiEngine(
-    IBitMoveGenerator? moveGenerator = null,
-    IEvaluator? evaluator = null,
-    IMoveOrdering? moveOrdering = null
-) : IAiEngine
+public class AiEngine : IAiEngine
 {
-    private readonly IBitMoveGenerator _moveGenerator = moveGenerator ?? new BitMoveGenerator();
-    private readonly IEvaluator _evaluator = evaluator ?? new Evaluator();
-    private readonly IMoveOrdering _moveOrdering = moveOrdering ?? new MoveOrdering();
+    private static readonly TranspositionTable _transpositionTable = new();
 
     public (BitMove? BestMove, int EvalForBot) FindBestMove(BitBoard board, int depth)
+    {
+        BitMove? bestMove = null;
+        int evalForBot = 0;
+
+        for (int currentDepth = 1; currentDepth <= depth; currentDepth++)
+        {
+            (bestMove, evalForBot) = SearchRoot(board, currentDepth);
+        }
+
+        return (bestMove, evalForBot);
+    }
+
+    private static (BitMove? BestMove, int EvalForBot) SearchRoot(BitBoard board, int depth)
     {
         BitMove[] moves = new BitMove[EngineConstants.MaxMoves];
         int moveCount = 0;
 
-        _moveGenerator.Generate(board, moves, ref moveCount, depth: depth, maxDepth: depth);
+        BitMoveGenerator.Generate(board, moves, ref moveCount, depth: depth, maxDepth: depth);
         if (moveCount == 0)
         {
             return (BestMove: null, EvalForBot: 0);
         }
 
-        _moveOrdering.SortMoves(
+        MoveOrdering.SortMoves(
             board,
             depth,
             new BitMove[depth + 1, 2],
             new int[10 * 10, 10 * 10],
+            packedTtMove: 0,
             moves,
             moveCount
         );
@@ -44,7 +50,7 @@ public class AiEngine(
         BitMove olderMove = moves[0];
         olderBoardCopy.MakeMove(olderMove);
 
-        int alpha = -new SearchThread(_moveGenerator, _evaluator, _moveOrdering, depth).Negamax(
+        int alpha = -new SearchThread(_transpositionTable, depth).Negamax(
             olderBoardCopy,
             depth - 1,
             alpha: EngineConstants.AlphaStart,
@@ -64,7 +70,7 @@ public class AiEngine(
                 BitBoard boardCopy = new(board);
                 boardCopy.MakeMove(move);
 
-                SearchThread search = new(_moveGenerator, _evaluator, _moveOrdering, depth);
+                SearchThread search = new(_transpositionTable, depth);
 
                 int localAlpha = alpha;
                 int score = -search.Negamax(
@@ -89,28 +95,6 @@ public class AiEngine(
                     scores[i] = int.MinValue;
                 }
 
-                // maybe I'll add this someday
-                //int score = 0;
-                //for (int iterativeDepth = 1; iterativeDepth <= depth - 1; iterativeDepth++)
-                //{
-                //    score = -search.Negamax(
-                //        boardCopy,
-                //        iterativeDepth,
-                //        alpha: -alpha - 1,
-                //        beta: -alpha
-                //    );
-
-                //    if (score > alpha)
-                //    {
-                //        score = -search.Negamax(
-                //            boardCopy,
-                //            iterativeDepth,
-                //            alpha: EngineConstants.AlphaStart,
-                //            beta: EngineConstants.BetaStart
-                //        );
-                //    }
-                //}
-
                 int oldAlpha;
                 do
                 {
@@ -134,10 +118,6 @@ public class AiEngine(
             }
         }
 
-        Console.WriteLine(
-            $"Eval: {bestAlpha}, move count: {moveCount}, {AlgebraicPoint.FromIdx(bestMove.From)} -> {AlgebraicPoint.FromIdx(bestMove.To)}"
-        );
-
         return (BestMove: bestMove, EvalForBot: bestAlpha);
     }
 
@@ -146,7 +126,7 @@ public class AiEngine(
         BitMove[] moves = new BitMove[EngineConstants.MaxMoves];
         int moveCount = 0;
 
-        _moveGenerator.Generate(board, moves, ref moveCount, depth: depth, maxDepth: depth);
+        BitMoveGenerator.Generate(board, moves, ref moveCount, depth: depth, maxDepth: depth);
         if (moveCount == 0)
         {
             return [];
@@ -163,7 +143,7 @@ public class AiEngine(
                 BitBoard boardCopy = new(board);
                 boardCopy.MakeMove(move);
 
-                SearchThread search = new(_moveGenerator, _evaluator, _moveOrdering, depth);
+                SearchThread search = new(_transpositionTable, depth);
 
                 int score = -search.Negamax(
                     boardCopy,

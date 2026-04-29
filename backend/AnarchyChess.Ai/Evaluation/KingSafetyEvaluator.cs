@@ -4,7 +4,7 @@ using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai.Evaluation;
 
-public sealed class KingSafetyEvaluator : IEvaluatorFunction
+public static class KingSafetyEvaluator
 {
     public const int PawnProtectionValue = 2;
     public const int EdgeAmplifier = 2;
@@ -24,11 +24,11 @@ public sealed class KingSafetyEvaluator : IEvaluatorFunction
     private static readonly UInt128 BlackQueensideRookMask =
         UInt128.One << BitboardConstants.BlackQueensideCastle.RookStart;
 
-    public (int WhiteScore, int BlackScore) Evaluate(BitBoard board, float endgameFactor)
+    public static EvaluationResult Evaluate(BitBoard board, float endgameFactor)
     {
         if (endgameFactor >= EndgameFactorThreshold)
         {
-            return (0, 0);
+            return new();
         }
 
         float kingSafetyWeight = 1f - endgameFactor;
@@ -55,7 +55,7 @@ public sealed class KingSafetyEvaluator : IEvaluatorFunction
         );
         int blackScore = (int)(blackKingSafety * kingSafetyWeight);
 
-        return (WhiteScore: whiteScore, BlackScore: blackScore);
+        return new() { WhiteScore = whiteScore, BlackScore = blackScore };
     }
 
     private static int EvaluateKingSpace(

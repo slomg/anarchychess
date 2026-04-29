@@ -26,8 +26,7 @@ public readonly record struct CandidateBotMove(
 public class LobotomizedAnarchyBot(
     IBotService botService,
     IRandomProvider randomProvider,
-    IBotHeuristics botHeuristics,
-    IBitMoveGenerator bitMoveGenerator
+    IBotHeuristics botHeuristics
 ) : IBot
 {
     public static readonly UserId BotId = "bot:lobotomized-anarchybot";
@@ -64,7 +63,6 @@ public class LobotomizedAnarchyBot(
     private readonly IBotService _botService = botService;
     private readonly IRandomProvider _randomProvider = randomProvider;
     private readonly IBotHeuristics _botHeuristics = botHeuristics;
-    private readonly IBitMoveGenerator _bitMoveGenerator = bitMoveGenerator;
 
     /// <summary>
     /// Selects the next move by following this process:
@@ -203,7 +201,7 @@ public class LobotomizedAnarchyBot(
 
         BitMove[] opponentMoves = new BitMove[EngineConstants.MaxMoves];
         int opponentMoveCount = 0;
-        _bitMoveGenerator.Generate(bitboardAfterMove, opponentMoves, ref opponentMoveCount);
+        BitMoveGenerator.Generate(bitboardAfterMove, opponentMoves, ref opponentMoveCount);
 
         BotHeuristicContext context = new(
             Board: board,

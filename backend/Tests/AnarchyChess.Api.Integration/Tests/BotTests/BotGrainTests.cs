@@ -1,5 +1,4 @@
-﻿using AnarchyChess.Ai;
-using AnarchyChess.Ai.Models;
+﻿using AnarchyChess.Ai.Models;
 using AnarchyChess.Api.ArchivedGames.Services;
 using AnarchyChess.Api.Bots.Bots;
 using AnarchyChess.Api.Bots.Grains;
@@ -87,8 +86,7 @@ public class BotGrainTests : BaseOrleansIntegrationTest
         _lobotomizedAnarchyBot = new(
             _botServiceMock,
             Silo.ServiceProvider.GetRequiredService<IRandomProvider>(),
-            Silo.ServiceProvider.GetRequiredService<IBotHeuristics>(),
-            Silo.ServiceProvider.GetRequiredService<IBitMoveGenerator>()
+            Silo.ServiceProvider.GetRequiredService<IBotHeuristics>()
         );
         BotMoveRunner botMoveRunner = new(
             Silo.ServiceProvider.GetRequiredService<ILogger<BotMoveRunner>>(),

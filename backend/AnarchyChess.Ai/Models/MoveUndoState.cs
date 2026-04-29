@@ -32,11 +32,13 @@ public unsafe struct MoveUndoState
 
     public required UInt128 EnPassantSquaresMask;
     public required byte EnPassantPawnSquare;
-    public required UInt128 LastCaptureMask;
+    public required bool CanSpawnOmnipotentPawn;
     public required bool IsWhiteToMove;
 
     public required int WhiteMaterialCount;
     public required int BlackMaterialCount;
+
+    public required ulong ZobristKey;
 
     public void AddCapture(byte square, PieceType piece, BitPieceColor color)
     {

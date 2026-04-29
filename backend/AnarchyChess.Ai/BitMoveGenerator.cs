@@ -7,29 +7,9 @@ using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai;
 
-public interface IBitMoveGenerator
+public static class BitMoveGenerator
 {
-    void Generate(
-        BitBoard board,
-        Span<BitMove> moves,
-        ref int moveCount,
-        int depth = EngineConstants.MaxDepth,
-        int maxDepth = EngineConstants.MaxDepth
-    );
-    void GenerateForPiece(
-        BitBoard board,
-        byte position,
-        BitPiece piece,
-        Span<BitMove> moves,
-        ref int moveCount,
-        int depth = EngineConstants.MaxDepth,
-        int maxDepth = EngineConstants.MaxDepth
-    );
-}
-
-public sealed class BitMoveGenerator : IBitMoveGenerator
-{
-    private readonly IBitPieceDefinition[] _pieceDefinitions =
+    private static readonly IBitPieceDefinition[] _pieceDefinitions =
     [
         new BitKingDefinition(),
         new BitQueenDefinition(),
@@ -45,9 +25,9 @@ public sealed class BitMoveGenerator : IBitMoveGenerator
         new BitCheckerDefinition(),
     ];
 
-    private readonly IBitForeverRule[] _foreverRules = [new BitOmnipotentPawnRule()];
+    private static readonly IBitForeverRule[] _foreverRules = [new BitOmnipotentPawnRule()];
 
-    public void Generate(
+    public static void Generate(
         BitBoard board,
         Span<BitMove> moves,
         ref int moveCount,
@@ -115,7 +95,7 @@ public sealed class BitMoveGenerator : IBitMoveGenerator
         moveCount = newMoveCount;
     }
 
-    public void GenerateForPiece(
+    public static void GenerateForPiece(
         BitBoard board,
         byte position,
         BitPiece piece,
@@ -164,7 +144,7 @@ public sealed class BitMoveGenerator : IBitMoveGenerator
 
             if ((board.StunnedPieces & (UInt128.One << position)) != 0)
             {
-                return;
+                continue;
             }
 
             definition.GenerateMoves(

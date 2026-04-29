@@ -29,9 +29,8 @@ public record BotHeuristicContext(
     int OpponentMoveCount
 );
 
-public class BotHeuristics(IBitMoveGenerator bitMoveGenerator, IBotSee botSee) : IBotHeuristics
+public class BotHeuristics(IBotSee botSee) : IBotHeuristics
 {
-    private readonly IBitMoveGenerator _bitMoveGenerator = bitMoveGenerator;
     private readonly IBotSee _botSee = botSee;
 
     public bool IsSameAsPieceAsLast(BitMove move, BotHeuristicContext context)
@@ -153,7 +152,7 @@ public class BotHeuristics(IBitMoveGenerator bitMoveGenerator, IBotSee botSee) :
             NullMoveUndoState nullUndo = context.BitboardAfterMove.MakeNullMove();
 
             int opponentResponseMoveCount = 0;
-            _bitMoveGenerator.Generate(
+            BitMoveGenerator.Generate(
                 context.BitboardAfterMove,
                 opponentResponseMoves,
                 ref opponentResponseMoveCount

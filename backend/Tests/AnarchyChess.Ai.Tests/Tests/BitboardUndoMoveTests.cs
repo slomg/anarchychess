@@ -361,27 +361,27 @@ public class BitboardUndoMoveTests
     }
 
     [Fact]
-    public void UndoMove_restores_LastCaptureMask()
+    public void UndoMove_restores_CanSpawnOmnipotentPawn()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
         {
-            [new("a1")] = PieceFactory.White(PieceType.Rook),
-            [new("a2")] = PieceFactory.Black(PieceType.Pawn),
+            [new("h4")] = PieceFactory.White(PieceType.Rook),
+            [new("h8")] = PieceFactory.Black(PieceType.Pawn),
         };
         BitBoard board = BitBoard.FromPieces(pieces);
         BitBoard original = BitBoard.FromPieces(pieces);
 
         BitMove move = new()
         {
-            From = new AlgebraicPoint("a1").AsIdx(),
-            To = new AlgebraicPoint("a2").AsIdx(),
+            From = new AlgebraicPoint("h4").AsIdx(),
+            To = new AlgebraicPoint("h8").AsIdx(),
             Piece = new() { Type = PieceType.Rook, Color = BitPieceColor.White },
-            CapturesMask = UInt128.One << new AlgebraicPoint("a2").AsIdx(),
+            CapturesMask = UInt128.One << new AlgebraicPoint("h8").AsIdx(),
         };
 
         MoveUndoState undo = board.MakeMove(move);
 
-        board.LastCaptureMask.Should().Be(move.CapturesMask);
+        board.CanSpawnOmnipotentPawn.Should().BeTrue();
 
         board.UndoMove(undo);
 

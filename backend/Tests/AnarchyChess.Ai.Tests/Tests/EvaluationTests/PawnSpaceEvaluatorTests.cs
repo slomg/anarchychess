@@ -7,17 +7,15 @@ namespace AnarchyChess.Ai.Tests.Tests.EvaluationTests;
 
 public class PawnSpaceEvaluatorTests
 {
-    private readonly PawnSpaceEvaluator _evaluator = new();
-
     [Fact]
     public void Evaluate_returns_zero_on_empty_board()
     {
         BitBoard board = new();
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = PawnSpaceEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be(0);
-        blackScore.Should().Be(0);
+        evaluation.WhiteScore.Should().Be(0);
+        evaluation.BlackScore.Should().Be(0);
     }
 
     [Fact]
@@ -35,10 +33,10 @@ public class PawnSpaceEvaluatorTests
 
         int expectedWhite = progress * PawnSpaceEvaluator.PawnAdvanceValue * 1;
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, 0);
+        EvaluationResult evaluation = PawnSpaceEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be(expectedWhite);
-        blackScore.Should().Be(0);
+        evaluation.WhiteScore.Should().Be(expectedWhite);
+        evaluation.BlackScore.Should().Be(0);
     }
 
     [Fact]
@@ -57,10 +55,10 @@ public class PawnSpaceEvaluatorTests
         int expectedWhite =
             progress * PawnSpaceEvaluator.PawnAdvanceValue * PawnSpaceEvaluator.CenterAmplifier;
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, 0);
+        EvaluationResult evaluation = PawnSpaceEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be(expectedWhite);
-        blackScore.Should().Be(0);
+        evaluation.WhiteScore.Should().Be(expectedWhite);
+        evaluation.BlackScore.Should().Be(0);
     }
 
     [Fact]
@@ -79,10 +77,10 @@ public class PawnSpaceEvaluatorTests
         int expectedWhite =
             progress * PawnSpaceEvaluator.PawnAdvanceValue * PawnSpaceEvaluator.CenterAmplifier;
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, 0);
+        EvaluationResult evaluation = PawnSpaceEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be(expectedWhite);
-        blackScore.Should().Be(0);
+        evaluation.WhiteScore.Should().Be(expectedWhite);
+        evaluation.BlackScore.Should().Be(0);
     }
 
     [Fact]
@@ -101,10 +99,10 @@ public class PawnSpaceEvaluatorTests
         int expectedBlack =
             progress * PawnSpaceEvaluator.PawnAdvanceValue * PawnSpaceEvaluator.CenterAmplifier;
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, 0);
+        EvaluationResult evaluation = PawnSpaceEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be(0);
-        blackScore.Should().Be(expectedBlack);
+        evaluation.WhiteScore.Should().Be(0);
+        evaluation.BlackScore.Should().Be(expectedBlack);
     }
 
     [Fact]
@@ -126,10 +124,10 @@ public class PawnSpaceEvaluatorTests
                 progress * PawnSpaceEvaluator.PawnAdvanceValue * PawnSpaceEvaluator.CenterAmplifier;
         }
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, 0);
+        EvaluationResult evaluation = PawnSpaceEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be(expectedWhite);
-        blackScore.Should().Be(0);
+        evaluation.WhiteScore.Should().Be(expectedWhite);
+        evaluation.BlackScore.Should().Be(0);
     }
 
     [Fact]
@@ -151,9 +149,9 @@ public class PawnSpaceEvaluatorTests
                 progress * PawnSpaceEvaluator.PawnAdvanceValue * PawnSpaceEvaluator.CenterAmplifier;
         }
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, 0);
+        EvaluationResult evaluation = PawnSpaceEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be(0);
-        blackScore.Should().Be(expectedBlack);
+        evaluation.WhiteScore.Should().Be(0);
+        evaluation.BlackScore.Should().Be(expectedBlack);
     }
 }

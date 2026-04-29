@@ -7,8 +7,6 @@ namespace AnarchyChess.Ai.Tests.Tests.EvaluationTests;
 
 public class MaterialEvaluatorTests
 {
-    private readonly MaterialEvaluator _evaluator = new();
-
     [Fact]
     public void EvaluateBoard_counts_white_material_correctly()
     {
@@ -19,10 +17,10 @@ public class MaterialEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = MaterialEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be(850);
-        blackScore.Should().Be(0);
+        evaluation.WhiteScore.Should().Be(850);
+        evaluation.BlackScore.Should().Be(0);
     }
 
     [Fact]
@@ -35,10 +33,10 @@ public class MaterialEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = MaterialEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be(0);
-        blackScore.Should().Be(850);
+        evaluation.WhiteScore.Should().Be(0);
+        evaluation.BlackScore.Should().Be(850);
     }
 
     [Fact]
@@ -54,10 +52,10 @@ public class MaterialEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = MaterialEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be((100 * 2) + 150);
-        blackScore.Should().Be((100 * 2) + 0);
+        evaluation.WhiteScore.Should().Be((100 * 2) + 150);
+        evaluation.BlackScore.Should().Be((100 * 2) + 0);
     }
 
     [Fact]
@@ -71,10 +69,10 @@ public class MaterialEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = MaterialEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be(250);
-        blackScore.Should().Be(100);
+        evaluation.WhiteScore.Should().Be(250);
+        evaluation.BlackScore.Should().Be(100);
     }
 
     [Fact]
@@ -88,10 +86,10 @@ public class MaterialEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = MaterialEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be(650);
-        blackScore.Should().Be(500);
+        evaluation.WhiteScore.Should().Be(650);
+        evaluation.BlackScore.Should().Be(500);
     }
 
     [Fact]
@@ -105,10 +103,10 @@ public class MaterialEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = MaterialEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be(100);
-        blackScore.Should().Be(250);
+        evaluation.WhiteScore.Should().Be(100);
+        evaluation.BlackScore.Should().Be(250);
     }
 
     [Fact]
@@ -122,10 +120,10 @@ public class MaterialEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = MaterialEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be(500);
-        blackScore.Should().Be(650);
+        evaluation.WhiteScore.Should().Be(500);
+        evaluation.BlackScore.Should().Be(650);
     }
 
     [Fact]
@@ -141,10 +139,10 @@ public class MaterialEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = MaterialEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be((100 * 2) + 0);
-        blackScore.Should().Be((100 * 2) + 150);
+        evaluation.WhiteScore.Should().Be((100 * 2) + 0);
+        evaluation.BlackScore.Should().Be((100 * 2) + 150);
     }
 
     [Fact]
@@ -159,10 +157,10 @@ public class MaterialEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = MaterialEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be(850);
-        blackScore.Should().Be(1150);
+        evaluation.WhiteScore.Should().Be(850);
+        evaluation.BlackScore.Should().Be(1150);
     }
 
     [Fact]
@@ -176,9 +174,9 @@ public class MaterialEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces, isWhiteToMove: false);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0);
+        EvaluationResult evaluation = MaterialEvaluator.Evaluate(board);
 
-        whiteScore.Should().Be(1000);
-        blackScore.Should().Be(500);
+        evaluation.WhiteScore.Should().Be(1000);
+        evaluation.BlackScore.Should().Be(500);
     }
 }

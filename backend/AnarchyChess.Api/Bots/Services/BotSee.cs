@@ -12,10 +12,8 @@ public interface IBotSee
     int SeeCapture(BitMove move, BitBoard board);
 }
 
-public sealed class BotSee(IBitMoveGenerator bitMoveGenerator) : IBotSee
+public sealed class BotSee : IBotSee
 {
-    private readonly IBitMoveGenerator _bitMoveGenerator = bitMoveGenerator;
-
     public const int BotTraitorRookValue = 250;
 
     public int SeeCapture(BitMove move, BitBoard board)
@@ -48,7 +46,7 @@ public sealed class BotSee(IBitMoveGenerator bitMoveGenerator) : IBotSee
 
         Span<BitMove> moves = stackalloc BitMove[EngineConstants.MaxMoves];
         int moveCount = 0;
-        _bitMoveGenerator.Generate(board, moves, ref moveCount);
+        BitMoveGenerator.Generate(board, moves, ref moveCount);
 
         UInt128 whiteOwnedTraitorRooks = FindOwnedTraitorRooks(board, isWhiteToMove: true);
         UInt128 blackOwnedTraitorRooks = FindOwnedTraitorRooks(board, isWhiteToMove: false);

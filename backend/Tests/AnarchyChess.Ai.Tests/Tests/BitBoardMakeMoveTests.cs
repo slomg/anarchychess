@@ -561,23 +561,6 @@ public class BitBoardMakeMoveTests
     }
 
     [Fact]
-    public void MakeMove_sets_LastCaptureMask()
-    {
-        BitBoard board = new();
-
-        BitMove move = new()
-        {
-            From = 1,
-            To = 2,
-            Piece = default,
-            CapturesMask = (UInt128.One << 1) | (UInt128.One << 15),
-        };
-        board.MakeMove(move);
-
-        board.LastCaptureMask.Should().Be(move.CapturesMask);
-    }
-
-    [Fact]
     public void MakeMove_decrements_stun_and_removes_when_zero()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()

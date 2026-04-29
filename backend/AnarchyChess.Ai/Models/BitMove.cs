@@ -26,4 +26,10 @@ public struct BitMove
 
     [ProtoMember(7)]
     public SpecialMoveType SpecialMoveType;
+
+    public readonly int Pack()
+    {
+        int promotesTo = PromotesTo.HasValue ? (int)PromotesTo.Value + 1 : 0;
+        return From | (To << 7) | ((int)SpecialMoveType << 14) | (promotesTo << 20);
+    }
 }
