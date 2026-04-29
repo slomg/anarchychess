@@ -125,19 +125,16 @@ public class BitMoveGeneratorTests
             {
                 [new("d2")] = PieceFactory.White(PieceType.Pawn, hasMoved: true),
                 [new("g2")] = PieceFactory.White(PieceType.Pawn, hasMoved: true),
-            }
+            },
+            stunnedPositions: new Dictionary<AlgebraicPoint, int>() { [new("g2")] = 1 }
         );
 
         Span<BitMove> moves = stackalloc BitMove[256];
         int moveCount = 0;
         BitMoveGenerator.Generate(board, moves, ref moveCount);
 
-        moves
-            .ToArray()
-            .Should()
-            .ContainSingle()
-            .Which.From.Should()
-            .Be(new AlgebraicPoint("d2").AsIdx());
+        moveCount.Should().Be(1);
+        moves[0].From.Should().Be(new AlgebraicPoint("d2").AsIdx());
     }
 
     [Theory]
