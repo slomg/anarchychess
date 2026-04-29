@@ -4,14 +4,14 @@ using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai.Evaluation;
 
-public sealed class PawnStructureEvaluator : IEvaluatorFunction
+public static class PawnStructureEvaluator
 {
     public const int DoubledPenalty = 12;
     public const int IsolatedPenalty = 25;
     public const int BackwardsPenalty = 20;
     public const int PassedBonus = 35;
 
-    public (int WhiteScore, int BlackScore) Evaluate(BitBoard board, float endgameFactor)
+    public static EvaluationResult Evaluate(BitBoard board)
     {
         int whiteScore = 0;
         int blackScore = 0;
@@ -38,7 +38,7 @@ public sealed class PawnStructureEvaluator : IEvaluatorFunction
         whiteScore += CountWhitePassed(whitePawns, enemyPawns: blackPawns) * PassedBonus;
         blackScore += CountBlackPassed(blackPawns, enemyPawns: whitePawns) * PassedBonus;
 
-        return (WhiteScore: whiteScore, BlackScore: blackScore);
+        return new() { WhiteScore = whiteScore, BlackScore = blackScore };
     }
 
     private static int CountDoubled(UInt128 pawns, int file) =>

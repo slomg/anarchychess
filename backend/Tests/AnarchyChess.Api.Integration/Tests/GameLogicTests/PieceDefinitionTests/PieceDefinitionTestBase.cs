@@ -1,4 +1,5 @@
 ﻿using AnarchyChess.Api.GameLogic;
+using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.TestInfrastructure;
 using AnarchyChess.EngineTests.Shared;
 using AwesomeAssertions;
@@ -32,8 +33,9 @@ public abstract class PieceDefinitionTestBase : BaseIntegrationTest
             .CalculateLegalMovesForPiece(board, testCase.Origin)
             .ToList();
 
-        var expectedMoveSorted = testCase
-            .ExpectedMoves.OrderBy(m => m.To.AsIdx())
+        List<Move> expectedMoves = [.. testCase.ExpectedMoves, .. testCase.ExpectedWebsiteMoves];
+        var expectedMoveSorted = expectedMoves
+            .OrderBy(m => m.To.AsIdx())
             .ThenBy(m => string.Join(",", m.IntermediateSquares.Select(i => i.Position.AsIdx())))
             .ToList();
         var resultSorted = result

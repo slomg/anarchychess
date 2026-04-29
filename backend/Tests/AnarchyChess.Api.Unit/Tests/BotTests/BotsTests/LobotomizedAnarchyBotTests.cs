@@ -1,5 +1,4 @@
-﻿using AnarchyChess.Ai;
-using AnarchyChess.Api.Bots.Bots;
+﻿using AnarchyChess.Api.Bots.Bots;
 using AnarchyChess.Api.Bots.Services;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Shared.Services;
@@ -20,8 +19,7 @@ public class LobotomizedAnarchyBotTests
         _bot = new(
             _botServiceMock,
             Substitute.For<IRandomProvider>(),
-            Substitute.For<IBotHeuristics>(),
-            Substitute.For<IBitMoveGenerator>()
+            Substitute.For<IBotHeuristics>()
         );
     }
 

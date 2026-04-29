@@ -86,8 +86,7 @@ public class AiEngineServiceTests
             From: new AlgebraicPoint("a5").AsIdx(),
             To: new AlgebraicPoint("a2").AsIdx(),
             Piece: new() { Type = PieceType.Pawn, Color = BitPieceColor.Black },
-            CaptureMask: (UInt128.One << prevCapture1.AsIdx())
-                | (UInt128.One << prevCapture2.AsIdx()),
+            CaptureMask: GameLogicConstants.BlackOmnipotentPawnMask,
             SpecialMoveType: SpecialMoveType.None
         );
 
@@ -110,12 +109,7 @@ public class AiEngineServiceTests
                             (UInt128.One << new AlgebraicPoint("a3").AsIdx())
                                 | (UInt128.One << new AlgebraicPoint("a4").AsIdx())
                         );
-                    board
-                        .LastCaptureMask.Should()
-                        .Be(
-                            (UInt128.One << prevCapture1.AsIdx())
-                                | (UInt128.One << prevCapture2.AsIdx())
-                        );
+                    board.IsWhiteToMove.Should().BeTrue();
                 }),
                 depth: 123
             )

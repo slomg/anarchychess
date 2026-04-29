@@ -4,35 +4,14 @@ using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai;
 
-public interface IMoveOrdering
+public static class MoveOrdering
 {
-    void ScoreMoves(
+    public static void ScoreMoves(
         BitBoard board,
         int depth,
         BitMove[,] killerMoves,
         int[,] historyHeuristic,
-        Span<int> scores,
-        Span<BitMove> moves,
-        int moveCount
-    );
-    BitMove GetNextHighestMove(int i, Span<BitMove> moves, Span<int> scores, int moveCount);
-    void SortMoves(
-        BitBoard board,
-        int depth,
-        BitMove[,] killers,
-        int[,] history,
-        Span<BitMove> moves,
-        int moveCount
-    );
-}
-
-public sealed class MoveOrdering : IMoveOrdering
-{
-    public void ScoreMoves(
-        BitBoard board,
-        int depth,
-        BitMove[,] killerMoves,
-        int[,] historyHeuristic,
+        int packedTtMove,
         Span<int> scores,
         Span<BitMove> moves,
         int moveCount
@@ -40,11 +19,23 @@ public sealed class MoveOrdering : IMoveOrdering
     {
         for (int i = 0; i < moveCount; i++)
         {
-            scores[i] = ScoreMove(moves[i], board, depth, killerMoves, historyHeuristic);
+            scores[i] = ScoreMove(
+                moves[i],
+                board,
+                depth,
+                killerMoves,
+                historyHeuristic,
+                packedTtMove
+            );
         }
     }
 
-    public BitMove GetNextHighestMove(int i, Span<BitMove> moves, Span<int> scores, int moveCount)
+    public static BitMove GetNextHighestMove(
+        int i,
+        Span<BitMove> moves,
+        Span<int> scores,
+        int moveCount
+    )
     {
         int bestIndex = i;
         int bestScore = scores[i];
@@ -71,9 +62,16 @@ public sealed class MoveOrdering : IMoveOrdering
         BitBoard board,
         int depth,
         BitMove[,] killerMoves,
-        int[,] historyHeuristic
+        int[,] historyHeuristic,
+        int packedTtMove
     )
     {
+        int packedMove = move.Pack();
+        if (packedMove == packedTtMove)
+        {
+            return 20_000;
+        }
+
         if (
             (move.From == killerMoves[depth, 0].From && move.To == killerMoves[depth, 0].To)
             || (move.From == killerMoves[depth, 1].From && move.To == killerMoves[depth, 1].To)
@@ -122,7 +120,7 @@ public sealed class MoveOrdering : IMoveOrdering
         return historyHeuristic[move.From, move.To];
     }
 
-    public void SortMoves(
+    public static void SortMoves(
         BitBoard board,
         int depth,
         BitMove[,] killers,
@@ -132,7 +130,7 @@ public sealed class MoveOrdering : IMoveOrdering
     )
     {
         Span<int> scores = stackalloc int[moveCount];
-        ScoreMoves(board, depth, killers, history, scores, moves, moveCount);
+        ScoreMoves(board, depth, killers, history, -1, scores, moves, moveCount);
 
         QuickSort(moves, scores, 0, moveCount - 1);
     }

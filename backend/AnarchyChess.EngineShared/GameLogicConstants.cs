@@ -28,4 +28,12 @@ public static class GameLogicConstants
         PieceType.Checker,
         PieceType.Pawn,
     ];
+
+    public static readonly AlgebraicPoint WhiteOmnipotentPawnSquare = new("h3");
+    public static readonly byte WhiteOmnipotentPawnIdx = WhiteOmnipotentPawnSquare.AsIdx();
+    public static readonly UInt128 WhiteOmnipotentPawnMask = UInt128.One << WhiteOmnipotentPawnIdx;
+
+    public static readonly AlgebraicPoint BlackOmnipotentPawnSquare = new("h8");
+    public static readonly byte BlackOmnipotentPawnIdx = BlackOmnipotentPawnSquare.AsIdx();
+    public static readonly UInt128 BlackOmnipotentPawnMask = UInt128.One << BlackOmnipotentPawnIdx;
 }

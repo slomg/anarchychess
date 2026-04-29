@@ -51,10 +51,6 @@ public partial class BitBoard
                 );
                 break;
 
-            case SpecialMoveType.IlVaticano:
-                AddExistingPiece(PieceType.Bishop, move.Piece.Color, at: move.From);
-                break;
-
             case SpecialMoveType.RadioactiveBetaDecay:
                 SpawnPiece(PieceType.Rook, move.Piece.Color, at: (byte)(move.To - 1));
                 SpawnPiece(PieceType.Horsey, move.Piece.Color, at: (byte)(move.To + 1));
@@ -128,10 +124,6 @@ public partial class BitBoard
                     from: verticalCastleInfo.RookDest,
                     to: verticalCastleInfo.RookStart
                 );
-                break;
-
-            case SpecialMoveType.IlVaticano:
-                AddExistingPiece(PieceType.Bishop, undoState.Piece.Color, at: undoState.To);
                 break;
 
             case SpecialMoveType.RadioactiveBetaDecay:

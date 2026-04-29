@@ -4,7 +4,7 @@ using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai.Evaluation;
 
-public sealed class ActivityEvaluator : IEvaluatorFunction
+public static class ActivityEvaluator
 {
     // csharpier-ignore
     public static readonly int[] HorseyActivityTable =
@@ -51,7 +51,7 @@ public sealed class ActivityEvaluator : IEvaluatorFunction
         -25, -17, -15, -12, -12, -12, -12, -15, -17, -25,
     ];
 
-    public (int WhiteScore, int BlackScore) Evaluate(BitBoard board, float endgameFactor)
+    public static EvaluationResult Evaluate(BitBoard board)
     {
         int whiteScore = 0;
         int blackScore = 0;
@@ -87,7 +87,7 @@ public sealed class ActivityEvaluator : IEvaluatorFunction
             CheckerActivityTable
         );
 
-        return (WhiteScore: whiteScore, BlackScore: blackScore);
+        return new() { WhiteScore = whiteScore, BlackScore = blackScore };
     }
 
     private static int CalculateActivityScoreForPiece(UInt128 bitboard, int[] activityTable)

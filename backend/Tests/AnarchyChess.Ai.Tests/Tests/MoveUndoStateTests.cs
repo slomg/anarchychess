@@ -20,10 +20,10 @@ public class MoveUndoStateTests
             EnPassantSquaresMask = 0,
             EnPassantPawnSquare = 0,
             IsWhiteToMove = true,
-            LastCaptureMask = 0,
-
+            CanSpawnOmnipotentPawn = false,
             WhiteMaterialCount = 0,
             BlackMaterialCount = 0,
+            ZobristKey = 0,
         };
 
     [Fact]

@@ -1,5 +1,4 @@
-﻿using AnarchyChess.Ai.BitForeverRules;
-using AnarchyChess.Ai.Models;
+﻿using AnarchyChess.Ai.Models;
 using AnarchyChess.Api.TestInfrastructure.Factories;
 using AnarchyChess.EngineShared;
 using AwesomeAssertions;
@@ -8,8 +7,6 @@ namespace AnarchyChess.Ai.Tests.Tests;
 
 public class BitMoveGeneratorTests
 {
-    private readonly BitMoveGenerator _generator = new();
-
     private readonly int PieceCount = Enum.GetValues<PieceType>().Length;
 
     [Fact]
@@ -30,7 +27,7 @@ public class BitMoveGeneratorTests
         Span<BitMove> moves = stackalloc BitMove[256];
         int moveCount = 0;
 
-        _generator.Generate(board, moves, ref moveCount);
+        BitMoveGenerator.Generate(board, moves, ref moveCount);
 
         HashSet<byte> expectedDestinations =
         [
@@ -88,7 +85,7 @@ public class BitMoveGeneratorTests
         Span<BitMove> moves = stackalloc BitMove[256];
         int moveCount = 0;
 
-        _generator.Generate(board, moves, ref moveCount);
+        BitMoveGenerator.Generate(board, moves, ref moveCount);
 
         HashSet<byte> expectedDestinations =
         [
@@ -136,7 +133,7 @@ public class BitMoveGeneratorTests
 
         Span<BitMove> moves = stackalloc BitMove[256];
         int moveCount = 0;
-        _generator.Generate(board, moves, ref moveCount, depth: depth, maxDepth: maxDepth);
+        BitMoveGenerator.Generate(board, moves, ref moveCount, depth: depth, maxDepth: maxDepth);
 
         if (generateThrows)
         {
@@ -155,9 +152,9 @@ public class BitMoveGeneratorTests
     {
         PrevMoveState prevMove = new(
             From: 0,
-            To: BitOmnipotentPawnRule.WhiteSquare,
+            To: GameLogicConstants.WhiteOmnipotentPawnIdx,
             Piece: new BitPiece { Type = PieceType.Rook, Color = BitPieceColor.Black },
-            CaptureMask: BitOmnipotentPawnRule.WhiteSquareMask,
+            CaptureMask: GameLogicConstants.WhiteOmnipotentPawnMask,
             SpecialMoveType: SpecialMoveType.None
         );
         BitBoard board = BitBoard.FromPieces(
@@ -168,7 +165,7 @@ public class BitMoveGeneratorTests
         Span<BitMove> moves = stackalloc BitMove[10];
         int moveCount = 0;
 
-        _generator.Generate(board, moves, ref moveCount);
+        BitMoveGenerator.Generate(board, moves, ref moveCount);
 
         moveCount.Should().Be(1);
         moves[0]
@@ -176,10 +173,10 @@ public class BitMoveGeneratorTests
             .BeEquivalentTo(
                 new BitMove
                 {
-                    From = BitOmnipotentPawnRule.WhiteSquare,
-                    To = BitOmnipotentPawnRule.WhiteSquare,
+                    From = GameLogicConstants.WhiteOmnipotentPawnIdx,
+                    To = GameLogicConstants.WhiteOmnipotentPawnIdx,
                     Piece = new BitPiece { Type = PieceType.Pawn, Color = BitPieceColor.White },
-                    CapturesMask = BitOmnipotentPawnRule.WhiteSquareMask,
+                    CapturesMask = GameLogicConstants.WhiteOmnipotentPawnMask,
                     SpecialMoveType = SpecialMoveType.OmnipotentPawnSpawn,
                 }
             );
@@ -200,7 +197,7 @@ public class BitMoveGeneratorTests
         Span<BitMove> moves = stackalloc BitMove[256];
         int moveCount = 0;
 
-        _generator.Generate(board, moves, ref moveCount);
+        BitMoveGenerator.Generate(board, moves, ref moveCount);
 
         foreach (var move in moves[..moveCount])
         {

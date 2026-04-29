@@ -5,20 +5,13 @@ using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai;
 
-internal sealed class SearchThread(
-    IBitMoveGenerator moveGenerator,
-    IEvaluator evaluator,
-    IMoveOrdering moveOrdering,
-    int maxDepth
-)
+internal sealed class SearchThread(TranspositionTable transpositionTable, int maxDepth)
 {
-    private readonly IBitMoveGenerator _moveGenerator = moveGenerator;
-    private readonly IEvaluator _evaluator = evaluator;
-    private readonly IMoveOrdering _moveOrdering = moveOrdering;
     private readonly int _maxDepth = maxDepth;
 
     private readonly BitMove[,] _killerMoves = new BitMove[maxDepth + 1, 2];
     private readonly int[,] _historyHeuristic = new int[10 * 10, 10 * 10];
+    private readonly TranspositionTable _transpositionTable = transpositionTable;
 
     public int Negamax(
         BitBoard board,
@@ -29,7 +22,21 @@ internal sealed class SearchThread(
         int? depthBeforeReduce = null
     )
     {
-        if (_evaluator.TryEvaluateTermination(board, depth, out int terminationEval))
+        if (
+            _transpositionTable.TryProbe(
+                board.ZobristKey,
+                depth,
+                alpha,
+                beta,
+                out int ttScore,
+                out int ttMove
+            )
+        )
+        {
+            return ttScore;
+        }
+
+        if (Evaluator.TryEvaluateTermination(board, depth, out int terminationEval))
         {
             return terminationEval;
         }
@@ -38,12 +45,12 @@ internal sealed class SearchThread(
         {
             return isLastMoveCapture
                 ? Quiescence(board, alpha, beta, depth: 4, initialDepth: depth)
-                : _evaluator.Evaluate(board);
+                : Evaluator.Evaluate(board);
         }
 
         Span<BitMove> moves = stackalloc BitMove[EngineConstants.MaxMoves];
         int moveCount = 0;
-        _moveGenerator.Generate(board, moves, ref moveCount, depth: depth, maxDepth: _maxDepth);
+        BitMoveGenerator.Generate(board, moves, ref moveCount, depth: depth, maxDepth: _maxDepth);
         if (moveCount == 0)
         {
             return 0;
@@ -73,19 +80,22 @@ internal sealed class SearchThread(
         }
 
         Span<int> scores = stackalloc int[moveCount];
-        _moveOrdering.ScoreMoves(
+        MoveOrdering.ScoreMoves(
             board,
             depth,
             _killerMoves,
             _historyHeuristic,
+            packedTtMove: ttMove,
             scores,
             moves,
             moveCount
         );
 
+        int originalAlpha = alpha;
+        int bestMovePacked = 0;
         for (int i = 0; i < moveCount; i++)
         {
-            BitMove move = _moveOrdering.GetNextHighestMove(i, moves, scores, moveCount);
+            BitMove move = MoveOrdering.GetNextHighestMove(i, moves, scores, moveCount);
             bool isCapture = move.CapturesMask != 0;
             bool isQuiet = !isCapture && !isForced && move.PromotesTo is null;
 
@@ -124,6 +134,7 @@ internal sealed class SearchThread(
             if (score > alpha)
             {
                 alpha = score;
+                bestMovePacked = move.Pack();
             }
             if (alpha >= beta)
             {
@@ -137,13 +148,44 @@ internal sealed class SearchThread(
             }
         }
 
+        NodeType type;
+
+        if (alpha <= originalAlpha)
+        {
+            type = NodeType.UpperBound;
+        }
+        else if (alpha >= beta)
+        {
+            type = NodeType.LowerBound;
+        }
+        else
+        {
+            type = NodeType.Exact;
+        }
+
+        _transpositionTable.Store(board.ZobristKey, depth, alpha, type, bestMovePacked);
+
         return alpha;
     }
 
     private int Quiescence(BitBoard board, int alpha, int beta, int depth, int initialDepth)
     {
         if (
-            _evaluator.TryEvaluateTermination(
+            _transpositionTable.TryProbe(
+                board.ZobristKey,
+                depth,
+                alpha,
+                beta,
+                out int ttScore,
+                out int ttMove
+            )
+        )
+        {
+            return ttScore;
+        }
+
+        if (
+            Evaluator.TryEvaluateTermination(
                 board,
                 depth: initialDepth - depth,
                 out int terminationEval
@@ -153,7 +195,7 @@ internal sealed class SearchThread(
             return terminationEval;
         }
 
-        int standPat = _evaluator.Evaluate(board);
+        int standPat = Evaluator.Evaluate(board);
 
         if (standPat >= beta)
         {
@@ -171,7 +213,7 @@ internal sealed class SearchThread(
 
         Span<BitMove> moves = stackalloc BitMove[EngineConstants.MaxMoves];
         int moveCount = 0;
-        _moveGenerator.Generate(board, moves, ref moveCount, depth: depth, maxDepth: _maxDepth);
+        BitMoveGenerator.Generate(board, moves, ref moveCount, depth: depth, maxDepth: _maxDepth);
         if (moveCount == 0)
         {
             return 0;
@@ -212,11 +254,12 @@ internal sealed class SearchThread(
         }
 
         Span<int> scores = stackalloc int[captureCount];
-        _moveOrdering.ScoreMoves(
+        MoveOrdering.ScoreMoves(
             board,
             initialDepth,
             _killerMoves,
             _historyHeuristic,
+            packedTtMove: ttMove,
             scores,
             captures,
             captureCount
@@ -224,7 +267,7 @@ internal sealed class SearchThread(
 
         for (int i = 0; i < captureCount; i++)
         {
-            BitMove move = _moveOrdering.GetNextHighestMove(i, captures, scores, captureCount);
+            BitMove move = MoveOrdering.GetNextHighestMove(i, captures, scores, captureCount);
 
             MoveUndoState undo = board.MakeMove(move);
             int score = -Quiescence(board, -beta, -alpha, depth - 1, initialDepth);

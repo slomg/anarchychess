@@ -19,8 +19,16 @@ public record MoveTestCase(
     IEnumerable<MoveStun>? Stuns = null,
     SpecialMoveType SpecialMoveType = SpecialMoveType.None,
     ForcedMovePriority ForcedPriority = ForcedMovePriority.None,
-    PieceType? PromotesTo = null
+    PieceType? PromotesTo = null,
+    EngineType EngineType = EngineType.All
 );
+
+public enum EngineType
+{
+    All,
+    Website,
+    Ai,
+}
 
 public class PieceTestCase
 {
@@ -29,6 +37,9 @@ public class PieceTestCase
     public GameColor MovingPlayer { get; set; }
 
     public List<Move> ExpectedMoves { get; init; } = [];
+    public List<Move> ExpectedWebsiteMoves { get; init; } = [];
+    public List<Move> ExpectedAiMoves { get; init; } = [];
+
     public List<Move> PriorMoves { get; init; } = [];
 
     [JsonIgnore]
@@ -99,25 +110,36 @@ public class PieceTestCase
         IEnumerable<MoveStun>? stuns = null,
         SpecialMoveType specialMoveType = SpecialMoveType.None,
         ForcedMovePriority forcedPriority = ForcedMovePriority.None,
-        PieceType? promotesTo = null
+        PieceType? promotesTo = null,
+        EngineType engineType = EngineType.All
     )
     {
-        ExpectedMoves.Add(
-            BuildMove(
-                Origin.AsAlgebraic(),
-                to,
-                Piece,
-                trigger,
-                captures,
-                intermediates,
-                sideEffects,
-                spawns,
-                stuns,
-                specialMoveType,
-                forcedPriority,
-                promotesTo
-            )
+        Move move = BuildMove(
+            Origin.AsAlgebraic(),
+            to,
+            Piece,
+            trigger,
+            captures,
+            intermediates,
+            sideEffects,
+            spawns,
+            stuns,
+            specialMoveType,
+            forcedPriority,
+            promotesTo
         );
+        switch (engineType)
+        {
+            case EngineType.All:
+                ExpectedMoves.Add(move);
+                break;
+            case EngineType.Website:
+                ExpectedWebsiteMoves.Add(move);
+                break;
+            case EngineType.Ai:
+                ExpectedAiMoves.Add(move);
+                break;
+        }
         return this;
     }
 
@@ -144,7 +166,8 @@ public class PieceTestCase
                 move.Stuns,
                 move.SpecialMoveType,
                 move.ForcedPriority,
-                move.PromotesTo
+                move.PromotesTo,
+                move.EngineType
             );
         }
         return this;

@@ -343,13 +343,18 @@ public class BitBoardMakeMoveTests
         BitMove move = new()
         {
             From = new AlgebraicPoint("d6").AsIdx(),
-            To = new AlgebraicPoint("e6").AsIdx(),
+            To = new AlgebraicPoint("d6").AsIdx(),
             Piece = new() { Type = PieceType.Bishop, Color = BitPieceColor.White },
             SpecialMoveType = SpecialMoveType.IlVaticano,
+            CapturesMask =
+                (UInt128.One << new AlgebraicPoint("e6").AsIdx())
+                | (UInt128.One << new AlgebraicPoint("f6").AsIdx()),
         };
         board.MakeMove(move);
 
         AssertPieceAt(board, new("d6"), PieceType.Bishop);
+        AssertNoPieceAt(board, new("e6"));
+        AssertNoPieceAt(board, new("f6"));
         AssertPieceAt(board, new("g6"), PieceType.Bishop);
     }
 
@@ -533,23 +538,6 @@ public class BitBoardMakeMoveTests
     }
 
     [Fact]
-    public void MakeMove_sets_LastCaptureMask()
-    {
-        BitBoard board = new();
-
-        BitMove move = new()
-        {
-            From = 1,
-            To = 2,
-            Piece = default,
-            CapturesMask = (UInt128.One << 1) | (UInt128.One << 15),
-        };
-        board.MakeMove(move);
-
-        board.LastCaptureMask.Should().Be(move.CapturesMask);
-    }
-
-    [Fact]
     public void MakeMove_decrements_stun_and_removes_when_zero()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()
@@ -655,7 +643,43 @@ public class BitBoardMakeMoveTests
             piece.Value.Color.Should().Be(color.Value);
         }
 
-        (board.BitboardFor(type, piece.Value.Color) & (UInt128.One << idx)).Should().NotBe(0);
+        (board.Occupancy & (UInt128.One << idx)).Should().NotBe(0);
+        if (piece.Value.Color is BitPieceColor.White)
+        {
+            (board.WhitePieces & (UInt128.One << idx)).Should().NotBe(0);
+            (board.BlackPieces & (UInt128.One << idx)).Should().Be(0);
+            (board.NeutralPieces & (UInt128.One << idx)).Should().Be(0);
+        }
+        else if (piece.Value.Color is BitPieceColor.Black)
+        {
+            (board.BlackPieces & (UInt128.One << idx)).Should().NotBe(0);
+            (board.WhitePieces & (UInt128.One << idx)).Should().Be(0);
+            (board.NeutralPieces & (UInt128.One << idx)).Should().Be(0);
+        }
+        else
+        {
+            (board.NeutralPieces & (UInt128.One << idx)).Should().NotBe(0);
+            (board.BlackPieces & (UInt128.One << idx)).Should().Be(0);
+            (board.WhitePieces & (UInt128.One << idx)).Should().Be(0);
+        }
+
+        for (int iColor = 0; iColor < Enum.GetValues<BitPieceColor>().Length; iColor++)
+        {
+            for (int iPieceType = 0; iPieceType < Enum.GetValues<PieceType>().Length; iPieceType++)
+            {
+                BitPieceColor bitboardColor = (BitPieceColor)iColor;
+                PieceType bitboardPieceType = (PieceType)iPieceType;
+                UInt128 bitboard = board.BitboardFor(bitboardPieceType, bitboardColor);
+                if (bitboardColor == piece.Value.Color && bitboardPieceType == type)
+                {
+                    (bitboard & (UInt128.One << idx)).Should().NotBe(0);
+                }
+                else
+                {
+                    (bitboard & (UInt128.One << idx)).Should().Be(0);
+                }
+            }
+        }
     }
 
     private static void AssertNoPieceAt(BitBoard board, AlgebraicPoint point) =>
@@ -666,5 +690,16 @@ public class BitBoardMakeMoveTests
         board.GetPieceAt(idx).Should().BeNull();
         (board.WhitePieces & (UInt128.One << idx)).Should().Be(0);
         (board.BlackPieces & (UInt128.One << idx)).Should().Be(0);
+        (board.Occupancy & (UInt128.One << idx)).Should().Be(0);
+
+        for (int iColor = 0; iColor < Enum.GetValues<BitPieceColor>().Length; iColor++)
+        {
+            for (int iPieceType = 0; iPieceType < Enum.GetValues<PieceType>().Length; iPieceType++)
+            {
+                BitPieceColor color = (BitPieceColor)iColor;
+                PieceType pieceType = (PieceType)iPieceType;
+                (board.BitboardFor(pieceType, color) & (UInt128.One << idx)).Should().Be(0);
+            }
+        }
     }
 }

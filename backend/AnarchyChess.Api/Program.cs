@@ -3,7 +3,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using AnarchyChess.Ai;
 using AnarchyChess.Ai.Service.DTO;
 using AnarchyChess.Ai.Service.Services;
 using AnarchyChess.Api.Analysis.Services;
@@ -535,7 +534,6 @@ builder.Services.AddSingleton<IBotService, BotService>();
 builder.Services.AddSingleton<IBotMoveRunner, BotMoveRunner>();
 builder.Services.AddSingleton<IBotNotifier, BotNotifier>();
 builder.Services.AddSingleton<IBotHeuristics, BotHeuristics>();
-builder.Services.AddSingleton<IBitMoveGenerator, BitMoveGenerator>();
 builder.Services.AddSingleton<IBotSee, BotSee>();
 
 builder.Services.AddSingleton<IBot, AnarchyBot>();

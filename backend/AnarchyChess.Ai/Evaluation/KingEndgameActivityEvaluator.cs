@@ -5,7 +5,7 @@ using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai.Evaluation;
 
-public sealed class KingEndgameActivityEvaluator : IEvaluatorFunction
+public static class KingEndgameActivityEvaluator
 {
     public const int CenterProximityBonus = 5;
     public const int EnemyPawnProximityBonus = 10;
@@ -15,11 +15,11 @@ public sealed class KingEndgameActivityEvaluator : IEvaluatorFunction
 
     private static readonly byte Center = new AlgebraicPoint("f5").AsIdx();
 
-    public (int WhiteScore, int BlackScore) Evaluate(BitBoard board, float endgameFactor)
+    public static EvaluationResult Evaluate(BitBoard board, float endgameFactor)
     {
         if (endgameFactor < EndgameFactorThreshold)
         {
-            return (0, 0);
+            return new();
         }
 
         UInt128 whitePawns =
@@ -68,10 +68,11 @@ public sealed class KingEndgameActivityEvaluator : IEvaluatorFunction
             blackScore += DistanceToCenter(kingPosition);
         }
 
-        return (
-            WhiteScore: (int)(whiteScore * endgameFactor),
-            BlackScore: (int)(blackScore * endgameFactor)
-        );
+        return new()
+        {
+            WhiteScore = (int)(whiteScore * endgameFactor),
+            BlackScore = (int)(blackScore * endgameFactor),
+        };
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

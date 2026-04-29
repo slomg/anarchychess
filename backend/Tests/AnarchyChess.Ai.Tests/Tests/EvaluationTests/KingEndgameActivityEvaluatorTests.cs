@@ -7,8 +7,6 @@ namespace AnarchyChess.Ai.Tests.Tests.EvaluationTests;
 
 public class KingEndgameActivityEvaluatorTests
 {
-    private readonly KingEndgameActivityEvaluator _evaluator = new();
-
     [Fact]
     public void Evaluate_returns_zero_when_endgame_factor_too_low()
     {
@@ -19,10 +17,13 @@ public class KingEndgameActivityEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 0.1f);
+        EvaluationResult evaluation = KingEndgameActivityEvaluator.Evaluate(
+            board,
+            endgameFactor: 0.1f
+        );
 
-        whiteScore.Should().Be(0);
-        blackScore.Should().Be(0);
+        evaluation.WhiteScore.Should().Be(0);
+        evaluation.BlackScore.Should().Be(0);
     }
 
     [Fact]
@@ -35,10 +36,13 @@ public class KingEndgameActivityEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 1f);
+        EvaluationResult evaluation = KingEndgameActivityEvaluator.Evaluate(
+            board,
+            endgameFactor: 1f
+        );
 
-        whiteScore.Should().Be(KingEndgameActivityEvaluator.CenterProximityBonus - 2);
-        blackScore.Should().Be(KingEndgameActivityEvaluator.CenterProximityBonus - 3);
+        evaluation.WhiteScore.Should().Be(KingEndgameActivityEvaluator.CenterProximityBonus - 2);
+        evaluation.BlackScore.Should().Be(KingEndgameActivityEvaluator.CenterProximityBonus - 3);
     }
 
     [Fact]
@@ -51,12 +55,15 @@ public class KingEndgameActivityEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 1f);
+        EvaluationResult evaluation = KingEndgameActivityEvaluator.Evaluate(
+            board,
+            endgameFactor: 1f
+        );
 
         int expected = KingEndgameActivityEvaluator.OwnPassedPawnProximityBonus - 3;
         expected += KingEndgameActivityEvaluator.CenterProximityBonus;
-        whiteScore.Should().Be(expected);
-        blackScore.Should().Be(0);
+        evaluation.WhiteScore.Should().Be(expected);
+        evaluation.BlackScore.Should().Be(0);
     }
 
     [Fact]
@@ -69,12 +76,15 @@ public class KingEndgameActivityEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 1f);
+        EvaluationResult evaluation = KingEndgameActivityEvaluator.Evaluate(
+            board,
+            endgameFactor: 1f
+        );
 
         int expected = KingEndgameActivityEvaluator.OwnPassedPawnProximityBonus - 2;
         expected += KingEndgameActivityEvaluator.CenterProximityBonus;
-        blackScore.Should().Be(expected);
-        whiteScore.Should().Be(0);
+        evaluation.BlackScore.Should().Be(expected);
+        evaluation.WhiteScore.Should().Be(0);
     }
 
     [Fact]
@@ -88,12 +98,15 @@ public class KingEndgameActivityEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 1f);
+        EvaluationResult evaluation = KingEndgameActivityEvaluator.Evaluate(
+            board,
+            endgameFactor: 1f
+        );
 
         int expected = KingEndgameActivityEvaluator.CenterProximityBonus;
         expected += KingEndgameActivityEvaluator.EnemyPawnProximityBonus - 3;
-        whiteScore.Should().Be(expected);
-        blackScore.Should().Be(0);
+        evaluation.WhiteScore.Should().Be(expected);
+        evaluation.BlackScore.Should().Be(0);
     }
 
     [Fact]
@@ -107,12 +120,15 @@ public class KingEndgameActivityEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 1f);
+        EvaluationResult evaluation = KingEndgameActivityEvaluator.Evaluate(
+            board,
+            endgameFactor: 1f
+        );
 
         int expected = KingEndgameActivityEvaluator.CenterProximityBonus;
         expected += KingEndgameActivityEvaluator.EnemyPawnProximityBonus - 1;
-        blackScore.Should().Be(expected);
-        whiteScore.Should().Be(0);
+        evaluation.BlackScore.Should().Be(expected);
+        evaluation.WhiteScore.Should().Be(0);
     }
 
     [Fact]
@@ -128,12 +144,15 @@ public class KingEndgameActivityEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 1f);
+        EvaluationResult evaluation = KingEndgameActivityEvaluator.Evaluate(
+            board,
+            endgameFactor: 1f
+        );
 
         int expected = KingEndgameActivityEvaluator.CenterProximityBonus;
         expected += KingEndgameActivityEvaluator.EnemyPawnProximityBonus - 5;
-        whiteScore.Should().Be(expected);
-        blackScore.Should().Be(0);
+        evaluation.WhiteScore.Should().Be(expected);
+        evaluation.BlackScore.Should().Be(0);
     }
 
     [Fact]
@@ -149,11 +168,14 @@ public class KingEndgameActivityEvaluatorTests
         };
         BitBoard board = BitBoard.FromPieces(pieces);
 
-        (int whiteScore, int blackScore) = _evaluator.Evaluate(board, endgameFactor: 1f);
+        EvaluationResult evaluation = KingEndgameActivityEvaluator.Evaluate(
+            board,
+            endgameFactor: 1f
+        );
 
         int expected = KingEndgameActivityEvaluator.CenterProximityBonus;
         expected += KingEndgameActivityEvaluator.EnemyPawnProximityBonus - 5;
-        blackScore.Should().Be(expected);
-        whiteScore.Should().Be(0);
+        evaluation.BlackScore.Should().Be(expected);
+        evaluation.WhiteScore.Should().Be(0);
     }
 }
