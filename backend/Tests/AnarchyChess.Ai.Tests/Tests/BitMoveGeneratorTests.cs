@@ -117,6 +117,29 @@ public class BitMoveGeneratorTests
         }
     }
 
+    [Fact]
+    public void Generate_ignores_stunned_pieces()
+    {
+        BitBoard board = BitBoard.FromPieces(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("d2")] = PieceFactory.White(PieceType.Pawn, hasMoved: true),
+                [new("g2")] = PieceFactory.White(PieceType.Pawn, hasMoved: true),
+            }
+        );
+
+        Span<BitMove> moves = stackalloc BitMove[256];
+        int moveCount = 0;
+        BitMoveGenerator.Generate(board, moves, ref moveCount);
+
+        moves
+            .ToArray()
+            .Should()
+            .ContainSingle()
+            .Which.From.Should()
+            .Be(new AlgebraicPoint("d2").AsIdx());
+    }
+
     [Theory]
     [InlineData(8, 5, true)]
     [InlineData(8, 4, false)]
