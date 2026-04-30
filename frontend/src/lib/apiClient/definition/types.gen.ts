@@ -123,7 +123,8 @@ export type PagedResultOfQuestPointsDto = {
 
 export type UserQuestPoints = {
     profile: MinimalProfile;
-    questPoints: number;
+    monthlyQuestPoints: number;
+    totalQuestPoints: number;
 };
 
 export type SessionUser = {
@@ -952,44 +953,45 @@ export type CollectQuestRewardResponses = {
 export type CollectQuestRewardResponse =
     CollectQuestRewardResponses[keyof CollectQuestRewardResponses];
 
-export type GetUserQuestPointsData = {
-    body?: never;
-    path: {
-        userId: string;
-    };
-    query?: never;
-    url: "/api/Quests/points/{userId}";
-};
-
-export type GetUserQuestPointsResponses = {
-    200: number;
-};
-
-export type GetUserQuestPointsResponse =
-    GetUserQuestPointsResponses[keyof GetUserQuestPointsResponses];
-
-export type GetQuestLeaderboardData = {
+export type GetTotalQuestLeaderboardData = {
     body?: never;
     path?: never;
     query?: {
         Page?: number;
         PageSize?: number;
     };
-    url: "/api/Quests/leaderboard";
+    url: "/api/Quests/leaderboard/total";
 };
 
-export type GetQuestLeaderboardResponses = {
+export type GetTotalQuestLeaderboardResponses = {
     200: PagedResultOfQuestPointsDto;
 };
 
-export type GetQuestLeaderboardResponse =
-    GetQuestLeaderboardResponses[keyof GetQuestLeaderboardResponses];
+export type GetTotalQuestLeaderboardResponse =
+    GetTotalQuestLeaderboardResponses[keyof GetTotalQuestLeaderboardResponses];
+
+export type GetMonthlyQuestLeaderboardData = {
+    body?: never;
+    path?: never;
+    query?: {
+        Page?: number;
+        PageSize?: number;
+    };
+    url: "/api/Quests/leaderboard/monthly";
+};
+
+export type GetMonthlyQuestLeaderboardResponses = {
+    200: PagedResultOfQuestPointsDto;
+};
+
+export type GetMonthlyQuestLeaderboardResponse =
+    GetMonthlyQuestLeaderboardResponses[keyof GetMonthlyQuestLeaderboardResponses];
 
 export type GetMyQuestRankingData = {
     body?: never;
     path?: never;
     query?: never;
-    url: "/api/Quests/leaderboard/me";
+    url: "/api/Quests/me";
 };
 
 export type GetMyQuestRankingErrors = {
