@@ -2,8 +2,8 @@
 
 namespace AnarchyChess.Api.Quests.DTOs;
 
-[DisplayName("MyQuestRanking")]
-public record MyQuestRankingDto(
+[DisplayName("QuestRanking")]
+public record QuestRankingDto(
     int TotalQuestPoints,
     int TotalRank,
     int MonthlyQuestPoints,

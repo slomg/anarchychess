@@ -127,7 +127,7 @@ export type UserQuestPoints = {
     totalQuestPoints: number;
 };
 
-export type MyQuestRanking = {
+export type QuestRanking = {
     totalQuestPoints: number;
     totalRank: number;
     monthlyQuestPoints: number;
@@ -1025,7 +1025,7 @@ export type GetMyQuestRankingError =
     GetMyQuestRankingErrors[keyof GetMyQuestRankingErrors];
 
 export type GetMyQuestRankingResponses = {
-    200: MyQuestRanking;
+    200: QuestRanking;
 };
 
 export type GetMyQuestRankingResponse =

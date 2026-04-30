@@ -167,7 +167,7 @@ public interface IAnarchyChessApi
     );
 
     [Get("/api/quests/me")]
-    Task<IApiResponse<MyQuestRankingDto>> GetMyQuestRankingAsync();
+    Task<IApiResponse<QuestRankingDto>> GetMyQuestRankingAsync();
     #endregion
 
     #region Challenges

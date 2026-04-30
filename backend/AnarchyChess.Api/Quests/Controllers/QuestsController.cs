@@ -122,9 +122,9 @@ public class QuestsController(
     }
 
     [HttpGet("me")]
-    [ProducesResponseType<MyQuestRankingDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType<QuestRankingDto>(StatusCodes.Status200OK)]
     [Authorize]
-    public async Task<ActionResult<MyQuestRankingDto>> GetMyQuestRanking(
+    public async Task<ActionResult<QuestRankingDto>> GetMyQuestRanking(
         CancellationToken token = default
     )
     {
@@ -132,7 +132,7 @@ public class QuestsController(
         if (userIdResult.IsError)
             return userIdResult.Errors.ToActionResult();
 
-        var ranking = await _questService.GetMyRankingAsync(userIdResult.Value, token);
+        var ranking = await _questService.GetRankingAsync(userIdResult.Value, token);
         return Ok(ranking);
     }
 }

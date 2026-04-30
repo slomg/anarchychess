@@ -84,14 +84,14 @@ public class QuestServiceTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task GetMyRankingAsync_returns_correct_monthly_and_total_ranking()
+    public async Task GetRankingAsync_returns_correct_monthly_and_total_ranking()
     {
         var questPoints = new UserQuestPointsFaker().Generate(5);
         await DbContext.AddRangeAsync(questPoints, CT);
         await DbContext.SaveChangesAsync(CT);
 
         var testPoints = questPoints[2];
-        var result = await _questService.GetMyRankingAsync(testPoints.UserId, CT);
+        var result = await _questService.GetRankingAsync(testPoints.UserId, CT);
 
         result.MonthlyQuestPoints.Should().Be(testPoints.MonthlyPoints);
         result.TotalQuestPoints.Should().Be(testPoints.TotalPoints);
@@ -104,7 +104,7 @@ public class QuestServiceTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task GetMyRankingAsync_returns_zero_points_and_last_place_when_no_points()
+    public async Task GetRankingAsync_returns_zero_points_and_last_place_when_no_points()
     {
         var questPoints = new UserQuestPointsFaker().Generate(5);
         await DbContext.AddRangeAsync(questPoints, CT);
@@ -114,7 +114,7 @@ public class QuestServiceTests : BaseIntegrationTest
         await DbContext.AddAsync(user, CT);
         await DbContext.SaveChangesAsync(CT);
 
-        var result = await _questService.GetMyRankingAsync(user.Id, CT);
+        var result = await _questService.GetRankingAsync(user.Id, CT);
 
         result.MonthlyQuestPoints.Should().Be(0);
         result.TotalQuestPoints.Should().Be(0);

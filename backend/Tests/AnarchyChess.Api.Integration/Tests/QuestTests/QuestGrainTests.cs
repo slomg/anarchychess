@@ -60,7 +60,7 @@ public class QuestGrainTests : BaseOrleansIntegrationTest
         // no metrics, should complete
         _storage.State.Quest.ApplySnapshot(new GameQuestSnapshotFaker().Generate());
 
-        var rankingAfterGameOver = await _questService.GetMyRankingAsync(
+        var rankingAfterGameOver = await _questService.GetRankingAsync(
             questPoints.UserId,
             ApiTestBase.CT
         );
@@ -69,7 +69,7 @@ public class QuestGrainTests : BaseOrleansIntegrationTest
         var reward = await grain.CollectRewardAsync(ApiTestBase.CT);
         reward.Value.Should().Be((int)QuestDifficulty.Easy);
 
-        var rankingAfterClaim = await _questService.GetMyRankingAsync(
+        var rankingAfterClaim = await _questService.GetRankingAsync(
             questPoints.UserId,
             ApiTestBase.CT
         );

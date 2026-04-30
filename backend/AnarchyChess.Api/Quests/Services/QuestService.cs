@@ -23,7 +23,7 @@ public interface IQuestService
         PaginationQuery pagination,
         CancellationToken token = default
     );
-    Task<MyQuestRankingDto> GetMyRankingAsync(UserId userId, CancellationToken token = default);
+    Task<QuestRankingDto> GetRankingAsync(UserId userId, CancellationToken token = default);
     Task<ErrorOr<Updated>> IncrementQuestPointsAsync(
         UserId userId,
         int points,
@@ -66,7 +66,7 @@ public class QuestService(
         );
     }
 
-    public async Task<MyQuestRankingDto> GetMyRankingAsync(
+    public async Task<QuestRankingDto> GetRankingAsync(
         UserId userId,
         CancellationToken token = default
     )
