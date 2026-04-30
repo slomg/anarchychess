@@ -15,9 +15,11 @@ using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Shared.Models;
 using AnarchyChess.Api.Shared.Services;
+using AnarchyChess.Api.Streaming;
 using AnarchyChess.EngineShared;
 using AnarchyChess.EngineShared.Extensions;
 using ErrorOr;
+using Orleans.Streams;
 
 namespace AnarchyChess.Api.Bots.Grains;
 
@@ -376,6 +378,14 @@ public class BotGrain : Grain, IBotGrain
         {
             _logger.LogError(ex, "Failed to save bot game");
         }
+
+        var streamProvider = this.GetStreamProvider(StreamingConstants.StreamProvider);
+        await streamProvider
+            .GetStream<BotGameEndedEvent>(
+                nameof(BotGameEndedEvent),
+                game.Players.GetPlayerByColor(game.HumanColor).UserId
+            )
+            .OnNextAsync(new(GameToken: _gameToken, EndStatus: resultData));
 
         game.Result = resultData;
     }
