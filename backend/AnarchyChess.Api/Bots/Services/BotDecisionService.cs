@@ -25,7 +25,7 @@ public record BotBehaviorProfile(
     double MiddleGameTemperature,
     double EndGameTemperature,
     int TacticalThreshold,
-    int DrasticallyBadMoveThreshold,
+    int BlunderThreshold,
     double BlunderChance,
     double TacticChance,
     double TacticChancePerMoveBonus,
@@ -42,7 +42,8 @@ public record BotBehaviorProfile(
     int BetaDecayPenalty,
     int NonCentralPawnPenaltyInOpening,
     int CastleBonus,
-    int SamePiecePenalty
+    int SamePiecePenalty,
+    int ThrowPenalty
 );
 
 public interface IBotDecisionService
@@ -58,12 +59,15 @@ public class BotDecisionService(
     IBotService botService,
     IRandomProvider randomProvider,
     IBotHeuristics botHeuristics,
+    ILogger<BotDecisionService> logger,
     BotBehaviorProfile behaviorProfile
 ) : IBotDecisionService
 {
     private readonly IBotService _botService = botService;
     private readonly IRandomProvider _randomProvider = randomProvider;
     private readonly IBotHeuristics _botHeuristics = botHeuristics;
+    private readonly ILogger<BotDecisionService> _logger = logger;
+
     private readonly BotBehaviorProfile _behaviorProfile = behaviorProfile;
 
     /// <summary>
@@ -132,6 +136,7 @@ public class BotDecisionService(
             && _randomProvider.NextDouble() < _behaviorProfile.CheckmateChance
         )
         {
+            _logger.LogInformation("Playing missable checkmate");
             return Softmax(missableCheckmates, board, endgameFactor);
         }
 
@@ -143,6 +148,7 @@ public class BotDecisionService(
         );
         if (tactics.Count == moves.Count)
         {
+            _logger.LogInformation("Playing tactic because all moves are tactics");
             return SoftmaxTactics(tactics, board, endgameFactor);
         }
 
@@ -154,7 +160,7 @@ public class BotDecisionService(
         (List<CandidateBotMove> nonBlunders, List<CandidateBotMove> blunders) = OrderInto(
             nonTactics,
             move =>
-                move.MoveEval.EvalForBot - lastEval > _behaviorProfile.DrasticallyBadMoveThreshold
+                move.MoveEval.EvalForBot - lastEval > _behaviorProfile.BlunderThreshold
                 && !move.IsHang
         );
 
@@ -168,6 +174,7 @@ public class BotDecisionService(
         ];
         if (obviousMoves.Count > 0)
         {
+            _logger.LogInformation("Playing obvious move");
             return Softmax(obviousMoves, board, endgameFactor);
         }
 
@@ -178,23 +185,32 @@ public class BotDecisionService(
             && _randomProvider.NextDouble() < _behaviorProfile.BlunderChance
         )
         {
+            _logger.LogInformation("Playing missable blunder");
             return Softmax(missableBlunders, board, endgameFactor);
         }
 
         if (nonBlunders.Count > 0)
         {
+            _logger.LogInformation("Playing non blunder");
             return Softmax(nonBlunders, board, endgameFactor);
-        }
-        else if (tactics.Count > 0)
-        {
-            return SoftmaxTactics(tactics, board, endgameFactor);
         }
         else if (missableBlunders.Count > 0)
         {
+            _logger.LogInformation("Playing missable blunder because no non blunders");
             return Softmax(missableBlunders, board, endgameFactor);
+        }
+        else if (tactics.Count > 0)
+        {
+            _logger.LogInformation(
+                "Playing tactic because no non blunders and no missable blunders"
+            );
+            return SoftmaxTactics(tactics, board, endgameFactor);
         }
         else
         {
+            _logger.LogInformation(
+                "Playing non tactic because no non blunder and no tactics and no missable blunders"
+            );
             return Softmax(nonTactics, board, endgameFactor);
         }
     }
@@ -302,6 +318,11 @@ public class BotDecisionService(
             playabilityEval += _behaviorProfile.SamePiecePenalty;
         }
 
+        if (moveEval.Move.SpecialMoveType is SpecialMoveType.Throw)
+        {
+            playabilityEval -= _behaviorProfile.ThrowPenalty;
+        }
+
         return new CandidateBotMove(
             moveEval,
             IsHang: isHang,
@@ -388,6 +409,7 @@ public class BotDecisionService(
         var (complexTactics, simpleTactics) = SortTactics(tactics);
         if (complexTactics.Count == 0)
         {
+            _logger.LogInformation("Playing simple tactic");
             result = Softmax(simpleTactics, board, endgameFactor);
             return true;
         }
@@ -400,11 +422,13 @@ public class BotDecisionService(
 
         if (playSimple)
         {
+            _logger.LogInformation("Playing simple tactic");
             result = Softmax(simpleTactics, board, endgameFactor);
             return true;
         }
         else
         {
+            _logger.LogInformation("Playing complex tactic");
             result = Softmax(complexTactics, board, endgameFactor);
             return true;
         }
@@ -421,9 +445,18 @@ public class BotDecisionService(
 
         if (playSimple && simpleTactics.Count == 0)
         {
+            _logger.LogInformation("Playing complex tactic beacuse no simple tactics");
             return Softmax(complexTactics, board, endgameFactor);
         }
 
+        if (playSimple)
+        {
+            _logger.LogInformation("Playing simple tactic");
+        }
+        else
+        {
+            _logger.LogInformation("Playing complex tactic");
+        }
         return playSimple
             ? Softmax(simpleTactics, board, endgameFactor)
             : Softmax(complexTactics, board, endgameFactor);

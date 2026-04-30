@@ -23,7 +23,7 @@ public class LobotomizedAnarchyBot(IBotDecisionServiceFactory botDecisionService
             EndGameTemperature: 10,
             //
             TacticalThreshold: 100,
-            DrasticallyBadMoveThreshold: -200,
+            BlunderThreshold: -200,
             //
             BlunderChance: 0.08,
             TacticChance: 0.15,
@@ -42,7 +42,8 @@ public class LobotomizedAnarchyBot(IBotDecisionServiceFactory botDecisionService
             BetaDecayPenalty: 300,
             NonCentralPawnPenaltyInOpening: 20,
             CastleBonus: 300,
-            SamePiecePenalty: 50
+            SamePiecePenalty: 50,
+            ThrowPenalty: 0
         )
     );
 

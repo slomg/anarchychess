@@ -10,13 +10,21 @@ public interface IBotDecisionServiceFactory
 public class BotDecisionServiceFactory(
     IBotService botService,
     IRandomProvider randomProvider,
-    IBotHeuristics botHeuristics
+    IBotHeuristics botHeuristics,
+    ILogger<BotDecisionService> logger
 ) : IBotDecisionServiceFactory
 {
     private readonly IBotService _botService = botService;
     private readonly IRandomProvider _randomProvider = randomProvider;
     private readonly IBotHeuristics _botHeuristics = botHeuristics;
+    private readonly ILogger<BotDecisionService> _logger = logger;
 
     public IBotDecisionService Create(BotBehaviorProfile behaviorProfile) =>
-        new BotDecisionService(_botService, _randomProvider, _botHeuristics, behaviorProfile);
+        new BotDecisionService(
+            _botService,
+            _randomProvider,
+            _botHeuristics,
+            _logger,
+            behaviorProfile
+        );
 }
