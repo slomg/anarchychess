@@ -90,7 +90,7 @@ const LoadProfilePage = async ({
             return dataOrThrow(
                 getHasStarred({
                     path: { starredUserId: profile.userId },
-                    auth: () => accessToken,
+                    auth: accessToken,
                 }),
             );
         })(),
@@ -101,7 +101,7 @@ const LoadProfilePage = async ({
             return dataOrThrow(
                 getHasBlocked({
                     path: { blockedUserId: profile.userId },
-                    auth: () => accessToken,
+                    auth: accessToken,
                 }),
             );
         })(),

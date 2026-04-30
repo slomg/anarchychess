@@ -22,7 +22,7 @@ export default async function ChallengePage({
                 const challenge = await dataOrThrow(
                     getChallenge({
                         path: { challengeToken },
-                        auth: () => accessToken,
+                        auth: accessToken,
                     }),
                 );
 
