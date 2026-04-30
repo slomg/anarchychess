@@ -137,11 +137,11 @@ public class QuestServiceTests : BaseIntegrationTest
     [Fact]
     public async Task GetQuestPointsAsync_returns_zero_when_no_points()
     {
-        var existing = new UserQuestPointsFaker().Generate();
-        await DbContext.AddAsync(existing, CT);
+        var user = new AuthedUserFaker().Generate();
+        await DbContext.AddAsync(user, CT);
         await DbContext.SaveChangesAsync(CT);
 
-        var result = await _questService.GetTotalQuestPointsAsync(existing.UserId, CT);
+        var result = await _questService.GetTotalQuestPointsAsync(user.UserId, CT);
 
         result.Should().Be(0);
     }
