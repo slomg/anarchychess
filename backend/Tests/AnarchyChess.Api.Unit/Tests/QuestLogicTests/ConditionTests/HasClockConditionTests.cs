@@ -30,6 +30,6 @@ public class HasClockConditionTests
     public void Evaluate_returns_true_if_there_is_a_pool_and_clocks()
     {
         var snapshot = new GameQuestSnapshotFaker().Generate();
-        _condition.Evaluate(snapshot).Should().BeFalse();
+        _condition.Evaluate(snapshot).Should().BeTrue();
     }
 }
