@@ -23,6 +23,10 @@ namespace AnarchyChess.Api.Migrations
                 nullable: false,
                 defaultValue: 0
             );
+
+            migrationBuilder.Sql(
+                @"UPDATE quest_points SET total_points = monthly_points WHERE total_points = 0;"
+            );
         }
 
         /// <inheritdoc />
