@@ -2,9 +2,8 @@ import { Metadata } from "next";
 
 import {
     getDailyQuest,
+    getMonthlyQuestLeaderboard,
     getMyQuestRanking,
-    getQuestLeaderboard,
-    getUserQuestPoints,
 } from "@/lib/apiClient";
 
 import DailyQuestRankCard from "@/features/quests/components/DailyQuestRankCard";
@@ -34,13 +33,13 @@ export default async function QuestsPage() {
         <WithSession>
             {async ({ accessToken, user }) => {
                 const [
-                    leaderboard,
+                    monthlyLeaderboard,
                     dailyQuest,
                     userCurrentRank,
                     userQuestPoints,
                 ] = await Promise.all([
                     dataOrThrow(
-                        getQuestLeaderboard({
+                        getMonthlyQuestLeaderboard({
                             query: {
                                 Page: 0,
                                 PageSize:
@@ -71,9 +70,7 @@ export default async function QuestsPage() {
                         }
 
                         return await dataOrThrow(
-                            getUserQuestPoints({
-                                path: { userId: user.userId },
-                            }),
+                            getMyQuestRanking({ auth: () => accessToken }),
                         );
                     })(),
                 ]);
@@ -95,12 +92,15 @@ export default async function QuestsPage() {
                             rank={{
                                 questPoints: userQuestPoints ?? 0,
                                 currentRank:
-                                    userCurrentRank ?? leaderboard.totalCount,
-                                totalPlayers: leaderboard.totalCount,
+                                    userCurrentRank ??
+                                    monthlyLeaderboard.totalCount,
+                                totalPlayers: monthlyLeaderboard.totalCount,
                             }}
                         />
 
-                        <QuestLeaderboard initialLeaderboard={leaderboard} />
+                        <QuestLeaderboard
+                            initialLeaderboard={monthlyLeaderboard}
+                        />
                     </main>
                 );
             }}

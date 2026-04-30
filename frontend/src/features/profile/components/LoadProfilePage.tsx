@@ -6,8 +6,8 @@ import {
     getHasStarred,
     getRatingArchives,
     getStarsReceivedCount,
+    getTotalUserQuestPoints,
     getUserByUsername,
-    getUserQuestPoints,
     PublicUser,
     SessionUser,
 } from "@/lib/apiClient";
@@ -49,57 +49,63 @@ const LoadProfilePage = async ({
     lastMonth.setMonth(lastMonth.getMonth() - 1);
     lastMonth.setHours(0, 0, 0, 0);
 
-    const [ratings, games, starsCount, questPoints, hasStarred, hasBlocked] =
-        await Promise.all([
-            dataOrThrow(
-                getRatingArchives({
-                    path: { userId: profile.userId },
-                    query: { since: lastMonth.toLocaleString() },
-                }),
-            ),
-            dataOrThrow(
-                getGameResults({
-                    path: { userId: profile.userId },
-                    query: {
-                        Page: 0,
-                        PageSize: constants.PAGINATION_PAGE_SIZE.GAME_SUMMARY,
-                    },
-                }),
-            ),
-            dataOrThrow(
-                getStarsReceivedCount({
+    const [
+        ratings,
+        games,
+        starsCount,
+        totalQuestPoints,
+        hasStarred,
+        hasBlocked,
+    ] = await Promise.all([
+        dataOrThrow(
+            getRatingArchives({
+                path: { userId: profile.userId },
+                query: { since: lastMonth.toLocaleString() },
+            }),
+        ),
+        dataOrThrow(
+            getGameResults({
+                path: { userId: profile.userId },
+                query: {
+                    Page: 0,
+                    PageSize: constants.PAGINATION_PAGE_SIZE.GAME_SUMMARY,
+                },
+            }),
+        ),
+        dataOrThrow(
+            getStarsReceivedCount({
+                path: { starredUserId: profile.userId },
+            }),
+        ),
+        dataOrThrow(
+            getTotalUserQuestPoints({
+                path: { userId: profile.userId },
+            }),
+        ),
+
+        (async (): Promise<boolean> => {
+            if (!accessToken || profile.userId === loggedInUser?.userId)
+                return false;
+
+            return dataOrThrow(
+                getHasStarred({
                     path: { starredUserId: profile.userId },
+                    auth: () => accessToken,
                 }),
-            ),
-            dataOrThrow(
-                getUserQuestPoints({
-                    path: { userId: profile.userId },
+            );
+        })(),
+        (async (): Promise<boolean> => {
+            if (!accessToken || profile.userId === loggedInUser?.userId)
+                return false;
+
+            return dataOrThrow(
+                getHasBlocked({
+                    path: { blockedUserId: profile.userId },
+                    auth: () => accessToken,
                 }),
-            ),
-
-            (async (): Promise<boolean> => {
-                if (!accessToken || profile.userId === loggedInUser?.userId)
-                    return false;
-
-                return dataOrThrow(
-                    getHasStarred({
-                        path: { starredUserId: profile.userId },
-                        auth: () => accessToken,
-                    }),
-                );
-            })(),
-            (async (): Promise<boolean> => {
-                if (!accessToken || profile.userId === loggedInUser?.userId)
-                    return false;
-
-                return dataOrThrow(
-                    getHasBlocked({
-                        path: { blockedUserId: profile.userId },
-                        auth: () => accessToken,
-                    }),
-                );
-            })(),
-        ]);
+            );
+        })(),
+    ]);
 
     const ratingCards = constants.DISPLAY_TIME_CONTROLS.map((timeControl) => {
         const overview = ratings.find((x) => x.timeControl === timeControl);
@@ -116,7 +122,7 @@ const LoadProfilePage = async ({
         >
             <Profile
                 profile={profile}
-                questPoints={questPoints}
+                totalQuestPoints={totalQuestPoints}
                 initialStarCount={starsCount}
                 initialHasStarred={hasStarred}
                 initialHasBlocked={hasBlocked}

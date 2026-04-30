@@ -1,9 +1,7 @@
 "use client";
 
-import React from "react";
-
 import {
-    getQuestLeaderboard,
+    getMonthlyQuestLeaderboard,
     PagedResultOfQuestPointsDto,
 } from "@/lib/apiClient";
 
@@ -36,7 +34,7 @@ const QuestLeaderboard = ({
             )}
 
             <PaginatedItemsRenderer
-                fetchItems={getQuestLeaderboard}
+                fetchItems={getMonthlyQuestLeaderboard}
                 initialPaged={initialLeaderboard}
             >
                 {({ items, page, pageSize }) => (
@@ -53,7 +51,8 @@ const QuestLeaderboard = ({
                                     className="ml-auto flex items-center gap-2"
                                     data-testid={`questLeaderboardPoints-${profileQuestPoints.profile.userId}`}
                                 >
-                                    {profileQuestPoints.questPoints} points
+                                    {profileQuestPoints.monthlyQuestPoints}{" "}
+                                    points
                                 </p>
                             </LeaderboardMinimalProfileView>
                         ))}
