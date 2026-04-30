@@ -1,5 +1,5 @@
-﻿using AnarchyChess.EngineShared.Extensions;
-using AnarchyChess.Api.QuestLogic.Models;
+﻿using AnarchyChess.Api.QuestLogic.Models;
+using AnarchyChess.EngineShared.Extensions;
 
 namespace AnarchyChess.Api.QuestLogic.QuestMetrics;
 
@@ -9,11 +9,15 @@ public class TimeUsedMsMetric : IQuestMetric
 {
     public int Evaluate(GameQuestSnapshot snapshot)
     {
-        var timeControl = snapshot.FinalGameState.Pool.TimeControl;
+        if (snapshot.Pool is null || snapshot.Clocks is null)
+        {
+            return -1;
+        }
+        var timeControl = snapshot.Pool.TimeControl;
 
         double timeLeft = snapshot.PlayerColor.Match(
-            whenWhite: snapshot.FinalGameState.Clocks.WhiteClock.TimeLeftMs,
-            whenBlack: snapshot.FinalGameState.Clocks.BlackClock.TimeLeftMs
+            whenWhite: snapshot.Clocks.WhiteClock.TimeLeftMs,
+            whenBlack: snapshot.Clocks.BlackClock.TimeLeftMs
         );
         int playerMoves = snapshot.PlayerColor.Match(
             whenWhite: snapshot.MoveHistory.Count / 2,

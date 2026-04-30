@@ -38,6 +38,9 @@ public interface IBotGrain : IGrainWithStringKey
     [Alias("GetStateAsync")]
     Task<ErrorOr<BotGameState>> GetStateAsync(CancellationToken token = default);
 
+    [Alias("GetMovesAsync")]
+    Task<ErrorOr<IReadOnlyList<Move>>> GetMovesAsync();
+
     [Alias("PlayMoveAsync")]
     Task<ErrorOr<Success>> PlayMoveAsync(
         UserId userId,
@@ -202,6 +205,13 @@ public class BotGrain : Grain, IBotGrain
             )
         );
     }
+
+    public Task<ErrorOr<IReadOnlyList<Move>>> GetMovesAsync() =>
+        Task.FromResult(
+            TryGetCurrentGame(out var game)
+                ? game.Core.Board.Moves.ToErrorOr()
+                : GameErrors.GameNotFound
+        );
 
     public async Task<ErrorOr<Success>> PlayMoveAsync(
         UserId userId,

@@ -10,6 +10,5 @@ public class TimeControlCondition(TimeControlSettings timeControl) : IQuestCondi
     [Id(0)]
     private readonly TimeControlSettings _timeControl = timeControl;
 
-    public bool Evaluate(GameQuestSnapshot snapshot) =>
-        snapshot.FinalGameState.Pool.TimeControl == _timeControl;
+    public bool Evaluate(GameQuestSnapshot snapshot) => snapshot.Pool?.TimeControl == _timeControl;
 }
