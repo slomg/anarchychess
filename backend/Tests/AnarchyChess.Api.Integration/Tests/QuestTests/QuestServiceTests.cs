@@ -141,7 +141,7 @@ public class QuestServiceTests : BaseIntegrationTest
         await DbContext.AddAsync(user, CT);
         await DbContext.SaveChangesAsync(CT);
 
-        var result = await _questService.GetTotalQuestPointsAsync(user.UserId, CT);
+        var result = await _questService.GetTotalQuestPointsAsync(user.Id, CT);
 
         result.Should().Be(0);
     }
