@@ -122,7 +122,7 @@ public class QuestsController(
     }
 
     [HttpGet("me")]
-    [ProducesResponseType<int>(StatusCodes.Status200OK)]
+    [ProducesResponseType<MyQuestRankingDto>(StatusCodes.Status200OK)]
     [Authorize]
     public async Task<ActionResult<MyQuestRankingDto>> GetMyQuestRanking(
         CancellationToken token = default

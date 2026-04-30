@@ -127,6 +127,13 @@ export type UserQuestPoints = {
     totalQuestPoints: number;
 };
 
+export type MyQuestRanking = {
+    totalQuestPoints: number;
+    totalRank: number;
+    monthlyQuestPoints: number;
+    monthlyRank: number;
+};
+
 export type SessionUser = {
     userId: string;
     userName: string;
@@ -1018,7 +1025,7 @@ export type GetMyQuestRankingError =
     GetMyQuestRankingErrors[keyof GetMyQuestRankingErrors];
 
 export type GetMyQuestRankingResponses = {
-    200: number;
+    200: MyQuestRanking;
 };
 
 export type GetMyQuestRankingResponse =
