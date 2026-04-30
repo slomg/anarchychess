@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useMemo, useState } from "react";
 import clsx from "clsx";
 
@@ -13,6 +15,7 @@ interface SelectorProps<T> {
     name?: string;
     options: Option<T>[];
     value?: T;
+    className?: string;
     onChange?: (e: { target: { name?: string; value: T } }) => void;
     onBlur?: React.FocusEventHandler<HTMLDivElement>;
     "data-testid"?: string;
@@ -23,6 +26,7 @@ const Selector = <T,>({
     name,
     options,
     value,
+    className,
     onChange,
     "data-testid": testId,
 }: SelectorProps<T>) => {
@@ -60,6 +64,7 @@ const Selector = <T,>({
                     className={clsx(
                         "flex-1 text-nowrap disabled:cursor-default",
                         i === selectedIndex && "border-secondary border-3",
+                        className,
                     )}
                     data-testid={`selector-${option.value}`}
                     disabled={i === selectedIndex}
