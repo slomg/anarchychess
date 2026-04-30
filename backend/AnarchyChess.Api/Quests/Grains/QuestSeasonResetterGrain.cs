@@ -32,7 +32,7 @@ public class QuestSeasonResetterGrain(
     public async Task ReceiveReminder(string reminderName, TickStatus status)
     {
         _logger.LogInformation("Resetting ALL quest points for new season");
-        await _questService.ResetAllQuestPointsAsync();
+        await _questService.ResetMonthlyPointsAsync();
         await SetupReminder();
     }
 
