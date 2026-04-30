@@ -2,6 +2,19 @@ import { render, screen } from "@testing-library/react";
 import RankDisplay from "../RankDisplay";
 
 describe("RankDisplay", () => {
+    it("should display the default title", () => {
+        render(<RankDisplay rank={1} totalPlayers={100} />);
+        expect(screen.getByTestId("rankDisplayTitle")).toHaveTextContent(
+            "Your Rank",
+        );
+    });
+    it("should display a custom title", () => {
+        render(<RankDisplay rank={1} totalPlayers={100} title="Test Title" />);
+        expect(screen.getByTestId("rankDisplayTitle")).toHaveTextContent(
+            "Test Title",
+        );
+    });
+
     it("should display the correct rank", () => {
         render(<RankDisplay rank={69} totalPlayers={100} />);
 

@@ -1,8 +1,8 @@
-﻿using AnarchyChess.EngineShared.Extensions;
-using AnarchyChess.Api.GameLogic.Models;
-using AnarchyChess.EngineShared;
+﻿using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.QuestLogic.Models;
+using AnarchyChess.EngineShared;
+using AnarchyChess.EngineShared.Extensions;
 using Bogus;
 
 namespace AnarchyChess.Api.TestInfrastructure.Fakes;
@@ -15,7 +15,8 @@ public class GameQuestSnapshotFaker : RecordFaker<GameQuestSnapshot>
         RuleFor(x => x.PlayerColor, f => playerColor ?? f.PickRandom<GameColor>());
         RuleFor(x => x.MoveHistory, f => new MoveFaker().Generate(5));
         RuleFor(x => x.ResultData, f => new GameResultDataFaker().Generate());
-        RuleFor(x => x.FinalGameState, f => new GameStateFaker().Generate());
+        RuleFor(x => x.Pool, f => new PoolKeyFaker().Generate());
+        RuleFor(x => x.Clocks, f => new ClockSnapshotFaker().Generate());
     }
 }
 

@@ -90,4 +90,19 @@ describe("Selector", () => {
         const firstButton = screen.getByTestId("selector-1");
         expect(firstButton).toBeDisabled();
     });
+
+    it("should apply custom className to all buttons", () => {
+        render(
+            <Selector
+                options={options}
+                className="my-custom-class"
+                data-testid="selector"
+            />,
+        );
+
+        options.forEach((option) => {
+            const button = screen.getByTestId(`selector-${option.value}`);
+            expect(button.className).toContain("my-custom-class");
+        });
+    });
 });

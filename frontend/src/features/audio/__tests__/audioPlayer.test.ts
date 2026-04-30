@@ -13,7 +13,9 @@ describe("AudioPlayer", () => {
             const { audioMock, audioConstructorMock } = mockAudio();
             await AudioPlayer.playAudio(AudioType.MOVE);
 
-            expect(audioConstructorMock).toHaveBeenCalledWith(AudioType.MOVE);
+            expect(audioConstructorMock).toHaveBeenCalledWith(
+                `${process.env.NEXT_PUBLIC_ASSETS_URL}/sfx/${AudioType.MOVE}`,
+            );
             expect(audioMock.cloneNode).toHaveBeenCalledOnce();
             expect(audioMock.play).toHaveBeenCalledOnce();
         });
@@ -27,9 +29,11 @@ describe("AudioPlayer", () => {
             await AudioPlayer.playAudio(AudioType.CAPTURE);
 
             expect(audioConstructorMock).toHaveBeenCalledTimes(2);
-            expect(audioConstructorMock).toHaveBeenCalledWith(AudioType.MOVE);
             expect(audioConstructorMock).toHaveBeenCalledWith(
-                AudioType.CAPTURE,
+                `${process.env.NEXT_PUBLIC_ASSETS_URL}/sfx/${AudioType.MOVE}`,
+            );
+            expect(audioConstructorMock).toHaveBeenCalledWith(
+                `${process.env.NEXT_PUBLIC_ASSETS_URL}/sfx/${AudioType.CAPTURE}`,
             );
         });
 
@@ -72,9 +76,11 @@ describe("AudioPlayer", () => {
             AudioPlayer.preload(AudioType.MOVE, AudioType.CAPTURE);
 
             expect(audioConstructorMock).toHaveBeenCalledTimes(2);
-            expect(audioConstructorMock).toHaveBeenCalledWith(AudioType.MOVE);
             expect(audioConstructorMock).toHaveBeenCalledWith(
-                AudioType.CAPTURE,
+                `${process.env.NEXT_PUBLIC_ASSETS_URL}/sfx/${AudioType.MOVE}`,
+            );
+            expect(audioConstructorMock).toHaveBeenCalledWith(
+                `${process.env.NEXT_PUBLIC_ASSETS_URL}/sfx/${AudioType.CAPTURE}`,
             );
 
             audioConstructorMock.mockReset();

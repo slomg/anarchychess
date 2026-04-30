@@ -86,6 +86,7 @@ const MaterialCount = ({ playerColor }: { playerColor: GameColor }) => {
                         height={64}
                         className="mr-0.5 h-5 w-auto bg-contain bg-no-repeat"
                         src={getMaterialPieceImage(piece, pieceBalance.color)}
+                        unoptimized
                         data-testid={`materialCount-${piece}`}
                     />
                 ));

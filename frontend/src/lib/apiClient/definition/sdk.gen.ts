@@ -70,6 +70,8 @@ import type {
     GetHasStarredResponses,
     GetInitialAnalysisPositionData,
     GetInitialAnalysisPositionResponses,
+    GetMonthlyQuestLeaderboardData,
+    GetMonthlyQuestLeaderboardResponses,
     GetMyQuestRankingData,
     GetMyQuestRankingErrors,
     GetMyQuestRankingResponses,
@@ -84,8 +86,6 @@ import type {
     GetPreferencesResponses,
     GetProfilePictureData,
     GetProfilePictureResponses,
-    GetQuestLeaderboardData,
-    GetQuestLeaderboardResponses,
     GetRatingArchivesData,
     GetRatingArchivesErrors,
     GetRatingArchivesResponses,
@@ -97,14 +97,16 @@ import type {
     GetStarredUsersResponses,
     GetStarsReceivedCountData,
     GetStarsReceivedCountResponses,
+    GetTotalQuestLeaderboardData,
+    GetTotalQuestLeaderboardResponses,
+    GetTotalUserQuestPointsData,
+    GetTotalUserQuestPointsResponses,
     GetUserByIdData,
     GetUserByIdErrors,
     GetUserByIdResponses,
     GetUserByUsernameData,
     GetUserByUsernameErrors,
     GetUserByUsernameResponses,
-    GetUserQuestPointsData,
-    GetUserQuestPointsResponses,
     IndexData,
     IndexResponses,
     LogoutData,
@@ -284,23 +286,34 @@ export const collectQuestReward = <ThrowOnError extends boolean = false>(
         ThrowOnError
     >({ url: "/api/Quests/claim", ...options });
 
-export const getUserQuestPoints = <ThrowOnError extends boolean = false>(
-    options: Options<GetUserQuestPointsData, ThrowOnError>,
+export const getTotalUserQuestPoints = <ThrowOnError extends boolean = false>(
+    options: Options<GetTotalUserQuestPointsData, ThrowOnError>,
 ) =>
     (options.client ?? client).get<
-        GetUserQuestPointsResponses,
+        GetTotalUserQuestPointsResponses,
         unknown,
         ThrowOnError
     >({ url: "/api/Quests/points/{userId}", ...options });
 
-export const getQuestLeaderboard = <ThrowOnError extends boolean = false>(
-    options?: Options<GetQuestLeaderboardData, ThrowOnError>,
+export const getTotalQuestLeaderboard = <ThrowOnError extends boolean = false>(
+    options?: Options<GetTotalQuestLeaderboardData, ThrowOnError>,
 ) =>
     (options?.client ?? client).get<
-        GetQuestLeaderboardResponses,
+        GetTotalQuestLeaderboardResponses,
         unknown,
         ThrowOnError
-    >({ url: "/api/Quests/leaderboard", ...options });
+    >({ url: "/api/Quests/leaderboard/total", ...options });
+
+export const getMonthlyQuestLeaderboard = <
+    ThrowOnError extends boolean = false,
+>(
+    options?: Options<GetMonthlyQuestLeaderboardData, ThrowOnError>,
+) =>
+    (options?.client ?? client).get<
+        GetMonthlyQuestLeaderboardResponses,
+        unknown,
+        ThrowOnError
+    >({ url: "/api/Quests/leaderboard/monthly", ...options });
 
 export const getMyQuestRanking = <ThrowOnError extends boolean = false>(
     options?: Options<GetMyQuestRankingData, ThrowOnError>,
@@ -309,7 +322,7 @@ export const getMyQuestRanking = <ThrowOnError extends boolean = false>(
         GetMyQuestRankingResponses,
         GetMyQuestRankingErrors,
         ThrowOnError
-    >({ url: "/api/Quests/leaderboard/me", ...options });
+    >({ url: "/api/Quests/me", ...options });
 
 export const getSessionUser = <ThrowOnError extends boolean = false>(
     options?: Options<GetSessionUserData, ThrowOnError>,

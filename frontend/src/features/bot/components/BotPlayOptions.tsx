@@ -4,9 +4,9 @@ import { useState } from "react";
 import clsx from "clsx";
 
 import ProfilePicture from "@/features/profile/components/ProfilePicture";
-import traitorRook from "@public/assets/pieces/traitor_rook_neutral.png";
-import whiteKing from "@public/assets/pieces/king_white.png";
-import blackKing from "@public/assets/pieces/king_black.png";
+import traitorRook from "@public/assets/pieces-svg/traitorrook.svg";
+import whiteKing from "@public/assets/pieces-svg/king-white.svg";
+import blackKing from "@public/assets/pieces-svg/king-black.svg";
 import { BotType, GameColor } from "@/lib/apiClient";
 import useLocalPref from "@/hooks/useLocalPref";
 import Selector from "@/components/ui/Selector";

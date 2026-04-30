@@ -81,13 +81,10 @@ public class TimeUsedMsMetricTests
     {
         var clock = new ClockSnapshotFaker(whiteClock, blackClock).Generate();
         var poolKey = new PoolKeyFaker().RuleFor(x => x.TimeControl, timeControl).Generate();
-        var gameState = new GameStateFaker()
-            .RuleFor(x => x.Clocks, clock)
-            .RuleFor(x => x.Pool, poolKey)
-            .Generate();
 
         return new GameQuestSnapshotFaker(playerColor)
-            .RuleFor(x => x.FinalGameState, gameState)
+            .RuleFor(x => x.Pool, poolKey)
+            .RuleFor(x => x.Clocks, clock)
             .RuleForMoves(totalPlies: totalPlies)
             .Generate();
     }

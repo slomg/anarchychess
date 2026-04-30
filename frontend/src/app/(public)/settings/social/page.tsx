@@ -18,7 +18,7 @@ export default async function SocialPage() {
         <WithAuthedUser>
             {async ({ user, accessToken }) => {
                 const [preferences, stars, blocked] = await Promise.all([
-                    dataOrThrow(getPreferences({ auth: () => accessToken })),
+                    dataOrThrow(getPreferences({ auth: accessToken })),
                     dataOrThrow(
                         getStarredUsers({
                             query: {
@@ -35,7 +35,7 @@ export default async function SocialPage() {
                                 PageSize:
                                     constants.PAGINATION_PAGE_SIZE.BLOCKED,
                             },
-                            auth: () => accessToken,
+                            auth: accessToken,
                         }),
                     ),
                 ]);

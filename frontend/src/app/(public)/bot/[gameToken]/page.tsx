@@ -19,7 +19,7 @@ export default async function BotGamePage({
                 const game = await dataOrThrow(
                     getBotGame({
                         path: { gameToken },
-                        auth: () => accessToken,
+                        auth: accessToken,
                     }),
                 );
 

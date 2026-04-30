@@ -91,7 +91,10 @@ public class QuestSeasonResetterGrainTests : BaseOrleansIntegrationTest
             await grain.ReceiveReminder(QuestSeasonResetterGrain.ReminderName, new TickStatus());
         }
 
-        (await ApiTestBase.DbContext.QuestPoints.ToListAsync(ApiTestBase.CT)).Should().BeEmpty();
+        var newQuestPoints = await ApiTestBase
+            .DbContext.QuestPoints.AsNoTracking()
+            .ToListAsync(ApiTestBase.CT);
+        newQuestPoints.Should().AllSatisfy(x => x.MonthlyPoints.Should().Be(0));
         Silo.ReminderRegistry.Mock.Verify(x =>
             x.RegisterOrUpdateReminder(
                 Silo.GetGrainId(grain),
