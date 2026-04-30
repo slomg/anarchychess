@@ -1,6 +1,6 @@
 "use client";
 
-import { MyQuestRanking, PagedResultOfQuestPointsDto } from "@/lib/apiClient";
+import { PagedResultOfQuestPointsDto, QuestRanking } from "@/lib/apiClient";
 import DailyQuestRankCard from "./DailyQuestRankCard";
 import { QuestLeaderboardType } from "../lib/types";
 import QuestLeaderboard from "./QuestLeaderboard";
@@ -15,7 +15,7 @@ const QuestLeaderboardSelection = ({
 }: {
     monthlyLeaderboard: PagedResultOfQuestPointsDto;
     totalLeaderboard: PagedResultOfQuestPointsDto;
-    myQuestRanking?: MyQuestRanking;
+    myQuestRanking?: QuestRanking;
 }) => {
     const [selectedLeaderboard, setSelectedLeaderboard] = useLocalPref(
         constants.LOCALSTORAGE.PREFERS_QUEST_LEADERBOARD,
@@ -54,7 +54,7 @@ const QuestLeaderboardSelection = ({
                     rank={{
                         questPoints: myQuestRanking?.totalQuestPoints ?? 0,
                         currentRank:
-                            myQuestRanking?.totalQuestPoints ??
+                            myQuestRanking?.totalRank ??
                             totalLeaderboard.totalCount,
                         totalPlayers: totalLeaderboard.totalCount,
                     }}
