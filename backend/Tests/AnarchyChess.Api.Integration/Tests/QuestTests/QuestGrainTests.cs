@@ -60,20 +60,20 @@ public class QuestGrainTests : BaseOrleansIntegrationTest
         // no metrics, should complete
         _storage.State.Quest.ApplySnapshot(new GameQuestSnapshotFaker().Generate());
 
-        var pointsGameOver = await _questService.GetQuestPointsAsync(
+        var rankingAfterGameOver = await _questService.GetMyRankingAsync(
             questPoints.UserId,
             ApiTestBase.CT
         );
-        pointsGameOver.Should().Be(0);
+        int before = rankingAfterGameOver.TotalQuestPoints;
 
         var reward = await grain.CollectRewardAsync(ApiTestBase.CT);
         reward.Value.Should().Be((int)QuestDifficulty.Easy);
 
-        var pointsAfterClaim = await _questService.GetQuestPointsAsync(
+        var rankingAfterClaim = await _questService.GetMyRankingAsync(
             questPoints.UserId,
             ApiTestBase.CT
         );
-        pointsAfterClaim.Should().Be((int)QuestDifficulty.Easy);
+        rankingAfterClaim.TotalQuestPoints.Should().Be(before + (int)QuestDifficulty.Easy);
 
         var secondAttempt = await grain.CollectRewardAsync(ApiTestBase.CT);
         secondAttempt.IsError.Should().BeTrue();

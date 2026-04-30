@@ -24,24 +24,28 @@ public class QuestServiceTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task GetPaginatedLeaderboardAsync_applies_pagination()
+    public async Task GetPaginatedMonthlyLeaderboardAsync_applies_pagination()
     {
         List<UserQuestPoints> questPoints =
         [
-            new UserQuestPointsFaker().RuleFor(x => x.Points, 4).Generate(),
-            new UserQuestPointsFaker().RuleFor(x => x.Points, 3).Generate(),
-            new UserQuestPointsFaker().RuleFor(x => x.Points, 2).Generate(),
-            new UserQuestPointsFaker().RuleFor(x => x.Points, 1).Generate(),
+            new UserQuestPointsFaker().RuleFor(x => x.MonthlyPoints, 4).Generate(),
+            new UserQuestPointsFaker().RuleFor(x => x.MonthlyPoints, 3).Generate(),
+            new UserQuestPointsFaker().RuleFor(x => x.MonthlyPoints, 2).Generate(),
+            new UserQuestPointsFaker().RuleFor(x => x.MonthlyPoints, 1).Generate(),
         ];
         await DbContext.AddRangeAsync(questPoints, CT);
         await DbContext.SaveChangesAsync(CT);
 
         PaginationQuery pagination = new(Page: 0, PageSize: 3);
 
-        var result = await _questService.GetPaginatedLeaderboardAsync(pagination, CT);
+        var result = await _questService.GetPaginatedMonthlyLeaderboardAsync(pagination, CT);
 
         var expected = questPoints[..3]
-            .Select(x => new QuestPointsDto(new MinimalProfile(x.User), x.Points))
+            .Select(x => new QuestPointsDto(
+                new MinimalProfile(x.User),
+                MonthlyQuestPoints: x.MonthlyPoints,
+                TotalQuestPoints: x.TotalPoints
+            ))
             .ToList();
         result.Items.Should().BeEquivalentTo(expected);
         result.TotalCount.Should().Be(questPoints.Count);
@@ -50,40 +54,72 @@ public class QuestServiceTests : BaseIntegrationTest
     }
 
     [Fact]
-    public async Task GetRankingAsync_finds_correct_ranking()
+    public async Task GetPaginatedTotalLeaderboardAsync_applies_pagination()
+    {
+        List<UserQuestPoints> questPoints =
+        [
+            new UserQuestPointsFaker().RuleFor(x => x.TotalPoints, 4).Generate(),
+            new UserQuestPointsFaker().RuleFor(x => x.TotalPoints, 3).Generate(),
+            new UserQuestPointsFaker().RuleFor(x => x.TotalPoints, 2).Generate(),
+            new UserQuestPointsFaker().RuleFor(x => x.TotalPoints, 1).Generate(),
+        ];
+        await DbContext.AddRangeAsync(questPoints, CT);
+        await DbContext.SaveChangesAsync(CT);
+
+        PaginationQuery pagination = new(Page: 0, PageSize: 3);
+
+        var result = await _questService.GetPaginatedTotalLeaderboardAsync(pagination, CT);
+
+        var expected = questPoints[..3]
+            .Select(x => new QuestPointsDto(
+                new MinimalProfile(x.User),
+                MonthlyQuestPoints: x.MonthlyPoints,
+                TotalQuestPoints: x.TotalPoints
+            ))
+            .ToList();
+        result.Items.Should().BeEquivalentTo(expected);
+        result.TotalCount.Should().Be(questPoints.Count);
+        result.Page.Should().Be(pagination.Page);
+        result.PageSize.Should().Be(pagination.PageSize);
+    }
+
+    [Fact]
+    public async Task GetMyRankingAsync_returns_correct_monthly_and_total_ranking()
     {
         var questPoints = new UserQuestPointsFaker().Generate(5);
         await DbContext.AddRangeAsync(questPoints, CT);
         await DbContext.SaveChangesAsync(CT);
 
         var testPoints = questPoints[2];
-        var result = await _questService.GetRankingAsync(testPoints.UserId, CT);
+        var result = await _questService.GetMyRankingAsync(testPoints.UserId, CT);
 
-        result.Should().Be(questPoints.Count(u => u.Points > testPoints.Points) + 1);
+        result.MonthlyQuestPoints.Should().Be(testPoints.MonthlyPoints);
+        result.TotalQuestPoints.Should().Be(testPoints.TotalPoints);
+        result
+            .MonthlyRank.Should()
+            .Be(questPoints.Count(u => u.MonthlyPoints > testPoints.MonthlyPoints) + 1);
+        result
+            .TotalRank.Should()
+            .Be(questPoints.Count(u => u.TotalPoints > testPoints.TotalPoints) + 1);
     }
 
     [Fact]
-    public async Task GetQuestPointsAsync_returns_points_when_found()
+    public async Task GetMyRankingAsync_returns_zero_points_and_last_place_when_no_points()
     {
-        var existing = new UserQuestPointsFaker().Generate();
-        await DbContext.AddAsync(existing, CT);
+        var questPoints = new UserQuestPointsFaker().Generate(5);
+        await DbContext.AddRangeAsync(questPoints, CT);
         await DbContext.SaveChangesAsync(CT);
 
-        var result = await _questService.GetQuestPointsAsync(existing.UserId, CT);
-
-        result.Should().Be(existing.Points);
-    }
-
-    [Fact]
-    public async Task GetQuestPointsAsync_returns_zero_when_no_points()
-    {
-        var existing = new UserQuestPointsFaker().Generate();
-        await DbContext.AddAsync(existing, CT);
+        var user = new AuthedUserFaker().Generate();
+        await DbContext.AddAsync(user, CT);
         await DbContext.SaveChangesAsync(CT);
 
-        var result = await _questService.GetQuestPointsAsync(existing.UserId, CT);
+        var result = await _questService.GetMyRankingAsync(user.Id, CT);
 
-        result.Should().Be(0);
+        result.MonthlyQuestPoints.Should().Be(0);
+        result.TotalQuestPoints.Should().Be(0);
+        result.MonthlyRank.Should().Be(questPoints.Count(u => u.MonthlyPoints > 0) + 1);
+        result.TotalRank.Should().Be(questPoints.Count + 1);
     }
 
     [Fact]
@@ -121,7 +157,8 @@ public class QuestServiceTests : BaseIntegrationTest
                 {
                     UserId = user.Id,
                     User = user,
-                    Points = points,
+                    MonthlyPoints = points,
+                    TotalPoints = points,
                 }
             );
     }
@@ -134,7 +171,8 @@ public class QuestServiceTests : BaseIntegrationTest
         await DbContext.SaveChangesAsync(CT);
 
         int incrementBy = 100;
-        int expectedPoints = existing.Points + incrementBy;
+        int exectedMonthly = existing.MonthlyPoints + incrementBy;
+        int expectedTotal = existing.TotalPoints + incrementBy;
 
         var result = await _questService.IncrementQuestPointsAsync(
             existing.UserId,
@@ -152,20 +190,25 @@ public class QuestServiceTests : BaseIntegrationTest
                 {
                     UserId = existing.UserId,
                     User = existing.User,
-                    Points = expectedPoints,
+                    MonthlyPoints = exectedMonthly,
+                    TotalPoints = expectedTotal,
                 }
             );
     }
 
     [Fact]
-    public async Task ResetAllQuestPointsAsync_deletes_all()
+    public async Task ResetMonthlyPointsAsync_zeroes_monthly_points_and_preserves_total()
     {
         var questPoints = new UserQuestPointsFaker().Generate(5);
         await DbContext.AddRangeAsync(questPoints, CT);
         await DbContext.SaveChangesAsync(CT);
 
-        await _questService.ResetAllQuestPointsAsync(CT);
+        await _questService.ResetMonthlyPointsAsync(CT);
 
-        (await DbContext.QuestPoints.AsNoTracking().ToListAsync(CT)).Should().BeEmpty();
+        var inDb = await DbContext.QuestPoints.AsNoTracking().ToListAsync(CT);
+        inDb.Should().HaveCount(questPoints.Count);
+        inDb.Should().AllSatisfy(x => x.MonthlyPoints.Should().Be(0));
+        inDb.Should()
+            .BeEquivalentTo(questPoints, options => options.Excluding(x => x.MonthlyPoints));
     }
 }
