@@ -4,10 +4,10 @@ import {
     getDailyQuest,
     getMonthlyQuestLeaderboard,
     getMyQuestRanking,
+    getTotalQuestLeaderboard,
 } from "@/lib/apiClient";
 
-import DailyQuestRankCard from "@/features/quests/components/DailyQuestRankCard";
-import QuestLeaderboard from "@/features/quests/components/QuestLeaderboard";
+import QuestLeaderboardSelection from "@/features/quests/components/QuestLeaderboardSelection";
 import DailyQuestTitle from "@/features/quests/components/DailyQuestTitle";
 import DailyQuestCard from "@/features/quests/components/DailyQuestCard";
 import WithSession from "@/features/auth/hocs/WithSession";
@@ -34,9 +34,9 @@ export default async function QuestsPage() {
             {async ({ accessToken, user }) => {
                 const [
                     monthlyLeaderboard,
+                    totalLeaderboard,
                     dailyQuest,
-                    userCurrentRank,
-                    userQuestPoints,
+                    myQuestRanking,
                 ] = await Promise.all([
                     dataOrThrow(
                         getMonthlyQuestLeaderboard({
@@ -48,29 +48,28 @@ export default async function QuestsPage() {
                             },
                         }),
                     ),
-                    (async () => {
-                        return await dataOrThrow(
-                            getDailyQuest({
-                                auth: () => accessToken,
-                            }),
-                        );
-                    })(),
+                    dataOrThrow(
+                        getTotalQuestLeaderboard({
+                            query: {
+                                Page: 0,
+                                PageSize:
+                                    constants.PAGINATION_PAGE_SIZE
+                                        .QUEST_LEADERBOARD,
+                            },
+                        }),
+                    ),
+                    dataOrThrow(
+                        getDailyQuest({
+                            auth: accessToken,
+                        }),
+                    ),
                     (async () => {
                         if (isGuest(user)) {
                             return;
                         }
 
                         return await dataOrThrow(
-                            getMyQuestRanking({ auth: () => accessToken }),
-                        );
-                    })(),
-                    (async () => {
-                        if (isGuest(user)) {
-                            return;
-                        }
-
-                        return await dataOrThrow(
-                            getMyQuestRanking({ auth: () => accessToken }),
+                            getMyQuestRanking({ auth: accessToken }),
                         );
                     })(),
                 ]);
@@ -88,18 +87,10 @@ export default async function QuestsPage() {
                             <DailyQuestCard initialQuest={dailyQuest} />
                         </div>
 
-                        <DailyQuestRankCard
-                            rank={{
-                                questPoints: userQuestPoints ?? 0,
-                                currentRank:
-                                    userCurrentRank ??
-                                    monthlyLeaderboard.totalCount,
-                                totalPlayers: monthlyLeaderboard.totalCount,
-                            }}
-                        />
-
-                        <QuestLeaderboard
-                            initialLeaderboard={monthlyLeaderboard}
+                        <QuestLeaderboardSelection
+                            monthlyLeaderboard={monthlyLeaderboard}
+                            totalLeaderboard={totalLeaderboard}
+                            myQuestRanking={myQuestRanking}
                         />
                     </main>
                 );

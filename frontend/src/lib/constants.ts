@@ -69,6 +69,7 @@ const LOCALSTORAGE = {
     PREFERS_TIME_CONTROL_INCREMENT_IDX: "prefersTimeControlIncrementIdx",
     IS_SIDEBAR_COLLAPSED: "isSidebarCollapsed",
     PREFERS_BOT_TYPE: "prefersBotType",
+    PREFERS_QUEST_LEADERBOARD: "prefersQuestLeaderboard",
 };
 
 const SIGNALR_PATHS = {

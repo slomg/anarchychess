@@ -3,9 +3,11 @@ import ProgressBar from "./ui/ProgressBar";
 const RankDisplay = ({
     rank,
     totalPlayers,
+    title = "Your Rank",
 }: {
     rank: number;
     totalPlayers: number;
+    title?: string;
 }) => {
     const percentile = Math.max(
         ((totalPlayers - rank) / totalPlayers) * 100,
@@ -13,7 +15,9 @@ const RankDisplay = ({
     );
     return (
         <div className="my-auto w-full sm:w-auto" data-testid="rankDisplay">
-            <h2 className="text-xl font-bold">Your Rank</h2>
+            <h2 className="text-xl font-bold" data-testid="rankDisplayTitle">
+                {title}
+            </h2>
             <div className="flex items-center gap-3">
                 <p
                     className="text-2xl font-extrabold text-amber-400"

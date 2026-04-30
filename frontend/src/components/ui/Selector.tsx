@@ -70,6 +70,7 @@ const Selector = <T,>({
                     disabled={i === selectedIndex}
                     onClick={() => select(i)}
                     type="button"
+                    suppressHydrationWarning
                 >
                     {option.label}
                 </Button>
