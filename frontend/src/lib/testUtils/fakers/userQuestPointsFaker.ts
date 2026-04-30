@@ -9,7 +9,8 @@ export function createFakeUserQuestPoints(
 ): UserQuestPoints {
     return {
         profile: createFakeMinimalProfile(),
-        questPoints: faker.number.int({ min: 10, max: 100 }),
+        monthlyQuestPoints: faker.number.int({ min: 10, max: 100 }),
+        totalQuestPoints: faker.number.int({ min: 10, max: 100 }),
         ...overrides,
     };
 }

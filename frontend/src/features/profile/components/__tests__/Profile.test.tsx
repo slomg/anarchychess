@@ -67,7 +67,7 @@ describe("Profile", () => {
             >
                 <Profile
                     profile={userMock}
-                    questPoints={questPoints ?? 0}
+                    totalQuestPoints={questPoints ?? 0}
                     initialStarCount={starCount ?? 0}
                     initialHasStarred={false}
                     initialHasBlocked={false}

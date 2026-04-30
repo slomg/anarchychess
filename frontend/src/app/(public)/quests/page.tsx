@@ -2,13 +2,12 @@ import { Metadata } from "next";
 
 import {
     getDailyQuest,
+    getMonthlyQuestLeaderboard,
     getMyQuestRanking,
-    getQuestLeaderboard,
-    getUserQuestPoints,
+    getTotalQuestLeaderboard,
 } from "@/lib/apiClient";
 
-import DailyQuestRankCard from "@/features/quests/components/DailyQuestRankCard";
-import QuestLeaderboard from "@/features/quests/components/QuestLeaderboard";
+import QuestLeaderboardSelection from "@/features/quests/components/QuestLeaderboardSelection";
 import DailyQuestTitle from "@/features/quests/components/DailyQuestTitle";
 import DailyQuestCard from "@/features/quests/components/DailyQuestCard";
 import WithSession from "@/features/auth/hocs/WithSession";
@@ -34,13 +33,13 @@ export default async function QuestsPage() {
         <WithSession>
             {async ({ accessToken, user }) => {
                 const [
-                    leaderboard,
+                    monthlyLeaderboard,
+                    totalLeaderboard,
                     dailyQuest,
-                    userCurrentRank,
-                    userQuestPoints,
+                    myQuestRanking,
                 ] = await Promise.all([
                     dataOrThrow(
-                        getQuestLeaderboard({
+                        getMonthlyQuestLeaderboard({
                             query: {
                                 Page: 0,
                                 PageSize:
@@ -49,31 +48,28 @@ export default async function QuestsPage() {
                             },
                         }),
                     ),
-                    (async () => {
-                        return await dataOrThrow(
-                            getDailyQuest({
-                                auth: () => accessToken,
-                            }),
-                        );
-                    })(),
+                    dataOrThrow(
+                        getTotalQuestLeaderboard({
+                            query: {
+                                Page: 0,
+                                PageSize:
+                                    constants.PAGINATION_PAGE_SIZE
+                                        .QUEST_LEADERBOARD,
+                            },
+                        }),
+                    ),
+                    dataOrThrow(
+                        getDailyQuest({
+                            auth: accessToken,
+                        }),
+                    ),
                     (async () => {
                         if (isGuest(user)) {
                             return;
                         }
 
                         return await dataOrThrow(
-                            getMyQuestRanking({ auth: () => accessToken }),
-                        );
-                    })(),
-                    (async () => {
-                        if (isGuest(user)) {
-                            return;
-                        }
-
-                        return await dataOrThrow(
-                            getUserQuestPoints({
-                                path: { userId: user.userId },
-                            }),
+                            getMyQuestRanking({ auth: accessToken }),
                         );
                     })(),
                 ]);
@@ -91,16 +87,11 @@ export default async function QuestsPage() {
                             <DailyQuestCard initialQuest={dailyQuest} />
                         </div>
 
-                        <DailyQuestRankCard
-                            rank={{
-                                questPoints: userQuestPoints ?? 0,
-                                currentRank:
-                                    userCurrentRank ?? leaderboard.totalCount,
-                                totalPlayers: leaderboard.totalCount,
-                            }}
+                        <QuestLeaderboardSelection
+                            monthlyLeaderboard={monthlyLeaderboard}
+                            totalLeaderboard={totalLeaderboard}
+                            myQuestRanking={myQuestRanking}
                         />
-
-                        <QuestLeaderboard initialLeaderboard={leaderboard} />
                     </main>
                 );
             }}

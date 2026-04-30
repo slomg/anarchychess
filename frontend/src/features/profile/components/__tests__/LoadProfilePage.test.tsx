@@ -6,8 +6,8 @@ import {
     getHasStarred,
     getRatingArchives,
     getStarsReceivedCount,
+    getTotalUserQuestPoints,
     getUserByUsername,
-    getUserQuestPoints,
     PagedResultOfGameSummaryDto,
     PrivateUser,
     PublicUser,
@@ -38,7 +38,7 @@ describe("ProfilePage", () => {
     const getRatingArchivesMock = vi.mocked(getRatingArchives);
     const getGameResultsMock = vi.mocked(getGameResults);
     const getStarsReceivedCountMock = vi.mocked(getStarsReceivedCount);
-    const getUserQuestPointsMock = vi.mocked(getUserQuestPoints);
+    const getTotalUserQuestPointsMock = vi.mocked(getTotalUserQuestPoints);
     const getHasStarredMock = vi.mocked(getHasStarred);
     const getHasBlockedMock = vi.mocked(getHasBlocked);
 
@@ -70,7 +70,7 @@ describe("ProfilePage", () => {
             data: starsReceived,
             response: new Response(),
         });
-        getUserQuestPointsMock.mockResolvedValue({
+        getTotalUserQuestPointsMock.mockResolvedValue({
             data: questPoints,
             response: new Response(),
         });
