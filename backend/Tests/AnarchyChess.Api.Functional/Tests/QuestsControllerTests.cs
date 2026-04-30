@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using AnarchyChess.Api.Pagination.Models;
+using AnarchyChess.Api.Profile.DTOs;
 using AnarchyChess.Api.Quests.DTOs;
 using AnarchyChess.Api.Quests.Entities;
 using AnarchyChess.Api.TestInfrastructure;
@@ -88,35 +89,19 @@ public class QuestsControllerTests(AnarchyChessWebApplicationFactory factory)
     }
 
     [Fact]
-    public async Task GetUserQuestPoints_returns_correct_points()
-    {
-        var questPoints = new UserQuestPointsFaker().Generate();
-        var otherQuestPoints = new UserQuestPointsFaker().Generate();
-        await DbContext.AddRangeAsync(questPoints, otherQuestPoints);
-        await DbContext.SaveChangesAsync(CT);
-
-        var response = await ApiClient.Api.GetUserQuestPointsAsync(questPoints.UserId);
-
-        response.IsSuccessful.Should().BeTrue();
-        response.Content.Should().Be(questPoints.Points);
-    }
-
-    [Fact]
-    public async Task GetQuestLeaderboard_returns_public_users()
+    public async Task GetMonthlyQuestLeaderboard_returns_users_ordered_by_monthly_points()
     {
         List<UserQuestPoints> questPoints =
         [
-            new UserQuestPointsFaker().RuleFor(x => x.Points, 4),
-            new UserQuestPointsFaker().RuleFor(x => x.Points, 3),
-            new UserQuestPointsFaker().RuleFor(x => x.Points, 2),
-            new UserQuestPointsFaker().RuleFor(x => x.Points, 1),
+            new UserQuestPointsFaker().RuleFor(x => x.MonthlyPoints, 4).Generate(),
+            new UserQuestPointsFaker().RuleFor(x => x.MonthlyPoints, 3).Generate(),
+            new UserQuestPointsFaker().RuleFor(x => x.MonthlyPoints, 2).Generate(),
+            new UserQuestPointsFaker().RuleFor(x => x.MonthlyPoints, 1).Generate(),
         ];
         await DbContext.AddRangeAsync(questPoints, CT);
         await DbContext.SaveChangesAsync(CT);
 
-        PaginationQuery pagination = new(Page: 0, PageSize: 3);
-
-        var response = await ApiClient.Api.GetQuestLeaderboardAsync(
+        var response = await ApiClient.Api.GetMonthlyQuestLeaderboardAsync(
             new PaginationQuery(Page: 0, PageSize: 3)
         );
 
@@ -126,18 +111,61 @@ public class QuestsControllerTests(AnarchyChessWebApplicationFactory factory)
         response
             .Content.Items.Should()
             .BeEquivalentTo(
-                questPoints[..3].Select(x => new QuestPointsDto(new(x.User), x.Points))
+                questPoints[..3]
+                    .Select(x => new QuestPointsDto(
+                        new MinimalProfile(x.User),
+                        MonthlyQuestPoints: x.MonthlyPoints,
+                        TotalQuestPoints: x.TotalPoints
+                    ))
             );
     }
 
     [Fact]
-    public async Task GetQuestLeaderboard_returns_bad_request_for_invalid_pagination()
+    public async Task GetMonthlyQuestLeaderboard_returns_bad_request_for_invalid_pagination()
     {
-        var user = new AuthedUserFaker().Generate();
-        await DbContext.AddAsync(user, CT);
+        var response = await ApiClient.Api.GetMonthlyQuestLeaderboardAsync(
+            new PaginationQuery(Page: 0, PageSize: -1)
+        );
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task GetTotalQuestLeaderboard_returns_users_ordered_by_total_points()
+    {
+        List<UserQuestPoints> questPoints =
+        [
+            new UserQuestPointsFaker().RuleFor(x => x.TotalPoints, 4).Generate(),
+            new UserQuestPointsFaker().RuleFor(x => x.TotalPoints, 3).Generate(),
+            new UserQuestPointsFaker().RuleFor(x => x.TotalPoints, 2).Generate(),
+            new UserQuestPointsFaker().RuleFor(x => x.TotalPoints, 1).Generate(),
+        ];
+        await DbContext.AddRangeAsync(questPoints, CT);
         await DbContext.SaveChangesAsync(CT);
 
-        var response = await ApiClient.Api.GetQuestLeaderboardAsync(
+        var response = await ApiClient.Api.GetTotalQuestLeaderboardAsync(
+            new PaginationQuery(Page: 0, PageSize: 3)
+        );
+
+        response.IsSuccessful.Should().BeTrue();
+        response.Content.Should().NotBeNull();
+        response.Content.TotalCount.Should().Be(questPoints.Count);
+        response
+            .Content.Items.Should()
+            .BeEquivalentTo(
+                questPoints[..3]
+                    .Select(x => new QuestPointsDto(
+                        new MinimalProfile(x.User),
+                        MonthlyQuestPoints: x.MonthlyPoints,
+                        TotalQuestPoints: x.TotalPoints
+                    ))
+            );
+    }
+
+    [Fact]
+    public async Task GetTotalQuestLeaderboard_returns_bad_request_for_invalid_pagination()
+    {
+        var response = await ApiClient.Api.GetTotalQuestLeaderboardAsync(
             new PaginationQuery(Page: 0, PageSize: -1)
         );
 
@@ -147,8 +175,14 @@ public class QuestsControllerTests(AnarchyChessWebApplicationFactory factory)
     [Fact]
     public async Task GetMyQuestRanking_returns_user_ranking()
     {
-        var questPoints = new UserQuestPointsFaker().RuleFor(x => x.Points, 10).Generate();
-        var higherPoints = new UserQuestPointsFaker().RuleFor(x => x.Points, 20).Generate(5);
+        var questPoints = new UserQuestPointsFaker()
+            .RuleFor(x => x.MonthlyPoints, 10)
+            .RuleFor(x => x.TotalPoints, 10)
+            .Generate();
+        var higherPoints = new UserQuestPointsFaker()
+            .RuleFor(x => x.MonthlyPoints, 20)
+            .RuleFor(x => x.TotalPoints, 20)
+            .Generate(5);
         await DbContext.AddAsync(questPoints, CT);
         await DbContext.AddRangeAsync(higherPoints, CT);
         await DbContext.SaveChangesAsync(CT);
@@ -158,7 +192,11 @@ public class QuestsControllerTests(AnarchyChessWebApplicationFactory factory)
         var response = await ApiClient.Api.GetMyQuestRankingAsync();
 
         response.IsSuccessful.Should().BeTrue();
-        response.Content.Should().Be(higherPoints.Count + 1);
+        response.Content.Should().NotBeNull();
+        response.Content.MonthlyQuestPoints.Should().Be(questPoints.MonthlyPoints);
+        response.Content.TotalQuestPoints.Should().Be(questPoints.TotalPoints);
+        response.Content.MonthlyRank.Should().Be(higherPoints.Count + 1);
+        response.Content.TotalRank.Should().Be(higherPoints.Count + 1);
     }
 
     [Fact]

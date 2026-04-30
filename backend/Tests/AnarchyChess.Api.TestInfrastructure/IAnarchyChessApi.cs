@@ -153,16 +153,18 @@ public interface IAnarchyChessApi
     [Post("/api/quests/claim")]
     Task<IApiResponse<QuestDto>> CollectQuestRewardAsync();
 
-    [Get("/api/quests/points/{userId}")]
-    Task<IApiResponse<int>> GetUserQuestPointsAsync(string userId);
-
-    [Get("/api/quests/leaderboard")]
-    Task<IApiResponse<PagedResult<QuestPointsDto>>> GetQuestLeaderboardAsync(
+    [Get("/api/quests/leaderboard/total")]
+    Task<IApiResponse<PagedResult<QuestPointsDto>>> GetTotalQuestLeaderboardAsync(
         [Query] PaginationQuery pagination
     );
 
-    [Get("/api/quests/leaderboard/me")]
-    Task<IApiResponse<int>> GetMyQuestRankingAsync();
+    [Get("/api/quests/leaderboard/monthly")]
+    Task<IApiResponse<PagedResult<QuestPointsDto>>> GetMonthlyQuestLeaderboardAsync(
+        [Query] PaginationQuery pagination
+    );
+
+    [Get("/api/quests/me")]
+    Task<IApiResponse<MyQuestRankingDto>> GetMyQuestRankingAsync();
     #endregion
 
     #region Challenges
