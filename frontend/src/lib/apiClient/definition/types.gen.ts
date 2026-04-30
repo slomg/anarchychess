@@ -953,6 +953,22 @@ export type CollectQuestRewardResponses = {
 export type CollectQuestRewardResponse =
     CollectQuestRewardResponses[keyof CollectQuestRewardResponses];
 
+export type GetTotalUserQuestPointsData = {
+    body?: never;
+    path: {
+        userId: string;
+    };
+    query?: never;
+    url: "/api/Quests/points/{userId}";
+};
+
+export type GetTotalUserQuestPointsResponses = {
+    200: number;
+};
+
+export type GetTotalUserQuestPointsResponse =
+    GetTotalUserQuestPointsResponses[keyof GetTotalUserQuestPointsResponses];
+
 export type GetTotalQuestLeaderboardData = {
     body?: never;
     path?: never;

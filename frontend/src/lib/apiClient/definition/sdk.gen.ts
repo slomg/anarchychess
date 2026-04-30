@@ -99,6 +99,8 @@ import type {
     GetStarsReceivedCountResponses,
     GetTotalQuestLeaderboardData,
     GetTotalQuestLeaderboardResponses,
+    GetTotalUserQuestPointsData,
+    GetTotalUserQuestPointsResponses,
     GetUserByIdData,
     GetUserByIdErrors,
     GetUserByIdResponses,
@@ -283,6 +285,15 @@ export const collectQuestReward = <ThrowOnError extends boolean = false>(
         CollectQuestRewardErrors,
         ThrowOnError
     >({ url: "/api/Quests/claim", ...options });
+
+export const getTotalUserQuestPoints = <ThrowOnError extends boolean = false>(
+    options: Options<GetTotalUserQuestPointsData, ThrowOnError>,
+) =>
+    (options.client ?? client).get<
+        GetTotalUserQuestPointsResponses,
+        unknown,
+        ThrowOnError
+    >({ url: "/api/Quests/points/{userId}", ...options });
 
 export const getTotalQuestLeaderboard = <ThrowOnError extends boolean = false>(
     options?: Options<GetTotalQuestLeaderboardData, ThrowOnError>,
