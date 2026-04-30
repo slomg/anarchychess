@@ -1,7 +1,8 @@
-﻿using AnarchyChess.Api.Game.Grains;
+﻿using AnarchyChess.Api.Bots.Grains;
+using AnarchyChess.Api.Bots.Models;
+using AnarchyChess.Api.Game.Grains;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.GameLogic.Models;
-using AnarchyChess.EngineShared;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Profile.Entities;
 using AnarchyChess.Api.QuestLogic;
@@ -15,6 +16,7 @@ using AnarchyChess.Api.Quests.Services;
 using AnarchyChess.Api.Streaming;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AnarchyChess.Api.TestInfrastructure.NSubtituteExtenstion;
+using AnarchyChess.EngineShared;
 using AwesomeAssertions;
 using NSubstitute;
 using Orleans.Providers.Streams.Common;
@@ -30,13 +32,19 @@ public class QuestGrainTests : BaseGrainTest
     private readonly IRandomQuestProvider _randomQuestProviderMock =
         Substitute.For<IRandomQuestProvider>();
     private readonly IGameGrain _gameGrainMock = Substitute.For<IGameGrain>();
+    private readonly IBotGrain _botGrainMock = Substitute.For<IBotGrain>();
 
     private readonly TestStorageStats _stateStats;
 
     private readonly GameToken _testGameToken = "test game token";
-    private readonly AuthedUser _testUser;
+    private readonly AuthedUser _testUser = new AuthedUserFaker().Generate();
+
     private readonly GameState _testGameState;
     private readonly List<Move> _testMoves = [.. new MoveFaker().Generate(5)];
+
+    private readonly BotGameState _testBotGameState;
+    private readonly List<Move> _testBotMoves = [.. new MoveFaker().Generate(5)];
+
     private DateTimeOffset _fakeNow = DateTimeOffset.UtcNow;
     private QuestInstance? _lastInstance;
 
@@ -44,15 +52,27 @@ public class QuestGrainTests : BaseGrainTest
     {
         _timeProviderMock.GetUtcNow().Returns(_fakeNow);
 
-        _testUser = new AuthedUserFaker().Generate();
         _testGameState = new GameStateFaker().RuleFor(
             x => x.WhitePlayer,
             new GamePlayerFaker(GameColor.White).RuleFor(x => x.UserId, _testUser.Id).Generate()
         );
         _gameGrainMock.GetStateAsync().Returns(_testGameState);
         _gameGrainMock.GetMovesAsync().Returns(_testMoves);
+
+        _testBotGameState = new BotGameStateFaker()
+            .RuleFor(x => x.BotColor, GameColor.White)
+            .RuleFor(
+                x => x.BlackPlayer,
+                new GamePlayerFaker(GameColor.Black).RuleFor(x => x.UserId, _testUser.Id).Generate()
+            );
+        _botGrainMock.GetStateAsync().Returns(_testBotGameState);
+        _botGrainMock.GetMovesAsync().Returns(_testBotMoves);
+
         Silo.AddProbe(id =>
             id.ToString() == _testGameToken ? _gameGrainMock : Substitute.For<IGameGrain>()
+        );
+        Silo.AddProbe(id =>
+            id.ToString() == _testGameToken ? _botGrainMock : Substitute.For<IBotGrain>()
         );
 
         Silo.ServiceProvider.AddService(_randomQuestProviderMock);
@@ -66,6 +86,13 @@ public class QuestGrainTests : BaseGrainTest
         Silo.AddStreamProbe<GameEndedEvent>(
             _testUser.Id,
             streamNamespace: nameof(GameEndedEvent),
+            StreamingConstants.StreamProvider
+        );
+
+    private TestStream<BotGameEndedEvent> ProbeBotGameEndedStream() =>
+        Silo.AddStreamProbe<BotGameEndedEvent>(
+            _testUser.Id,
+            streamNamespace: nameof(BotGameEndedEvent),
             StreamingConstants.StreamProvider
         );
 
@@ -267,10 +294,43 @@ public class QuestGrainTests : BaseGrainTest
         );
 
         GameQuestSnapshot expectedSnapshot = new(
-            GameColor.White,
+            PlayerColor: GameColor.White,
             _testMoves,
             result,
-            _testGameState
+            Pool: _testGameState.Pool,
+            Clocks: _testGameState.Clocks
+        );
+        conditionMock
+            .Received(1)
+            .Evaluate(
+                ArgEx.FluentAssert<GameQuestSnapshot>(x =>
+                    x.Should().BeEquivalentTo(expectedSnapshot)
+                )
+            );
+    }
+
+    [Fact]
+    public async Task BotGameEndedEvent_creates_correct_GameQuestSnapshot()
+    {
+        var conditionMock = Substitute.For<IQuestCondition>();
+        conditionMock.Evaluate(Arg.Any<GameQuestSnapshot>()).Returns(true);
+        SetupQuestVariant([conditionMock]);
+
+        var botGameOverStream = ProbeBotGameEndedStream();
+        await CreateGrainAsync();
+
+        var result = new GameResultDataFaker(GameResult.WhiteWin).Generate();
+        await botGameOverStream.OnNextAsync(
+            new BotGameEndedEvent(_testGameToken, result),
+            new EventSequenceToken()
+        );
+
+        GameQuestSnapshot expectedSnapshot = new(
+            PlayerColor: GameColor.Black,
+            _testBotMoves,
+            result,
+            Pool: null,
+            Clocks: null
         );
         conditionMock
             .Received(1)

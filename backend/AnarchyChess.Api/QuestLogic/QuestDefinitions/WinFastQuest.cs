@@ -18,6 +18,7 @@ public class WinFastQuest : IQuestDefinition
                     [
                         new WinCondition(),
                         new GreaterThanEqualCondition(new MoveCountMetric(), greaterThanEqual: 15),
+                        new HasClockCondition(),
                         new TimeControlCondition(
                             new TimeControlSettings(BaseSeconds: 300, IncrementSeconds: 0)
                         ),

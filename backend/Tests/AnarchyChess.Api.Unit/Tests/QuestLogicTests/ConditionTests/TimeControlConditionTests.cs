@@ -16,10 +16,7 @@ public class TimeControlConditionTests
     )
     {
         var poolKey = new PoolKeyFaker().RuleFor(x => x.TimeControl, actualTimeControl);
-        var gameState = new GameStateFaker().RuleFor(x => x.Pool, poolKey);
-        var snapshot = new GameQuestSnapshotFaker()
-            .RuleFor(x => x.FinalGameState, gameState)
-            .Generate();
+        var snapshot = new GameQuestSnapshotFaker().RuleFor(x => x.Pool, poolKey).Generate();
         new TimeControlCondition(timeControl).Evaluate(snapshot).Should().Be(expected);
     }
 

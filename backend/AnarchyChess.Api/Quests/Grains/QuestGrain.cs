@@ -1,6 +1,11 @@
-﻿using AnarchyChess.Api.Game.Grains;
+﻿using AnarchyChess.Api.Bots.Grains;
+using AnarchyChess.Api.Bots.Models;
+using AnarchyChess.Api.Game.Grains;
 using AnarchyChess.Api.Game.Models;
+using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
+using AnarchyChess.Api.Matchmaking.Models;
+using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.QuestLogic;
 using AnarchyChess.Api.QuestLogic.Models;
 using AnarchyChess.Api.Quests.DTOs;
@@ -73,22 +78,34 @@ public class QuestGrainStorage
     }
 }
 
+[GenerateSerializer]
+[Alias("AnarchyChess.Api.Quests.Grains.QuestEndStreamState")]
+public class QuestEndStreamState : StreamState;
+
+[GenerateSerializer]
+[Alias("AnarchyChess.Api.Quests.Grains.QuestBotEndStreamState")]
+public class QuestBotEndStreamState : StreamState;
+
 [ImplicitStreamSubscription(nameof(GameEndedEvent))]
 public class QuestGrain(
     ILogger<QuestGrain> logger,
     [PersistentState(QuestGrain.StateName)] IPersistentState<QuestGrainStorage> state,
     [PersistentState(QuestGrain.StateName + "GameEndStream")]
-        IPersistentState<StreamState> gameEndStreamState,
+        IPersistentState<QuestEndStreamState> gameEndStreamState,
+    [PersistentState(QuestGrain.StateName + "BotGameEndStream")]
+        IPersistentState<QuestBotEndStreamState> botGameEndStreamState,
     IQuestService questService,
     IRandomQuestProvider questProvider,
     TimeProvider timeProvider
-) : Grain, IQuestGrain, IAsyncObserver<GameEndedEvent>
+) : Grain, IQuestGrain, IAsyncObserver<GameEndedEvent>, IAsyncObserver<BotGameEndedEvent>
 {
     public const string StateName = "quest";
 
     private readonly ILogger<QuestGrain> _logger = logger;
     private readonly IPersistentState<QuestGrainStorage> _state = state;
-    private readonly IPersistentState<StreamState> _gameEndStreamState = gameEndStreamState;
+    private readonly IPersistentState<QuestEndStreamState> _gameEndStreamState = gameEndStreamState;
+    private readonly IPersistentState<QuestBotEndStreamState> _botGameEndStreamState =
+        botGameEndStreamState;
     private readonly IQuestService _questService = questService;
     private readonly IRandomQuestProvider _questProvider = questProvider;
     private readonly TimeProvider _timeProvider = timeProvider;
@@ -103,7 +120,9 @@ public class QuestGrain(
     public async Task<ErrorOr<QuestDto>> ReplaceQuestAsync(CancellationToken token = default)
     {
         if (!_state.State.CanReplace)
+        {
             return QuestErrors.CanotReplace;
+        }
 
         var quest = SelectNewQuest();
         _state.State.CanReplace = false;
@@ -115,11 +134,15 @@ public class QuestGrain(
     public async Task<ErrorOr<int>> CollectRewardAsync(CancellationToken token = default)
     {
         if (_state.State.RewardCollected)
+        {
             return QuestErrors.NoRewardToCollect;
+        }
 
         var quest = GetOrSelectQuest();
         if (!quest.IsCompleted)
+        {
             return QuestErrors.NoRewardToCollect;
+        }
 
         var userId = this.GetPrimaryKeyString();
         await _questService.IncrementQuestPointsAsync(userId, (int)quest.Difficulty, token);
@@ -135,35 +158,88 @@ public class QuestGrain(
         await base.OnActivateAsync(cancellationToken);
 
         var streamProvider = this.GetStreamProvider(StreamingConstants.StreamProvider);
-        var stream = streamProvider.GetStream<GameEndedEvent>(
+        var gameEndStream = streamProvider.GetStream<GameEndedEvent>(
             nameof(GameEndedEvent),
             this.GetPrimaryKeyString()
         );
-        await stream.SubscribeAsync(this, _gameEndStreamState.State.SequenceToken);
+        await gameEndStream.SubscribeAsync(this, _gameEndStreamState.State.SequenceToken);
+
+        var botGameEndStream = streamProvider.GetStream<BotGameEndedEvent>(
+            nameof(BotGameEndedEvent),
+            this.GetPrimaryKeyString()
+        );
+        await botGameEndStream.SubscribeAsync(this, _botGameEndStreamState.State.SequenceToken);
     }
 
     public async Task OnNextAsync(GameEndedEvent @event, StreamSequenceToken? token = null)
     {
         if (!_gameEndStreamState.State.TryUpdateSequenceToken(token))
+        {
             return;
+        }
         await _gameEndStreamState.WriteStateAsync();
 
-        var quest = GetOrSelectQuest();
-        if (quest.IsCompleted)
-            return;
-
         if (@event.EndStatus.Result is GameResult.Aborted)
+        {
             return;
+        }
 
-        var snapshot = await GetQuestSnapshotFromGameEnd(@event);
-        if (snapshot is null)
+        var grain = GrainFactory.GetGrain<IGameGrain>(@event.GameToken);
+        var stateResult = await grain.GetStateAsync();
+        if (stateResult.IsError)
+        {
+            _logger.LogWarning(
+                "Could not find state for quest on bot game {GameToken}, {Errors}",
+                @event.GameToken,
+                stateResult.Errors
+            );
             return;
+        }
+        var state = stateResult.Value;
 
-        quest.ApplySnapshot(snapshot);
-        if (quest.IsCompleted)
-            _state.State.CompleteQuest();
+        var snapshot = BuildQuestSnapshot(
+            @event.GameToken,
+            whitePlayer: state.WhitePlayer,
+            blackPlayer: state.BlackPlayer,
+            movesResult: await grain.GetMovesAsync(),
+            resultData: @event.EndStatus,
+            pool: state.Pool,
+            clocks: state.Clocks
+        );
+        await ReceiveQuestSnapshotAsync(snapshot);
+    }
 
-        await _state.WriteStateAsync();
+    public async Task OnNextAsync(BotGameEndedEvent @event, StreamSequenceToken? token = null)
+    {
+        if (!_botGameEndStreamState.State.TryUpdateSequenceToken(token))
+        {
+            return;
+        }
+        await _botGameEndStreamState.WriteStateAsync();
+
+        var grain = GrainFactory.GetGrain<IBotGrain>(@event.GameToken);
+        var stateResult = await grain.GetStateAsync();
+        if (stateResult.IsError)
+        {
+            _logger.LogWarning(
+                "Could not find state for quest on bot game {GameToken}, {Errors}",
+                @event.GameToken,
+                stateResult.Errors
+            );
+            return;
+        }
+        var state = stateResult.Value;
+
+        var snapshot = BuildQuestSnapshot(
+            @event.GameToken,
+            whitePlayer: state.WhitePlayer,
+            blackPlayer: state.BlackPlayer,
+            movesResult: await grain.GetMovesAsync(),
+            resultData: @event.EndStatus,
+            pool: null,
+            clocks: null
+        );
+        await ReceiveQuestSnapshotAsync(snapshot);
     }
 
     public Task OnErrorAsync(Exception ex)
@@ -176,7 +252,9 @@ public class QuestGrain(
     {
         var today = DateOnly.FromDateTime(_timeProvider.GetUtcNow().DateTime);
         if (_state.State.Quest is not null && _state.State.Quest.CreationDate == today)
+        {
             return _state.State.Quest;
+        }
 
         return SelectNewQuest();
     }
@@ -200,39 +278,55 @@ public class QuestGrain(
             Streak: _state.State.Streak
         );
 
-    private async Task<GameQuestSnapshot?> GetQuestSnapshotFromGameEnd(GameEndedEvent @event)
+    private async Task ReceiveQuestSnapshotAsync(GameQuestSnapshot? snapshot)
     {
-        var game = GrainFactory.GetGrain<IGameGrain>(@event.GameToken);
-
-        var gameStateResult = await game.GetStateAsync();
-        if (gameStateResult.IsError)
+        if (snapshot is null)
         {
-            _logger.LogWarning(
-                "Could not find state for quest on game {GameToken}, {Errors}",
-                @event.GameToken,
-                gameStateResult.Errors
-            );
-            return null;
+            return;
         }
-        var gameState = gameStateResult.Value;
 
-        PlayerRoster players = new(gameState.WhitePlayer, gameState.BlackPlayer);
-        if (!players.TryGetPlayerById(this.GetPrimaryKeyString(), out var player))
+        var quest = GetOrSelectQuest();
+        if (quest.IsCompleted)
+        {
+            return;
+        }
+
+        quest.ApplySnapshot(snapshot);
+        if (quest.IsCompleted)
+        {
+            _state.State.CompleteQuest();
+        }
+
+        await _state.WriteStateAsync();
+    }
+
+    private GameQuestSnapshot? BuildQuestSnapshot(
+        GameToken gameToken,
+        GamePlayer whitePlayer,
+        GamePlayer blackPlayer,
+        ErrorOr<IReadOnlyList<Move>> movesResult,
+        GameResultData resultData,
+        PoolKey? pool,
+        ClockSnapshot? clocks
+    )
+    {
+        UserId userId = this.GetPrimaryKeyString();
+        if (userId != whitePlayer.UserId && userId != blackPlayer.UserId)
         {
             _logger.LogWarning(
                 "Could not find player {UserId} for quest on game {GameToken}",
                 this.GetPrimaryKeyString(),
-                @event.GameToken
+                gameToken
             );
             return null;
         }
+        GamePlayer player = userId == whitePlayer.UserId ? whitePlayer : blackPlayer;
 
-        var movesResult = await game.GetMovesAsync();
         if (movesResult.IsError)
         {
             _logger.LogWarning(
                 "Could not find moves for quest on game {GameToken}, {Errors}",
-                @event.GameToken,
+                gameToken,
                 movesResult.Errors
             );
             return null;
@@ -241,8 +335,9 @@ public class QuestGrain(
         return new(
             PlayerColor: player.Color,
             MoveHistory: movesResult.Value,
-            ResultData: @event.EndStatus,
-            FinalGameState: gameState
+            ResultData: resultData,
+            Pool: pool,
+            Clocks: clocks
         );
     }
 }
