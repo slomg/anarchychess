@@ -30,6 +30,7 @@ public interface IQuestService
         CancellationToken token = default
     );
     Task ResetMonthlyPointsAsync(CancellationToken token = default);
+    Task<int> GetTotalQuestPointsAsync(UserId userId, CancellationToken token = default);
 }
 
 public class QuestService(
@@ -86,6 +87,15 @@ public class QuestService(
             MonthlyQuestPoints: questPoints?.MonthlyPoints ?? 0,
             MonthlyRank: monthlyRank
         );
+    }
+
+    public async Task<int> GetTotalQuestPointsAsync(
+        UserId userId,
+        CancellationToken token = default
+    )
+    {
+        var questPoints = await _questRepository.GetUserPointsAsync(userId, token);
+        return questPoints?.TotalPoints ?? 0;
     }
 
     public async Task<PagedResult<QuestPointsDto>> GetPaginatedTotalLeaderboardAsync(

@@ -123,6 +123,30 @@ public class QuestServiceTests : BaseIntegrationTest
     }
 
     [Fact]
+    public async Task GetQuestPointsAsync_returns_points_when_found()
+    {
+        var existing = new UserQuestPointsFaker().Generate();
+        await DbContext.AddAsync(existing, CT);
+        await DbContext.SaveChangesAsync(CT);
+
+        var result = await _questService.GetTotalQuestPointsAsync(existing.UserId, CT);
+
+        result.Should().Be(existing.TotalPoints);
+    }
+
+    [Fact]
+    public async Task GetQuestPointsAsync_returns_zero_when_no_points()
+    {
+        var existing = new UserQuestPointsFaker().Generate();
+        await DbContext.AddAsync(existing, CT);
+        await DbContext.SaveChangesAsync(CT);
+
+        var result = await _questService.GetTotalQuestPointsAsync(existing.UserId, CT);
+
+        result.Should().Be(0);
+    }
+
+    [Fact]
     public async Task IncrementQuestPointsAsync_returns_error_when_user_is_guest()
     {
         UserId guestId = UserId.Guest();

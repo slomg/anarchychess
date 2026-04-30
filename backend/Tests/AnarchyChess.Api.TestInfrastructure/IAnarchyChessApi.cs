@@ -153,6 +153,9 @@ public interface IAnarchyChessApi
     [Post("/api/quests/claim")]
     Task<IApiResponse<QuestDto>> CollectQuestRewardAsync();
 
+    [Get("/api/quests/points/{userId}")]
+    Task<IApiResponse<int>> GetTotalUserQuestPoints(string userId);
+
     [Get("/api/quests/leaderboard/total")]
     Task<IApiResponse<PagedResult<QuestPointsDto>>> GetTotalQuestLeaderboardAsync(
         [Query] PaginationQuery pagination

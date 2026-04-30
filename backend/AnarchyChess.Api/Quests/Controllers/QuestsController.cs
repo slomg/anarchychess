@@ -73,6 +73,17 @@ public class QuestsController(
         return replaceResult.Match(value => Ok(value), errors => errors.ToActionResult());
     }
 
+    [HttpGet("points/{userId}")]
+    [ProducesResponseType<int>(StatusCodes.Status200OK)]
+    public async Task<ActionResult<int>> GetTotalUserQuestPoints(
+        string userId,
+        CancellationToken token = default
+    )
+    {
+        var points = await _questService.GetTotalQuestPointsAsync(userId, token);
+        return Ok(points);
+    }
+
     [HttpGet("leaderboard/total")]
     [ProducesResponseType<PagedResult<QuestPointsDto>>(StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResult<QuestPointsDto>>> GetTotalQuestLeaderboard(

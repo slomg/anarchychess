@@ -89,6 +89,21 @@ public class QuestsControllerTests(AnarchyChessWebApplicationFactory factory)
     }
 
     [Fact]
+    public async Task GetUserQuestPoints_returns_correct_points()
+    {
+        var questPoints = new UserQuestPointsFaker().Generate();
+        var otherQuestPoints = new UserQuestPointsFaker().Generate();
+        await DbContext.AddRangeAsync(questPoints, otherQuestPoints);
+
+        await DbContext.SaveChangesAsync(CT);
+
+        var response = await ApiClient.Api.GetTotalUserQuestPoints(questPoints.UserId);
+
+        response.IsSuccessful.Should().BeTrue();
+        response.Content.Should().Be(questPoints.TotalPoints);
+    }
+
+    [Fact]
     public async Task GetMonthlyQuestLeaderboard_returns_users_ordered_by_monthly_points()
     {
         List<UserQuestPoints> questPoints =
