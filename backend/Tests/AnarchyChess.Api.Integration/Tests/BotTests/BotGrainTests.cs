@@ -13,6 +13,7 @@ using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Shared.Models;
 using AnarchyChess.Api.Shared.Services;
+using AnarchyChess.Api.Streaming;
 using AnarchyChess.Api.TestInfrastructure;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AnarchyChess.Api.TestInfrastructure.NSubtituteExtenstion;
@@ -24,6 +25,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
 using Orleans.TestKit;
+using Orleans.TestKit.Streams;
 
 namespace AnarchyChess.Api.Integration.Tests.BotTests;
 
@@ -63,6 +65,8 @@ public class BotGrainTests : BaseOrleansIntegrationTest
 
     private readonly GamePlayer _whitePlayer = new GamePlayerFaker(GameColor.White).Generate();
     private readonly GamePlayer _blackPlayer = new GamePlayerFaker(GameColor.Black).Generate();
+    private readonly TestStream<BotGameEndedEvent> _whiteGameEndedStream;
+    private readonly TestStream<BotGameEndedEvent> _blackGameEndedStream;
 
     private readonly GamePlayer _player;
 
@@ -103,6 +107,17 @@ public class BotGrainTests : BaseOrleansIntegrationTest
         Silo.ServiceProvider.AddService(_notifierMock);
 
         _state = Silo.StorageManager.GetStorage<BotGrainState>(BotGrain.StateName).State;
+
+        _whiteGameEndedStream = Silo.AddStreamProbe<BotGameEndedEvent>(
+            _whitePlayer.UserId,
+            streamNamespace: nameof(BotGameEndedEvent),
+            StreamingConstants.StreamProvider
+        );
+        _blackGameEndedStream = Silo.AddStreamProbe<BotGameEndedEvent>(
+            _blackPlayer.UserId,
+            streamNamespace: nameof(BotGameEndedEvent),
+            StreamingConstants.StreamProvider
+        );
     }
 
     [Fact]
@@ -475,6 +490,16 @@ public class BotGrainTests : BaseOrleansIntegrationTest
         var inDb = await ApiTestBase.DbContext.GameArchives.FirstAsync(ApiTestBase.CT);
         inDb.GameToken.Should().Be(_gameToken);
         inDb.IsBotGame.Should().BeTrue();
+
+        var stream =
+            gameState.BotColor is GameColor.White ? _blackGameEndedStream : _whiteGameEndedStream;
+        stream.VerifySend(e =>
+            e.GameToken == _gameToken
+            && e.EndStatus.Result == expectedEndStatus.Result
+            && e.EndStatus.ResultDescription == expectedEndStatus.ResultDescription
+            && e.EndStatus.WhiteRatingChange is null
+            && e.EndStatus.BlackRatingChange is null
+        );
     }
 
     private async Task WaitForBotMoveAsync()

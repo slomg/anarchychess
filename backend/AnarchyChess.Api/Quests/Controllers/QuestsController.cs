@@ -75,34 +75,58 @@ public class QuestsController(
 
     [HttpGet("points/{userId}")]
     [ProducesResponseType<int>(StatusCodes.Status200OK)]
-    public async Task<ActionResult<int>> GetUserQuestPoints(
+    public async Task<ActionResult<int>> GetTotalUserQuestPoints(
         string userId,
         CancellationToken token = default
     )
     {
-        var points = await _questService.GetQuestPointsAsync(userId, token);
+        var points = await _questService.GetTotalQuestPointsAsync(userId, token);
         return Ok(points);
     }
 
-    [HttpGet("leaderboard")]
+    [HttpGet("leaderboard/total")]
     [ProducesResponseType<PagedResult<QuestPointsDto>>(StatusCodes.Status200OK)]
-    public async Task<ActionResult<PagedResult<QuestPointsDto>>> GetQuestLeaderboard(
+    public async Task<ActionResult<PagedResult<QuestPointsDto>>> GetTotalQuestLeaderboard(
         [FromQuery] PaginationQuery pagination,
         CancellationToken token = default
     )
     {
         var validationResult = _paginationValidator.Validate(pagination);
         if (!validationResult.IsValid)
+        {
             return validationResult.Errors.ToErrorList().ToActionResult();
+        }
 
-        var leaderboard = await _questService.GetPaginatedLeaderboardAsync(pagination, token);
+        var leaderboard = await _questService.GetPaginatedTotalLeaderboardAsync(pagination, token);
         return Ok(leaderboard);
     }
 
-    [HttpGet("leaderboard/me")]
-    [ProducesResponseType<int>(StatusCodes.Status200OK)]
+    [HttpGet("leaderboard/monthly")]
+    [ProducesResponseType<PagedResult<QuestPointsDto>>(StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResult<QuestPointsDto>>> GetMonthlyQuestLeaderboard(
+        [FromQuery] PaginationQuery pagination,
+        CancellationToken token = default
+    )
+    {
+        var validationResult = _paginationValidator.Validate(pagination);
+        if (!validationResult.IsValid)
+        {
+            return validationResult.Errors.ToErrorList().ToActionResult();
+        }
+
+        var leaderboard = await _questService.GetPaginatedMonthlyLeaderboardAsync(
+            pagination,
+            token
+        );
+        return Ok(leaderboard);
+    }
+
+    [HttpGet("me")]
+    [ProducesResponseType<QuestRankingDto>(StatusCodes.Status200OK)]
     [Authorize]
-    public async Task<ActionResult<int>> GetMyQuestRanking(CancellationToken token = default)
+    public async Task<ActionResult<QuestRankingDto>> GetMyQuestRanking(
+        CancellationToken token = default
+    )
     {
         var userIdResult = _authService.GetUserId(User);
         if (userIdResult.IsError)

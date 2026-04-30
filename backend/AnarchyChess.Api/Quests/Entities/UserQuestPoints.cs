@@ -13,5 +13,7 @@ public class UserQuestPoints
     [ForeignKey(nameof(UserId))]
     public required AuthedUser User { get; set; }
 
-    public int Points { get; set; }
+    public int TotalPoints { get; set; }
+
+    public int MonthlyPoints { get; set; }
 }

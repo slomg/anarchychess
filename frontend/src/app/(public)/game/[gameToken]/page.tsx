@@ -19,10 +19,10 @@ export default async function GamePage({
                     dataOrThrow(
                         getGame({
                             path: { gameToken },
-                            auth: () => accessToken,
+                            auth: accessToken,
                         }),
                     ),
-                    dataOrThrow(getPreferences({ auth: () => accessToken })),
+                    dataOrThrow(getPreferences({ auth: accessToken })),
                 ]);
 
                 return (

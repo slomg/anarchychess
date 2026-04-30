@@ -18,13 +18,13 @@ import { PopupRef } from "@/components/Popup";
 
 const Profile = ({
     profile,
-    questPoints,
+    totalQuestPoints,
     initialStarCount,
     initialHasStarred,
     initialHasBlocked,
 }: {
     profile: PublicUser;
-    questPoints: number;
+    totalQuestPoints: number;
     initialStarCount: number;
     initialHasStarred: boolean;
     initialHasBlocked: boolean;
@@ -54,12 +54,16 @@ const Profile = ({
             />
 
             <section
-                className="flex h-full min-w-0 flex-1 flex-col items-center justify-between gap-3
-                    sm:items-start"
+                className="flex h-full min-w-0 flex-1 flex-col items-center
+                    justify-between gap-3 sm:items-start"
             >
-                <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div
+                    className="flex w-full flex-col gap-2 sm:flex-row
+                        sm:items-center sm:justify-between"
+                >
                     <span
-                        className="flex flex-1 items-center justify-center gap-3 overflow-hidden sm:justify-start"
+                        className="flex flex-1 items-center justify-center gap-3
+                            overflow-hidden sm:justify-start"
                         data-testid="username"
                     >
                         <span
@@ -97,7 +101,7 @@ const Profile = ({
                     </p>
                     <p>
                         <span data-testid="profileQuestPoints">
-                            {questPoints}
+                            {totalQuestPoints}
                         </span>{" "}
                         <span className="text-text/70">Quest Points</span>
                     </p>

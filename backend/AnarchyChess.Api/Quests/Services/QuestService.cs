@@ -15,18 +15,22 @@ namespace AnarchyChess.Api.Quests.Services;
 
 public interface IQuestService
 {
-    Task<PagedResult<QuestPointsDto>> GetPaginatedLeaderboardAsync(
+    Task<PagedResult<QuestPointsDto>> GetPaginatedMonthlyLeaderboardAsync(
         PaginationQuery pagination,
         CancellationToken token = default
     );
-    Task<int> GetQuestPointsAsync(UserId userId, CancellationToken token = default);
-    Task<int> GetRankingAsync(UserId userId, CancellationToken token = default);
+    Task<PagedResult<QuestPointsDto>> GetPaginatedTotalLeaderboardAsync(
+        PaginationQuery pagination,
+        CancellationToken token = default
+    );
+    Task<QuestRankingDto> GetRankingAsync(UserId userId, CancellationToken token = default);
     Task<ErrorOr<Updated>> IncrementQuestPointsAsync(
         UserId userId,
         int points,
         CancellationToken token = default
     );
-    Task ResetAllQuestPointsAsync(CancellationToken token = default);
+    Task ResetMonthlyPointsAsync(CancellationToken token = default);
+    Task<int> GetTotalQuestPointsAsync(UserId userId, CancellationToken token = default);
 }
 
 public class QuestService(
@@ -39,18 +43,22 @@ public class QuestService(
     private readonly UserManager<AuthedUser> _userManager = userManager;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
-    public async Task<PagedResult<QuestPointsDto>> GetPaginatedLeaderboardAsync(
+    public async Task<PagedResult<QuestPointsDto>> GetPaginatedMonthlyLeaderboardAsync(
         PaginationQuery pagination,
         CancellationToken token = default
     )
     {
-        var questPoints = await _questRepository.GetPaginatedLeaderboardAsync(pagination, token);
-        var totalCount = await _questRepository.GetTotalCountAsync(token);
+        var questPoints = await _questRepository.GetPaginatedMonthlyLeaderboardAsync(
+            pagination,
+            token
+        );
+        var totalCount = await _questRepository.GetMonthlyCountAsync(token);
 
         return new(
             Items: questPoints.Select(questPoint => new QuestPointsDto(
                 new MinimalProfile(questPoint.User),
-                questPoint.Points
+                MonthlyQuestPoints: questPoint.MonthlyPoints,
+                TotalQuestPoints: questPoint.TotalPoints
             )),
             TotalCount: totalCount,
             Page: pagination.Page,
@@ -58,17 +66,59 @@ public class QuestService(
         );
     }
 
-    public async Task<int> GetRankingAsync(UserId userId, CancellationToken token = default)
+    public async Task<QuestRankingDto> GetRankingAsync(
+        UserId userId,
+        CancellationToken token = default
+    )
     {
         var questPoints = await _questRepository.GetUserPointsAsync(userId, token);
-        var position = await _questRepository.GetRankingAsync(questPoints?.Points ?? 0, token);
-        return position;
+        int totalRank = await _questRepository.GetTotalRankingAsync(
+            questPoints?.TotalPoints ?? 0,
+            token
+        );
+        int monthlyRank = await _questRepository.GetMonthlyRankingAsync(
+            questPoints?.MonthlyPoints ?? 0,
+            token
+        );
+
+        return new(
+            TotalQuestPoints: questPoints?.TotalPoints ?? 0,
+            TotalRank: totalRank,
+            MonthlyQuestPoints: questPoints?.MonthlyPoints ?? 0,
+            MonthlyRank: monthlyRank
+        );
     }
 
-    public async Task<int> GetQuestPointsAsync(UserId userId, CancellationToken token = default)
+    public async Task<int> GetTotalQuestPointsAsync(
+        UserId userId,
+        CancellationToken token = default
+    )
     {
         var questPoints = await _questRepository.GetUserPointsAsync(userId, token);
-        return questPoints?.Points ?? 0;
+        return questPoints?.TotalPoints ?? 0;
+    }
+
+    public async Task<PagedResult<QuestPointsDto>> GetPaginatedTotalLeaderboardAsync(
+        PaginationQuery pagination,
+        CancellationToken token = default
+    )
+    {
+        var questPoints = await _questRepository.GetPaginatedTotalLeaderboardAsync(
+            pagination,
+            token
+        );
+        var totalCount = await _questRepository.GetTotalCountAsync(token);
+
+        return new(
+            Items: questPoints.Select(questPoint => new QuestPointsDto(
+                new MinimalProfile(questPoint.User),
+                MonthlyQuestPoints: questPoint.MonthlyPoints,
+                TotalQuestPoints: questPoint.TotalPoints
+            )),
+            TotalCount: totalCount,
+            Page: pagination.Page,
+            PageSize: pagination.PageSize
+        );
     }
 
     public async Task<ErrorOr<Updated>> IncrementQuestPointsAsync(
@@ -85,7 +135,8 @@ public class QuestService(
         var userQuestPoints = await _questRepository.GetUserPointsAsync(userId, token);
         if (userQuestPoints is not null)
         {
-            userQuestPoints.Points += incrementBy;
+            userQuestPoints.MonthlyPoints += incrementBy;
+            userQuestPoints.TotalPoints += incrementBy;
             await _unitOfWork.CompleteAsync(token);
             return Result.Updated;
         }
@@ -101,7 +152,8 @@ public class QuestService(
             {
                 UserId = user.Id,
                 User = user,
-                Points = incrementBy,
+                MonthlyPoints = incrementBy,
+                TotalPoints = incrementBy,
             },
             token
         );
@@ -109,9 +161,9 @@ public class QuestService(
         return Result.Updated;
     }
 
-    public async Task ResetAllQuestPointsAsync(CancellationToken token = default)
+    public async Task ResetMonthlyPointsAsync(CancellationToken token = default)
     {
-        _questRepository.DeleteAll();
+        await _questRepository.ResetMonthlyAsync(token);
         await _unitOfWork.CompleteAsync(token);
     }
 }

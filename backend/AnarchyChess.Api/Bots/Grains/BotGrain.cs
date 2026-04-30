@@ -15,9 +15,11 @@ using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Shared.Models;
 using AnarchyChess.Api.Shared.Services;
+using AnarchyChess.Api.Streaming;
 using AnarchyChess.EngineShared;
 using AnarchyChess.EngineShared.Extensions;
 using ErrorOr;
+using Orleans.Streams;
 
 namespace AnarchyChess.Api.Bots.Grains;
 
@@ -35,6 +37,9 @@ public interface IBotGrain : IGrainWithStringKey
 
     [Alias("GetStateAsync")]
     Task<ErrorOr<BotGameState>> GetStateAsync(CancellationToken token = default);
+
+    [Alias("GetMovesAsync")]
+    Task<ErrorOr<IReadOnlyList<Move>>> GetMovesAsync();
 
     [Alias("PlayMoveAsync")]
     Task<ErrorOr<Success>> PlayMoveAsync(
@@ -200,6 +205,13 @@ public class BotGrain : Grain, IBotGrain
             )
         );
     }
+
+    public Task<ErrorOr<IReadOnlyList<Move>>> GetMovesAsync() =>
+        Task.FromResult(
+            TryGetCurrentGame(out var game)
+                ? game.Core.Board.Moves.ToErrorOr()
+                : GameErrors.GameNotFound
+        );
 
     public async Task<ErrorOr<Success>> PlayMoveAsync(
         UserId userId,
@@ -376,6 +388,14 @@ public class BotGrain : Grain, IBotGrain
         {
             _logger.LogError(ex, "Failed to save bot game");
         }
+
+        var streamProvider = this.GetStreamProvider(StreamingConstants.StreamProvider);
+        await streamProvider
+            .GetStream<BotGameEndedEvent>(
+                nameof(BotGameEndedEvent),
+                game.Players.GetPlayerByColor(game.HumanColor).UserId
+            )
+            .OnNextAsync(new(GameToken: _gameToken, EndStatus: resultData));
 
         game.Result = resultData;
     }
