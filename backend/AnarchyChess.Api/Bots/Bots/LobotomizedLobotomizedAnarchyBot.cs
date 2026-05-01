@@ -44,7 +44,15 @@ public class LobotomizedLobotomizedAnarchyBot(IBotDecisionServiceFactory botDeci
             NonCentralPawnPenaltyInOpening: 1000,
             CastleBonus: 300,
             SamePiecePenalty: 70,
-            ThrowPenalty: 200
+            ThrowPenalty: 400,
+            //
+            FinalDecisionOrder:
+            [
+                BotMoveCategory.NonBlunder,
+                BotMoveCategory.MissableBlunder,
+                BotMoveCategory.Tactic,
+                BotMoveCategory.NonTactic,
+            ]
         )
     );
 

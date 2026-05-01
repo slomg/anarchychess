@@ -19,6 +19,15 @@ public readonly record struct CandidateBotMove(
     int PlayabilityEval
 );
 
+public enum BotMoveCategory
+{
+    NonBlunder,
+    MissableBlunder,
+    SimpleTactic,
+    Tactic,
+    NonTactic,
+}
+
 public record BotBehaviorProfile(
     int Depth,
     double OpeningTemperature,
@@ -43,7 +52,8 @@ public record BotBehaviorProfile(
     int NonCentralPawnPenaltyInOpening,
     int CastleBonus,
     int SamePiecePenalty,
-    int ThrowPenalty
+    int ThrowPenalty,
+    IReadOnlyList<BotMoveCategory> FinalDecisionOrder
 );
 
 public interface IBotDecisionService
@@ -88,6 +98,7 @@ public class BotDecisionService(
         CancellationToken token = default
     )
     {
+        _logger.LogInformation("LAST EVAL: {LastEval}", lastEval);
         var evaluationResult = await _botService.EvaluateAllMovesAsync(
             board,
             depth: _behaviorProfile.Depth,
@@ -189,30 +200,33 @@ public class BotDecisionService(
             return Softmax(missableBlunders, board, endgameFactor);
         }
 
-        if (nonBlunders.Count > 0)
+        Dictionary<BotMoveCategory, List<CandidateBotMove>> categoryMap = new()
         {
-            _logger.LogInformation("Playing non blunder");
-            return Softmax(nonBlunders, board, endgameFactor);
-        }
-        else if (missableBlunders.Count > 0)
+            [BotMoveCategory.NonBlunder] = nonBlunders,
+            [BotMoveCategory.MissableBlunder] = missableBlunders,
+            [BotMoveCategory.SimpleTactic] = SortTactics(tactics).simple,
+            [BotMoveCategory.Tactic] = tactics,
+            [BotMoveCategory.NonTactic] = nonTactics,
+        };
+
+        foreach (var category in _behaviorProfile.FinalDecisionOrder)
         {
-            _logger.LogInformation("Playing missable blunder because no non blunders");
-            return Softmax(missableBlunders, board, endgameFactor);
+            List<CandidateBotMove> categoryMoves = categoryMap[category];
+            if (categoryMoves.Count == 0)
+            {
+                continue;
+            }
+
+            _logger.LogInformation("Playing {Category} from final decision order", category);
+            return category switch
+            {
+                BotMoveCategory.Tactic => SoftmaxTactics(categoryMoves, board, endgameFactor),
+                _ => Softmax(categoryMoves, board, endgameFactor),
+            };
         }
-        else if (tactics.Count > 0)
-        {
-            _logger.LogInformation(
-                "Playing tactic because no non blunders and no missable blunders"
-            );
-            return SoftmaxTactics(tactics, board, endgameFactor);
-        }
-        else
-        {
-            _logger.LogInformation(
-                "Playing non tactic because no non blunder and no tactics and no missable blunders"
-            );
-            return Softmax(nonTactics, board, endgameFactor);
-        }
+
+        _logger.LogInformation("Shouldn't happen: softmax all moves");
+        return Softmax(moves, board, endgameFactor);
     }
 
     private CandidateBotMove ScoreMove(
