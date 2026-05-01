@@ -23,7 +23,7 @@ public class LobotomizedLobotomizedAnarchyBot(IBotDecisionServiceFactory botDeci
             MiddleGameTemperature: 80,
             EndGameTemperature: 50,
             //
-            TacticalThreshold: 20,
+            TacticalThreshold: 100,
             BlunderThreshold: -300,
             //
             BlunderChance: 0.3,
