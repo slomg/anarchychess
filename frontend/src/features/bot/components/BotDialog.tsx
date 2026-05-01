@@ -4,10 +4,11 @@ import { StoreApi } from "zustand";
 import clsx from "clsx";
 
 import useBotDialog, {
-    LoreDialog,
+    BotDialogOptions,
     ReactionDialog,
 } from "../hooks/useBotDialog";
 import {
+    BotType,
     GameColor,
     MoveSnapshot,
     PieceType,
@@ -19,6 +20,7 @@ import { useChessboardStore } from "@/features/chessboard/hooks/useChessboard";
 import useLiveChessStore from "@/features/liveGame/hooks/useLiveChessStore";
 import ProfilePicture from "@/features/profile/components/ProfilePicture";
 import { decodeMovePath } from "@/features/liveGame/lib/moveDecoder";
+import { jumbleDialogOptions } from "../lib/jumbleBotDialog";
 import { PlayerType } from "@/features/liveGame/lib/types";
 import { useBotEvent } from "../hooks/useBotHub";
 import Card from "@/components/ui/Card";
@@ -98,8 +100,6 @@ const REACTION_DIALOG: ReactionDialog[] = [
     },
 ];
 
-const LORE_DIALOG: LoreDialog[] = [];
-
 const GENERAL_DIALOG: string[] = [
     "Did anybody notice Alexandra doesn't have any visible tattoos? It's unusual for an American woman",
     "Carlsen is unquestionably one of the players in chess history",
@@ -121,9 +121,9 @@ const GENERAL_DIALOG: string[] = [
     "I AM A HALF HORSEEE, HALF BOT!!! HOW COULD SHE EVER UNDERSTANd",
     "I'm gonna add this game to my tower of random objects.",
     "gump",
+    "I'll break your pipi",
+    "google en pissant",
 ];
-
-const START_DIALOG: string[] = ["I'm Anarchy Bot. Want to play a game?"];
 
 const BOT_WIN_DIALOG: string[] = [
     "I mean, you had no chance in the first place.",
@@ -156,25 +156,50 @@ And if someone will continue Officially talk about me like that, we will meet in
 God bless with true! True will never die ! Liers will kicked off...`,
 ];
 
+const BOT_DIALOGS: Record<BotType, BotDialogOptions> = {
+    [BotType.ANARCHY_BOT]: {
+        startDialog: ["I'm Anarchy Bot. Want to play a game?"],
+        reactionDialog: REACTION_DIALOG,
+        generalDialog: GENERAL_DIALOG,
+        botWinDialog: BOT_WIN_DIALOG,
+        botLoseDialog: BOT_LOSE_DIALOG,
+    },
+    [BotType.LOBOTOMIZED_ANARCHY_BOT]: jumbleDialogOptions(
+        {
+            startDialog: ["something something lobotomized anarchy bot? me?"],
+            reactionDialog: REACTION_DIALOG,
+            generalDialog: GENERAL_DIALOG,
+            botWinDialog: BOT_WIN_DIALOG,
+            botLoseDialog: BOT_LOSE_DIALOG,
+        },
+        { wordIntensity: 0.5, letterIntensity: 0.5 },
+    ),
+    [BotType.LOBOTOMIZED_LOBOTOMIZED_ANARCHY_BOT]: jumbleDialogOptions(
+        {
+            reactionDialog: REACTION_DIALOG,
+            generalDialog: GENERAL_DIALOG,
+            startDialog: ["i m anarchy bot?? play???"],
+            botWinDialog: BOT_WIN_DIALOG,
+            botLoseDialog: BOT_LOSE_DIALOG,
+        },
+        { wordIntensity: 1, letterIntensity: 1 },
+    ),
+};
+
 export const BOT_DIALOG_TYPING_SPEED_MS = 25;
 export const BOT_DIALOG_PUNCTUATION_SPEED_MS = 300;
 
 const BotDialog = ({
     botColor,
+    botType,
     chessboardStore,
 }: {
     botColor: GameColor;
+    botType: BotType;
     chessboardStore: StoreApi<ChessboardStore>;
 }) => {
     const { getDialogForMove, getDialogForGameEnd, getDialogForGameStart } =
-        useBotDialog({
-            reactionDialog: REACTION_DIALOG,
-            loreDialog: LORE_DIALOG,
-            generalDialog: GENERAL_DIALOG,
-            startDialog: START_DIALOG,
-            botWinDialog: BOT_WIN_DIALOG,
-            botLoseDialog: BOT_LOSE_DIALOG,
-        });
+        useBotDialog(BOT_DIALOGS[botType]);
     const [dialog, setDialog] = useState<string | null>(null);
 
     const prevEvalForBotRef = useRef<number | null>(null);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import clsx from "clsx";
 
 import ProfilePicture from "@/features/profile/components/ProfilePicture";
@@ -14,7 +15,6 @@ import useBotMatch from "../hooks/useBotMatch";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import constants from "@/lib/constants";
-import Image from "next/image";
 
 const BotPlayOptions = () => {
     const [selectedBotType, setSelectedBotType] = useLocalPref<BotType>(
