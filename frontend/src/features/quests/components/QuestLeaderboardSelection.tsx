@@ -47,6 +47,7 @@ const QuestLeaderboardSelection = ({
                             monthlyLeaderboard.totalCount,
                         totalPlayers: monthlyLeaderboard.totalCount,
                     }}
+                    key="monthlyRank"
                 />
             ) : (
                 <DailyQuestRankCard
@@ -58,6 +59,7 @@ const QuestLeaderboardSelection = ({
                             totalLeaderboard.totalCount,
                         totalPlayers: totalLeaderboard.totalCount,
                     }}
+                    key="allTimeRank"
                 />
             )}
 
@@ -65,11 +67,13 @@ const QuestLeaderboardSelection = ({
                 <QuestLeaderboard
                     leaderboardType={QuestLeaderboardType.MONTHLY}
                     initialLeaderboard={monthlyLeaderboard}
+                    key="monthlyLeaderboard"
                 />
             ) : (
                 <QuestLeaderboard
                     leaderboardType={QuestLeaderboardType.ALL_TIME}
                     initialLeaderboard={totalLeaderboard}
+                    key="totalLeaderboard"
                 />
             )}
         </>
