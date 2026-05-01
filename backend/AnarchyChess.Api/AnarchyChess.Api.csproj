@@ -66,6 +66,9 @@
     <None Update="Data\Bots\lobotomized-anarchybot.webp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Data\Bots\lobotomized-lobotomized-anarchybot.webp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Data\defaultProfilePicture.webp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

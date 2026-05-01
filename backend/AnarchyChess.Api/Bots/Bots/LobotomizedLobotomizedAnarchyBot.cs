@@ -9,47 +9,48 @@ using ErrorOr;
 
 namespace AnarchyChess.Api.Bots.Bots;
 
-public class LobotomizedAnarchyBot(IBotDecisionServiceFactory botDecisionServiceFactory) : IBot
+public class LobotomizedLobotomizedAnarchyBot(IBotDecisionServiceFactory botDecisionServiceFactory)
+    : IBot
 {
-    public static readonly UserId BotId = "bot:lobotomized-anarchybot";
+    public static readonly UserId BotId = "bot:lobotomized-lobotomized-anarchybot";
 
-    public BotType Type => BotType.LobotomizedAnarchyBot;
+    public BotType Type => BotType.LobotomizedLobotomizedAnarchyBot;
 
     private readonly IBotDecisionService _botDecision = botDecisionServiceFactory.Create(
         new(
             Depth: 4,
             OpeningTemperature: 10,
-            MiddleGameTemperature: 25,
-            EndGameTemperature: 10,
+            MiddleGameTemperature: 80,
+            EndGameTemperature: 50,
             //
             TacticalThreshold: 100,
-            BlunderThreshold: -200,
+            BlunderThreshold: -300,
             //
-            BlunderChance: 0.08,
-            TacticChance: 0.15,
-            TacticChancePerMoveBonus: 0.01,
-            SimpleTacticChance: 0.9,
-            CheckmateChance: 0.1,
+            BlunderChance: 0.3,
+            TacticChance: 0.05,
+            TacticChancePerMoveBonus: 0,
+            SimpleTacticChance: 1,
+            CheckmateChance: 0.05,
             //
-            HangPenalty: 300,
-            OpponentHangBonus: 50,
-            CausesForcedMovePenalty: 300,
-            MultiStepMovePenalty: 300,
-            LosesRookCastlingRightPenalty: 20,
+            HangPenalty: -10,
+            OpponentHangBonus: -10,
+            CausesForcedMovePenalty: 500,
+            MultiStepMovePenalty: 500,
+            LosesRookCastlingRightPenalty: 50,
             LosesKingCastlingRightPenalty: 300,
             BackwardsPenalty: 30,
-            EdgePenalty: 30,
+            EdgePenalty: 70,
             BetaDecayPenalty: 300,
-            NonCentralPawnPenaltyInOpening: 20,
+            NonCentralPawnPenaltyInOpening: 1000,
             CastleBonus: 300,
-            SamePiecePenalty: 50,
-            ThrowPenalty: 0,
+            SamePiecePenalty: 70,
+            ThrowPenalty: 400,
             //
             FinalDecisionOrder:
             [
                 BotMoveCategory.NonBlunder,
-                BotMoveCategory.Tactic,
                 BotMoveCategory.MissableBlunder,
+                BotMoveCategory.Tactic,
                 BotMoveCategory.NonTactic,
             ]
         )
@@ -59,9 +60,9 @@ public class LobotomizedAnarchyBot(IBotDecisionServiceFactory botDecisionService
         new(
             UserId: BotId,
             Color: color,
-            UserName: "Lobotomized Anarchy Bot",
+            UserName: "Lobotomized Lobotomized Anarchy Bot",
             CountryCode: "FR",
-            Rating: -161660
+            Rating: int.MinValue
         );
 
     public Task<ErrorOr<MoveEvaluation>> FindMoveAsync(

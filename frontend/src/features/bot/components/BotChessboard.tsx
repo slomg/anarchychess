@@ -102,6 +102,7 @@ const BotChessboard = ({
                         >
                             <BotDialog
                                 botColor={gameState.botColor}
+                                botType={gameState.botType}
                                 chessboardStore={chessboardStore}
                             />
                             <MoveHistoryTable />

@@ -1,11 +1,11 @@
 import { renderHook } from "@testing-library/react";
 
-import { createFakeDialogContext } from "@/lib/testUtils/fakers/dialogContextFaker";
 import useBotDialog, {
     BotDialogOptions,
-    LoreDialog,
     ReactionDialog,
 } from "../useBotDialog";
+
+import { createFakeDialogContext } from "@/lib/testUtils/fakers/dialogContextFaker";
 import { GameColor, GameResult } from "@/lib/apiClient";
 
 describe("useBotDialog", () => {
@@ -14,7 +14,6 @@ describe("useBotDialog", () => {
     ): BotDialogOptions {
         return {
             reactionDialog: [],
-            loreDialog: [],
             generalDialog: [],
             startDialog: [],
             botWinDialog: [],
@@ -168,67 +167,6 @@ describe("useBotDialog", () => {
         });
     });
 
-    describe("Lore Lines", () => {
-        it("should return a lore line if ply number matches", () => {
-            const lines: LoreDialog[] = [{ onPly: 3, lines: ["L1"] }];
-            const { result } = renderHook(() =>
-                useBotDialog(getOptions({ loreDialog: lines })),
-            );
-            const line = result.current.getDialogForMove(
-                createFakeDialogContext({ plyNumber: 3 }),
-            );
-            expect(line).toBe("L1");
-        });
-
-        it("should not return a lore line before its ply", () => {
-            const lines: LoreDialog[] = [{ onPly: 5, lines: ["L1"] }];
-            const { result } = renderHook(() =>
-                useBotDialog(getOptions({ loreDialog: lines })),
-            );
-            const line = result.current.getDialogForMove(
-                createFakeDialogContext({ plyNumber: 3 }),
-            );
-            expect(line).toBeNull();
-        });
-
-        it("should not repeat lore lines for previous plies", () => {
-            const lines: LoreDialog[] = [{ onPly: 3, lines: ["L1", "L2"] }];
-            const { result } = renderHook(() =>
-                useBotDialog(getOptions({ loreDialog: lines })),
-            );
-
-            const first = result.current.getDialogForMove(
-                createFakeDialogContext({ plyNumber: 3 }),
-            );
-            const second = result.current.getDialogForMove(
-                createFakeDialogContext({ plyNumber: 3 }),
-            );
-
-            expect(["L1", "L2"]).toContain(first);
-            expect(second).toBeNull();
-        });
-
-        it("should pick only one lore line per ply even if multiple are available", () => {
-            const lines: LoreDialog[] = [
-                { onPly: 3, lines: ["L1", "L2", "L3"] },
-            ];
-
-            const { result } = renderHook(() =>
-                useBotDialog(getOptions({ loreDialog: lines })),
-            );
-
-            const firstLine = result.current.getDialogForMove(
-                createFakeDialogContext({ plyNumber: 3 }),
-            );
-            expect(["L1", "L2", "L3"]).toContain(firstLine);
-
-            const secondLine = result.current.getDialogForMove(
-                createFakeDialogContext({ plyNumber: 3 }),
-            );
-            expect(secondLine).toBeNull();
-        });
-    });
-
     describe("getDialogForGameStart", () => {
         it("should return a line from startDialog", () => {
             const startLines = ["start1", "start2", "start3"];
@@ -334,18 +272,16 @@ describe("useBotDialog", () => {
         });
     });
 
-    it("should prioritize reaction lines over general and lore lines", () => {
+    it("should prioritize reaction lines over general lines", () => {
         const reactionLines: ReactionDialog[] = [
             { condition: () => true, lines: ["R1"] },
         ];
-        const loreLines: LoreDialog[] = [{ onPly: 1, lines: ["L1"] }];
         const generalLines = ["G1"];
 
         const { result } = renderHook(() =>
             useBotDialog(
                 getOptions({
                     reactionDialog: reactionLines,
-                    loreDialog: loreLines,
                     generalDialog: generalLines,
                 }),
             ),
@@ -378,26 +314,6 @@ describe("useBotDialog", () => {
             createFakeDialogContext({ plyNumber: 100 }),
         );
         expect(line).toBe("G1");
-    });
-
-    it("should fallback to lore lines if no reaction or general lines trigger", () => {
-        const reactionLines: ReactionDialog[] = [
-            { condition: () => false, lines: ["R1"] },
-        ];
-        const loreLines: LoreDialog[] = [{ onPly: 1, lines: ["L1"] }];
-        const { result } = renderHook(() =>
-            useBotDialog(
-                getOptions({
-                    reactionDialog: reactionLines,
-                    loreDialog: loreLines,
-                }),
-            ),
-        );
-
-        const line = result.current.getDialogForMove(
-            createFakeDialogContext({ plyNumber: 1 }),
-        );
-        expect(line).toBe("L1");
     });
 
     it("should return null if the last dialog was within a ply even if other lines are available", () => {

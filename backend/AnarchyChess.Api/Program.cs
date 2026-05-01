@@ -535,9 +535,11 @@ builder.Services.AddSingleton<IBotMoveRunner, BotMoveRunner>();
 builder.Services.AddSingleton<IBotNotifier, BotNotifier>();
 builder.Services.AddSingleton<IBotHeuristics, BotHeuristics>();
 builder.Services.AddSingleton<IBotSee, BotSee>();
+builder.Services.AddSingleton<IBotDecisionServiceFactory, BotDecisionServiceFactory>();
 
 builder.Services.AddSingleton<IBot, AnarchyBot>();
 builder.Services.AddSingleton<IBot, LobotomizedAnarchyBot>();
+builder.Services.AddSingleton<IBot, LobotomizedLobotomizedAnarchyBot>();
 
 builder
     .Services.AddCodeFirstGrpcClient<IAiEngineService>(client =>

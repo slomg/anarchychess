@@ -23,6 +23,9 @@ public class BotProfilePictureProvider : IBotProfilePictureProvider
     {
         [AnarchyBot.BotId] = LoadProfilePicture("anarchybot.webp"),
         [LobotomizedAnarchyBot.BotId] = LoadProfilePicture("lobotomized-anarchybot.webp"),
+        [LobotomizedLobotomizedAnarchyBot.BotId] = LoadProfilePicture(
+            "lobotomized-lobotomized-anarchybot.webp"
+        ),
     };
 
     private static BotProfilePicture LoadProfilePicture(string name)
