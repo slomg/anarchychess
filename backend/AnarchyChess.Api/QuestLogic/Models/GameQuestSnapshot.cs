@@ -1,4 +1,4 @@
-﻿using AnarchyChess.Api.GameLogic.Models;
+﻿using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.EngineShared;
@@ -9,7 +9,7 @@ namespace AnarchyChess.Api.QuestLogic.Models;
 [Alias("AnarchyChess.Api.QuestLogic.Models.GameQuestSnapshot")]
 public record GameQuestSnapshot(
     GameColor PlayerColor,
-    IReadOnlyList<Move> MoveHistory,
+    IReadOnlyChessBoard Board,
     GameResultData ResultData,
     PoolKey? Pool,
     ClockSnapshot? Clocks

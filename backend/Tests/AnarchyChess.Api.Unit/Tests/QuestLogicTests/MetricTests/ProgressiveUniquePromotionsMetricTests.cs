@@ -1,7 +1,8 @@
-﻿using AnarchyChess.Api.GameLogic.Models;
-using AnarchyChess.EngineShared;
+﻿using AnarchyChess.Api.GameLogic;
+using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.QuestLogic.QuestMetrics;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
+using AnarchyChess.EngineShared;
 using AwesomeAssertions;
 
 namespace AnarchyChess.Api.Unit.Tests.QuestLogicTests.MetricTests;
@@ -31,7 +32,7 @@ public class ProgressiveUniquePromotionsMetricTests
         ];
 
         var snapshot = new GameQuestSnapshotFaker(GameColor.White)
-            .RuleFor(x => x.MoveHistory, moves)
+            .RuleFor(x => x.Board, new ChessBoard(moves: moves))
             .Generate();
 
         ProgressiveUniquePromotionsMetric metric = new();
@@ -52,7 +53,7 @@ public class ProgressiveUniquePromotionsMetricTests
         ];
 
         var snapshot = new GameQuestSnapshotFaker(GameColor.White)
-            .RuleFor(x => x.MoveHistory, moves)
+            .RuleFor(x => x.Board, new ChessBoard(moves: moves))
             .Generate();
 
         ProgressiveUniquePromotionsMetric metric = new();
@@ -67,26 +68,32 @@ public class ProgressiveUniquePromotionsMetricTests
     {
         var firstSnapshot = new GameQuestSnapshotFaker(GameColor.White)
             .RuleFor(
-                x => x.MoveHistory,
-                [
-                    new MoveFaker(GameColor.White)
-                        .RuleFor(x => x.PromotesTo, PieceType.Queen)
-                        .Generate(),
-                ]
+                x => x.Board,
+                new ChessBoard(
+                    moves:
+                    [
+                        new MoveFaker(GameColor.White)
+                            .RuleFor(x => x.PromotesTo, PieceType.Queen)
+                            .Generate(),
+                    ]
+                )
             )
             .Generate();
 
         var secondSnapshot = new GameQuestSnapshotFaker(GameColor.White)
             .RuleFor(
-                x => x.MoveHistory,
-                [
-                    new MoveFaker(GameColor.White)
-                        .RuleFor(x => x.PromotesTo, PieceType.Queen)
-                        .Generate(),
-                    new MoveFaker(GameColor.White)
-                        .RuleFor(x => x.PromotesTo, PieceType.Rook)
-                        .Generate(),
-                ]
+                x => x.Board,
+                new ChessBoard(
+                    moves:
+                    [
+                        new MoveFaker(GameColor.White)
+                            .RuleFor(x => x.PromotesTo, PieceType.Queen)
+                            .Generate(),
+                        new MoveFaker(GameColor.White)
+                            .RuleFor(x => x.PromotesTo, PieceType.Rook)
+                            .Generate(),
+                    ]
+                )
             )
             .Generate();
 
@@ -104,12 +111,15 @@ public class ProgressiveUniquePromotionsMetricTests
     {
         var snapshot = new GameQuestSnapshotFaker(GameColor.White)
             .RuleFor(
-                x => x.MoveHistory,
-                [
-                    new MoveFaker(GameColor.Black)
-                        .RuleFor(x => x.PromotesTo, PieceType.Queen)
-                        .Generate(),
-                ]
+                x => x.Board,
+                new ChessBoard(
+                    moves:
+                    [
+                        new MoveFaker(GameColor.Black)
+                            .RuleFor(x => x.PromotesTo, PieceType.Queen)
+                            .Generate(),
+                    ]
+                )
             )
             .Generate();
 

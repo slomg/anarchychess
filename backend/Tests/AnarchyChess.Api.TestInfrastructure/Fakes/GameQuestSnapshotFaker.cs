@@ -1,4 +1,5 @@
-﻿using AnarchyChess.Api.GameLogic.Models;
+﻿using AnarchyChess.Api.GameLogic;
+using AnarchyChess.Api.GameLogic.Models;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.QuestLogic.Models;
 using AnarchyChess.EngineShared;
@@ -13,7 +14,7 @@ public class GameQuestSnapshotFaker : RecordFaker<GameQuestSnapshot>
     {
         StrictMode(true);
         RuleFor(x => x.PlayerColor, f => playerColor ?? f.PickRandom<GameColor>());
-        RuleFor(x => x.MoveHistory, f => new MoveFaker().Generate(5));
+        RuleFor(x => x.Board, f => new ChessBoard(moves: new MoveFaker().Generate(5)));
         RuleFor(x => x.ResultData, f => new GameResultDataFaker().Generate());
         RuleFor(x => x.Pool, f => new PoolKeyFaker().Generate());
         RuleFor(x => x.Clocks, f => new ClockSnapshotFaker().Generate());
@@ -54,7 +55,7 @@ public static class GameQuestSnapshotFakerExtensions
             }
         }
 
-        return faker.RuleFor(x => x.MoveHistory, history);
+        return faker.RuleFor(x => x.Board, new ChessBoard(moves: history));
     }
 
     public static Faker<GameQuestSnapshot> RuleForWin(

@@ -8,9 +8,9 @@ public class MinimumGameLengthQuest : IQuestDefinition
 {
     public IEnumerable<QuestVariant> Variants =>
         [
-            CreateVariant(80, QuestDifficulty.Easy),
-            CreateVariant(100, QuestDifficulty.Medium),
-            CreateVariant(130, QuestDifficulty.Hard),
+            CreateVariant(40, QuestDifficulty.Easy),
+            CreateVariant(50, QuestDifficulty.Medium),
+            CreateVariant(60, QuestDifficulty.Hard),
         ];
 
     private static QuestVariant CreateVariant(int gameLength, QuestDifficulty difficulty) =>

@@ -23,7 +23,7 @@ public class OwnFirstMoveIsConditionTests
     public void Evaluate_returns_true_when_all_conditions_match()
     {
         var snapshot = new GameQuestSnapshotFaker(GameColor.White).Generate();
-        var firstMove = snapshot.MoveHistory[0];
+        var firstMove = snapshot.Board.Moves[0];
 
         OwnFirstMoveIsCondition condition = new(
             new PredicateMoveCondition(move => true),
@@ -37,7 +37,7 @@ public class OwnFirstMoveIsConditionTests
     public void Evaluate_returns_false_when_any_condition_fails()
     {
         var snapshot = new GameQuestSnapshotFaker(GameColor.White).Generate();
-        var firstMove = snapshot.MoveHistory[0];
+        var firstMove = snapshot.Board.Moves[0];
 
         OwnFirstMoveIsCondition condition = new(
             new PredicateMoveCondition(move => move == firstMove),
@@ -89,6 +89,6 @@ public class OwnFirstMoveIsConditionTests
 
         condition.Evaluate(snapshot);
 
-        seenMove.Should().Be(snapshot.MoveHistory[expectedIndex]);
+        seenMove.Should().Be(snapshot.Board.Moves[expectedIndex]);
     }
 }

@@ -1,8 +1,8 @@
 ﻿using AnarchyChess.Api.GameLogic.Models;
-using AnarchyChess.EngineShared;
 using AnarchyChess.Api.QuestLogic.QuestConditions;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AnarchyChess.Api.TestInfrastructure.Utils;
+using AnarchyChess.EngineShared;
 using AwesomeAssertions;
 
 namespace AnarchyChess.Api.Unit.Tests.QuestLogicTests.ConditionTests;
@@ -22,7 +22,7 @@ public class OpponentMoveOccurredConditionTests
     public void Evaluate_returns_true_when_all_conditions_match()
     {
         var snapshot = new GameQuestSnapshotFaker(GameColor.White).Generate();
-        var targetMove = snapshot.MoveHistory[1]; // opponent's first move for White
+        var targetMove = snapshot.Board.Moves[1]; // opponent's first move for White
 
         var condition = new OpponentMoveOccurredCondition(
             new PredicateMoveCondition(move => true),
@@ -65,7 +65,7 @@ public class OpponentMoveOccurredConditionTests
 
         condition.Evaluate(snapshot);
 
-        var expectedMoves = expectedIndices.Select(i => snapshot.MoveHistory[i]).ToList();
+        var expectedMoves = expectedIndices.Select(i => snapshot.Board.Moves[i]).ToList();
         seenMoves.Should().BeEquivalentTo(expectedMoves, opts => opts.WithStrictOrdering());
     }
 
@@ -74,7 +74,7 @@ public class OpponentMoveOccurredConditionTests
     {
         var snapshot = new GameQuestSnapshotFaker(GameColor.White).Generate();
 
-        var condition1 = new PredicateMoveCondition(move => move == snapshot.MoveHistory[1]); // opponent’s move
+        var condition1 = new PredicateMoveCondition(move => move == snapshot.Board.Moves[1]); // opponent’s move
         var condition2 = new PredicateMoveCondition(_ => false);
 
         var opponentCondition = new OpponentMoveOccurredCondition(condition1, condition2);

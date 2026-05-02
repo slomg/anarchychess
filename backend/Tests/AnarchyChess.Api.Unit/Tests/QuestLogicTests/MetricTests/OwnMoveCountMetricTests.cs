@@ -1,8 +1,8 @@
 ﻿using AnarchyChess.Api.GameLogic.Models;
-using AnarchyChess.EngineShared;
 using AnarchyChess.Api.QuestLogic.QuestMetrics;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AnarchyChess.Api.TestInfrastructure.Utils;
+using AnarchyChess.EngineShared;
 using AwesomeAssertions;
 
 namespace AnarchyChess.Api.Unit.Tests.QuestLogicTests.MetricTests;
@@ -24,7 +24,7 @@ public class OwnMoveCountMetricTests
         var snapshot = new GameQuestSnapshotFaker(GameColor.White)
             .RuleForMoves(totalPlies: 5)
             .Generate();
-        HashSet<Move> targetMoves = [snapshot.MoveHistory[0], snapshot.MoveHistory[2]];
+        HashSet<Move> targetMoves = [snapshot.Board.Moves[0], snapshot.Board.Moves[2]];
 
         OwnMoveCountMetric condition = new(
             new PredicateMoveCondition(move => true),
@@ -43,7 +43,7 @@ public class OwnMoveCountMetricTests
             .RuleForMoves(totalPlies: 6)
             .Generate();
 
-        var targetMoves = indices.Select(i => snapshot.MoveHistory[i]).ToHashSet();
+        var targetMoves = indices.Select(i => snapshot.Board.Moves[i]).ToHashSet();
 
         OwnMoveCountMetric metric = new(new PredicateMoveCondition(targetMoves.Contains));
 
@@ -74,7 +74,7 @@ public class OwnMoveCountMetricTests
 
         metric.Evaluate(snapshot);
 
-        var expectedMoves = expectedIndices.Select(i => snapshot.MoveHistory[i]).ToList();
+        var expectedMoves = expectedIndices.Select(i => snapshot.Board.Moves[i]).ToList();
         seenMoves.Should().BeEquivalentTo(expectedMoves, opts => opts.WithStrictOrdering());
     }
 
@@ -87,7 +87,7 @@ public class OwnMoveCountMetricTests
 
         OwnMoveCountMetric condition = new(
             new PredicateMoveCondition(move => false),
-            new PredicateMoveCondition(move => move == snapshot.MoveHistory[2])
+            new PredicateMoveCondition(move => move == snapshot.Board.Moves[2])
         );
 
         condition.Evaluate(snapshot).Should().Be(0);

@@ -1,6 +1,6 @@
 ﻿using AnarchyChess.Api.QuestLogic.Models;
-using AnarchyChess.Api.QuestLogic.MoveConditions;
 using AnarchyChess.Api.QuestLogic.QuestConditions;
+using AnarchyChess.Api.QuestLogic.QuestMetrics;
 using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Api.QuestLogic.QuestDefinitions;
@@ -10,20 +10,11 @@ public class WinGameWith2KingsQuest : IQuestDefinition
     public IEnumerable<QuestVariant> Variants =>
         [
             new QuestVariant(
-                Description: "Win a game with 2 kings of your own color on the board (promote your checker to a king)",
+                Description: "Finish a game with at least 2 kings of your own color on the board (promote your checker to a king)",
                 Difficulty: QuestDifficulty.Medium,
                 Target: 1,
                 Conditions: () =>
-
-                    [
-                        new WinCondition(),
-                        new OwnMoveOccurredCondition(
-                            new IsMovePromotion(promotesTo: PieceType.King)
-                        ),
-                        new NotCondition(
-                            new OpponentMoveOccurredCondition(new IsMoveCaptureOf(PieceType.King))
-                        ),
-                    ]
+                    [new GreaterThanEqualCondition(new OwnBoardPieceCountMetric(PieceType.King), 2)]
             ),
         ];
 }

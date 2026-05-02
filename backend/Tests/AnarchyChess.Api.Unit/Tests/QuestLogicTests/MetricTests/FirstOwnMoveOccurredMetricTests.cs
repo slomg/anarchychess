@@ -1,8 +1,8 @@
 ﻿using AnarchyChess.Api.GameLogic.Models;
-using AnarchyChess.EngineShared;
 using AnarchyChess.Api.QuestLogic.QuestMetrics;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AnarchyChess.Api.TestInfrastructure.Utils;
+using AnarchyChess.EngineShared;
 using AwesomeAssertions;
 
 namespace AnarchyChess.Api.Unit.Tests.QuestLogicTests.MetricTests;
@@ -16,7 +16,7 @@ public class FirstOwnMoveOccurredMetricTests
 
         var metric = new FirstOwnMoveOccurredMetric(
             new PredicateMoveCondition(_ => false),
-            new PredicateMoveCondition(move => move == snapshot.MoveHistory[2])
+            new PredicateMoveCondition(move => move == snapshot.Board.Moves[2])
         );
 
         int progress = metric.Evaluate(snapshot);
@@ -29,7 +29,7 @@ public class FirstOwnMoveOccurredMetricTests
     {
         var snapshot = new GameQuestSnapshotFaker(GameColor.White).Generate();
         var metric = new FirstOwnMoveOccurredMetric(
-            new PredicateMoveCondition(move => move == snapshot.MoveHistory[0])
+            new PredicateMoveCondition(move => move == snapshot.Board.Moves[0])
         );
 
         int progress = metric.Evaluate(snapshot);
@@ -41,7 +41,7 @@ public class FirstOwnMoveOccurredMetricTests
     public void Evaluate_returns_index_of_first_matching_move_in_middle()
     {
         var snapshot = new GameQuestSnapshotFaker(GameColor.White).Generate();
-        var targetMove = snapshot.MoveHistory[2];
+        var targetMove = snapshot.Board.Moves[2];
         var metric = new FirstOwnMoveOccurredMetric(
             new PredicateMoveCondition(move => move == targetMove),
             new PredicateMoveCondition(move => true)
@@ -79,7 +79,7 @@ public class FirstOwnMoveOccurredMetricTests
 
         progress.Should().Be(int.MaxValue);
 
-        var expectedMoves = expectedIndices.Select(i => snapshot.MoveHistory[i]).ToList();
+        var expectedMoves = expectedIndices.Select(i => snapshot.Board.Moves[i]).ToList();
         seenMoves.Should().BeEquivalentTo(expectedMoves, opts => opts.WithStrictOrdering());
     }
 }

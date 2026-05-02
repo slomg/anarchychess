@@ -9,11 +9,7 @@ namespace AnarchyChess.Api.QuestLogic.QuestDefinitions;
 public class PerformKnooklearFusionQuest : IQuestDefinition
 {
     public IEnumerable<QuestVariant> Variants =>
-        [
-            CreateVariant(1, QuestDifficulty.Easy),
-            CreateVariant(2, QuestDifficulty.Medium),
-            CreateVariant(3, QuestDifficulty.Hard),
-        ];
+        [CreateVariant(1, QuestDifficulty.Easy), CreateVariant(2, QuestDifficulty.Medium)];
 
     private static QuestVariant CreateVariant(int numOfFusions, QuestDifficulty difficulty) =>
         new(

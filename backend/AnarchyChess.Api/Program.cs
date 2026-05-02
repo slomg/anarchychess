@@ -509,7 +509,6 @@ builder.Services.AddSingleton<IQuestDefinition, NoCaptureInFirstMovesQuest>();
 builder.Services.AddSingleton<IQuestDefinition, CastleCaptureQuest>();
 builder.Services.AddSingleton<IQuestDefinition, NoKingMoveQuest>();
 builder.Services.AddSingleton<IQuestDefinition, NoQueenMoveQuest>();
-builder.Services.AddSingleton<IQuestDefinition, LongPassantCaptureQuest>();
 builder.Services.AddSingleton<IQuestDefinition, MinimumGameLengthQuest>();
 builder.Services.AddSingleton<IQuestDefinition, CaptureAcrossGamesQuest>();
 builder.Services.AddSingleton<IQuestDefinition, MovesAcrossGamesQuest>();
@@ -524,6 +523,7 @@ builder.Services.AddSingleton<IQuestDefinition, CaptureWithKingQuest>();
 builder.Services.AddSingleton<IQuestDefinition, WinStreakQuest>();
 builder.Services.AddSingleton<IQuestDefinition, WinWithHyperAcceleratedBongcloud>();
 builder.Services.AddSingleton<IQuestDefinition, ThrowStunQuest>();
+builder.Services.AddSingleton<IQuestDefinition, UnderagePawnBishopCaptureQuest>();
 #endregion
 
 #region Challenges

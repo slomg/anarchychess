@@ -2,7 +2,7 @@
 using AnarchyChess.Api.Bots.Models;
 using AnarchyChess.Api.Game.Grains;
 using AnarchyChess.Api.Game.Models;
-using AnarchyChess.Api.GameLogic.Models;
+using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.Profile.Models;
@@ -201,7 +201,7 @@ public class QuestGrain(
             @event.GameToken,
             whitePlayer: state.WhitePlayer,
             blackPlayer: state.BlackPlayer,
-            movesResult: await grain.GetMovesAsync(),
+            boardResult: await grain.GetBoardAsync(),
             resultData: @event.EndStatus,
             pool: state.Pool,
             clocks: state.Clocks
@@ -234,7 +234,7 @@ public class QuestGrain(
             @event.GameToken,
             whitePlayer: state.WhitePlayer,
             blackPlayer: state.BlackPlayer,
-            movesResult: await grain.GetMovesAsync(),
+            boardResult: await grain.GetBoardAsync(),
             resultData: @event.EndStatus,
             pool: null,
             clocks: null
@@ -304,7 +304,7 @@ public class QuestGrain(
         GameToken gameToken,
         GamePlayer whitePlayer,
         GamePlayer blackPlayer,
-        ErrorOr<IReadOnlyList<Move>> movesResult,
+        ErrorOr<IReadOnlyChessBoard> boardResult,
         GameResultData resultData,
         PoolKey? pool,
         ClockSnapshot? clocks
@@ -322,19 +322,19 @@ public class QuestGrain(
         }
         GamePlayer player = userId == whitePlayer.UserId ? whitePlayer : blackPlayer;
 
-        if (movesResult.IsError)
+        if (boardResult.IsError)
         {
             _logger.LogWarning(
-                "Could not find moves for quest on game {GameToken}, {Errors}",
+                "Could not find board for quest on game {GameToken}, {Errors}",
                 gameToken,
-                movesResult.Errors
+                boardResult.Errors
             );
             return null;
         }
 
         return new(
             PlayerColor: player.Color,
-            MoveHistory: movesResult.Value,
+            Board: boardResult.Value,
             ResultData: resultData,
             Pool: pool,
             Clocks: clocks
