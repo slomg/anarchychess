@@ -9,9 +9,9 @@ public class PawnPromotionsAcrossGamesQuest : IQuestDefinition
 {
     public IEnumerable<QuestVariant> Variants =>
         [
-            CreateVariant(5, QuestDifficulty.Easy),
-            CreateVariant(10, QuestDifficulty.Medium),
-            CreateVariant(20, QuestDifficulty.Hard),
+            CreateVariant(3, QuestDifficulty.Easy),
+            CreateVariant(5, QuestDifficulty.Medium),
+            CreateVariant(7, QuestDifficulty.Hard),
         ];
 
     private static QuestVariant CreateVariant(int promotions, QuestDifficulty difficulty) =>
