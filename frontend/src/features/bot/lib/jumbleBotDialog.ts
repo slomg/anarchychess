@@ -70,7 +70,6 @@ function jumbleText(
         }
     }
 
-    console.log(result);
     return result.join("");
 }
 
