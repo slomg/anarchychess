@@ -523,6 +523,7 @@ builder.Services.AddSingleton<IQuestDefinition, PerformKnooklearFusionQuest>();
 builder.Services.AddSingleton<IQuestDefinition, CaptureWithKingQuest>();
 builder.Services.AddSingleton<IQuestDefinition, WinStreakQuest>();
 builder.Services.AddSingleton<IQuestDefinition, WinWithHyperAcceleratedBongcloud>();
+builder.Services.AddSingleton<IQuestDefinition, ThrowStunQuest>();
 #endregion
 
 #region Challenges
