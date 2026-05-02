@@ -509,7 +509,6 @@ builder.Services.AddSingleton<IQuestDefinition, NoCaptureInFirstMovesQuest>();
 builder.Services.AddSingleton<IQuestDefinition, CastleCaptureQuest>();
 builder.Services.AddSingleton<IQuestDefinition, NoKingMoveQuest>();
 builder.Services.AddSingleton<IQuestDefinition, NoQueenMoveQuest>();
-builder.Services.AddSingleton<IQuestDefinition, LongPassantCaptureQuest>();
 builder.Services.AddSingleton<IQuestDefinition, MinimumGameLengthQuest>();
 builder.Services.AddSingleton<IQuestDefinition, CaptureAcrossGamesQuest>();
 builder.Services.AddSingleton<IQuestDefinition, MovesAcrossGamesQuest>();
