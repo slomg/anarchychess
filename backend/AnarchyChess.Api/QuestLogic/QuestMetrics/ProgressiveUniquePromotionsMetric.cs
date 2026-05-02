@@ -13,7 +13,7 @@ public class ProgressiveUniquePromotionsMetric : IQuestMetric
     public int Evaluate(GameQuestSnapshot snapshot)
     {
         int newPromotions = 0;
-        foreach (var move in snapshot.MoveHistory)
+        foreach (var move in snapshot.Board.Moves)
         {
             if (move.Piece.Color != snapshot.PlayerColor || !move.PromotesTo.HasValue)
                 continue;

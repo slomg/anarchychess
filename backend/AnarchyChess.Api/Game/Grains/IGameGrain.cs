@@ -1,5 +1,5 @@
 ﻿using AnarchyChess.Api.Game.Models;
-using AnarchyChess.Api.GameLogic.Models;
+using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.Profile.Models;
@@ -35,8 +35,8 @@ public interface IGameGrain : IGrainWithStringKey
     [Alias("GetPlayersAsync")]
     Task<ErrorOr<PlayerRoster>> GetPlayersAsync();
 
-    [Alias("GetMovesAsync")]
-    Task<ErrorOr<IReadOnlyList<Move>>> GetMovesAsync();
+    [Alias("GetBoardAsync")]
+    Task<ErrorOr<IReadOnlyChessBoard>> GetBoardAsync();
 
     [Alias("RequestGameEndAsync")]
     Task<ErrorOr<Success>> RequestGameEndAsync(UserId byUserId, CancellationToken token = default);

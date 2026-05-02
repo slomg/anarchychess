@@ -6,5 +6,5 @@ namespace AnarchyChess.Api.QuestLogic.QuestMetrics;
 [Alias("AnarchyChess.Api.QuestLogic.QuestMetrics.GameLengthMetric")]
 public class MoveCountMetric : IQuestMetric
 {
-    public int Evaluate(GameQuestSnapshot snapshot) => snapshot.MoveHistory.Count / 2;
+    public int Evaluate(GameQuestSnapshot snapshot) => snapshot.Board.Moves.Count / 2;
 }
