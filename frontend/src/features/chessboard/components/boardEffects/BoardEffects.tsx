@@ -10,6 +10,7 @@ import { useChessboardStore } from "../../hooks/useChessboard";
 import ThrowAimLineEffect from "./ThrowAimLineEffect";
 import PawnThrowEffect from "./PawnThrowEffect";
 import ExplosionEffect from "./ExplosionEffect";
+import QueentumTunnelingEffect from "./QueentumTunnelingEffect";
 
 const BoardEffects = () => {
     const persistentEffects = useChessboardStore(
@@ -49,6 +50,17 @@ const BoardEffects = () => {
                         key={id}
                     />,
                 );
+                break;
+            case TransientBoardEffectType.QUEENTUM_TUNNELLING:
+                result.push(
+                    <QueentumTunnelingEffect
+                        effect={effect.value}
+                        onSettle={effect.settle}
+                        onComplete={effect.complete}
+                        key={id}
+                    />,
+                );
+                break;
         }
     }
 
