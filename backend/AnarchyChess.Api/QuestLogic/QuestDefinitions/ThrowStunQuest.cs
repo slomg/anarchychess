@@ -9,9 +9,9 @@ public sealed class ThrowStunQuest : IQuestDefinition
 {
     public IEnumerable<QuestVariant> Variants { get; } =
         [
-            CreateVariant(100, QuestDifficulty.Easy),
-            CreateVariant(200, QuestDifficulty.Medium),
-            CreateVariant(300, QuestDifficulty.Hard),
+            CreateVariant(5, QuestDifficulty.Easy),
+            CreateVariant(10, QuestDifficulty.Medium),
+            CreateVariant(15, QuestDifficulty.Hard),
         ];
 
     private static QuestVariant CreateVariant(int numOfPieces, QuestDifficulty difficulty) =>
