@@ -23,7 +23,6 @@ public enum BotMoveCategory
 {
     NonBlunder,
     MissableBlunder,
-    SimpleTactic,
     Tactic,
     NonTactic,
 }
@@ -204,7 +203,6 @@ public class BotDecisionService(
         {
             [BotMoveCategory.NonBlunder] = nonBlunders,
             [BotMoveCategory.MissableBlunder] = missableBlunders,
-            [BotMoveCategory.SimpleTactic] = SortTactics(tactics).simple,
             [BotMoveCategory.Tactic] = tactics,
             [BotMoveCategory.NonTactic] = nonTactics,
         };
