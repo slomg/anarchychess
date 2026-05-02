@@ -9,21 +9,21 @@ public class CappedCapturesQuest : IQuestDefinition
 {
     public IEnumerable<QuestVariant> Variants =>
         [
-            CreateVariant(10, QuestDifficulty.Easy),
-            CreateVariant(7, QuestDifficulty.Medium),
-            CreateVariant(5, QuestDifficulty.Hard),
+            CreateVariant(15, QuestDifficulty.Easy),
+            CreateVariant(13, QuestDifficulty.Medium),
+            CreateVariant(10, QuestDifficulty.Hard),
         ];
 
     private static QuestVariant CreateVariant(int maxCaptures, QuestDifficulty difficulty) =>
         new(
-            Description: $"Win a game that lasts at least 30 moves without capturing more than {maxCaptures} pieces",
+            Description: $"Win a game that lasts at least 15 moves without capturing more than {maxCaptures} pieces",
             Difficulty: difficulty,
             Target: 1,
             Conditions: () =>
 
                 [
                     new WinCondition(),
-                    new GreaterThanEqualCondition(new MoveCountMetric(), greaterThanEqual: 30),
+                    new GreaterThanEqualCondition(new MoveCountMetric(), greaterThanEqual: 15),
                     new LessThanEqualCondition(
                         new OwnMoveCountMetric(new IsMoveCapture()),
                         lessThanEqual: maxCaptures
