@@ -7,9 +7,9 @@ import {
 
 import { viewPoint, viewToWorld } from "@/features/point/pointUtils";
 import { useChessboardStore } from "../../hooks/useChessboard";
-import ThrowAimLine from "./ThrowAimLine";
-import PawnThrow from "./PawnThrow";
-import Explosion from "./Explosion";
+import ThrowAimLineEffect from "./ThrowAimLineEffect";
+import PawnThrowEffect from "./PawnThrowEffect";
+import ExplosionEffect from "./ExplosionEffect";
 
 const BoardEffects = () => {
     const persistentEffects = useChessboardStore(
@@ -23,7 +23,7 @@ const BoardEffects = () => {
     for (const [id, effect] of persistentEffects) {
         switch (effect.type) {
             case PersistentBoardEffectType.THROW_AIM_LINE:
-                result.push(<ThrowAimLine effect={effect} key={id} />);
+                result.push(<ThrowAimLineEffect effect={effect} key={id} />);
                 break;
         }
     }
@@ -32,7 +32,7 @@ const BoardEffects = () => {
         switch (effect.value.type) {
             case TransientBoardEffectType.PAWN_THROW:
                 result.push(
-                    <PawnThrow
+                    <PawnThrowEffect
                         effect={effect.value}
                         onSettle={effect.settle}
                         onComplete={effect.complete}
@@ -42,7 +42,7 @@ const BoardEffects = () => {
                 break;
             case TransientBoardEffectType.EXPLOSION:
                 result.push(
-                    <Explosion
+                    <ExplosionEffect
                         effect={effect.value}
                         onSettle={effect.settle}
                         onComplete={effect.complete}

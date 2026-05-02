@@ -11,7 +11,7 @@ export interface ExplosionEffect {
     at: LogicalPoint;
 }
 
-const Explosion = ({
+const ExplosionEffect = ({
     effect,
     onSettle,
     onComplete,
@@ -41,4 +41,4 @@ const Explosion = ({
         />
     );
 };
-export default Explosion;
+export default ExplosionEffect;

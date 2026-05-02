@@ -9,9 +9,9 @@ import {
 import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardStoreContext";
 import { createFakePawnThrowEffect } from "@/lib/testUtils/fakers/pawnThrowEffectFaker";
 import { createFakeThrowAimEffect } from "@/lib/testUtils/fakers/throwAimEffectFaker";
+import ThrowAimLineEffect from "../ThrowAimLineEffect";
+import PawnThrowEffect from "../PawnThrowEffect";
 import BoardEffects from "../BoardEffects";
-import ThrowAimLine from "../ThrowAimLine";
-import PawnThrow from "../PawnThrow";
 
 vi.mock("../PawnThrow");
 vi.mock("../ThrowAimLine");
@@ -19,8 +19,8 @@ vi.mock("../ThrowAimLine");
 describe("BoardEffects", () => {
     let store: StoreApi<ChessboardStore>;
 
-    const throwAimLineMock = vi.mocked(ThrowAimLine);
-    const pawnThrowMock = vi.mocked(PawnThrow);
+    const throwAimLineMock = vi.mocked(ThrowAimLineEffect);
+    const pawnThrowMock = vi.mocked(PawnThrowEffect);
 
     beforeEach(() => {
         store = createChessboardStore();

@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 
-import { PawnThrowEffect } from "@/features/chessboard/components/boardEffects/PawnThrow";
+import { PawnThrowEffect } from "@/features/chessboard/components/boardEffects/PawnThrowEffect";
 import { TransientBoardEffectType } from "@/features/chessboard/stores/boardEffectsSlice";
 import { createRandomPoint } from "./chessboardFakers";
 import { GameColor } from "@/lib/apiClient";

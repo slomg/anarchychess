@@ -33,7 +33,7 @@ const UP = new Vector3(0, 1, 0);
 const THROW_SPEED = 7;
 const SPIN_SPEED = 5;
 
-const PawnThrow = ({
+const PawnThrowEffect = ({
     effect,
     onSettle,
     onComplete,
@@ -146,4 +146,4 @@ const PawnThrow = ({
         </>
     );
 };
-export default PawnThrow;
+export default PawnThrowEffect;
