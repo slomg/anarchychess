@@ -5,27 +5,27 @@ using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Api.QuestLogic.QuestDefinitions;
 
-public class PawnPromotionsAcrossGamesQuest : IQuestDefinition
+public sealed class UnderagePawnBishopCaptureQuest : IQuestDefinition
 {
     public IEnumerable<QuestVariant> Variants =>
         [
             CreateVariant(3, QuestDifficulty.Easy),
-            CreateVariant(5, QuestDifficulty.Medium),
-            CreateVariant(7, QuestDifficulty.Hard),
+            CreateVariant(6, QuestDifficulty.Medium),
+            CreateVariant(9, QuestDifficulty.Hard),
         ];
 
-    private static QuestVariant CreateVariant(int promotions, QuestDifficulty difficulty) =>
+    private static QuestVariant CreateVariant(int pawns, QuestDifficulty difficulty) =>
         new(
-            Description: $"Promote a total of {promotions} pawns across multiple games",
+            Description: $"Capture {pawns} underage pawns with your bishop",
             Difficulty: difficulty,
-            Target: promotions,
+            Target: pawns,
             Conditions: () => [],
             Progressors: () =>
 
                 [
                     new OwnMoveCountMetric(
-                        new IsMoveOfPiece(PieceType.Pawn, PieceType.UnderagePawn),
-                        new IsMovePromotion()
+                        new IsMoveOfPiece(PieceType.Bishop),
+                        new IsMoveCaptureOf(PieceType.UnderagePawn)
                     ),
                 ]
         );

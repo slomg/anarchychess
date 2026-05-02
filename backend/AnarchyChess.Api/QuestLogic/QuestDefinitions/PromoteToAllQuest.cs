@@ -10,7 +10,7 @@ public class PromoteToAllQuest : IQuestDefinition
         [
             new QuestVariant(
                 Description: "Promote to every piece types at least once across multiple games",
-                Difficulty: QuestDifficulty.Medium,
+                Difficulty: QuestDifficulty.Hard,
                 Target: GameLogicConstants.PromotablePieces.Count,
                 Conditions: () => [],
                 Progressors: () => [new ProgressiveUniquePromotionsMetric()]

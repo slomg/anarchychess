@@ -16,12 +16,12 @@ public sealed class OwnFirstMoveIsCondition(params IMoveCondition[] moveConditio
     public bool Evaluate(GameQuestSnapshot snapshot)
     {
         int firstMoveIdx = snapshot.PlayerColor.Match(whenWhite: 0, whenBlack: 1);
-        if (firstMoveIdx >= snapshot.MoveHistory.Count)
+        if (firstMoveIdx >= snapshot.Board.Moves.Count)
         {
             return false;
         }
 
-        Move firstMove = snapshot.MoveHistory[firstMoveIdx];
+        Move firstMove = snapshot.Board.Moves[firstMoveIdx];
         return _moveConditions.All(x => x.Evaluate(firstMove));
     }
 }

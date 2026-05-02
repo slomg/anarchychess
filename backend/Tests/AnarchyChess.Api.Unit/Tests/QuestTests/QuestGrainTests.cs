@@ -2,7 +2,7 @@
 using AnarchyChess.Api.Bots.Models;
 using AnarchyChess.Api.Game.Grains;
 using AnarchyChess.Api.Game.Models;
-using AnarchyChess.Api.GameLogic.Models;
+using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Profile.Entities;
 using AnarchyChess.Api.QuestLogic;
@@ -40,10 +40,10 @@ public class QuestGrainTests : BaseGrainTest
     private readonly AuthedUser _testUser = new AuthedUserFaker().Generate();
 
     private readonly GameState _testGameState;
-    private readonly List<Move> _testMoves = [.. new MoveFaker().Generate(5)];
+    private readonly ChessBoard _testBoard = new(moves: new MoveFaker().Generate(5));
 
     private readonly BotGameState _testBotGameState;
-    private readonly List<Move> _testBotMoves = [.. new MoveFaker().Generate(5)];
+    private readonly ChessBoard _testBotBoard = new(moves: new MoveFaker().Generate(5));
 
     private DateTimeOffset _fakeNow = DateTimeOffset.UtcNow;
     private QuestInstance? _lastInstance;
@@ -57,7 +57,7 @@ public class QuestGrainTests : BaseGrainTest
             new GamePlayerFaker(GameColor.White).RuleFor(x => x.UserId, _testUser.Id).Generate()
         );
         _gameGrainMock.GetStateAsync().Returns(_testGameState);
-        _gameGrainMock.GetMovesAsync().Returns(_testMoves);
+        _gameGrainMock.GetBoardAsync().Returns(_testBoard);
 
         _testBotGameState = new BotGameStateFaker()
             .RuleFor(x => x.BotColor, GameColor.White)
@@ -66,7 +66,7 @@ public class QuestGrainTests : BaseGrainTest
                 new GamePlayerFaker(GameColor.Black).RuleFor(x => x.UserId, _testUser.Id).Generate()
             );
         _botGrainMock.GetStateAsync().Returns(_testBotGameState);
-        _botGrainMock.GetMovesAsync().Returns(_testBotMoves);
+        _botGrainMock.GetBoardAsync().Returns(_testBotBoard);
 
         Silo.AddProbe(id =>
             id.ToString() == _testGameToken ? _gameGrainMock : Substitute.For<IGameGrain>()
@@ -295,7 +295,7 @@ public class QuestGrainTests : BaseGrainTest
 
         GameQuestSnapshot expectedSnapshot = new(
             PlayerColor: GameColor.White,
-            _testMoves,
+            _testBoard,
             result,
             Pool: _testGameState.Pool,
             Clocks: _testGameState.Clocks
@@ -327,7 +327,7 @@ public class QuestGrainTests : BaseGrainTest
 
         GameQuestSnapshot expectedSnapshot = new(
             PlayerColor: GameColor.Black,
-            _testBotMoves,
+            _testBotBoard,
             result,
             Pool: null,
             Clocks: null

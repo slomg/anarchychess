@@ -8,11 +8,11 @@ namespace AnarchyChess.Api.QuestLogic.QuestDefinitions;
 public class CheckerHopQuest : IQuestDefinition
 {
     public IEnumerable<QuestVariant> Variants =>
-        [CreateVariant(2, QuestDifficulty.Easy), CreateVariant(3, QuestDifficulty.Medium)];
+        [CreateVariant(4, QuestDifficulty.Easy), CreateVariant(6, QuestDifficulty.Medium)];
 
-    private static QuestVariant CreateVariant(int piecesToCapture, QuestDifficulty difficulty) =>
+    private static QuestVariant CreateVariant(int piecesToHopOver, QuestDifficulty difficulty) =>
         new(
-            Description: $"Perform a checker multi-hop that captures at least {piecesToCapture} pieces",
+            Description: $"Perform a checker multi-hop that jumps over at least {piecesToHopOver} pieces (captures are not required)",
             Difficulty: difficulty,
             Target: 1,
             Conditions: () =>
@@ -20,7 +20,8 @@ public class CheckerHopQuest : IQuestDefinition
                 [
                     new OwnMoveOccurredCondition(
                         new IsMoveOfPiece(PieceType.Checker),
-                        new IsMoveCapture(ofAtLeast: piecesToCapture)
+                        // first hop has no intermediates
+                        new MoveHasIntermediates(atLeast: piecesToHopOver - 1)
                     ),
                 ]
         );

@@ -3,7 +3,7 @@ using AnarchyChess.Api.Game.Errors;
 using AnarchyChess.Api.Game.GameHandlers;
 using AnarchyChess.Api.Game.Models;
 using AnarchyChess.Api.Game.Services;
-using AnarchyChess.Api.GameLogic.Models;
+using AnarchyChess.Api.GameLogic;
 using AnarchyChess.Api.GameSnapshot.Models;
 using AnarchyChess.Api.Matchmaking.Models;
 using AnarchyChess.Api.Profile.Models;
@@ -152,10 +152,10 @@ public class GameGrain : Grain, IGameGrain, IRemindable
             TryGetCurrentGame(out var game) ? game.Players.ToErrorOr() : GameErrors.GameNotFound
         );
 
-    public Task<ErrorOr<IReadOnlyList<Move>>> GetMovesAsync() =>
+    public Task<ErrorOr<IReadOnlyChessBoard>> GetBoardAsync() =>
         Task.FromResult(
             TryGetCurrentGame(out var game)
-                ? game.Core.Board.Moves.ToErrorOr()
+                ? (game.Core.Board as IReadOnlyChessBoard).ToErrorOr()
                 : GameErrors.GameNotFound
         );
 

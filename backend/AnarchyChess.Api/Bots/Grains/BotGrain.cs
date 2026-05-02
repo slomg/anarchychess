@@ -38,8 +38,8 @@ public interface IBotGrain : IGrainWithStringKey
     [Alias("GetStateAsync")]
     Task<ErrorOr<BotGameState>> GetStateAsync(CancellationToken token = default);
 
-    [Alias("GetMovesAsync")]
-    Task<ErrorOr<IReadOnlyList<Move>>> GetMovesAsync();
+    [Alias("GetBoardAsync")]
+    Task<ErrorOr<IReadOnlyChessBoard>> GetBoardAsync();
 
     [Alias("PlayMoveAsync")]
     Task<ErrorOr<Success>> PlayMoveAsync(
@@ -206,10 +206,10 @@ public class BotGrain : Grain, IBotGrain
         );
     }
 
-    public Task<ErrorOr<IReadOnlyList<Move>>> GetMovesAsync() =>
+    public Task<ErrorOr<IReadOnlyChessBoard>> GetBoardAsync() =>
         Task.FromResult(
             TryGetCurrentGame(out var game)
-                ? game.Core.Board.Moves.ToErrorOr()
+                ? (game.Core.Board as IReadOnlyChessBoard).ToErrorOr()
                 : GameErrors.GameNotFound
         );
 

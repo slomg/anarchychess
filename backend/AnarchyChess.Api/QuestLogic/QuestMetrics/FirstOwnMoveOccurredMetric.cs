@@ -1,6 +1,6 @@
-﻿using AnarchyChess.EngineShared.Extensions;
-using AnarchyChess.Api.QuestLogic.Models;
+﻿using AnarchyChess.Api.QuestLogic.Models;
 using AnarchyChess.Api.QuestLogic.MoveConditions;
+using AnarchyChess.EngineShared.Extensions;
 
 namespace AnarchyChess.Api.QuestLogic.QuestMetrics;
 
@@ -14,9 +14,9 @@ public class FirstOwnMoveOccurredMetric(params IMoveCondition[] moveConditions) 
     public int Evaluate(GameQuestSnapshot snapshot)
     {
         int startIdx = snapshot.PlayerColor.Match(whenWhite: 0, whenBlack: 1);
-        for (int i = startIdx; i < snapshot.MoveHistory.Count; i += 2)
+        for (int i = startIdx; i < snapshot.Board.Moves.Count; i += 2)
         {
-            var move = snapshot.MoveHistory[i];
+            var move = snapshot.Board.Moves[i];
             if (_moveCondition.All(x => x.Evaluate(move)))
                 return i;
         }

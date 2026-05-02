@@ -14,19 +14,23 @@ public class CheckerJumpRule(params Offset[] offsets) : IPieceMovementRule
     )
     {
         foreach (var offset in _offsets)
-        foreach (
-            var move in FindCaptureSequences(
-                board,
-                origin: position,
-                currentPosition: position,
-                movingPiece,
-                visited: [],
-                intermediates: [],
-                captured: [],
-                currentOffset: offset
+        {
+            foreach (
+                var move in FindCaptureSequences(
+                    board,
+                    origin: position,
+                    currentPosition: position,
+                    movingPiece,
+                    visited: [],
+                    intermediates: [],
+                    captured: [],
+                    currentOffset: offset
+                )
             )
-        )
-            yield return move;
+            {
+                yield return move;
+            }
+        }
     }
 
     private IEnumerable<Move> FindCaptureSequences(
@@ -42,22 +46,30 @@ public class CheckerJumpRule(params Offset[] offsets) : IPieceMovementRule
     {
         currentPosition += currentOffset;
         if (visited.Contains(currentPosition))
+        {
             yield break;
+        }
 
         visited.Add(currentPosition);
         if (!board.TryGetPieceAt(currentPosition, out var encounteredPiece))
+        {
             yield break;
+        }
 
         var isCapture = encounteredPiece.Color != movingPiece.Color;
         if (isCapture)
+        {
             captured.Add(new MoveCapture(currentPosition, board));
+        }
 
         currentPosition += currentOffset;
         if (
             !board.IsWithinBoundaries(currentPosition)
             || board.PeekPieceAt(currentPosition) is not null
         )
+        {
             yield break;
+        }
 
         yield return new Move(
             origin,
@@ -68,19 +80,24 @@ public class CheckerJumpRule(params Offset[] offsets) : IPieceMovementRule
         );
 
         IntermediateSquare intermediate = new(currentPosition, IsCapture: isCapture);
+
         foreach (var offset in _offsets)
-        foreach (
-            var move in FindCaptureSequences(
-                board,
-                origin,
-                currentPosition,
-                movingPiece,
-                visited: [.. visited],
-                intermediates: [.. intermediates, intermediate],
-                captured: [.. captured],
-                offset
+        {
+            foreach (
+                var move in FindCaptureSequences(
+                    board,
+                    origin,
+                    currentPosition,
+                    movingPiece,
+                    visited: [.. visited],
+                    intermediates: [.. intermediates, intermediate],
+                    captured: [.. captured],
+                    offset
+                )
             )
-        )
-            yield return move;
+            {
+                yield return move;
+            }
+        }
     }
 }

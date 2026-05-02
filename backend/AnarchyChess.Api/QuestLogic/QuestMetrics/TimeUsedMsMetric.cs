@@ -20,8 +20,8 @@ public class TimeUsedMsMetric : IQuestMetric
             whenBlack: snapshot.Clocks.BlackClock.TimeLeftMs
         );
         int playerMoves = snapshot.PlayerColor.Match(
-            whenWhite: snapshot.MoveHistory.Count / 2,
-            whenBlack: (snapshot.MoveHistory.Count + 1) / 2
+            whenWhite: snapshot.Board.Moves.Count / 2,
+            whenBlack: (snapshot.Board.Moves.Count + 1) / 2
         );
 
         double timeUsedMs = timeControl.BaseSeconds * 1000 - timeLeft;
