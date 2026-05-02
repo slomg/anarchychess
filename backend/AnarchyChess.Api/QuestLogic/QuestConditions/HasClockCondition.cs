@@ -2,6 +2,8 @@
 
 namespace AnarchyChess.Api.QuestLogic.QuestConditions;
 
+[GenerateSerializer]
+[Alias("AnarchyChess.Api.QuestLogic.QuestConditions.HasClockCondition")]
 public class HasClockCondition : IQuestCondition
 {
     public bool Evaluate(GameQuestSnapshot snapshot) =>

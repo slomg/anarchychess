@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import clsx from "clsx";
 
 import ProfilePicture from "@/features/profile/components/ProfilePicture";
@@ -14,7 +15,6 @@ import useBotMatch from "../hooks/useBotMatch";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import constants from "@/lib/constants";
-import Image from "next/image";
 
 const BotPlayOptions = () => {
     const [selectedBotType, setSelectedBotType] = useLocalPref<BotType>(
@@ -48,6 +48,7 @@ const BotPlayOptions = () => {
                     selected={selectedBotType === BotType.ANARCHY_BOT}
                     select={() => setSelectedBotType(BotType.ANARCHY_BOT)}
                 />
+
                 <Bot
                     label="Lobotomized Anarchy Bot"
                     userId="bot:lobotomized-anarchybot"
@@ -56,6 +57,20 @@ const BotPlayOptions = () => {
                     }
                     select={() =>
                         setSelectedBotType(BotType.LOBOTOMIZED_ANARCHY_BOT)
+                    }
+                />
+
+                <Bot
+                    label="Lobotomized Lobotomized Anarchy Bot"
+                    userId="bot:lobotomized-lobotomized-anarchybot"
+                    selected={
+                        selectedBotType ===
+                        BotType.LOBOTOMIZED_LOBOTOMIZED_ANARCHY_BOT
+                    }
+                    select={() =>
+                        setSelectedBotType(
+                            BotType.LOBOTOMIZED_LOBOTOMIZED_ANARCHY_BOT,
+                        )
                     }
                 />
             </div>

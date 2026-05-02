@@ -561,6 +561,10 @@ export enum BotType {
      * LobotomizedAnarchyBot
      */
     LOBOTOMIZED_ANARCHY_BOT = 1,
+    /**
+     * LobotomizedLobotomizedAnarchyBot
+     */
+    LOBOTOMIZED_LOBOTOMIZED_ANARCHY_BOT = 2,
 }
 
 export type RootAnalysisPosition = {

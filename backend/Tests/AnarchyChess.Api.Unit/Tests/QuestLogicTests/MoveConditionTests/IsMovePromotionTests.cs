@@ -10,14 +10,14 @@ public class IsMovePromotionTests
     [Fact]
     public void Evaluate_returns_true_for_promotion_move()
     {
-        var move = new MoveFaker().RuleFor(x => x.PromotesTo, PieceType.Queen);
+        var move = new MoveFaker().RuleFor(x => x.PromotesTo, PieceType.Queen).Generate();
         new IsMovePromotion().Evaluate(move).Should().BeTrue();
     }
 
     [Fact]
     public void Evaluate_returns_false_for_non_promotion_move()
     {
-        var move = new MoveFaker().RuleFor(x => x.PromotesTo, (PieceType?)null);
+        var move = new MoveFaker().RuleFor(x => x.PromotesTo, (PieceType?)null).Generate();
         new IsMovePromotion().Evaluate(move).Should().BeFalse();
     }
 

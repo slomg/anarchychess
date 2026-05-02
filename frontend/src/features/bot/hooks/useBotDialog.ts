@@ -20,14 +20,8 @@ export interface ReactionDialog {
     lines: string[];
 }
 
-export interface LoreDialog {
-    onPly: number;
-    lines: string[];
-}
-
 export interface BotDialogOptions {
     reactionDialog: ReactionDialog[];
-    loreDialog: LoreDialog[];
     generalDialog: string[];
     startDialog: string[];
     botWinDialog: string[];
@@ -36,7 +30,6 @@ export interface BotDialogOptions {
 
 export default function useBotDialog({
     reactionDialog,
-    loreDialog,
     generalDialog,
     startDialog,
     botWinDialog,
@@ -54,7 +47,6 @@ export default function useBotDialog({
     const usedGeneralLinesIdxesRef = useRef<Set<number>>(new Set());
 
     const nextGeneralDialogPlyRef = useRef<number | null>(null);
-    const lastLoreLineForPlyNumberRef = useRef<number>(0);
     const lastLineAtRef = useRef<number | null>(null);
 
     function getDialogForMove(ctx: DialogContext): string | null {
@@ -72,12 +64,6 @@ export default function useBotDialog({
         }
 
         line = pickGeneralLine(ctx.plyNumber);
-        if (line) {
-            lastLineAtRef.current = ctx.plyNumber;
-            return line;
-        }
-
-        line = pickLoreLine(ctx.plyNumber);
         if (line) {
             lastLineAtRef.current = ctx.plyNumber;
             return line;
@@ -153,28 +139,6 @@ export default function useBotDialog({
             plyNumber + getNextGeneralLineInterval(plyNumber);
 
         return generalDialog[randomIdx];
-    }
-
-    function pickLoreLine(plyNumber: number): string | null {
-        const availableLoreIndexes: number[] = [];
-        for (let i = 0; i < loreDialog.length; i++) {
-            const line = loreDialog[i];
-            if (
-                line.onPly > lastLoreLineForPlyNumberRef.current &&
-                line.onPly <= plyNumber
-            ) {
-                availableLoreIndexes.push(i);
-            }
-        }
-
-        const randomIdx = randomItem(availableLoreIndexes);
-        if (randomIdx === null) {
-            return null;
-        }
-
-        lastLoreLineForPlyNumberRef.current = plyNumber;
-        const lines = loreDialog[randomIdx].lines;
-        return randomItem(lines);
     }
 
     function getNextGeneralLineInterval(plyNumber: number) {

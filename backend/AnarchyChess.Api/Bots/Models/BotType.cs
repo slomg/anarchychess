@@ -4,4 +4,5 @@ public enum BotType
 {
     AnarchyBot,
     LobotomizedAnarchyBot,
+    LobotomizedLobotomizedAnarchyBot,
 }

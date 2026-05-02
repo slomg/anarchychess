@@ -85,13 +85,16 @@ public class BotGrainTests : BaseOrleansIntegrationTest
         var gameArchiveService =
             ApiTestBase.Scope.ServiceProvider.GetRequiredService<IGameArchiveService>();
         var unitOfWork = ApiTestBase.Scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+        BotDecisionServiceFactory botDecisionServiceFactory = new(
+            _botServiceMock,
+            ApiTestBase.Scope.ServiceProvider.GetRequiredService<IRandomProvider>(),
+            ApiTestBase.Scope.ServiceProvider.GetRequiredService<IBotHeuristics>(),
+            ApiTestBase.Scope.ServiceProvider.GetRequiredService<ILogger<BotDecisionService>>()
+        );
+        ApiTestBase.Scope.ServiceProvider.GetRequiredService<IBotDecisionServiceFactory>();
 
         _anarchyBot = new(_botServiceMock);
-        _lobotomizedAnarchyBot = new(
-            _botServiceMock,
-            Silo.ServiceProvider.GetRequiredService<IRandomProvider>(),
-            Silo.ServiceProvider.GetRequiredService<IBotHeuristics>()
-        );
+        _lobotomizedAnarchyBot = new(botDecisionServiceFactory);
         BotMoveRunner botMoveRunner = new(
             Silo.ServiceProvider.GetRequiredService<ILogger<BotMoveRunner>>(),
             Silo.GrainFactory,

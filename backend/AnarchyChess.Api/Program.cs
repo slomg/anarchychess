@@ -522,6 +522,8 @@ builder.Services.AddSingleton<IQuestDefinition, WinFastQuest>();
 builder.Services.AddSingleton<IQuestDefinition, PerformKnooklearFusionQuest>();
 builder.Services.AddSingleton<IQuestDefinition, CaptureWithKingQuest>();
 builder.Services.AddSingleton<IQuestDefinition, WinStreakQuest>();
+builder.Services.AddSingleton<IQuestDefinition, WinWithHyperAcceleratedBongcloud>();
+builder.Services.AddSingleton<IQuestDefinition, ThrowStunQuest>();
 #endregion
 
 #region Challenges
@@ -535,9 +537,11 @@ builder.Services.AddSingleton<IBotMoveRunner, BotMoveRunner>();
 builder.Services.AddSingleton<IBotNotifier, BotNotifier>();
 builder.Services.AddSingleton<IBotHeuristics, BotHeuristics>();
 builder.Services.AddSingleton<IBotSee, BotSee>();
+builder.Services.AddSingleton<IBotDecisionServiceFactory, BotDecisionServiceFactory>();
 
 builder.Services.AddSingleton<IBot, AnarchyBot>();
 builder.Services.AddSingleton<IBot, LobotomizedAnarchyBot>();
+builder.Services.AddSingleton<IBot, LobotomizedLobotomizedAnarchyBot>();
 
 builder
     .Services.AddCodeFirstGrpcClient<IAiEngineService>(client =>

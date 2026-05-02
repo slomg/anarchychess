@@ -31,7 +31,8 @@ public class HyperAcceleratedBongcloudRule : IPieceMovementRule
             from: position,
             to: to,
             movingPiece,
-            captures: [new MoveCapture(capturingPiece, to)]
+            captures: [new MoveCapture(capturingPiece, to)],
+            specialMoveType: SpecialMoveType.HyperAcceleratedBongcloud
         );
     }
 }
