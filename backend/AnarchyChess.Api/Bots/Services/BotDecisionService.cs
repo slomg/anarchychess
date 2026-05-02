@@ -86,10 +86,7 @@ public class BotDecisionService(
     /// 3. If not, it seperates the non tactic moves into blunders and non blunders
     /// 4. From the non blunders, it selects moves deemed obvious and plays one of available
     /// 5. If not, it finds blunders deemed non obvious and plays one probablistically
-    /// 6. If not, it attempts to play a non blunder
-    /// 7. If there are none, it plays a tactic
-    /// 8. If there are none, it plays a blunder
-    /// 9. if there are none, it plays a non tactic
+    /// 6. If not, it plays moves by category following <see cref="BotBehaviorProfile.FinalDecisionOrder"/>
     /// </summary>
     public async Task<ErrorOr<MoveEvaluation>> DecideMoveAsync(
         IReadOnlyChessBoard board,
