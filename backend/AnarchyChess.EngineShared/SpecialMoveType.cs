@@ -12,4 +12,5 @@ public enum SpecialMoveType
     RadioactiveBetaDecay,
     OmnipotentPawnSpawn,
     Throw,
+    HyperAcceleratedBongcloud,
 }

@@ -33,7 +33,11 @@ public class KingDefinitionTestData : TheoryData<PieceTestCase>
                 .WithPieceAt("e2", PieceFactory.White(PieceType.Pawn))
                 .WithPieceAt("g2", PieceFactory.White(PieceType.Pawn))
                 .GoesTo("e1", "g1")
-                .GoesTo("f2", captures: ["f2"])
+                .GoesTo(
+                    "f2",
+                    captures: ["f2"],
+                    specialMoveType: SpecialMoveType.HyperAcceleratedBongcloud
+                )
                 .WithDescription("Hyper accelerated bongcloud")
         );
     }

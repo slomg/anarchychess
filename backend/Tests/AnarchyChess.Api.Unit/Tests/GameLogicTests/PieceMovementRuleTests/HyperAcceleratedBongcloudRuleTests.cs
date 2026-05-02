@@ -29,7 +29,8 @@ public class HyperAcceleratedBongcloudRuleTests
                     from: new("f1"),
                     to: new("f2"),
                     piece,
-                    captures: [new MoveCapture(new("f2"), board)]
+                    captures: [new MoveCapture(new("f2"), board)],
+                    specialMoveType: SpecialMoveType.HyperAcceleratedBongcloud
                 )
             );
     }
@@ -50,7 +51,8 @@ public class HyperAcceleratedBongcloudRuleTests
                     from: new("f10"),
                     to: new("f9"),
                     piece,
-                    captures: [new MoveCapture(new("f9"), board)]
+                    captures: [new MoveCapture(new("f9"), board)],
+                    specialMoveType: SpecialMoveType.HyperAcceleratedBongcloud
                 )
             );
     }
