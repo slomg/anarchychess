@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { useGLTF, useSpriteLoader } from "@react-three/drei";
+import { useGLTF, useSpriteLoader, useTexture } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { twMerge } from "tailwind-merge";
 
@@ -16,6 +16,8 @@ import PieceRenderer from "./PieceRenderer";
 import constants from "@/lib/constants";
 import ThrowPrompt from "./ThrowPrompt";
 import Coords from "./Coords";
+import { getPieceImage } from "../lib/pieceImage";
+import { GameColor, PieceType } from "@/lib/apiClient";
 
 export interface PaddingOffset {
     width: number;
@@ -38,6 +40,13 @@ export interface ChessboardLayoutProps {
 if (typeof window !== "undefined") {
     useGLTF.preload(constants.MODELS.PAWN);
     useSpriteLoader.preload(constants.SPRITE_SHEETS.EXPLOSION);
+
+    useTexture.preload(getPieceImage(PieceType.QUEEN, GameColor.WHITE));
+    useTexture.preload(getPieceImage(PieceType.QUEEN, GameColor.BLACK));
+
+    useTexture.preload(getPieceImage(PieceType.ANTIQUEEN, GameColor.WHITE));
+    useTexture.preload(getPieceImage(PieceType.ANTIQUEEN, GameColor.BLACK));
+
     AudioPlayer.preload(
         AudioType.MOVE,
         AudioType.CAPTURE,
