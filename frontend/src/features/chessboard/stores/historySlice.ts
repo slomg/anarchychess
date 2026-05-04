@@ -1,12 +1,11 @@
 import { StateCreator } from "zustand";
 
 import PositionHistory from "../lib/positionHistory";
-import { PositionId } from "../lib/position";
-import { Position } from "../lib/position";
-import { PositionProps } from "../lib/position";
-
 import { ChessboardStore } from "./chessboardStore";
+import { PositionProps } from "../lib/position";
+import { PositionId } from "../lib/position";
 import BoardPieces from "../lib/boardPieces";
+import { Position } from "../lib/position";
 import LegalMoves from "../lib/legalMoves";
 
 export interface HistorySliceProps {
@@ -67,7 +66,7 @@ export function createHistorySlice(
         },
 
         async goToPosition(positionId) {
-            const { applyMoveAnimated, updatePiecesFromPosition } = get();
+            const { applyMoveAnimated, updatePieces } = get();
 
             let position!: Position | null;
             let success!: boolean;
@@ -85,7 +84,7 @@ export function createHistorySlice(
             if (isOneStepForward) {
                 await applyMoveAnimated(position.move);
             } else {
-                await updatePiecesFromPosition(position);
+                await updatePieces(position.pieces);
             }
         },
 
@@ -105,7 +104,7 @@ export function createHistorySlice(
         },
 
         async stepPositionBackward() {
-            const { updatePiecesFromPosition, updatePieces } = get();
+            const { updatePieces } = get();
 
             let success!: boolean;
             let position!: Position | null;
@@ -119,7 +118,7 @@ export function createHistorySlice(
 
             const { positionHistory } = get();
             if (position) {
-                await updatePiecesFromPosition(position);
+                await updatePieces(position.pieces);
             } else {
                 await updatePieces(positionHistory.rootPieces);
             }
@@ -138,7 +137,7 @@ export function createHistorySlice(
         },
 
         async goToLatestPosition() {
-            const { updatePiecesFromPosition, applyMoveAnimated } = get();
+            const { updatePieces, applyMoveAnimated } = get();
 
             let position!: Position | null;
             let success!: boolean;
@@ -156,7 +155,7 @@ export function createHistorySlice(
             if (isOneStepForward) {
                 await applyMoveAnimated(position.move);
             } else {
-                await updatePiecesFromPosition(position);
+                await updatePieces(position.pieces);
             }
         },
 

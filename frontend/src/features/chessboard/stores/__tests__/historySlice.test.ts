@@ -42,12 +42,12 @@ describe("HistorySlice", () => {
 
     describe("goToPosition", () => {
         const applyMoveAnimatedMock = vi.fn();
-        const updatePiecesFromPositionMock = vi.fn();
+        const updatePiecesMock = vi.fn();
 
         beforeEach(() => {
             store.setState({
                 applyMoveAnimated: applyMoveAnimatedMock,
-                updatePiecesFromPosition: updatePiecesFromPositionMock,
+                updatePieces: updatePiecesMock,
             });
         });
 
@@ -60,7 +60,7 @@ describe("HistorySlice", () => {
                 .goToPosition("non-existent-id" as PositionId);
 
             expect(applyMoveAnimatedMock).not.toHaveBeenCalled();
-            expect(updatePiecesFromPositionMock).not.toHaveBeenCalled();
+            expect(updatePiecesMock).not.toHaveBeenCalled();
         });
 
         it("should animate the move if stepping exactly one position forward", async () => {
@@ -82,10 +82,10 @@ describe("HistorySlice", () => {
             expect(applyMoveAnimatedMock).toHaveBeenCalledExactlyOnceWith(
                 pos2.move,
             );
-            expect(updatePiecesFromPositionMock).not.toHaveBeenCalled();
+            expect(updatePiecesMock).not.toHaveBeenCalled();
         });
 
-        it("should update pieces from position when jumping backward", async () => {
+        it("should update pieces when jumping backward", async () => {
             const positionHistory = new PositionHistory(
                 createFakeBoardPieces(),
             );
@@ -101,9 +101,9 @@ describe("HistorySlice", () => {
 
             await store.getState().goToPosition(pos1.positionId);
 
-            expect(
-                updatePiecesFromPositionMock,
-            ).toHaveBeenCalledExactlyOnceWith(pos1);
+            expect(updatePiecesMock).toHaveBeenCalledExactlyOnceWith(
+                pos1.pieces,
+            );
             expect(applyMoveAnimatedMock).not.toHaveBeenCalled();
         });
 
@@ -124,9 +124,9 @@ describe("HistorySlice", () => {
 
             await store.getState().goToPosition(pos3.positionId);
 
-            expect(
-                updatePiecesFromPositionMock,
-            ).toHaveBeenCalledExactlyOnceWith(pos3);
+            expect(updatePiecesMock).toHaveBeenCalledExactlyOnceWith(
+                pos3.pieces,
+            );
             expect(applyMoveAnimatedMock).not.toHaveBeenCalled();
         });
     });
@@ -170,12 +170,10 @@ describe("HistorySlice", () => {
     });
 
     describe("stepPositionBackward", () => {
-        const updatePiecesFromPositionMock = vi.fn();
         const updatePiecesMock = vi.fn();
 
         beforeEach(() => {
             store.setState({
-                updatePiecesFromPosition: updatePiecesFromPositionMock,
                 updatePieces: updatePiecesMock,
             });
         });
@@ -187,7 +185,6 @@ describe("HistorySlice", () => {
 
             await store.getState().stepPositionBackward();
 
-            expect(updatePiecesFromPositionMock).not.toHaveBeenCalled();
             expect(updatePiecesMock).not.toHaveBeenCalled();
         });
 
@@ -204,7 +201,6 @@ describe("HistorySlice", () => {
 
             await store.getState().stepPositionBackward();
 
-            expect(updatePiecesFromPositionMock).not.toHaveBeenCalled();
             expect(updatePiecesMock).toHaveBeenCalledExactlyOnceWith(
                 positionHistory.rootPieces,
             );
@@ -222,10 +218,9 @@ describe("HistorySlice", () => {
 
             await store.getState().stepPositionBackward();
 
-            expect(
-                updatePiecesFromPositionMock,
-            ).toHaveBeenCalledExactlyOnceWith(pos1);
-            expect(updatePiecesMock).not.toHaveBeenCalled();
+            expect(updatePiecesMock).toHaveBeenCalledExactlyOnceWith(
+                pos1.pieces,
+            );
         });
     });
 
@@ -248,7 +243,7 @@ describe("HistorySlice", () => {
 
     describe("goToLatestPosition", () => {
         it("should update pieces from position with correct position", async () => {
-            const updatePiecesFromPositionMock = vi.fn();
+            const updatePiecesMock = vi.fn();
 
             const positionHistory = createNFakePositionHistory(3);
             const expectedPosition = positionHistory.viewingPosition;
@@ -256,14 +251,14 @@ describe("HistorySlice", () => {
 
             store.setState({
                 positionHistory,
-                updatePiecesFromPosition: updatePiecesFromPositionMock,
+                updatePieces: updatePiecesMock,
             });
 
             await store.getState().goToLatestPosition();
 
-            expect(
-                updatePiecesFromPositionMock,
-            ).toHaveBeenCalledExactlyOnceWith(expectedPosition);
+            expect(updatePiecesMock).toHaveBeenCalledExactlyOnceWith(
+                expectedPosition?.pieces,
+            );
         });
     });
 
