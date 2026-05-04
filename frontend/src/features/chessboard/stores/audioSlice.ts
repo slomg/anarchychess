@@ -38,7 +38,7 @@ export function createAudioSlice(
 
         async playAudioForAnimationStep(step) {
             const { muteAudio } = get();
-            if (muteAudio || step.movedPieceIds.length === 0) return;
+            if (muteAudio || step.mute) return;
 
             const specialMoveAudio = step.specialType
                 ? SPECIAL_MOVE_AUDIO_MAP[step.specialType]
