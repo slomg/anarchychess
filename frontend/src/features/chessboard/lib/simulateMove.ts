@@ -127,6 +127,41 @@ const SPECIAL_MOVE_ANIMATION_HANDLERS: Partial<
         },
         alreadyPlayedLocally: false,
     },
+    [SpecialMoveType.QUEENTUM_TUNNEL]: {
+        handler: (
+            basePieces: BoardPieces,
+            move: Move,
+            fromPiece: Piece,
+        ): AnimationStep[] => {
+            let queenPosition: LogicalPoint;
+            let antiqueenPosition: LogicalPoint;
+            if (fromPiece.type === PieceType.QUEEN) {
+                queenPosition = move.from;
+                antiqueenPosition = move.sideEffects[0].from;
+            } else {
+                queenPosition = move.sideEffects[0].from;
+                antiqueenPosition = move.from;
+            }
+
+            return [
+                {
+                    newPieces: new BoardPieces(basePieces),
+                    movedPieceIds: [],
+                    boardEffect: {
+                        type: TransientBoardEffectType.QUEENTUM_TUNNELLING,
+                        queenPosition,
+                        antiqueenPosition,
+                        color: fromPiece.color,
+                    },
+                    specialType: SpecialMoveType.QUEENTUM_TUNNEL,
+                },
+
+                {
+                    newPieces: simulateMove(basePieces, move).newPieces,
+                    movedPieceIds: [],
+                    mute: true,
+                },
+            ];
         },
         alreadyPlayedLocally: false,
     },
