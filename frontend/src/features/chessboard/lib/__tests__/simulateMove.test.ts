@@ -344,6 +344,7 @@ describe("simulateMoveAnimated", () => {
                 color: movingPiece.color,
             },
             disableStepDelay: true,
+            mute: true,
         });
 
         const expectedFinalPieces = new BoardPieces(pieces);
@@ -392,6 +393,7 @@ describe("simulateMoveAnimated", () => {
                 type: TransientBoardEffectType.EXPLOSION,
                 at: move.to,
             },
+            mute: true,
         });
     });
 });
