@@ -28,7 +28,7 @@ import { BotClientEvents, useBotEvent } from "../../hooks/useBotHub";
 import { decodeMovePath } from "@/features/liveGame/lib/moveDecoder";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
 import { PlayerType } from "@/features/liveGame/lib/types";
-import { GameColor, MoveSnapshot } from "@/lib/apiClient";
+import { BotType, GameColor, MoveSnapshot } from "@/lib/apiClient";
 import constants from "@/lib/constants";
 
 vi.mock("../../hooks/useBotDialog");
@@ -78,6 +78,7 @@ describe("BotDialog", () => {
                     <BotDialog
                         botColor={botColor ?? GameColor.WHITE}
                         chessboardStore={chessboardStore}
+                        botType={BotType.ANARCHY_BOT}
                     />
                 </LiveChessStoreContext.Provider>
             </ChessboardStoreContext.Provider>,
