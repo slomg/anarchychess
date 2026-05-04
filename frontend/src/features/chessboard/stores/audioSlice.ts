@@ -21,6 +21,7 @@ const SPECIAL_MOVE_AUDIO_MAP: Partial<Record<SpecialMoveType, AudioType>> = {
     [SpecialMoveType.VERTICAL_CASTLE]: AudioType.CASTLE,
     [SpecialMoveType.IL_VATICANO]: AudioType.CASTLE,
     [SpecialMoveType.THROW]: AudioType.EXPLOSION,
+    [SpecialMoveType.QUEENTUM_TUNNEL]: AudioType.QUEENTUM_TUNNEL,
 };
 
 export function createAudioSlice(
