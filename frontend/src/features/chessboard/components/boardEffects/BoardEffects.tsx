@@ -6,11 +6,11 @@ import {
 } from "../../stores/boardEffectsSlice";
 
 import { viewPoint, viewToWorld } from "@/features/point/pointUtils";
+import QueentumTunnelingEffect from "./QueentumTunnelingEffect";
 import { useChessboardStore } from "../../hooks/useChessboard";
 import ThrowAimLineEffect from "./ThrowAimLineEffect";
 import PawnThrowEffect from "./PawnThrowEffect";
 import ExplosionEffect from "./ExplosionEffect";
-import QueentumTunnelingEffect from "./QueentumTunnelingEffect";
 
 const BoardEffects = () => {
     const persistentEffects = useChessboardStore(

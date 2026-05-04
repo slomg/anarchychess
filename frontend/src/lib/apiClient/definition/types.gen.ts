@@ -446,6 +446,14 @@ export enum SpecialMoveType {
      * Throw
      */
     THROW = 9,
+    /**
+     * HyperAcceleratedBongcloud
+     */
+    HYPER_ACCELERATED_BONGCLOUD = 10,
+    /**
+     * QueentumTunnel
+     */
+    QUEENTUM_TUNNEL = 11,
 }
 
 export enum ForcedMovePriority {
