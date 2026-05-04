@@ -359,6 +359,29 @@ public class BitBoardMakeMoveTests
     }
 
     [Fact]
+    public void MakeMove_handles_queentum_tunneling()
+    {
+        Dictionary<AlgebraicPoint, Piece> pieces = new()
+        {
+            [new AlgebraicPoint("e1")] = PieceFactory.White(PieceType.Queen),
+            [new AlgebraicPoint("f7")] = PieceFactory.White(PieceType.Antiqueen),
+        };
+        BitBoard board = BitBoard.FromPieces(pieces);
+
+        BitMove move = new()
+        {
+            From = new AlgebraicPoint("e1").AsIdx(),
+            To = new AlgebraicPoint("f7").AsIdx(),
+            Piece = new() { Type = PieceType.Queen, Color = BitPieceColor.White },
+            SpecialMoveType = SpecialMoveType.QueentumTunnel,
+        };
+        board.MakeMove(move);
+
+        AssertPieceAt(board, new("e1"), PieceType.Antiqueen);
+        AssertPieceAt(board, new("f7"), PieceType.Queen);
+    }
+
+    [Fact]
     public void MakeMove_handles_white_radioactive_beta_decay()
     {
         Dictionary<AlgebraicPoint, Piece> pieces = new()

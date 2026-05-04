@@ -31,22 +31,35 @@ public class QueenTestData : TheoryData<PieceTestCase>
             .. e5MovesDownRight,
         ];
 
+        MoveTestCase e5WhiteRadioactiveBetaDecay = new(
+            "e5",
+            Spawns:
+            [
+                new PieceSpawn(PieceType.Rook, GameColor.White, new("d5")),
+                new PieceSpawn(PieceType.SterilePawn, GameColor.White, new("e6")),
+                new PieceSpawn(PieceType.Horsey, GameColor.White, new("f5")),
+            ],
+            Captures: ["e5"],
+            SpecialMoveType: SpecialMoveType.RadioactiveBetaDecay
+        );
+
+        MoveTestCase e5BlackRadioactiveBetaDecay = new(
+            "e5",
+            Spawns:
+            [
+                new PieceSpawn(PieceType.Rook, GameColor.Black, new("d5")),
+                new PieceSpawn(PieceType.SterilePawn, GameColor.Black, new("e4")),
+                new PieceSpawn(PieceType.Horsey, GameColor.Black, new("f5")),
+            ],
+            Captures: ["e5"],
+            SpecialMoveType: SpecialMoveType.RadioactiveBetaDecay
+        );
+
         Add(
             PieceTestCase
                 .From("e5", whiteQueen)
                 .GoesTo(e5Moves)
-                // radioactive beta decay
-                .GoesTo(
-                    "e5",
-                    spawns:
-                    [
-                        new PieceSpawn(PieceType.Rook, GameColor.White, new("d5")),
-                        new PieceSpawn(PieceType.SterilePawn, GameColor.White, new("e6")),
-                        new PieceSpawn(PieceType.Horsey, GameColor.White, new("f5")),
-                    ],
-                    captures: ["e5"],
-                    specialMoveType: SpecialMoveType.RadioactiveBetaDecay
-                )
+                .GoesTo(e5WhiteRadioactiveBetaDecay)
                 .WithDescription("White queen on open board from e5 with beta decay")
         );
 
@@ -54,18 +67,7 @@ public class QueenTestData : TheoryData<PieceTestCase>
             PieceTestCase
                 .From("e5", blackQueen)
                 .GoesTo(e5Moves)
-                // radioactive beta decay
-                .GoesTo(
-                    "e5",
-                    spawns:
-                    [
-                        new PieceSpawn(PieceType.Rook, GameColor.Black, new("d5")),
-                        new PieceSpawn(PieceType.SterilePawn, GameColor.Black, new("e4")),
-                        new PieceSpawn(PieceType.Horsey, GameColor.Black, new("f5")),
-                    ],
-                    captures: ["e5"],
-                    specialMoveType: SpecialMoveType.RadioactiveBetaDecay
-                )
+                .GoesTo(e5BlackRadioactiveBetaDecay)
                 .WithDescription("Black queen on open board from e5 with beta decay")
         );
 
@@ -286,6 +288,30 @@ public class QueenTestData : TheoryData<PieceTestCase>
                 .From("f10", whiteQueen)
                 .GoesTo(f10Moves)
                 .WithDescription("White queen on f10 can't beta decay")
+        );
+
+        var whiteAntiqueen = PieceFactory.White(PieceType.Antiqueen);
+        var blackAntiqueen = PieceFactory.Black(PieceType.Antiqueen);
+        Add(
+            PieceTestCase
+                .From("e5", whiteQueen)
+                .WithPieceAt("g4", whiteAntiqueen)
+                .WithPieceAt("c6", whiteAntiqueen)
+                .WithPieceAt("c4", blackAntiqueen)
+                .WithFriendlyPieceAt("b4", excludePieces: [PieceType.Antiqueen])
+                .GoesTo(e5Moves)
+                .GoesTo(e5WhiteRadioactiveBetaDecay)
+                .GoesTo(
+                    "g4",
+                    sideEffects: [new(From: new("g4"), To: new("e5"), Piece: whiteAntiqueen)],
+                    specialMoveType: SpecialMoveType.QueentumTunnel
+                )
+                .GoesTo(
+                    "c6",
+                    sideEffects: [new(From: new("c6"), To: new("e5"), Piece: whiteAntiqueen)],
+                    specialMoveType: SpecialMoveType.QueentumTunnel
+                )
+                .WithDescription("Queentum tunneling")
         );
     }
 }

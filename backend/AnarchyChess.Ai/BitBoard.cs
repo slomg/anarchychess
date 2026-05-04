@@ -317,7 +317,10 @@ public partial class BitBoard
             }
         }
 
-        if ((move.CapturesMask & (UInt128.One << move.From)) == 0 || move.PromotesTo is not null)
+        bool isSelfCapture = (move.CapturesMask & (UInt128.One << move.From)) != 0;
+        // either the piece has moved to a different square, or a promotion
+        bool isMeaningfulMove = move.From != move.To || move.PromotesTo is not null;
+        if (!isSelfCapture && isMeaningfulMove)
         {
             MovePiece(
                 move.Piece.Type,
@@ -387,6 +390,11 @@ public partial class BitBoard
             RemovePiece(pieceType, color, at: from);
             SpawnPiece(promoteToPiece, color, at: to);
             return;
+        }
+
+        if (TryGetPieceAt(to, out var piece))
+        {
+            RemovePiece(piece.Value.Type, piece.Value.Color, to);
         }
 
         ref UInt128 bitboard = ref BitboardFor(pieceType, color);

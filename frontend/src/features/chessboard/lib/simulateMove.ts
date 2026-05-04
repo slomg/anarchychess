@@ -1,8 +1,9 @@
 import { TransientBoardEffectType } from "../stores/boardEffectsSlice";
 import { AnimationStep, MoveBounds, Piece, PieceID } from "./types";
-import { SpecialMoveType } from "@/lib/apiClient";
+import { PieceType, SpecialMoveType } from "@/lib/apiClient";
 import BoardPieces from "./boardPieces";
 import { Move } from "./types";
+import { LogicalPoint } from "@/features/point/types";
 
 type SpecialMoveAnimationHandler = (
     basePieces: BoardPieces,
@@ -42,6 +43,7 @@ export function simulateMoveAnimated(
         !skipAlreadyPlayedLocally || !specialHandler?.alreadyPlayedLocally;
     if (specialHandler && shouldPlaySpecialHandler) {
         steps.push(...specialHandler.handler(pieces, move, fromPiece));
+        return steps;
     }
 
     const mainMoveStep = simulateMove(pieces, move);
@@ -77,57 +79,93 @@ const SPECIAL_MOVE_ANIMATION_HANDLERS: Partial<
     Record<SpecialMoveType, SpecialMoveAnimation>
 > = {
     [SpecialMoveType.THROW]: {
-        handler: simulateThrowMove,
+        handler: (
+            basePieces: BoardPieces,
+            move: Move,
+            fromPiece: Piece,
+        ): AnimationStep[] => {
+            const newPieces = new BoardPieces(basePieces);
+            newPieces.removeFrom(move.from);
+
+            return [
+                {
+                    newPieces,
+                    movedPieceIds: [],
+
+                    boardEffect: {
+                        type: TransientBoardEffectType.PAWN_THROW,
+                        from: move.from,
+                        to: move.to,
+                        color: fromPiece.color,
+                    },
+                    disableStepDelay: true,
+                    mute: true,
+                },
+                simulateMove(basePieces, move),
+            ];
+        },
         alreadyPlayedLocally: false,
     },
     [SpecialMoveType.KNOOKLEAR_FUSION]: {
-        handler: simulateKnooklearFusion,
+        handler: (basePieces: BoardPieces, move: Move): AnimationStep[] => {
+            const newPieces = new BoardPieces(basePieces);
+            const removedPieces = newPieces.removeRemovedPiecesFromMove(move);
+
+            return [
+                {
+                    newPieces,
+                    movedPieceIds: [],
+                    fadedPieces: removedPieces,
+                    boardEffect: {
+                        type: TransientBoardEffectType.EXPLOSION,
+                        at: move.to,
+                    },
+                    mute: true,
+                },
+                simulateMove(basePieces, move),
+            ];
+        },
+        alreadyPlayedLocally: false,
+    },
+    [SpecialMoveType.QUEENTUM_TUNNEL]: {
+        handler: (
+            basePieces: BoardPieces,
+            move: Move,
+            fromPiece: Piece,
+        ): AnimationStep[] => {
+            let queenPosition: LogicalPoint;
+            let antiqueenPosition: LogicalPoint;
+            if (fromPiece.type === PieceType.QUEEN) {
+                queenPosition = move.from;
+                antiqueenPosition = move.sideEffects[0].from;
+            } else {
+                queenPosition = move.sideEffects[0].from;
+                antiqueenPosition = move.from;
+            }
+
+            return [
+                {
+                    newPieces: new BoardPieces(basePieces),
+                    movedPieceIds: [],
+                    boardEffect: {
+                        type: TransientBoardEffectType.QUEENTUM_TUNNELLING,
+                        queenPosition,
+                        antiqueenPosition,
+                        color: fromPiece.color,
+                    },
+                    specialType: SpecialMoveType.QUEENTUM_TUNNEL,
+                },
+
+                {
+                    newPieces: simulateMove(basePieces, move).newPieces,
+                    movedPieceIds: [],
+                    mute: true,
+                },
+            ];
+        },
         alreadyPlayedLocally: false,
     },
 } as const;
-
-function simulateThrowMove(
-    basePieces: BoardPieces,
-    move: Move,
-    fromPiece: Piece,
-): AnimationStep[] {
-    const newPieces = new BoardPieces(basePieces);
-    newPieces.removeFrom(move.from);
-
-    return [
-        {
-            newPieces,
-            movedPieceIds: [],
-
-            boardEffect: {
-                type: TransientBoardEffectType.PAWN_THROW,
-                from: move.from,
-                to: move.to,
-                color: fromPiece.color,
-            },
-            disableStepDelay: true,
-        },
-    ];
-}
-
-function simulateKnooklearFusion(
-    basePieces: BoardPieces,
-    move: Move,
-): AnimationStep[] {
-    const newPieces = new BoardPieces(basePieces);
-    const removedPieces = newPieces.removeRemovedPiecesFromMove(move);
-    return [
-        {
-            newPieces,
-            movedPieceIds: [],
-            fadedPieces: removedPieces,
-            boardEffect: {
-                type: TransientBoardEffectType.EXPLOSION,
-                at: move.to,
-            },
-        },
-    ];
-}
 
 export function simulateMove(
     basePieces: BoardPieces,

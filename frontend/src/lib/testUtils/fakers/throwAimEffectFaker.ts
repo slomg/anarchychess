@@ -1,4 +1,4 @@
-import { ThrowAimEffect } from "@/features/chessboard/components/boardEffects/ThrowAimLine";
+import { ThrowAimEffect } from "@/features/chessboard/components/boardEffects/ThrowAimLineEffect";
 import { PersistentBoardEffectType } from "@/features/chessboard/stores/boardEffectsSlice";
 import { createRandomPoint } from "./chessboardFakers";
 

@@ -6,7 +6,7 @@ describe("jumbleDialog", () => {
         vi.spyOn(Math, "random").mockReturnValue(0.5);
     });
 
-    it.each(["a", "aa", "aaa"])(
+    it.each(["a", "ab", "abc"])(
         "should not jumble words that are too short",
         (word) => {
             expect(

@@ -6,6 +6,7 @@ export enum AudioType {
 
     EXPLOSION = "explosion.webm",
     CASTLE = "castle.webm",
+    QUEENTUM_TUNNEL = "queentum_tunnel.webm",
 
     LOW_TIME = "low_time.webm",
 

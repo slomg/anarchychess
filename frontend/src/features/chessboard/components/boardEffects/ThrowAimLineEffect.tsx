@@ -16,7 +16,7 @@ export interface ThrowAimEffect {
 export const DASH_SIZE = 0.2;
 export const GAP_SIZE = 0.1;
 
-const ThrowAimLine = ({ effect }: { effect: ThrowAimEffect }) => {
+const ThrowAimLineEffect = ({ effect }: { effect: ThrowAimEffect }) => {
     const fromView = useChessboardStore((x) =>
         x.logicalPointToViewPoint(effect.from),
     );
@@ -61,4 +61,4 @@ const ThrowAimLine = ({ effect }: { effect: ThrowAimEffect }) => {
         />
     );
 };
-export default ThrowAimLine;
+export default ThrowAimLineEffect;

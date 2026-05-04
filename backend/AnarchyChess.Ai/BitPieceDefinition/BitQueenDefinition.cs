@@ -7,6 +7,8 @@ namespace AnarchyChess.Ai.BitPieceDefinition;
 
 public sealed class BitQueenDefinition : IBitPieceDefinition
 {
+    private const PieceType TunnelWith = PieceType.Antiqueen;
+
     public void GenerateMoves(
         BitBoard board,
         BitPiece piece,
@@ -38,7 +40,9 @@ public sealed class BitQueenDefinition : IBitPieceDefinition
             moves,
             ref moveCount
         );
+
         GenerateBetaDecayMove(board, piece, position, moves, ref moveCount);
+        GenerateQueentumTunnelingMove(board, piece, position, moves, ref moveCount);
     }
 
     private static void GenerateBetaDecayMove(
@@ -69,7 +73,7 @@ public sealed class BitQueenDefinition : IBitPieceDefinition
             return;
         }
 
-        BitMove move = new()
+        moves[moveCount++] = new BitMove()
         {
             From = position,
             To = position,
@@ -77,6 +81,27 @@ public sealed class BitQueenDefinition : IBitPieceDefinition
             CapturesMask = UInt128.One << position,
             SpecialMoveType = SpecialMoveType.RadioactiveBetaDecay,
         };
-        moves[moveCount++] = move;
+    }
+
+    private static void GenerateQueentumTunnelingMove(
+        BitBoard board,
+        BitPiece piece,
+        byte position,
+        Span<BitMove> moves,
+        ref int moveCount
+    )
+    {
+        UInt128 tunnelWith = board.BitboardFor(TunnelWith, piece.Color);
+        while (tunnelWith != 0)
+        {
+            byte tunnelWithPosition = BitboardHelpers.BitScanForward(ref tunnelWith);
+            moves[moveCount++] = new BitMove()
+            {
+                From = position,
+                To = tunnelWithPosition,
+                Piece = piece,
+                SpecialMoveType = SpecialMoveType.QueentumTunnel,
+            };
+        }
     }
 }

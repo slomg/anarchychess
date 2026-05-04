@@ -31,8 +31,8 @@ import ThrowPrompt, {
 import ChessboardStoreContext from "../../contexts/chessboardStoreContext";
 import { PersistentBoardEffectType } from "../../stores/boardEffectsSlice";
 import { createFakePiece } from "@/lib/testUtils/fakers/chessboardFakers";
+import { ThrowAimEffect } from "../boardEffects/ThrowAimLineEffect";
 import flushMicrotasks from "@/lib/testUtils/flushMicrotasks";
-import { ThrowAimEffect } from "../boardEffects/ThrowAimLine";
 import { LogicalPoint } from "@/features/point/types";
 import { GameColor } from "@/lib/apiClient";
 import { Move } from "../../lib/types";

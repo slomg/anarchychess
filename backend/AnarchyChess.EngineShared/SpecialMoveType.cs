@@ -13,4 +13,5 @@ public enum SpecialMoveType
     OmnipotentPawnSpawn,
     Throw,
     HyperAcceleratedBongcloud,
+    QueentumTunnel,
 }

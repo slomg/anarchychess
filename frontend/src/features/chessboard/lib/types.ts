@@ -78,6 +78,7 @@ export interface AnimationStep {
     isPromotion?: boolean;
     hasOvertimeRemovals?: boolean;
 
+    mute?: boolean;
     disableStepDelay?: boolean;
 }
 

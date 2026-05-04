@@ -6,7 +6,7 @@ import {
 import { TransientBoardEffectType } from "../../stores/boardEffectsSlice";
 import { simulateMove, simulateMoveAnimated } from "../simulateMove";
 import { AnimationStep, IntermediateSquare } from "../types";
-import { PieceType, SpecialMoveType } from "@/lib/apiClient";
+import { GameColor, PieceType, SpecialMoveType } from "@/lib/apiClient";
 import { logicalPoint } from "@/features/point/pointUtils";
 import BoardPieces from "../boardPieces";
 
@@ -344,13 +344,10 @@ describe("simulateMoveAnimated", () => {
                 color: movingPiece.color,
             },
             disableStepDelay: true,
+            mute: true,
         });
 
-        const expectedFinalPieces = new BoardPieces(pieces);
-        expectedFinalPieces.movePiece(movingPiece.id, move.to);
-        expect(resultSteps[1].newPieces).toEqual(expectedFinalPieces);
-        expect(resultSteps[1].movedPieceIds).toEqual([movingPiece.id]);
-        expect(resultSteps[1].boardEffect).toBeUndefined();
+        expect(resultSteps[1]).toEqual(simulateMove(pieces, move));
     });
 
     it("should simulate knooklear fusion moves correctly", () => {
@@ -392,6 +389,76 @@ describe("simulateMoveAnimated", () => {
                 type: TransientBoardEffectType.EXPLOSION,
                 at: move.to,
             },
+            mute: true,
         });
+
+        expect(resultSteps[1]).toEqual(simulateMove(pieces, move));
     });
+
+    it.each([
+        {
+            mainPieceType: PieceType.QUEEN,
+            secondaryPieceType: PieceType.ANTIQUEEN,
+            color: GameColor.WHITE,
+        },
+        {
+            mainPieceType: PieceType.ANTIQUEEN,
+            secondaryPieceType: PieceType.QUEEN,
+            color: GameColor.WHITE,
+        },
+        {
+            mainPieceType: PieceType.QUEEN,
+            secondaryPieceType: PieceType.ANTIQUEEN,
+            color: GameColor.BLACK,
+        },
+    ])(
+        "should simulate queentum tunnel moves correctly",
+        ({ mainPieceType, secondaryPieceType, color }) => {
+            const movingPiece = createFakePiece({
+                type: mainPieceType,
+                position: logicalPoint({ x: 2, y: 2 }),
+                color,
+            });
+            const secondaryPiece = createFakePiece({
+                type: secondaryPieceType,
+                position: logicalPoint({ x: 7, y: 7 }),
+                color,
+            });
+            const pieces = BoardPieces.fromPieces(movingPiece, secondaryPiece);
+            const move = createFakeMove({
+                from: movingPiece.position,
+                to: secondaryPiece.position,
+                specialType: SpecialMoveType.QUEENTUM_TUNNEL,
+                sideEffects: [
+                    { from: secondaryPiece.position, to: movingPiece.position },
+                ],
+            });
+
+            const resultSteps = simulateMoveAnimated(pieces, move);
+
+            expect(resultSteps).toHaveLength(2);
+            expect(resultSteps[0]).toEqual<AnimationStep>({
+                newPieces: pieces,
+                movedPieceIds: [],
+                boardEffect: {
+                    type: TransientBoardEffectType.QUEENTUM_TUNNELLING,
+                    queenPosition:
+                        mainPieceType === PieceType.QUEEN
+                            ? movingPiece.position
+                            : secondaryPiece.position,
+                    antiqueenPosition:
+                        mainPieceType === PieceType.QUEEN
+                            ? secondaryPiece.position
+                            : movingPiece.position,
+                    color: movingPiece.color,
+                },
+                specialType: SpecialMoveType.QUEENTUM_TUNNEL,
+            });
+            expect(resultSteps[1]).toEqual({
+                newPieces: simulateMove(pieces, move).newPieces,
+                movedPieceIds: [],
+                mute: true,
+            });
+        },
+    );
 });

@@ -15,10 +15,11 @@ describe("AudioSlice", () => {
         store = createChessboardStore();
     });
 
-    it("should not play audio if movedPieceIds is empty", async () => {
+    it("should not play audio if mute is true", async () => {
         const step: AnimationStep = {
             newPieces: new BoardPieces(),
-            movedPieceIds: [],
+            movedPieceIds: ["1"],
+            mute: true,
         };
 
         await store.getState().playAudioForAnimationStep(step);
