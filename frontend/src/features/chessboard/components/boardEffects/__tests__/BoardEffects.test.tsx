@@ -13,8 +13,8 @@ import ThrowAimLineEffect from "../ThrowAimLineEffect";
 import PawnThrowEffect from "../PawnThrowEffect";
 import BoardEffects from "../BoardEffects";
 
-vi.mock("../PawnThrow");
-vi.mock("../ThrowAimLine");
+vi.mock("../PawnThrowEffect");
+vi.mock("../ThrowAimLineEffect");
 
 describe("BoardEffects", () => {
     let store: StoreApi<ChessboardStore>;
