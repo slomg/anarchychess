@@ -448,6 +448,7 @@ builder.Services.AddSingleton<ISanNotator, IlVaticanoNotator>();
 builder.Services.AddSingleton<ISanNotator, BetaDecayNotator>();
 builder.Services.AddSingleton<ISanNotator, OmnipotentPawnNotator>();
 builder.Services.AddSingleton<ISanNotator, ThrowNotator>();
+builder.Services.AddSingleton<ISanNotator, QueentumTunnelNotator>();
 
 builder.Services.AddSingleton<IPieceDefinition, KingDefinition>();
 builder.Services.AddSingleton<IPieceDefinition, QueenDefinition>();

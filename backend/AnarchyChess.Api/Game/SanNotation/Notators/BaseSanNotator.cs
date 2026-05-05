@@ -13,17 +13,19 @@ public abstract class BaseSanNotator(IPieceLetterMap pieceLetterMap) : ISanNotat
 
     public abstract void Notate(Move move, IEnumerable<Move> legalMoves, StringBuilder sb);
 
-    protected static IEnumerable<Move> FindMovesAtSameDestination(
+    protected static List<Move> FindMovesAtSameDestination(
         Move move,
         IEnumerable<Move> legalMoves
     ) =>
         // moves where the same piece type moved to the same destination
-        legalMoves.Where(x =>
-            x.To == move.To
-            && x.Piece.Type == move.Piece.Type
-            && x.From != move.From
-            && x.SpecialMoveType == move.SpecialMoveType
-        );
+        [
+            .. legalMoves.Where(x =>
+                x.To == move.To
+                && x.Piece.Type == move.Piece.Type
+                && x.From != move.From
+                && x.SpecialMoveType == move.SpecialMoveType
+            ),
+        ];
 
     protected static char FileLetter(int x) => (char)('a' + x);
 
@@ -32,21 +34,35 @@ public abstract class BaseSanNotator(IPieceLetterMap pieceLetterMap) : ISanNotat
             ? ""
             : char.ToUpper(_pieceLetterMap.GetLetter(piece)).ToString();
 
-    protected static void DisambiguatePosition(
+    protected static (bool isRankAmbiguous, bool isFileAmbiguous) DisambiguatePosition(
         Move move,
         IEnumerable<Move> legalMoves,
         StringBuilder sb
     )
     {
         var movesWithSameDestination = FindMovesAtSameDestination(move, legalMoves);
+        return DisambiguatePosition(move.From, ambiguousMoves: movesWithSameDestination, sb);
+    }
 
-        var isRankAmbiguous = movesWithSameDestination.Any(x => x.From.Y == move.From.Y);
-        var isFileAmbiguous = movesWithSameDestination.Any(x => x.From.X == move.From.X);
+    protected static (bool isRankAmbiguous, bool isFileAmbiguous) DisambiguatePosition(
+        AlgebraicPoint position,
+        List<Move> ambiguousMoves,
+        StringBuilder sb
+    )
+    {
+        var isRankAmbiguous = ambiguousMoves.Any(x => x.From.Y == position.Y);
+        var isFileAmbiguous = ambiguousMoves.Any(x => x.From.X == position.X);
 
         if (isRankAmbiguous)
-            sb.Append((char)('a' + move.From.X));
+        {
+            sb.Append(FileLetter(position.X));
+        }
         if (isFileAmbiguous)
-            sb.Append(move.From.Y + 1);
+        {
+            sb.Append(position.Y + 1);
+        }
+
+        return (isRankAmbiguous, isFileAmbiguous);
     }
 
     protected static void NotateDestination(Move move, StringBuilder sb)
