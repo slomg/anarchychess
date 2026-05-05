@@ -54,6 +54,7 @@ if (typeof window !== "undefined") {
         AudioType.PROMOTION,
         AudioType.EXPLOSION,
         AudioType.CASTLE,
+        AudioType.QUEENTUM_TUNNEL,
     );
 }
 
