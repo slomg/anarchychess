@@ -455,7 +455,7 @@ describe("simulateMoveAnimated", () => {
                 specialType: SpecialMoveType.QUEENTUM_TUNNEL,
             });
             expect(resultSteps[1]).toEqual({
-                newPieces: simulateMove(pieces, move).newPieces,
+                ...simulateMove(pieces, move),
                 movedPieceIds: [],
                 mute: true,
             });

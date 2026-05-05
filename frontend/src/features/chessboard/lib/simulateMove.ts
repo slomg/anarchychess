@@ -157,7 +157,7 @@ const SPECIAL_MOVE_ANIMATION_HANDLERS: Partial<
                 },
 
                 {
-                    newPieces: simulateMove(basePieces, move).newPieces,
+                    ...simulateMove(basePieces, move),
                     movedPieceIds: [],
                     mute: true,
                 },
