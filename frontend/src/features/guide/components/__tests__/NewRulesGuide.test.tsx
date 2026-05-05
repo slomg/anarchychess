@@ -21,6 +21,7 @@ describe("NewRulesGuide", () => {
             "Overtime",
             "Forced En Passant",
             "Bouncing Bishop",
+            "Queentum Tunnelling",
             "Self-Bishop Castle Capture",
             "Omnipotent Pawn",
             "Long Passant",

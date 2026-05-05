@@ -1,5 +1,8 @@
 import hyperAcceleratedBongcloud1 from "@public/assets/examples/hyper-accelerated-bongcloud1.png";
 import hyperAcceleratedBongcloud2 from "@public/assets/examples/hyper-accelerated-bongcloud2.png";
+import queentumTunnelling1 from "@public/assets/examples/queentum-tunnelling1.png";
+import queentumTunnelling2 from "@public/assets/examples/queentum-tunnelling2.png";
+import queentumTunnelling3 from "@public/assets/examples/queentum-tunnelling3.png";
 import pawnPawnPromotion1 from "@public/assets/examples/pawn-pawn-promotion1.png";
 import pawnPawnPromotion2 from "@public/assets/examples/pawn-pawn-promotion2.png";
 import verticalCastling1 from "@public/assets/examples/vertical-castling1.png";
@@ -119,6 +122,19 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
                     "If your bishop is able to capture an Underage Pawn through bouncing, it still must do so.",
                 ]}
                 images={[bouncingBishop1, bouncingBishop2, bouncingBishop3]}
+            />
+
+            <GuideCard
+                title="Queentum Tunnelling"
+                points={[
+                    "At any moment, your queen and antiqueen can quantum tunnel and swap places",
+                    "To queentum tunnel, drag your antiqueen onto your queen (or vice versa).",
+                ]}
+                images={[
+                    queentumTunnelling1,
+                    queentumTunnelling2,
+                    queentumTunnelling3,
+                ]}
             />
 
             <GuideCard
