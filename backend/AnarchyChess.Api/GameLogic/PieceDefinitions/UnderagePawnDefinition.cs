@@ -7,6 +7,12 @@ public class UnderagePawnDefinition : BasePawnDefinition
 {
     public override PieceType Type => PieceType.UnderagePawn;
 
+    private static readonly IReadOnlyCollection<PieceType> _promotesTo =
+    [
+        .. GameLogicConstants.PromotablePieces,
+        PieceType.UnderagePawn,
+    ];
+
     public override IEnumerable<IPieceMovementRule> GetBehaviours(
         IReadOnlyChessBoard board,
         AlgebraicPoint position,
@@ -17,6 +23,6 @@ public class UnderagePawnDefinition : BasePawnDefinition
             position,
             movingPiece,
             maxInitialMoveDistance: 2,
-            promotesTo: GameLogicConstants.PromotablePieces
+            promotesTo: _promotesTo
         );
 }

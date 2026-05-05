@@ -10,6 +10,7 @@ public class SterilePawnDefinition : BasePawnDefinition
     private static readonly IReadOnlyCollection<PieceType> _promotesTo =
     [
         .. GameLogicConstants.PromotablePieces.Where(x => x is not PieceType.Queen),
+        PieceType.SterilePawn,
     ];
 
     public override IEnumerable<IPieceMovementRule> GetBehaviours(

@@ -9,7 +9,7 @@ public class PawnTestData : PawnLikeTestData
         AddMoveTests(
             PieceType.Pawn,
             maxInitialMoveDistance: 3,
-            promotesTo: GameLogicConstants.PromotablePieces
+            promotesTo: [.. GameLogicConstants.PromotablePieces, PieceType.Pawn]
         );
     }
 }

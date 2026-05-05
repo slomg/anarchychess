@@ -6,7 +6,7 @@ namespace AnarchyChess.Ai.BitPieceDefinition;
 public sealed class BitUnderagePawnDefinition : IBitPieceDefinition
 {
     private static readonly BitPawnLikeDefinition PawnLikeDefinition = new(
-        promotesTo: [.. GameLogicConstants.PromotablePieces],
+        promotesTo: [.. GameLogicConstants.PromotablePieces, PieceType.UnderagePawn],
         maxInitialSteps: 2
     );
 

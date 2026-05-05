@@ -6,6 +6,11 @@ namespace AnarchyChess.Api.GameLogic.PieceDefinitions;
 public class PawnDefinition : BasePawnDefinition
 {
     public override PieceType Type => PieceType.Pawn;
+    private static readonly IReadOnlyCollection<PieceType> _promotesTo =
+    [
+        .. GameLogicConstants.PromotablePieces,
+        PieceType.Pawn,
+    ];
 
     public override IEnumerable<IPieceMovementRule> GetBehaviours(
         IReadOnlyChessBoard board,
@@ -18,7 +23,7 @@ public class PawnDefinition : BasePawnDefinition
             position,
             movingPiece,
             maxInitialMoveDistance: 3,
-            promotesTo: GameLogicConstants.PromotablePieces
+            promotesTo: _promotesTo
         );
         foreach (var behaviour in behaviours)
         {

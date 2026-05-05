@@ -26,7 +26,6 @@ public static class GameLogicConstants
         PieceType.Knook,
         PieceType.Antiqueen,
         PieceType.Checker,
-        PieceType.Pawn,
     ];
 
     public static readonly AlgebraicPoint WhiteOmnipotentPawnSquare = new("h3");

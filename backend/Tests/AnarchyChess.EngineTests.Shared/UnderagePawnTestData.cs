@@ -9,7 +9,7 @@ public class UnderagePawnTestData : PawnLikeTestData
         AddMoveTests(
             PieceType.UnderagePawn,
             maxInitialMoveDistance: 2,
-            promotesTo: GameLogicConstants.PromotablePieces
+            promotesTo: [.. GameLogicConstants.PromotablePieces, PieceType.UnderagePawn]
         );
     }
 }
