@@ -101,6 +101,21 @@ public class PositionAnalysisTests : BaseIntegrationTest
     }
 
     [Fact]
+    public void GetNextAnalysisPosition_doesnt_distrupt_move_disambiguation()
+    {
+        var result = _positionAnalysis.GetNextAnalysisPosition(
+            new(
+                Fen: "k5K/R5R",
+                PiecePosition: new("a1"),
+                MoveKey: new(from: new("a1"), to: new("c1"))
+            )
+        );
+
+        result.IsError.Should().BeFalse();
+        result.Value.San.Should().Be("Rac1");
+    }
+
+    [Fact]
     public void GetNextLegalMoves_returns_move_options_for_valid_fen()
     {
         ChessBoard board = new();

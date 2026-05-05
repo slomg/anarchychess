@@ -186,6 +186,21 @@ public class GameCoreTests : BaseIntegrationTest
     }
 
     [Fact]
+    public void MakeMove_doesnt_distrupt_disambiguation()
+    {
+        ChessBoard board = new();
+        board.PlacePiece(new("a1"), PieceFactory.White(PieceType.Rook));
+        board.PlacePiece(new("j1"), PieceFactory.White(PieceType.Rook));
+        board.PlacePiece(new("a2"), PieceFactory.White(PieceType.King));
+        board.PlacePiece(new("j2"), PieceFactory.Black(PieceType.King));
+        var state = StartGame(new() { Board = board });
+
+        var result = MakeMoves(state, new MoveKey(new("a1"), new("e1")));
+
+        result.San.Should().Be("Rae1");
+    }
+
+    [Fact]
     public void GetReadOnlyBoard_returns_the_chessboard()
     {
         var state = StartGame();

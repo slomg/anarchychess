@@ -48,6 +48,7 @@ public class PositionAnalysis(
             return GameErrors.MoveInvalid;
 
         GameCoreState coreState = new() { Board = board };
+        _core.StartGame(coreState);
         var moveResult = _core.MakeMove(move, coreState);
         var sideToMove = _core.SideToMove(coreState);
         var legalMoves = _core.GetLegalMoves(coreState);
