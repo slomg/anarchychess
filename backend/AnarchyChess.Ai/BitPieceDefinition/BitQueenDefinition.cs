@@ -92,6 +92,7 @@ public sealed class BitQueenDefinition : IBitPieceDefinition
     )
     {
         UInt128 tunnelWith = board.BitboardFor(TunnelWith, piece.Color);
+        tunnelWith &= ~board.StunnedPieces;
         while (tunnelWith != 0)
         {
             byte tunnelWithPosition = BitboardHelpers.BitScanForward(ref tunnelWith);

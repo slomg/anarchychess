@@ -123,4 +123,36 @@ public class QueentumTunnelingRuleTests
                 ]
             );
     }
+
+    [Fact]
+    public void Evaluate_ignores_stunned_pieces()
+    {
+        ChessBoard board = new(
+            new Dictionary<AlgebraicPoint, Piece>()
+            {
+                [new("e1")] = _whiteQueen,
+                [new("i5")] = _whiteAntiqueen,
+                [new("f5")] = _whiteAntiqueen,
+            },
+            stunnedPieces: new() { [new("i5")] = 3 }
+        );
+
+        QueentumTunnelingRule rule = new(tunnelWith: PieceType.Antiqueen);
+
+        List<Move> result = [.. rule.Evaluate(board, new("e1"), _whiteQueen)];
+
+        result
+            .Should()
+            .BeEquivalentTo(
+                [
+                    new Move(
+                        from: new("e1"),
+                        to: new("f5"),
+                        piece: _whiteQueen,
+                        sideEffects: [new(From: new("f5"), To: new("e1"), Piece: _whiteAntiqueen)],
+                        specialMoveType: SpecialMoveType.QueentumTunnel
+                    ),
+                ]
+            );
+    }
 }

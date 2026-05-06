@@ -16,6 +16,11 @@ public class QueentumTunnelingRule(PieceType tunnelWith) : IPieceMovementRule
         var tunnelWith = board.GetAllPiecesWith(type: _tunnelWith, color: movingPiece.Color);
         foreach (var tunnelPiece in tunnelWith)
         {
+            if (board.StunnedPieces.ContainsKey(tunnelPiece.Position))
+            {
+                continue;
+            }
+
             yield return new Move(
                 from: position,
                 to: tunnelPiece.Position,

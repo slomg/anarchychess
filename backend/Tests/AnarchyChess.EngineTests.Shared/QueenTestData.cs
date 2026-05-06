@@ -311,7 +311,23 @@ public class QueenTestData : TheoryData<PieceTestCase>
                     sideEffects: [new(From: new("c6"), To: new("e5"), Piece: whiteAntiqueen)],
                     specialMoveType: SpecialMoveType.QueentumTunnel
                 )
-                .WithDescription("Queentum tunneling")
+                .WithDescription("Queentum tunnelling")
+        );
+
+        Add(
+            PieceTestCase
+                .From("e5", whiteQueen)
+                .WithPieceAt("g4", whiteAntiqueen)
+                .WithPieceAt("c6", whiteAntiqueen)
+                .WithStun(new("g4"))
+                .GoesTo(e5Moves)
+                .GoesTo(e5WhiteRadioactiveBetaDecay)
+                .GoesTo(
+                    "c6",
+                    sideEffects: [new(From: new("c6"), To: new("e5"), Piece: whiteAntiqueen)],
+                    specialMoveType: SpecialMoveType.QueentumTunnel
+                )
+                .WithDescription("Queentum tunnelling ignores stunned pieces")
         );
     }
 }
