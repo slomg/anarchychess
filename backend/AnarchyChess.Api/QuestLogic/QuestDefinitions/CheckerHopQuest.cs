@@ -8,7 +8,7 @@ namespace AnarchyChess.Api.QuestLogic.QuestDefinitions;
 public class CheckerHopQuest : IQuestDefinition
 {
     public IEnumerable<QuestVariant> Variants =>
-        [CreateVariant(4, QuestDifficulty.Easy), CreateVariant(6, QuestDifficulty.Medium)];
+        [CreateVariant(4, QuestDifficulty.Easy), CreateVariant(5, QuestDifficulty.Medium)];
 
     private static QuestVariant CreateVariant(int piecesToHopOver, QuestDifficulty difficulty) =>
         new(
