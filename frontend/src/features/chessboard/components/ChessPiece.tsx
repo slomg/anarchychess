@@ -4,9 +4,9 @@ import clsx from "clsx";
 import { useChessboardStore } from "@/features/chessboard/hooks/useChessboard";
 import DoubleClickIndicator, { DoubleClickRef } from "./DoubleClickIndicator";
 import useBoardInteraction from "../hooks/useBoardInteraction";
+import { getPieceImage } from "../lib/pieceImage";
 import { Point } from "@/features/point/types";
 import { ChessSquareRef } from "./CoordSquare";
-import { getPieceImage } from "../lib/pieceImage";
 import ChessSquare from "./ChessSquare";
 import { PieceID } from "../lib/types";
 
@@ -21,10 +21,12 @@ const ChessPiece = ({ id }: { id: PieceID }) => {
         isSelected,
         isAnimating,
         disableDrag,
+        isSetupMode,
         screenPointToPiece,
         selectPiece,
         unselectPiece,
         handleMousePieceDrop,
+        makeSetupModeMove,
     } = useChessboardStore((x) => {
         const piece = x.animatingPieces?.getById(id) ?? x.pieces.getById(id);
         return {
@@ -34,10 +36,12 @@ const ChessPiece = ({ id }: { id: PieceID }) => {
             isSelected: x.selectedPieceId === id,
             isAnimating: x.animatingPieceIds.has(id),
             disableDrag: x.disableDrag,
+            isSetupMode: x.isSetupMode,
             screenPointToPiece: x.screenPointToPiece,
             selectPiece: x.selectPiece,
             unselectPiece: x.unselectPiece,
             handleMousePieceDrop: x.handleMousePieceDrop,
+            makeSetupModeMove: x.makeSetupModeMove,
         };
     });
 
@@ -60,7 +64,9 @@ const ChessPiece = ({ id }: { id: PieceID }) => {
                 return false;
             }
 
-            if (disableDrag || info.button !== 0) return false;
+            if (disableDrag || info.button !== 0) {
+                return false;
+            }
 
             const piece = screenPointToPiece(info.point);
             return piece === id;
@@ -68,7 +74,9 @@ const ChessPiece = ({ id }: { id: PieceID }) => {
 
         onDragStart() {
             const rect = pieceRef.current?.getBoundingClientRect();
-            if (!rect) return;
+            if (!rect) {
+                return;
+            }
 
             // make sure the piece snaps to the cursor
             const offsetX = rect.left + rect.width / 2;
@@ -78,7 +86,9 @@ const ChessPiece = ({ id }: { id: PieceID }) => {
             wasJustSelectedRef.current = selectPiece(id);
         },
         onDragMove(point) {
-            if (!offsetRef.current) return;
+            if (!offsetRef.current) {
+                return;
+            }
 
             const x = point.x - offsetRef.current.x;
             const y = point.y - offsetRef.current.y;
@@ -91,18 +101,24 @@ const ChessPiece = ({ id }: { id: PieceID }) => {
                 now - lastClickTimeRef.current < DOUBLE_CLICK_MS;
             lastClickTimeRef.current = Date.now();
 
-            const { needsDoubleClick } = await handleMousePieceDrop({
-                mousePoint: point,
-                isDrag: true,
-                isDoubleClick,
-            });
-            if (needsDoubleClick) doubleClickRef.current?.trigger();
+            if (isSetupMode) {
+                makeSetupModeMove(point);
+            } else {
+                const { needsDoubleClick } = await handleMousePieceDrop({
+                    mousePoint: point,
+                    isDrag: true,
+                    isDoubleClick,
+                });
+                if (needsDoubleClick) doubleClickRef.current?.trigger();
+            }
 
             pieceRef.current?.updateDraggingOffset({ x: 0, y: 0 });
             if (!wasJustSelectedRef.current) unselectPiece();
         },
         async onPress(info) {
-            if (!isSelected || info.button != 0) return;
+            if (!isSelected || info.button != 0 || isSetupMode) {
+                return;
+            }
 
             const now = Date.now();
             const isDoubleClick =

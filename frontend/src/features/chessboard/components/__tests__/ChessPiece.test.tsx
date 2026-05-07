@@ -9,14 +9,15 @@ import {
 import {
     createFakeMove,
     createFakePiece,
+    createRandomPoint,
 } from "@/lib/testUtils/fakers/chessboardFakers";
 
 import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardStoreContext";
 import { mockBoundingClientRect } from "@/lib/testUtils/mocks/mockDom";
 import { logicalPoint, pointToStr } from "@/features/point/pointUtils";
 import { LogicalPoint } from "@/features/point/types";
-import ChessboardLayout from "../ChessboardLayout";
 import { getPieceImage } from "../../lib/pieceImage";
+import ChessboardLayout from "../ChessboardLayout";
 import BoardPieces from "../../lib/boardPieces";
 import { Point } from "@/features/point/types";
 import { Move, Piece } from "../../lib/types";
@@ -421,5 +422,67 @@ describe("ChessPiece", () => {
         });
 
         expect(piece).toHaveStyle({ transform: expectedTransform });
+    });
+
+    it("should use setup mode move when setup mode is enabled after dragging", async () => {
+        const { logicalPointToScreenPoint } = store.getState();
+        const makeSetupModeMoveMock = vi.fn();
+        const handleMousePieceDropMock = vi.fn();
+        store.setState({
+            isSetupMode: true,
+            makeSetupModeMove: makeSetupModeMoveMock,
+            handleMousePieceDrop: handleMousePieceDropMock,
+        });
+
+        const user = userEvent.setup();
+        const { chessboard, pieceInfo } = renderPiece();
+        const to = logicalPointToScreenPoint(createRandomPoint());
+
+        await user.pointer([
+            {
+                target: chessboard,
+                coords: logicalPointToScreenPoint(pieceInfo.position),
+                keys: "[MouseLeft>]",
+            },
+            {
+                target: chessboard,
+                coords: to,
+                keys: "[/MouseLeft]",
+            },
+        ]);
+        vi.advanceTimersToNextFrame();
+
+        expect(makeSetupModeMoveMock).toHaveBeenCalledExactlyOnceWith(to);
+        expect(handleMousePieceDropMock).not.toHaveBeenCalled();
+    });
+
+    it("should ignore presses when setup mode is enabled", async () => {
+        const { logicalPointToScreenPoint } = store.getState();
+        const makeSetupModeMoveMock = vi.fn();
+        const handleMousePieceDropMock = vi.fn();
+        store.setState({
+            isSetupMode: true,
+            makeSetupModeMove: makeSetupModeMoveMock,
+            handleMousePieceDrop: handleMousePieceDropMock,
+        });
+
+        const user = userEvent.setup();
+        const { chessboard, pieceInfo } = renderPiece();
+        const to = logicalPointToScreenPoint(createRandomPoint());
+
+        await pressPiece(user, pieceInfo, chessboard);
+        makeSetupModeMoveMock.mockClear();
+
+        await user.pointer([
+            {
+                target: chessboard,
+                coords: to,
+                keys: "[MouseLeft]",
+            },
+        ]);
+        vi.advanceTimersToNextFrame();
+
+        expect(makeSetupModeMoveMock).not.toHaveBeenCalled();
+        expect(handleMousePieceDropMock).not.toHaveBeenCalled();
     });
 });
