@@ -1,17 +1,16 @@
 "use client";
 
-import ChessboardLayout from "@/features/chessboard/components/ChessboardLayout";
-import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardStoreContext";
-
-import { ChessboardStore } from "@/features/chessboard/stores/chessboardStore";
-import useConst from "@/hooks/useConst";
-import { RootAnalysisPosition } from "@/lib/apiClient";
 import { StoreApi } from "zustand";
+
+import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardStoreContext";
+import ChessboardWithSidebar from "@/features/chessboard/components/ChessboardWithSidebar";
+import ChessboardLayout from "@/features/chessboard/components/ChessboardLayout";
+import { ChessboardStore } from "@/features/chessboard/stores/chessboardStore";
 import processRootAnalysis from "../lib/rootAnalysisPositionProcessor";
 import useAnalysisMoveResolver from "../hooks/useAnalysisMoveResolver";
-import ChessboardWithSidebar from "@/features/chessboard/components/ChessboardWithSidebar";
-import MoveHistoryTable from "@/features/chessboard/components/moveHistory/MoveHistoryTable";
-import { MagnifyingGlassPlusIcon } from "@heroicons/react/24/solid";
+import { RootAnalysisPosition } from "@/lib/apiClient";
+import AnalysisSide from "./AnalysisSide";
+import useConst from "@/hooks/useConst";
 
 const AnalysisChessboard = ({
     rootPosition,
@@ -46,14 +45,7 @@ const AnalysisChessboard = ({
                         className="flex h-96 min-h-25 w-full overflow-auto
                             md:h-full lg:max-w-sm"
                     >
-                        <MoveHistoryTable
-                            title={
-                                <>
-                                    <MagnifyingGlassPlusIcon className="h-7 w-7" />
-                                    <h1>Analysis</h1>
-                                </>
-                            }
-                        />
+                        <AnalysisSide />
                     </aside>
                 }
             />
