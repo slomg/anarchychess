@@ -28,6 +28,7 @@ describe("MoveHistoryTable", () => {
         const toolbar = screen.getByTestId("moveHistoryToolbar");
         expect(toolbar).toBeInTheDocument();
 
+        expect(toolbar).toHaveClass("order-1 lg:order-2");
         expect(within(toolbar).getByTitle("Go to Start")).toBeInTheDocument();
         expect(within(toolbar).getByTitle("Flip Board")).toBeInTheDocument();
     });
@@ -39,6 +40,8 @@ describe("MoveHistoryTable", () => {
             </ChessboardStoreContext.Provider>,
         );
 
-        expect(screen.getByTestId("moveHistoryRows")).toBeInTheDocument();
+        const rows = screen.getByTestId("moveHistoryRows");
+        expect(rows).toBeInTheDocument();
+        expect(rows).toHaveClass("order-2 lg:order-1");
     });
 });
