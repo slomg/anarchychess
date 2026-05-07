@@ -41,6 +41,7 @@ export interface HistorySlice {
         positionId?: PositionId,
     ): void;
     setLatestLegalMoves(legalMoves: LegalMoves): void;
+    overrideRoot(pieces: BoardPieces): void;
 
     setAllowHistoryChanges(value: boolean): void;
 }
@@ -238,6 +239,14 @@ export function createHistorySlice(
                 legalMoves,
                 positionHistory.viewingPosition?.positionId,
             );
+        },
+
+        overrideRoot(pieces) {
+            const { setImmediatePieces } = get();
+            set((state) => {
+                state.positionHistory.overrideRoot(pieces);
+            });
+            setImmediatePieces(pieces);
         },
 
         setAllowHistoryChanges(value) {

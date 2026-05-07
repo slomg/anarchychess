@@ -24,6 +24,44 @@ describe("PositionHistory", () => {
         });
     });
 
+    describe("overrideRoot", () => {
+        it("should replace the root pieces and reset viewing position", () => {
+            history.addNextPosition(createFakePositionProps());
+            history.goToEnd();
+
+            const newRoot = createFakeBoardPieces();
+            history.overrideRoot(newRoot);
+
+            expect(history.rootPieces).toBe(newRoot);
+            expect(history.viewingPosition).toBeNull();
+        });
+
+        it("should clear history state after override", () => {
+            const pos1 = history.addNextPosition(createFakePositionProps());
+            history.addNextPosition(createFakePositionProps());
+            history.goToPosition(pos1.positionId);
+
+            history.overrideRoot(createFakeBoardPieces());
+
+            expect(history.getPositionWithPly(1)).toBeUndefined();
+            expect(history.totalPlyCount).toBe(0);
+            expect(history.mainPlyCount).toBe(0);
+            expect([...history]).toEqual([]);
+        });
+
+        it("should reset root but allow new positions to be added", () => {
+            history.addNextPosition(createFakePositionProps());
+
+            history.overrideRoot(createFakeBoardPieces());
+
+            const pos = history.addNextPosition(createFakePositionProps());
+
+            expect(history.mainPlyCount).toBe(1);
+            expect(history.totalPlyCount).toBe(1);
+            expect(history.viewingPosition).toBe(pos);
+        });
+    });
+
     describe("getPositionWithPly", () => {
         it("should return undefined for an empty history", () => {
             expect(history.getPositionWithPly(1)).toBeUndefined();

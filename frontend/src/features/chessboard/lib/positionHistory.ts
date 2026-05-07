@@ -54,6 +54,15 @@ export default class PositionHistory {
         return this._viewingPosition?.positionId === this._tail?.positionId;
     }
 
+    overrideRoot(rootPieces: BoardPieces) {
+        this._root = new RootPositionNode(rootPieces);
+
+        this._tail = null;
+        this._viewingPosition = null;
+        this._byPositionId = new Map();
+        this._byPly = new Map();
+    }
+
     getPositionWithPly(ply: number): Position | undefined {
         return this._byPly.get(ply);
     }

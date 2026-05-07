@@ -522,6 +522,30 @@ describe("HistorySlice", () => {
         });
     });
 
+    describe("overrideRoot", () => {
+        it("should override root and update pieces", () => {
+            const setImmediatePiecesMock = vi.fn();
+
+            const positionHistory = createNFakePositionHistory(3);
+            const newPieces = createFakeBoardPieces();
+
+            store.setState({
+                positionHistory,
+                setImmediatePieces: setImmediatePiecesMock,
+            });
+
+            store.getState().overrideRoot(newPieces);
+
+            const state = store.getState();
+
+            expect(state.positionHistory.rootPieces).toBe(newPieces);
+            expect(state.positionHistory.viewingPosition).toBeNull();
+            expect(setImmediatePiecesMock).toHaveBeenCalledExactlyOnceWith(
+                newPieces,
+            );
+        });
+    });
+
     describe("setAllowHistoryChanges", () => {
         it("should update allowHistoryChanges", () => {
             store.setState({ allowHistoryChanges: false });
