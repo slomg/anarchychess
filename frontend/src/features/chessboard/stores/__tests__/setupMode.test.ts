@@ -123,6 +123,7 @@ describe("SetupModeSlice", () => {
                 expectedPieces,
             );
             expect(store.getState().pieces).toEqual(expectedPieces);
+            expect(store.getState().lastMove).toBeNull();
         });
     });
 });
