@@ -16,6 +16,7 @@ import { logicalPoint } from "@/features/point/pointUtils";
 import { IntermediateSquare } from "../../lib/types";
 import BoardPieces from "../../lib/boardPieces";
 import LegalMoves from "../../lib/legalMoves";
+import { act } from "react";
 
 describe("HighlightedLegalMovesRenderer", () => {
     let store: StoreApi<ChessboardStore>;
@@ -147,5 +148,31 @@ describe("HighlightedLegalMovesRenderer", () => {
                 `${destination.x},${destination.y}`,
         );
         expect(destinationSquare).toBeUndefined();
+    });
+
+    it("should not show moves if isSetupMode", () => {
+        const piece = createFakePiece();
+        const move = createFakeMove({ from: piece.position });
+
+        const legalMoves = new LegalMoves([move]);
+
+        const { setLatestLegalMoves, selectPiece, setSetupMode } =
+            store.getState();
+        store.setState({ pieces: BoardPieces.fromPieces(piece) });
+        setLatestLegalMoves(legalMoves);
+        selectPiece(piece.id);
+        setSetupMode(true);
+
+        render(
+            <ChessboardStoreContext.Provider value={store}>
+                <HighlightedLegalMovesRenderer />
+            </ChessboardStoreContext.Provider>,
+        );
+
+        expect(screen.queryAllByTestId("highlightedLegalMove")).toHaveLength(0);
+
+        act(() => setSetupMode(false));
+
+        expect(screen.queryAllByTestId("highlightedLegalMove")).toHaveLength(1);
     });
 });

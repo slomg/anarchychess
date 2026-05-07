@@ -8,8 +8,11 @@ const HighlightedLegalMovesRenderer = () => {
         x.getViewedPositionLegalMoves(),
     );
     const pieces = useChessboardStore((x) => x.pieces);
-    const selectedPieceId = useChessboardStore((x) => x.selectedPieceId);
-    if (!selectedPieceId) {
+    const { selectedPieceId, isSetupMode } = useChessboardStore((x) => ({
+        selectedPieceId: x.selectedPieceId,
+        isSetupMode: x.isSetupMode,
+    }));
+    if (!selectedPieceId || isSetupMode) {
         return null;
     }
 

@@ -28,7 +28,7 @@ export interface PiecesSlice {
     selectedPieceId: PieceID | null;
     disableDrag: boolean;
     isProcessingMove: boolean;
-    setupMode: boolean;
+    isSetupMode: boolean;
 
     pieceMovementEvent: EventBus<[event: PieceMovementEvent], void>;
 
@@ -149,7 +149,7 @@ export function createPiecesSlice(
             selectedPieceId: null,
             animatingPieces: new Set(),
             isProcessingMove: false,
-            setupMode: false,
+            isSetupMode: false,
 
             pieceMovementEvent: new EventBus(),
 
@@ -306,7 +306,7 @@ export function createPiecesSlice(
 
             setSetupMode(setupMode) {
                 set((state) => {
-                    state.setupMode = setupMode;
+                    state.isSetupMode = setupMode;
                 });
             },
 
