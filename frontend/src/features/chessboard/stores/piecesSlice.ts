@@ -28,6 +28,7 @@ export interface PiecesSlice {
     selectedPieceId: PieceID | null;
     disableDrag: boolean;
     isProcessingMove: boolean;
+    setupMode: boolean;
 
     pieceMovementEvent: EventBus<[event: PieceMovementEvent], void>;
 
@@ -46,6 +47,8 @@ export interface PiecesSlice {
     updatePiecesFromPosition(position: Position): Promise<void>;
     updatePieces(newPieces: BoardPieces): Promise<void>;
     setImmediatePieces(pieces: BoardPieces): void;
+
+    setSetupMode(setupMode: boolean): void;
 
     screenPointToPiece(position: ScreenPoint): PieceID | undefined;
 }
@@ -146,6 +149,7 @@ export function createPiecesSlice(
             selectedPieceId: null,
             animatingPieces: new Set(),
             isProcessingMove: false,
+            setupMode: false,
 
             pieceMovementEvent: new EventBus(),
 
@@ -298,6 +302,12 @@ export function createPiecesSlice(
                 const movedPieceIds = findMovedPiecesBetween(pieces, newPieces);
                 commitPositionChange(newPieces);
                 await playAnimation({ newPieces, movedPieceIds });
+            },
+
+            setSetupMode(setupMode) {
+                set((state) => {
+                    state.setupMode = setupMode;
+                });
             },
 
             screenPointToPiece(point) {
