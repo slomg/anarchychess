@@ -1,3 +1,5 @@
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { StoreApi } from "zustand";
 
 import {
@@ -5,14 +7,20 @@ import {
     createChessboardStore,
 } from "@/features/chessboard/stores/chessboardStore";
 
-import { mockScrollTo } from "@/lib/testUtils/mocks/mockDom";
 import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardStoreContext";
+import * as SetupAnalysisPositionPage from "../SetupAnalysisPositionPage";
+import * as MainAnalysisSidePage from "../MainAnalysisSidePage";
+import { mockScrollTo } from "@/lib/testUtils/mocks/mockDom";
 import AnalysisSide from "../AnalysisSide";
-import { render, screen, within } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 
 describe("AnalysisSide", () => {
     let chessboardStore: StoreApi<ChessboardStore>;
+
+    const mainAnalysisSidePageMock = vi.spyOn(MainAnalysisSidePage, "default");
+    const setupAnalysisPositionPageMock = vi.spyOn(
+        SetupAnalysisPositionPage,
+        "default",
+    );
 
     beforeEach(() => {
         mockScrollTo();
@@ -26,23 +34,8 @@ describe("AnalysisSide", () => {
             </ChessboardStoreContext.Provider>,
         );
 
-        const toolbar = screen.getByTestId("moveHistoryToolbar");
-        expect(toolbar).toBeInTheDocument();
-
-        expect(toolbar).toHaveClass("order-1 lg:order-2");
-        expect(within(toolbar).getByTitle("Go to Start")).toBeInTheDocument();
-        expect(
-            within(toolbar).getByTitle("Setup Position"),
-        ).toBeInTheDocument();
-        expect(within(toolbar).getByTitle("Flip Board")).toBeInTheDocument();
-
-        const rows = screen.getByTestId("moveHistoryRows");
-        expect(rows).toBeInTheDocument();
-        expect(rows).toHaveClass("order-2 lg:order-1");
-
-        expect(
-            screen.queryByTestId("analysisPositionSetup"),
-        ).not.toBeInTheDocument();
+        expect(mainAnalysisSidePageMock).toHaveBeenCalled();
+        expect(setupAnalysisPositionPageMock).not.toHaveBeenCalled();
     });
 
     it("should navigate to setup page and render setup layout with updated toolbar", async () => {
@@ -54,26 +47,18 @@ describe("AnalysisSide", () => {
             </ChessboardStoreContext.Provider>,
         );
 
+        mainAnalysisSidePageMock.mockClear();
+        setupAnalysisPositionPageMock.mockClear();
         await user.click(screen.getByTitle("Setup Position"));
 
-        const toolbar = screen.getByTestId("moveHistoryToolbar");
-        expect(toolbar).toBeInTheDocument();
-        expect(toolbar).toHaveClass("order-1 lg:order-2");
-        expect(
-            within(toolbar).queryByTitle("Go to Start"),
-        ).not.toBeInTheDocument();
-        expect(within(toolbar).getByTitle("Flip Board")).toBeInTheDocument();
-        const backButton = within(toolbar).getByTitle("Go Back");
-        expect(backButton).toBeInTheDocument();
+        expect(setupAnalysisPositionPageMock).toHaveBeenCalled();
+        expect(mainAnalysisSidePageMock).not.toHaveBeenCalled();
 
-        const positionSetup = screen.getByTestId("analysisPositionSetup");
-        expect(positionSetup).toBeInTheDocument();
-        expect(positionSetup).toHaveClass("order-2 lg:order-1");
+        mainAnalysisSidePageMock.mockClear();
+        setupAnalysisPositionPageMock.mockClear();
+        await user.click(screen.getByTitle("Go Back"));
 
-        expect(screen.queryByTestId("moveHistoryRows")).not.toBeInTheDocument();
-
-        await user.click(backButton);
-        expect(screen.getByTestId("moveHistoryRows")).toBeInTheDocument();
-        expect(positionSetup).not.toBeInTheDocument();
+        expect(setupAnalysisPositionPageMock).not.toHaveBeenCalled();
+        expect(mainAnalysisSidePageMock).toHaveBeenCalled();
     });
 });

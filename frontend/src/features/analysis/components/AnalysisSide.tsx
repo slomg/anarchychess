@@ -1,70 +1,29 @@
-import {
-    ArrowUturnLeftIcon,
-    MagnifyingGlassPlusIcon,
-    WrenchScrewdriverIcon,
-} from "@heroicons/react/24/outline";
-
+import { MagnifyingGlassPlusIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 
-import MoveHistoryToolbar from "@/features/chessboard/components/moveHistory/MoveHistoryToolbar";
-import NavigationButtons from "@/features/chessboard/components/moveHistory/NavigationButtons";
-import MoveHistoryRows from "@/features/chessboard/components/moveHistory/MoveHistoryRows";
-import FlipButton from "@/features/chessboard/components/moveHistory/FlipButton";
-import AnalysisPositionSetup from "./AnalysisPositionSetup";
-import Button from "@/components/ui/Button";
+import SetupAnalysisPositionPage from "./SetupAnalysisPositionPage";
+import MainAnalysisSidePage from "./MainAnalysisSidePage";
 import Card from "@/components/ui/Card";
 
-enum AnalysisPage {
+export enum AnalysisPageType {
     Main,
     PositionSetup,
 }
 
 const AnalysisSide = () => {
-    const [selectedPage, setSelectedPage] = useState<AnalysisPage>(
-        AnalysisPage.Main,
+    const [selectedPage, setSelectedPage] = useState<AnalysisPageType>(
+        AnalysisPageType.Main,
     );
 
-    let toolbar: React.ReactNode;
-    let mainView: React.ReactNode;
+    let page: React.ReactNode;
     switch (selectedPage) {
-        case AnalysisPage.PositionSetup:
-            toolbar = (
-                <MoveHistoryToolbar
-                    className="order-1 lg:order-2"
-                    leftActions={
-                        <Button
-                            title="Go Back"
-                            onClick={() => setSelectedPage(AnalysisPage.Main)}
-                        >
-                            <ArrowUturnLeftIcon className="h-8 w-8" />
-                        </Button>
-                    }
-                    rightActions={<FlipButton />}
-                />
+        case AnalysisPageType.PositionSetup:
+            page = (
+                <SetupAnalysisPositionPage setSelectedPage={setSelectedPage} />
             );
-            mainView = <AnalysisPositionSetup className="order-2 lg:order-1" />;
             break;
         default:
-            toolbar = (
-                <MoveHistoryToolbar
-                    className="order-1 lg:order-2"
-                    leftActions={<NavigationButtons />}
-                    rightActions={
-                        <>
-                            <Button
-                                title="Setup Position"
-                                onClick={() =>
-                                    setSelectedPage(AnalysisPage.PositionSetup)
-                                }
-                            >
-                                <WrenchScrewdriverIcon className="h-8 w-8" />
-                            </Button>
-                            <FlipButton />
-                        </>
-                    }
-                />
-            );
-            mainView = <MoveHistoryRows className="order-2 lg:order-1" />;
+            page = <MainAnalysisSidePage setSelectedPage={setSelectedPage} />;
     }
 
     return (
@@ -78,8 +37,7 @@ const AnalysisSide = () => {
                 <h1>Analysis</h1>
             </div>
 
-            {toolbar}
-            {mainView}
+            {page}
         </Card>
     );
 };
