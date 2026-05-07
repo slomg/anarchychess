@@ -33,6 +33,7 @@ import { createInteractionSlice, InteractionSlice } from "./interactionSlice";
 import { BoardSlice, BoardSliceProps, createBoardSlice } from "./boardSlice";
 import { AudioSlice, AudioSliceProps, createAudioSlice } from "./audioSlice";
 import { createPromotionSlice, PromotionSlice } from "./promotionSlice";
+import { createSetupModeSlice, SetupModeSlice } from "./setupModeSlice";
 import { OverlaySlice, createOverlaySlice } from "./overlaySlice";
 import { createPromptSlice, PromptSlice } from "./promptSlice";
 import { createThrowSlice, ThrowSlice } from "./throwSlice";
@@ -55,7 +56,8 @@ export type ChessboardStore = BoardSlice &
     AudioSlice &
     CoreSlice &
     ThrowSlice &
-    BoardEffectsSlice;
+    BoardEffectsSlice &
+    SetupModeSlice;
 export type ChessboardProps = BoardSliceProps &
     PieceSliceProps &
     HistorySliceProps &
@@ -93,6 +95,7 @@ export function createChessboardStore(
                 ...createCoreSlice(...a),
                 ...createThrowSlice(...a),
                 ...createBoardEffectsSlice(...a),
+                ...createSetupModeSlice(...a),
             })),
             { name: "chessboardStore" },
         ),

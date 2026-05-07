@@ -48,8 +48,6 @@ export interface PiecesSlice {
     updatePieces(newPieces: BoardPieces): Promise<void>;
     setImmediatePieces(pieces: BoardPieces): void;
 
-    setSetupMode(setupMode: boolean): void;
-
     screenPointToPiece(position: ScreenPoint): PieceID | undefined;
 }
 
@@ -302,12 +300,6 @@ export function createPiecesSlice(
                 const movedPieceIds = findMovedPiecesBetween(pieces, newPieces);
                 commitPositionChange(newPieces);
                 await playAnimation({ newPieces, movedPieceIds });
-            },
-
-            setSetupMode(setupMode) {
-                set((state) => {
-                    state.isSetupMode = setupMode;
-                });
             },
 
             screenPointToPiece(point) {

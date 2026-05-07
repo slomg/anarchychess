@@ -618,19 +618,6 @@ describe("PiecesSlice", () => {
         });
     });
 
-    describe("setSetupMode", () => {
-        it("should set isSetupMode", () => {
-            store.setState({ isSetupMode: false });
-            const setSetupMode = store.getState().setSetupMode;
-
-            setSetupMode(true);
-            expect(store.getState().isSetupMode).toBe(true);
-
-            setSetupMode(false);
-            expect(store.getState().isSetupMode).toBe(false);
-        });
-    });
-
     describe("updatePieces", () => {
         it("should animate the pieces with minimal animation", async () => {
             const piece = createFakePiece({
