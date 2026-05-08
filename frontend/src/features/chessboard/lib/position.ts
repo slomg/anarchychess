@@ -14,6 +14,7 @@ export interface PositionProps {
 }
 
 export interface RootPosition {
+    positionId: PositionId;
     pieces: BoardPieces;
     fen: string;
 }

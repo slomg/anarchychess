@@ -9,9 +9,9 @@ import {
     RootPosition,
 } from "./position";
 
+import { encodeFen } from "./fenEncoder";
 import BoardPieces from "./boardPieces";
 import { MoveKey } from "./types";
-import { encodeFen } from "./fenEncoder";
 
 export default class PositionHistory {
     [immerable] = true;
