@@ -41,13 +41,13 @@ const CoordSquare: ForwardRefRenderFunction<ChessSquareRef, ChessCoordProps> = (
     const physicalX = x * 100;
     const physicalY = y * 100;
 
-    const maxX = (constants.BOARD_WIDTH - 1) * 100;
-    const maxY = (constants.BOARD_HEIGHT - 1) * 100;
+    const maxX = (constants.BOARD_WIDTH - 1) * 100 + 50;
+    const maxY = (constants.BOARD_HEIGHT - 1) * 100 + 50;
 
     function calculateTransform(offset: Point): string {
         const translate = `translate(
-            clamp(0%, calc(${physicalX}% + ${offset.x}px), ${maxX}%),
-            clamp(0%, calc(${physicalY}% + ${offset.y}px), ${maxY}%))`;
+            clamp(-50%, calc(${physicalX}% + ${offset.x}px), ${maxX}%),
+            clamp(-50%, calc(${physicalY}% + ${offset.y}px), ${maxY}%))`;
         const rotate = rotation != 0 ? `rotate(${rotation}deg)` : "";
         return translate + " " + rotate;
     }
