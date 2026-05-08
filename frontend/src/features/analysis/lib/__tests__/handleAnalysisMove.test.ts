@@ -32,7 +32,6 @@ import PositionHistory from "@/features/chessboard/lib/positionHistory";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
 import LegalMoves from "@/features/chessboard/lib/legalMoves";
 import { Move } from "@/features/chessboard/lib/types";
-import constants from "@/lib/constants";
 
 vi.mock("@/lib/apiClient/definition");
 
@@ -52,10 +51,7 @@ function expectPositionAndLegalMoves(
             fen: newAnalysisPosition.fen,
             san: newAnalysisPosition.san,
         },
-        decodeMovePathIntoLegalMoves({
-            paths: newAnalysisPosition.legalMoves,
-            boardWidth: constants.BOARD_WIDTH,
-        }),
+        decodeMovePathIntoLegalMoves(newAnalysisPosition.legalMoves),
     );
 }
 

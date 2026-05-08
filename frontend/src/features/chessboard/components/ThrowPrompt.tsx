@@ -19,6 +19,7 @@ import { LogicalPoint, Point } from "@/features/point/types";
 import { useChessboardStore } from "../hooks/useChessboard";
 import { GameColor } from "@/lib/apiClient";
 import ChessSquare from "./ChessSquare";
+import constants from "@/lib/constants";
 
 export const THROW_COMMIT_DELAY_MS = 1000;
 export const THROW_INTENT_DELAY_MS = 500;
@@ -145,7 +146,6 @@ function reducer(
 
 const ThrowPrompt = () => {
     const pendingThrow = useChessboardStore((x) => x.pendingThrow);
-    const boardDimensions = useChessboardStore((x) => x.boardDimensions);
     const boardRect = useChessboardStore((x) => x.boardRect);
     const {
         viewingFrom,
@@ -211,7 +211,7 @@ const ThrowPrompt = () => {
 
         let stepSize = DEFAULT_THROW_STEP_SIZE;
         if (boardRect) {
-            stepSize = (boardRect.height / boardDimensions.height) * 1.5;
+            stepSize = (boardRect.height / constants.BOARD_HEIGHT) * 1.5;
         }
 
         const startY = event.clientY;
@@ -368,11 +368,9 @@ const ThrowPrompt = () => {
             onWheel={handleWheel}
         >
             {[
-                ...Array(
-                    boardDimensions.height * boardDimensions.height,
-                ).keys(),
+                ...Array(constants.BOARD_HEIGHT * constants.BOARD_WIDTH).keys(),
             ].map((i) => {
-                const position = idxToLogicalPoint(i, boardDimensions.height);
+                const position = idxToLogicalPoint(i);
                 if (pointsSet.has(pointToStr(position))) {
                     return null;
                 }

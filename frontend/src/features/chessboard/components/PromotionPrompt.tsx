@@ -1,11 +1,13 @@
+import { useRef } from "react";
 import clsx from "clsx";
+
 import { useChessboardStore } from "../hooks/useChessboard";
-import ChessSquare from "./ChessSquare";
-import { PieceType } from "@/lib/apiClient";
+import { PromotionRequest } from "../stores/promotionSlice";
 import { logicalPoint } from "@/features/point/pointUtils";
 import { getPieceImage } from "../lib/pieceImage";
-import { PromotionRequest } from "../stores/promotionSlice";
-import { useRef } from "react";
+import { PieceType } from "@/lib/apiClient";
+import ChessSquare from "./ChessSquare";
+import constants from "@/lib/constants";
 
 const PromotionPrompt = () => {
     const { pendingPromotion, resolvePromotion } = useChessboardStore((x) => ({
@@ -42,10 +44,7 @@ const PromotionPiece = ({
     pendingPromotion: PromotionRequest;
     piece: PieceType | null;
 }) => {
-    const { resolvePromotion, boardDimensions } = useChessboardStore((x) => ({
-        resolvePromotion: x.resolvePromotion,
-        boardDimensions: x.boardDimensions,
-    }));
+    const resolvePromotion = useChessboardStore((x) => x.resolvePromotion);
     const hadMouseDownRef = useRef(false);
 
     if (!piece) return;
@@ -58,8 +57,8 @@ const PromotionPiece = ({
     }
 
     const isCloserToBottom =
-        boardDimensions.height - pendingPromotion.at.y >
-        boardDimensions.height / 2;
+        constants.BOARD_HEIGHT - pendingPromotion.at.y >
+        constants.BOARD_HEIGHT / 2;
     const delta = isCloserToBottom ? index : -index;
 
     const position = logicalPoint({

@@ -1,11 +1,12 @@
-import React, { JSX, useId, useRef } from "react";
+import { JSX, useId, useRef } from "react";
 
+import useBoardInteraction from "../hooks/useBoardInteraction";
 import { useChessboardStore } from "../hooks/useChessboard";
+import { pointEquals } from "@/features/point/pointUtils";
+import { OverlayItem } from "../stores/overlaySlice";
 import { ViewPoint } from "@/features/point/types";
 import { Point } from "@/features/point/types";
-import { OverlayItem } from "../stores/overlaySlice";
-import { pointEquals } from "@/features/point/pointUtils";
-import useBoardInteraction from "../hooks/useBoardInteraction";
+import constants from "@/lib/constants";
 
 const COLOR = "#ff9e44";
 const OPACITY = 0.7;
@@ -29,7 +30,6 @@ const OverlayRenderer = () => {
         screenToViewPoint: x.screenToViewPoint,
     }));
     const currentlyDrawing = useChessboardStore((x) => x.currentlyDrawing);
-    const dimensions = useChessboardStore((x) => x.boardDimensions);
     const overlays = useChessboardStore((x) => x.overlays);
     const headId = useId();
 
@@ -119,7 +119,7 @@ const OverlayRenderer = () => {
             className="pointer-events-none absolute inset-0 z-30"
             width="100%"
             height="100%"
-            viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
+            viewBox={`0 0 ${constants.BOARD_WIDTH} ${constants.BOARD_HEIGHT}`}
             preserveAspectRatio="xMidYMid meet"
         >
             <defs>

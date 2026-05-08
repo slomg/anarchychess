@@ -56,7 +56,6 @@ const PawnThrowEffect = ({
     const toView = useChessboardStore((x) =>
         x.logicalPointToViewPoint(effect.to),
     );
-    const boardDimensions = useChessboardStore((x) => x.boardDimensions);
 
     const from = viewToWorld(fromView);
     const to = viewToWorld(toView);
@@ -64,13 +63,13 @@ const PawnThrowEffect = ({
 
     if (toView.x <= 3) {
         mid.x += 2;
-    } else if (toView.x >= boardDimensions.width - 3) {
+    } else if (toView.x >= constants.BOARD_WIDTH - 3) {
         mid.x -= 2;
     }
 
     if (toView.y <= 3) {
         mid.y -= 2;
-    } else if (toView.y >= boardDimensions.height - 3) {
+    } else if (toView.y >= constants.BOARD_HEIGHT - 3) {
         mid.y += 2;
     }
 

@@ -24,10 +24,9 @@ describe("pointToStr", () => {
 describe("idxToLogicalPoint", () => {
     it("should convert an index to a logical point", () => {
         const index = 16;
-        const boardWidth = 10;
         const expectedPoint = logicalPoint({ x: 6, y: 1 });
 
-        const result = idxToLogicalPoint(index, boardWidth);
+        const result = idxToLogicalPoint(index);
         expect(result).toEqual(expectedPoint);
     });
 });

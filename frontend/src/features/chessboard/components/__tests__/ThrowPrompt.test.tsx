@@ -216,7 +216,7 @@ describe("ThrowPrompt", () => {
         const pointsSet = new Set(data.points.all.map(pointToStr));
         const expectedOverlayPoints: LogicalPoint[] = Array.from(
             { length: 100 },
-            (_, i) => idxToLogicalPoint(i, 10),
+            (_, i) => idxToLogicalPoint(i),
         ).filter((x) => !pointsSet.has(pointToStr(x)));
         assertSquaresEqual(overlaySquares, expectedOverlayPoints);
 

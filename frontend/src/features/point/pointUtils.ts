@@ -9,17 +9,16 @@ import {
     StrPoint,
 } from "@/features/point/types";
 
+import constants from "@/lib/constants";
+
 export function pointToStr(point: Point): StrPoint {
     return `${point.x},${point.y}`;
 }
 
-export function idxToLogicalPoint(
-    index: number,
-    boardWidth: number,
-): LogicalPoint {
+export function idxToLogicalPoint(index: number): LogicalPoint {
     return logicalPoint({
-        x: index % boardWidth,
-        y: Math.floor(index / boardWidth),
+        x: index % constants.BOARD_WIDTH,
+        y: Math.floor(index / constants.BOARD_WIDTH),
     });
 }
 

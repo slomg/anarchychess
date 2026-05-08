@@ -17,12 +17,9 @@ import { decodeFen } from "../lib/fenDecoder";
 import BoardPieces from "../lib/boardPieces";
 import { GameColor } from "@/lib/apiClient";
 import { GameReplay } from "../lib/types";
-import constants from "@/lib/constants";
 import useConst from "@/hooks/useConst";
 
 interface BaseChessboardProps {
-    boardWidth?: number;
-    boardHeight?: number;
     viewingFrom?: GameColor;
     disableDrag?: boolean;
     muteAudio?: boolean;
@@ -41,8 +38,6 @@ interface ChessboardPropsWithPosition extends BaseChessboardProps {
 type ChessboardProps = ChessboardPropsWithReplay | ChessboardPropsWithPosition;
 
 const StaticChessboard = ({
-    boardHeight = constants.BOARD_HEIGHT,
-    boardWidth = constants.BOARD_WIDTH,
     viewingFrom = GameColor.WHITE,
     disableDrag = false,
     muteAudio = false,
@@ -60,7 +55,6 @@ const StaticChessboard = ({
     const chessboardStore = useConst<StoreApi<ChessboardStore>>(() =>
         createChessboardStore({
             pieces: initialPosition,
-            boardDimensions: { width: boardWidth, height: boardHeight },
             legalMovesByPosition: new Map(),
             positionHistory: new PositionHistory(initialPosition),
             viewingFrom,

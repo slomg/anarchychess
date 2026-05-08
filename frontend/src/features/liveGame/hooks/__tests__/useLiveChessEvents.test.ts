@@ -37,7 +37,6 @@ import { refetchGame } from "../../lib/gameStateProcessor";
 import { logicalPoint } from "@/features/point/pointUtils";
 import handleMoveUpdate from "../../lib/handleMoveUpdate";
 import useLiveChessEvents from "../useLiveChessEvents";
-import constants from "@/lib/constants";
 
 vi.mock("@/features/liveGame/hooks/useGameHub");
 vi.mock("@/features/liveGame/lib/gameStateProcessor");
@@ -183,10 +182,7 @@ describe("useLiveChessEvents", () => {
                 chessboardStore,
                 {
                     move,
-                    decodedMove: decodeMovePath(
-                        move.path,
-                        constants.BOARD_WIDTH,
-                    ),
+                    decodedMove: decodeMovePath(move.path),
                     plyNumber: 5,
                     legalMoves: undefined,
                     clocks,
@@ -212,10 +208,7 @@ describe("useLiveChessEvents", () => {
                 chessboardStore,
                 {
                     move,
-                    decodedMove: decodeMovePath(
-                        move.path,
-                        constants.BOARD_WIDTH,
-                    ),
+                    decodedMove: decodeMovePath(move.path),
                     plyNumber: 5,
                     legalMoves: LegalMoves.StableEmpty,
                     clocks,
@@ -250,19 +243,13 @@ describe("useLiveChessEvents", () => {
                 );
             });
 
-            const expectedLegalMoves = decodeMovePathIntoLegalMoves({
-                paths: fakeMoves,
-                boardWidth: 10,
-            });
+            const expectedLegalMoves = decodeMovePathIntoLegalMoves(fakeMoves);
             expect(handleMoveUpdateMock).toHaveBeenCalledExactlyOnceWith(
                 liveChessStore,
                 chessboardStore,
                 {
                     move,
-                    decodedMove: decodeMovePath(
-                        move.path,
-                        constants.BOARD_WIDTH,
-                    ),
+                    decodedMove: decodeMovePath(move.path),
                     plyNumber,
                     legalMoves: expectedLegalMoves,
                     clocks,
@@ -339,10 +326,7 @@ describe("useLiveChessEvents", () => {
 
             const movePath = [createFakeMovePath()];
             const encodedLegalMoves = encodeMoves(movePath);
-            const decodedLegalMoves = decodeMovePathIntoLegalMoves({
-                paths: movePath,
-                boardWidth: constants.BOARD_WIDTH,
-            });
+            const decodedLegalMoves = decodeMovePathIntoLegalMoves(movePath);
 
             const addLegalMovesSpy = vi.spyOn(
                 chessboardStore.getState(),
@@ -424,10 +408,7 @@ describe("useLiveChessEvents", () => {
 
             const move = await triggerMoveMade({ sideToMove: GameColor.BLACK });
 
-            const expectedDecodedMove = decodeMovePath(
-                move.path,
-                constants.BOARD_WIDTH,
-            );
+            const expectedDecodedMove = decodeMovePath(move.path);
             expectedDecodedMove.overtimeRemovals = [removedFrom];
             expect(handleMoveUpdateMock).toHaveBeenCalledExactlyOnceWith(
                 liveChessStore,
@@ -470,10 +451,7 @@ describe("useLiveChessEvents", () => {
 
             const move = await triggerMoveMade({ sideToMove: GameColor.BLACK });
 
-            const expectedDecodedMove = decodeMovePath(
-                move.path,
-                constants.BOARD_WIDTH,
-            );
+            const expectedDecodedMove = decodeMovePath(move.path);
             expectedDecodedMove.overtimeRemovals = [
                 removed1,
                 removed2,

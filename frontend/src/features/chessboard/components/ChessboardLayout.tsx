@@ -8,16 +8,16 @@ import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
 import HighlightedLegalMovesRenderer from "./HighlightedLegalMove";
 import IntermediateSquarePrompt from "./IntermediateSquarePrompt";
 import EmphasizedSquaresRenderer from "./EmphasizedSquare";
+import { GameColor, PieceType } from "@/lib/apiClient";
 import BoardEffects from "./boardEffects/BoardEffects";
 import LastMoveHighlight from "./LastMoveHighlight";
+import { getPieceImage } from "../lib/pieceImage";
 import OverlayRenderer from "./OverlayRenderer";
 import PromotionPrompt from "./PromotionPrompt";
 import PieceRenderer from "./PieceRenderer";
 import constants from "@/lib/constants";
 import ThrowPrompt from "./ThrowPrompt";
 import Coords from "./Coords";
-import { getPieceImage } from "../lib/pieceImage";
-import { GameColor, PieceType } from "@/lib/apiClient";
 
 export interface PaddingOffset {
     width: number;
@@ -72,7 +72,6 @@ const ChessboardLayout = ({
             onPointerUp: x.onPointerUp,
             disableDrag: x.disableDrag,
         }));
-    const boardDimensions = useChessboardStore((x) => x.boardDimensions);
 
     const ref = useRef<HTMLDivElement>(null);
 
@@ -163,7 +162,7 @@ const ChessboardLayout = ({
             onContextMenu={(e) => e.preventDefault()}
         >
             <svg
-                viewBox={`0 0 ${boardDimensions.width} ${boardDimensions.height}`}
+                viewBox={`0 0 ${constants.BOARD_WIDTH} ${constants.BOARD_HEIGHT}`}
                 preserveAspectRatio="none"
                 className="absolute inset-0 h-full w-full rounded-md"
                 shapeRendering="crispEdges"
@@ -171,8 +170,8 @@ const ChessboardLayout = ({
                 <rect
                     x="0"
                     y="0"
-                    width={boardDimensions.width}
-                    height={boardDimensions.height}
+                    width={constants.BOARD_WIDTH}
+                    height={constants.BOARD_HEIGHT}
                     fill="#577298"
                 />
                 <path

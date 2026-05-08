@@ -1,25 +1,20 @@
-import { decodeFen } from "@/features/chessboard/lib/fenDecoder";
-import PositionHistory from "@/features/chessboard/lib/positionHistory";
+import { StoreApi } from "zustand";
+
 import {
     ChessboardStore,
     createChessboardStore,
 } from "@/features/chessboard/stores/chessboardStore";
+
 import { decodeMovePathIntoLegalMoves } from "@/features/liveGame/lib/moveDecoder";
+import PositionHistory from "@/features/chessboard/lib/positionHistory";
 import { GameColor, RootAnalysisPosition } from "@/lib/apiClient";
-import constants from "@/lib/constants";
-import { StoreApi } from "zustand";
+import { decodeFen } from "@/features/chessboard/lib/fenDecoder";
 
 export default function processRootAnalysis(
     position: RootAnalysisPosition,
 ): StoreApi<ChessboardStore> {
-    const boardWidth = constants.BOARD_WIDTH;
-    const boardHeight = constants.BOARD_HEIGHT;
-
     const pieces = decodeFen(position.fen);
-    const legalMoves = decodeMovePathIntoLegalMoves({
-        paths: position.legalMoves,
-        boardWidth,
-    });
+    const legalMoves = decodeMovePathIntoLegalMoves(position.legalMoves);
     const positionHistory = new PositionHistory(pieces);
 
     return createChessboardStore({
@@ -29,10 +24,6 @@ export default function processRootAnalysis(
             [positionHistory.viewingPosition?.positionId, legalMoves],
         ]),
 
-        boardDimensions: {
-            width: boardWidth,
-            height: boardHeight,
-        },
         viewingFrom: GameColor.WHITE,
         allowHistoryChanges: true,
     });

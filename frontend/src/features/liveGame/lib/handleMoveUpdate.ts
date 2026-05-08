@@ -39,10 +39,7 @@ export default async function handleMoveUpdate(
 
     await goToLatestPosition();
 
-    decodedMove ??= decodeMovePath(
-        move.path,
-        chessboardStore.getState().boardDimensions.width,
-    );
+    decodedMove ??= decodeMovePath(move.path);
 
     let pieces = positionHistory.tail?.pieces ?? positionHistory.rootPieces;
     pieces = simulateMove(pieces, decodedMove).newPieces;

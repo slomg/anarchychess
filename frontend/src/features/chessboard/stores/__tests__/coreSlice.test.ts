@@ -10,10 +10,10 @@ import {
     createChessboardStore,
 } from "../chessboardStore";
 
+import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
+import PositionHistory from "../../lib/positionHistory";
 import { PositionId } from "../../lib/position";
 import { GameColor } from "@/lib/apiClient";
-import PositionHistory from "../../lib/positionHistory";
-import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
 
 describe("CoreSlice", () => {
     let store: StoreApi<ChessboardStore>;
@@ -29,10 +29,6 @@ describe("CoreSlice", () => {
         beforeEach(() => {
             newChessboardState = {
                 viewingFrom: GameColor.BLACK,
-                boardDimensions: {
-                    width: 6,
-                    height: 9,
-                },
                 pieces: createFakeBoardPieces(),
                 legalMovesByPosition: new Map([
                     [

@@ -60,10 +60,7 @@ describe("decodeMovePathIntoLegalMoves", () => {
         ];
 
         mockSequentialUUID();
-        decodeMovePathIntoLegalMoves({
-            paths,
-            boardWidth: 10,
-        });
+        decodeMovePathIntoLegalMoves(paths);
 
         expect(addMoveSpy).toHaveBeenCalledExactlyOnceWith<[Move]>({
             from: logicalPoint({ x: 0, y: 0 }),
@@ -105,12 +102,8 @@ describe("decodeMovePathIntoLegalMoves", () => {
             { fromIdx: 0, toIdx: 1, moveKey: "2" },
             { fromIdx: 0, toIdx: 2, moveKey: "3" },
         ];
-        const boardWidth = 10;
 
-        decodeMovePathIntoLegalMoves({
-            paths,
-            boardWidth,
-        });
+        decodeMovePathIntoLegalMoves(paths);
 
         expect(addMoveSpy).toBeCalledTimes(2);
         expect(addMoveSpy).toHaveBeenCalledWith<Move[]>({
@@ -128,10 +121,7 @@ describe("decodeMovePathIntoLegalMoves", () => {
     });
 
     it("should return empty map when paths is empty", () => {
-        const result = decodeMovePathIntoLegalMoves({
-            paths: [],
-            boardWidth: 10,
-        });
+        const result = decodeMovePathIntoLegalMoves([]);
         expect(result).toEqual(new LegalMoves());
     });
 });
@@ -158,10 +148,7 @@ describe("decodeLegalMoves", () => {
         const encoded = Buffer.from(compressed).toString("base64");
 
         mockSequentialUUID();
-        decodeLegalMoves({
-            encoded,
-            boardWidth: 10,
-        });
+        decodeLegalMoves(encoded);
 
         expect(addMoveSpy).toHaveBeenCalledTimes(2);
         expect(addMoveSpy).toHaveBeenCalledWith<[Move]>({
@@ -182,18 +169,12 @@ describe("decodeLegalMoves", () => {
         const compressed = brotliCompress(Buffer.from("[]"));
         const encoded = Buffer.from(compressed).toString("base64");
 
-        const result = decodeLegalMoves({
-            encoded,
-            boardWidth: 10,
-        });
+        const result = decodeLegalMoves(encoded);
         expect(result).toEqual(new LegalMoves());
     });
 
     it("should return empty map when given an empty string", () => {
-        const result = decodeLegalMoves({
-            encoded: "",
-            boardWidth: 10,
-        });
+        const result = decodeLegalMoves("");
         expect(result).toEqual(new LegalMoves());
     });
 });

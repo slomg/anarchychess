@@ -135,7 +135,7 @@ describe("handleMoveUpdate", () => {
             ).toEqual(
                 expect.objectContaining({
                     san: move.san,
-                    move: decodeMovePath(move.path, 10),
+                    move: decodeMovePath(move.path),
                     pieces: piecesAfter,
                 }),
             );

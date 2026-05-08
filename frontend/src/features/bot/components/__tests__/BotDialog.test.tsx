@@ -26,10 +26,9 @@ import PositionHistory from "@/features/chessboard/lib/positionHistory";
 import useBotDialog, { DialogContext } from "../../hooks/useBotDialog";
 import { BotClientEvents, useBotEvent } from "../../hooks/useBotHub";
 import { decodeMovePath } from "@/features/liveGame/lib/moveDecoder";
+import { BotType, GameColor, MoveSnapshot } from "@/lib/apiClient";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
 import { PlayerType } from "@/features/liveGame/lib/types";
-import { BotType, GameColor, MoveSnapshot } from "@/lib/apiClient";
-import constants from "@/lib/constants";
 
 vi.mock("../../hooks/useBotDialog");
 vi.mock("@/features/bot/hooks/useBotHub");
@@ -220,10 +219,7 @@ describe("BotDialog", () => {
 
         const { moveSnapshot, plyNumber, evalForBot } = await fireBotMoveMade();
 
-        const expectedMove = decodeMovePath(
-            moveSnapshot.path,
-            constants.BOARD_WIDTH,
-        );
+        const expectedMove = decodeMovePath(moveSnapshot.path);
         const expectedCtx: DialogContext = {
             move: expectedMove,
             prevPieces,

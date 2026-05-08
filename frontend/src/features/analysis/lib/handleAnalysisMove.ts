@@ -1,16 +1,17 @@
 import { StoreApi } from "zustand";
 
-import { ChessboardStore } from "@/features/chessboard/stores/chessboardStore";
 import {
     AnalysisPosition,
     ApiProblemDetails,
     getNextAnalysisPosition,
 } from "@/lib/apiClient";
-import { Move } from "@/features/chessboard/lib/types";
+
 import { decodeMovePathIntoLegalMoves } from "@/features/liveGame/lib/moveDecoder";
+import { ChessboardStore } from "@/features/chessboard/stores/chessboardStore";
 import { PositionProps } from "@/features/chessboard/lib/position";
-import LegalMoves from "@/features/chessboard/lib/legalMoves";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
+import LegalMoves from "@/features/chessboard/lib/legalMoves";
+import { Move } from "@/features/chessboard/lib/types";
 
 export interface AnalysisMoveArgs {
     chessboardStore: StoreApi<ChessboardStore>;
@@ -46,7 +47,6 @@ async function fetchNextPosition({
 } | null> {
     const {
         pieces,
-        boardDimensions,
         positionHistory,
         hideLegalMoves: initialHideLegalMoves,
         setImmediatePieces,
@@ -94,10 +94,7 @@ async function fetchNextPosition({
         fen: data.fen,
         san: data.san,
     };
-    const legalMoves = decodeMovePathIntoLegalMoves({
-        paths: data.legalMoves,
-        boardWidth: boardDimensions.width,
-    });
+    const legalMoves = decodeMovePathIntoLegalMoves(data.legalMoves);
 
     return { positionProps, legalMoves };
 }

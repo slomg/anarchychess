@@ -38,10 +38,7 @@ export default function useEnsureLegalMovesForViewedPosition(
                 return;
             }
 
-            const legalMoves = decodeMovePathIntoLegalMoves({
-                paths: movePaths,
-                boardWidth: state.boardDimensions.width,
-            });
+            const legalMoves = decodeMovePathIntoLegalMoves(movePaths);
             state.addLegalMovesForPosition(
                 legalMoves,
                 viewingPosition?.positionId,

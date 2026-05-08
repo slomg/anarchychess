@@ -1,20 +1,20 @@
 import clsx from "clsx";
 
-import { viewPoint } from "@/features/point/pointUtils";
-import CoordSquare from "./CoordSquare";
 import { useChessboardStore } from "../hooks/useChessboard";
+import { viewPoint } from "@/features/point/pointUtils";
 import { GameColor } from "@/lib/apiClient";
+import CoordSquare from "./CoordSquare";
+import constants from "@/lib/constants";
 
 const Coords = () => {
     const viewingFrom = useChessboardStore((x) => x.viewingFrom);
-    const boardDimensions = useChessboardStore((x) => x.boardDimensions);
 
-    const files = Array.from({ length: boardDimensions.width }, (_, i) =>
+    const files = Array.from({ length: constants.BOARD_WIDTH }, (_, i) =>
         String.fromCharCode("a".charCodeAt(0) + i),
     );
     const ranks = Array.from(
-        { length: boardDimensions.height },
-        (_, i) => boardDimensions.height - i,
+        { length: constants.BOARD_HEIGHT },
+        (_, i) => constants.BOARD_HEIGHT - i,
     );
 
     return (

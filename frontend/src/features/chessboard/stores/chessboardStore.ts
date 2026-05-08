@@ -41,7 +41,6 @@ import { CoreSlice, createCoreSlice } from "./coreSlice";
 import PositionHistory from "../lib/positionHistory";
 import BoardPieces from "../lib/boardPieces";
 import { GameColor } from "@/lib/apiClient";
-import constants from "@/lib/constants";
 
 export type ChessboardStore = BoardSlice &
     PiecesSlice &
@@ -69,10 +68,6 @@ enableMapSet();
 export function createChessboardStore(
     initState: ChessboardProps = {
         viewingFrom: GameColor.WHITE,
-        boardDimensions: {
-            width: constants.BOARD_WIDTH,
-            height: constants.BOARD_HEIGHT,
-        },
         pieces: new BoardPieces(),
         positionHistory: new PositionHistory(new BoardPieces()),
         legalMovesByPosition: new Map(),

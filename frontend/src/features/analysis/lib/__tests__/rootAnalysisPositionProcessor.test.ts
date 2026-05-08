@@ -18,17 +18,11 @@ describe("processRootAnalysis", () => {
         const store = processRootAnalysis(position);
         const state = store.getState();
 
-        const expectedLegalMoves = decodeMovePathIntoLegalMoves({
-            paths: position.legalMoves,
-            boardWidth: constants.BOARD_WIDTH,
-        });
+        const expectedLegalMoves = decodeMovePathIntoLegalMoves(
+            position.legalMoves,
+        );
 
         expect(state.pieces).toEqual(createDefaultChessboard());
-
-        expect(state.boardDimensions).toEqual({
-            width: constants.BOARD_WIDTH,
-            height: constants.BOARD_HEIGHT,
-        });
 
         expect(state.viewingFrom).toBe(GameColor.WHITE);
         expect(state.allowHistoryChanges).toBe(true);

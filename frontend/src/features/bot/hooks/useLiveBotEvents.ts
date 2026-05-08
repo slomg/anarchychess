@@ -13,7 +13,6 @@ export default function useLiveBotEvents(
     liveChessStore: StoreApi<LiveChessStore>,
     chessboardStore: StoreApi<ChessboardStore>,
 ) {
-    const boardDimensions = useStore(chessboardStore, (x) => x.boardDimensions);
     const gameToken = useStore(liveChessStore, (x) => x.gameToken);
 
     useBotEvent(gameToken, "SyncPlyNumberAsync", async (plyNumber) => {
@@ -50,10 +49,7 @@ export default function useLiveBotEvents(
         gameToken,
         "BotMadeMoveAsync",
         async (move, plyNumber, compressedLegalMoves) => {
-            const legalMoves = decodeLegalMoves({
-                encoded: compressedLegalMoves,
-                boardWidth: boardDimensions.width,
-            });
+            const legalMoves = decodeLegalMoves(compressedLegalMoves);
 
             const success = await handleMoveUpdate(
                 liveChessStore,

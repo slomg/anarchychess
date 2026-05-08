@@ -14,12 +14,10 @@ import {
 import useEnsureLegalMovesForViewedPosition from "../useEnsureLegalMovesForViewedPosition";
 import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
 import { createFakeMovePath } from "@/lib/testUtils/fakers/movePathFaker";
+import PositionHistory from "@/features/chessboard/lib/positionHistory";
 import { decodeMovePathIntoLegalMoves } from "../../lib/moveDecoder";
 import LegalMoves from "@/features/chessboard/lib/legalMoves";
 import { getNextLegalMoves } from "@/lib/apiClient";
-import constants from "@/lib/constants";
-
-import PositionHistory from "@/features/chessboard/lib/positionHistory";
 
 vi.mock("@/lib/apiClient/definition");
 
@@ -40,10 +38,7 @@ describe("useEnsureLegalMovesForViewedPosition", () => {
             response: new Response(),
         });
 
-        expectedLegalMoves = decodeMovePathIntoLegalMoves({
-            paths: legalMoves,
-            boardWidth: constants.BOARD_WIDTH,
-        });
+        expectedLegalMoves = decodeMovePathIntoLegalMoves(legalMoves);
     });
 
     it("should fetch and add legal moves when they do not exist for the viewed position", async () => {

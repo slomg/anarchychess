@@ -16,22 +16,23 @@ interface GatheredMoves {
 export default class BoardPieces {
     _byId: Map<PieceID, Piece>;
     _byPosition: Map<StrPoint, PieceID>;
-    _stunnedPieces: Map<PieceID, number> = new Map();
+    _stunnedPieces: Map<PieceID, number>;
 
-    constructor(copy: BoardPieces | null = null) {
-        if (copy === null) {
+    constructor(other: BoardPieces | null = null) {
+        if (other === null) {
             this._byId = new Map();
             this._byPosition = new Map();
+            this._stunnedPieces = new Map();
             return;
         }
 
         this._byId = new Map(
-            [...copy._byId].map(([id, piece]) => {
+            [...other._byId].map(([id, piece]) => {
                 return [id, { ...piece }];
             }),
         );
-        this._byPosition = new Map(copy._byPosition);
-        this._stunnedPieces = new Map(copy._stunnedPieces);
+        this._byPosition = new Map(other._byPosition);
+        this._stunnedPieces = new Map(other._stunnedPieces);
     }
 
     static fromPieces(...pieces: Piece[]): BoardPieces {
