@@ -20,7 +20,7 @@ export default function useMoveEmitterForLiveGames(
 
     useEffect(() => {
         async function emitMove(event: PieceMovementEvent) {
-            const { resultData, initialFen } = liveChessStore.getState();
+            const { resultData } = liveChessStore.getState();
 
             if (resultData === null) {
                 markPendingMoveAck();
@@ -28,7 +28,6 @@ export default function useMoveEmitterForLiveGames(
             } else {
                 await addSidelineAnalysisMove({
                     chessboardStore,
-                    rootFen: initialFen,
                     move: event.move,
                     prevPieces: event.prevPieces,
                 });

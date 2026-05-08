@@ -15,6 +15,7 @@ export interface PositionProps {
 
 export interface RootPosition {
     pieces: BoardPieces;
+    fen: string;
 }
 
 export interface Position {
@@ -35,6 +36,7 @@ export interface Position {
 
 export abstract class PositionNode {
     _pieces: BoardPieces;
+    _fen: string;
 
     _mainVariation: ChildPositionNode | null = null;
     _subVariationByKey: Map<MoveKey, ChildPositionNode> = new Map();
@@ -42,12 +44,17 @@ export abstract class PositionNode {
 
     _positionId: PositionId = crypto.randomUUID() as PositionId;
 
-    constructor(pieces: BoardPieces) {
+    constructor(pieces: BoardPieces, fen: string) {
         this._pieces = pieces;
+        this._fen = fen;
     }
 
     get pieces(): BoardPieces {
         return this._pieces;
+    }
+
+    get fen(): string {
+        return this._fen;
     }
 
     get positionId(): PositionId {
@@ -127,7 +134,6 @@ export abstract class PositionNode {
 export class RootPositionNode extends PositionNode implements RootPosition {}
 
 export class ChildPositionNode extends PositionNode implements Position {
-    _fen: string;
     _sideToMove: GameColor;
     _move: Move;
     _san: string;
@@ -136,7 +142,7 @@ export class ChildPositionNode extends PositionNode implements Position {
     _parent: ChildPositionNode | null = null;
 
     constructor(props: PositionProps, parent: ChildPositionNode | null = null) {
-        super(props.pieces);
+        super(props.pieces, props.fen);
         this._parent = parent;
 
         this._pieces = new BoardPieces(props.pieces);
@@ -145,10 +151,6 @@ export class ChildPositionNode extends PositionNode implements Position {
         this._move = props.move;
         this._san = props.san;
         this._ply = parent ? parent.ply + 1 : 1;
-    }
-
-    get fen(): string {
-        return this._fen;
     }
 
     get sideToMove(): GameColor {

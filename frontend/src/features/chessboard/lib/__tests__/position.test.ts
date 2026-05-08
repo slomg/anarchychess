@@ -1,28 +1,31 @@
-import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
+import {
+    createFakeBoardPieces,
+    createFakePiece,
+} from "@/lib/testUtils/fakers/chessboardFakers";
 import {
     ChildPositionNode,
     PositionProps,
     RootPositionNode,
 } from "../position";
-import BoardPieces from "../boardPieces";
-import {
-    createFakeBoardPieces,
-    createFakePiece,
-} from "@/lib/testUtils/fakers/chessboardFakers";
+
+import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
 import { logicalPoint } from "@/features/point/pointUtils";
+import BoardPieces from "../boardPieces";
 
 describe("RootPositionNode", () => {
     let root: RootPositionNode;
     let pieces: BoardPieces;
+    const fen = "test fen";
 
     beforeEach(() => {
         pieces = createFakeBoardPieces();
-        root = new RootPositionNode(pieces);
+        root = new RootPositionNode(pieces, fen);
     });
 
     describe("constructor", () => {
         it("should create a root node with correct pieces", () => {
             expect(root.pieces).toBe(pieces);
+            expect(root.fen).toBe(fen);
             expect(root.next).toBeNull();
             expect(root.variations).toEqual([]);
             expect(root.subVariationByKey.size).toBe(0);

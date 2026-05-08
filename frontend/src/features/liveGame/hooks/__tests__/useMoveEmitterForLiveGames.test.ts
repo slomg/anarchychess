@@ -68,13 +68,11 @@ describe("useMoveEmitterForLiveGames", () => {
                 sendMoveEventMock,
             ),
         );
-        const initialFen = "test initial fen";
         liveChessStore.setState({
             resultData: {
                 result: GameResult.WHITE_WIN,
                 resultDescription: "desc",
             },
-            initialFen,
         });
 
         await act(() =>
@@ -86,7 +84,6 @@ describe("useMoveEmitterForLiveGames", () => {
         >({
             chessboardStore,
             prevPieces: event.prevPieces,
-            rootFen: initialFen,
             move: event.move,
         });
         expect(sendMoveEventMock).not.toHaveBeenCalled();

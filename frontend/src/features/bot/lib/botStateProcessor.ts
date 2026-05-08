@@ -25,7 +25,6 @@ export default function processBotGameState(
 
     const live: LiveChessStoreProps = {
         gameToken,
-        initialFen: gameState.initialFen,
 
         whitePlayer: gameState.whitePlayer,
         blackPlayer: gameState.blackPlayer,

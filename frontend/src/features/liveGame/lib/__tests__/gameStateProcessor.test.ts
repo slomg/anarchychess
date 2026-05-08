@@ -30,7 +30,6 @@ describe("processGameState", () => {
         expect(live).toEqual<LiveChessStoreProps>({
             gameToken: "game-token",
             sourceRevision: gameState.revision,
-            initialFen: gameState.initialFen,
 
             whitePlayer: gameState.whitePlayer,
             blackPlayer: gameState.blackPlayer,
@@ -127,7 +126,10 @@ describe("processGameState", () => {
         mockSequentialUUID({ startAt: defaultChessboard.size });
         const baseMs = gameState.pool.timeControl.baseSeconds * 1000;
         let pieces = new BoardPieces(defaultChessboard);
-        const positionHistory = new PositionHistory(new BoardPieces(pieces));
+        const positionHistory = new PositionHistory(
+            new BoardPieces(pieces),
+            gameState.initialFen,
+        );
         const moves = [
             {
                 from: logicalPoint({ x: 5, y: 1 }),

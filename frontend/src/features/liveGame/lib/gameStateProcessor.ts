@@ -42,7 +42,6 @@ export function processGameState(
 
     const live: LiveChessStoreProps = {
         gameToken,
-        initialFen: gameState.initialFen,
 
         whitePlayer: gameState.whitePlayer,
         blackPlayer: gameState.blackPlayer,
@@ -126,7 +125,7 @@ function getPositionHistory(
 ): PositionHistory {
     let pieces = decodeFen(initialFen);
 
-    const positionHistory = new PositionHistory(pieces);
+    const positionHistory = new PositionHistory(pieces, initialFen);
     for (const moveSnapshot of moveHistory) {
         const move = decodeMovePath(moveSnapshot.path);
         const { newPieces } = simulateMove(pieces, move);

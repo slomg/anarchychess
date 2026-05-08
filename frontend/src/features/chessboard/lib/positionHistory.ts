@@ -11,6 +11,7 @@ import {
 
 import BoardPieces from "./boardPieces";
 import { MoveKey } from "./types";
+import { encodeFen } from "./fenEncoder";
 
 export default class PositionHistory {
     [immerable] = true;
@@ -23,8 +24,9 @@ export default class PositionHistory {
 
     _viewingPosition: ChildPositionNode | null = null;
 
-    constructor(rootPieces: BoardPieces) {
-        this._root = new RootPositionNode(rootPieces);
+    constructor(rootPieces: BoardPieces, fen?: string) {
+        fen ??= encodeFen(rootPieces);
+        this._root = new RootPositionNode(rootPieces, fen);
     }
 
     get root(): RootPosition {
@@ -55,8 +57,9 @@ export default class PositionHistory {
         return this._viewingPosition?.positionId === this._tail?.positionId;
     }
 
-    overrideRoot(rootPieces: BoardPieces) {
-        this._root = new RootPositionNode(rootPieces);
+    overrideRoot(rootPieces: BoardPieces, fen?: string) {
+        fen ??= encodeFen(rootPieces);
+        this._root = new RootPositionNode(rootPieces, fen);
 
         this._tail = null;
         this._viewingPosition = null;

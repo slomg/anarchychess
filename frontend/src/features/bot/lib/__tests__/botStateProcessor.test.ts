@@ -18,7 +18,6 @@ describe("processBotGameState", () => {
         expect(live).toEqual<LiveChessStoreProps>({
             gameToken: "game-token",
             sourceRevision: 0,
-            initialFen: gameState.initialFen,
 
             whitePlayer: gameState.whitePlayer,
             blackPlayer: gameState.blackPlayer,

@@ -54,8 +54,8 @@ const LiveChessboard = ({
         createChessboardStore(storeProps.board),
     );
 
-    useEnsureLegalMovesForViewedPosition(gameState.initialFen, chessboardStore);
     useSyncBoardInteraction(liveChessStore, chessboardStore);
+    useEnsureLegalMovesForViewedPosition(chessboardStore);
     useLiveChessEvents(liveChessStore, chessboardStore);
     useLiveMoveEmitter(liveChessStore, chessboardStore);
     useInvalidateOnNavigate();

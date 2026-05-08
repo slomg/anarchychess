@@ -20,7 +20,7 @@ const AnalysisChessboard = ({
     const chessboardStore = useConst<StoreApi<ChessboardStore>>(() =>
         processRootAnalysis(rootPosition),
     );
-    useAnalysisMoveResolver(rootPosition, chessboardStore);
+    useAnalysisMoveResolver(chessboardStore);
 
     return (
         <ChessboardStoreContext.Provider value={chessboardStore}>
