@@ -9,6 +9,8 @@ import { ChessboardStore, createChessboardStore } from "../chessboardStore";
 import { logicalPoint, screenPoint } from "@/features/point/pointUtils";
 import PositionHistory from "../../lib/positionHistory";
 import BoardPieces from "../../lib/boardPieces";
+import { GameColor, PieceType } from "@/lib/apiClient";
+import mockSequentialUUID from "@/lib/testUtils/mocks/mockUuids";
 
 describe("SetupModeSlice", () => {
     let store: StoreApi<ChessboardStore>;
@@ -127,6 +129,47 @@ describe("SetupModeSlice", () => {
 
             const expectedPieces = new BoardPieces(pieces);
             expectedPieces.movePiece(piece.id, to);
+
+            expect(store.getState().positionHistory.root.pieces).toEqual(
+                expectedPieces,
+            );
+            expect(store.getState().pieces).toEqual(expectedPieces);
+            expect(store.getState().lastMove).toBeNull();
+        });
+    });
+
+    describe("addSetupModePiece", () => {
+        it("should add a piece and override root", () => {
+            const pieces = new BoardPieces();
+
+            store.setState({
+                pieces: new BoardPieces(pieces),
+                positionHistory: new PositionHistory({ pieces }),
+                lastMove: {
+                    from: createRandomPoint(),
+                    to: createRandomPoint(),
+                },
+            });
+
+            mockSequentialUUID();
+            store
+                .getState()
+                .addSetupModePiece(
+                    PieceType.ROOK,
+                    GameColor.WHITE,
+                    screenPoint({ x: 20, y: 20 }),
+                );
+
+            const dest = logicalPoint({ x: 2, y: 7 });
+            const expectedPieces = new BoardPieces(pieces);
+            expectedPieces.add({
+                id: "0",
+                type: PieceType.ROOK,
+                color: GameColor.WHITE,
+                position: dest,
+                stunnedForTurns: 0,
+                hasMoved: false,
+            });
 
             expect(store.getState().positionHistory.root.pieces).toEqual(
                 expectedPieces,

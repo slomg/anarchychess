@@ -4,6 +4,8 @@ import { LogicalPoint, ScreenPoint } from "@/features/point/types";
 import { pointEquals } from "@/features/point/pointUtils";
 import type { ChessboardStore } from "./chessboardStore";
 import BoardPieces from "../lib/boardPieces";
+import { GameColor, PieceType } from "@/lib/apiClient";
+import { createPieceId } from "../lib/pieceUtils";
 
 export interface SetupModeMoveEvent {
     from: LogicalPoint;
@@ -15,6 +17,11 @@ export interface SetupModeSlice {
 
     setSetupMode(setupMode: boolean): void;
     makeSetupModeMove(to: ScreenPoint): void;
+    addSetupModePiece(
+        pieceType: PieceType,
+        color: GameColor | null,
+        at: ScreenPoint,
+    ): void;
 }
 
 export const createSetupModeSlice: StateCreator<
@@ -64,6 +71,29 @@ export const createSetupModeSlice: StateCreator<
 
         const newPieces = new BoardPieces(pieces);
         newPieces.movePiece(selectedPieceId, dest);
+
+        resetLastMove();
+        overrideRoot({ pieces: newPieces });
+    },
+
+    addSetupModePiece(pieceType, color, at) {
+        const { pieces, screenToLogicalPoint, overrideRoot, resetLastMove } =
+            get();
+
+        const dest = screenToLogicalPoint(at);
+        if (!dest) {
+            return;
+        }
+
+        const newPieces = new BoardPieces(pieces);
+        newPieces.add({
+            id: createPieceId(),
+            type: pieceType,
+            color,
+            position: dest,
+            stunnedForTurns: 0,
+            hasMoved: false,
+        });
 
         resetLastMove();
         overrideRoot({ pieces: newPieces });
