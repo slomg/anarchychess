@@ -36,6 +36,15 @@ describe("SetupModeSlice", () => {
             setSetupMode(false);
             expect(store.getState().isSetupMode).toBe(false);
         });
+
+        it("should discard all prompts", () => {
+            const discardAllPromptsMock = vi.fn();
+            store.setState({ discardAllPrompts: discardAllPromptsMock });
+
+            store.getState().setSetupMode(false);
+
+            expect(discardAllPromptsMock).toHaveBeenCalledOnce();
+        });
     });
 
     describe("makeSetupModeMove", () => {

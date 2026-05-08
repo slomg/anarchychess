@@ -26,6 +26,7 @@ export const createSetupModeSlice: StateCreator<
     isSetupMode: false,
 
     setSetupMode(setupMode) {
+        get().discardAllPrompts();
         set((state) => {
             state.isSetupMode = setupMode;
         });
