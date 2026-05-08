@@ -75,6 +75,13 @@ export function createBoardSlice(
                 (relY / boardRect.height) * constants.BOARD_HEIGHT,
             );
 
+            if (x >= constants.BOARD_WIDTH) {
+                return;
+            }
+            if (y >= constants.BOARD_WIDTH) {
+                return;
+            }
+
             return viewPoint({ x, y });
         },
         logicalPointToScreenPoint(logicalPoint) {

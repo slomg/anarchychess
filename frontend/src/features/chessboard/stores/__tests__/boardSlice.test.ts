@@ -1,4 +1,5 @@
 import { StoreApi } from "zustand";
+
 import {
     logicalPoint,
     screenPoint,
@@ -100,6 +101,16 @@ describe("BoardSlice", () => {
             const logical = viewPointToLogicalPoint(view);
 
             expect(logicalPointToViewPoint(logical)).toEqual(view);
+        });
+
+        it("should return undefined when the point is outside board", () => {
+            expect(
+                store
+                    .getState()
+                    .screenToLogicalPoint(
+                        screenPoint({ x: 696969, y: 696969 }),
+                    ),
+            ).toBeUndefined();
         });
     });
 
