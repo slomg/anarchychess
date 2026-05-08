@@ -48,7 +48,10 @@ const StaticChessboard = ({
     ...props
 }: ChessboardProps & ChessboardLayoutProps) => {
     const initialPosition = useMemo(
-        () => (replays.length ? decodeFen(replays[0].startingFen) : position),
+        () =>
+            replays.length
+                ? decodeFen(replays[0].startingFen).pieces
+                : position,
         [replays, position],
     );
 

@@ -4,7 +4,7 @@ import {
     PieceType,
     SpecialMoveType,
 } from "@/lib/apiClient";
-import { LogicalPoint } from "@/features/point/types";
+import { AlgebraicString, LogicalPoint } from "@/features/point/types";
 import type BoardPieces from "./boardPieces";
 import { TransientBoardEffect } from "../stores/boardEffectsSlice";
 
@@ -14,6 +14,7 @@ export interface Piece {
     color: GameColor | null;
     position: LogicalPoint;
     stunnedForTurns: number;
+    hasMoved: boolean;
 }
 
 export interface Move {
@@ -86,4 +87,10 @@ export interface GameReplay {
     _comment?: string;
     startingFen: string;
     moves: MinimalMove[];
+}
+
+export interface FenParts {
+    sideToMove?: GameColor;
+    movedPieces?: AlgebraicString[];
+    stunnedPieces?: Record<AlgebraicString, number>;
 }

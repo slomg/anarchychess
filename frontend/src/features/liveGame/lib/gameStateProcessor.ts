@@ -123,7 +123,7 @@ function getPositionHistory(
     initialFen: string,
     moveHistory: MoveSnapshot[],
 ): PositionHistory {
-    let pieces = decodeFen(initialFen);
+    let pieces = decodeFen(initialFen).pieces;
 
     const positionHistory = new PositionHistory(pieces, initialFen);
     for (const moveSnapshot of moveHistory) {

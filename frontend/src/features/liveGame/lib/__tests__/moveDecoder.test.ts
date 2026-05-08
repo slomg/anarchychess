@@ -84,6 +84,7 @@ describe("decodeMovePathIntoLegalMoves", () => {
                     color: GameColor.BLACK,
                     position: logicalPoint({ x: 8, y: 0 }),
                     stunnedForTurns: 0,
+                    hasMoved: false,
                 },
             ],
             stuns: [

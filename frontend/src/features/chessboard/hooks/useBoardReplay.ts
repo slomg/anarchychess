@@ -17,7 +17,7 @@ export default function useBoardReplay(
 
         const currentReplay = replays[replayIndexRef];
         if (moveIndex === 0) {
-            const pieces = decodeFen(currentReplay.startingFen);
+            const pieces = decodeFen(currentReplay.startingFen).pieces;
             chessboardStore.getState().setImmediatePieces(pieces);
         }
 

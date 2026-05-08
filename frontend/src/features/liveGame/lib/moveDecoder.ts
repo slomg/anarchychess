@@ -83,6 +83,7 @@ function parsePieceSpawns(path: PieceSpawnPath): Piece {
         color: path.color ?? null,
         position,
         stunnedForTurns: 0,
+        hasMoved: false,
     };
 }
 

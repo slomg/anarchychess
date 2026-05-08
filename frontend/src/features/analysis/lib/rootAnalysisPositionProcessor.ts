@@ -13,7 +13,7 @@ import { decodeFen } from "@/features/chessboard/lib/fenDecoder";
 export default function processRootAnalysis(
     position: RootAnalysisPosition,
 ): StoreApi<ChessboardStore> {
-    const pieces = decodeFen(position.fen);
+    const pieces = decodeFen(position.fen).pieces;
     const legalMoves = decodeMovePathIntoLegalMoves(position.legalMoves);
     const positionHistory = new PositionHistory(pieces, position.fen);
 
