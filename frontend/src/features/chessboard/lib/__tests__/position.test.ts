@@ -10,8 +10,8 @@ import {
 
 import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
 import { logicalPoint } from "@/features/point/pointUtils";
-import BoardPieces from "../boardPieces";
 import { GameColor } from "@/lib/apiClient";
+import BoardPieces from "../boardPieces";
 
 describe("RootPositionNode", () => {
     let root: RootPositionNode;

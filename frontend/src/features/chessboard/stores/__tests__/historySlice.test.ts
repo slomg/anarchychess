@@ -5,15 +5,15 @@ import {
     createFakeBoardPieces,
     createFakeLegalMoves,
 } from "@/lib/testUtils/fakers/chessboardFakers";
-
-import { createNFakePositionHistory } from "@/lib/testUtils/fakers/positionHistoryFaker";
-import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
-import { ChessboardStore, createChessboardStore } from "../chessboardStore";
 import {
     ChildPositionNode,
     PositionId,
     RootPositionProps,
 } from "../../lib/position";
+
+import { createNFakePositionHistory } from "@/lib/testUtils/fakers/positionHistoryFaker";
+import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
+import { ChessboardStore, createChessboardStore } from "../chessboardStore";
 import PositionHistory from "../../lib/positionHistory";
 import LegalMoves from "../../lib/legalMoves";
 import { GameColor } from "@/lib/apiClient";
