@@ -121,7 +121,7 @@ export function createHistorySlice(
             if (position) {
                 await updatePieces(position.pieces);
             } else {
-                await updatePieces(positionHistory.rootPieces);
+                await updatePieces(positionHistory.root.pieces);
             }
         },
 
@@ -133,7 +133,7 @@ export function createHistorySlice(
                 success = state.positionHistory.goToStart();
             });
             if (success) {
-                await updatePieces(positionHistory.rootPieces);
+                await updatePieces(positionHistory.root.pieces);
             }
         },
 

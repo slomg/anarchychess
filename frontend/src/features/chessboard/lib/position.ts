@@ -13,6 +13,10 @@ export interface PositionProps {
     san: string;
 }
 
+export interface RootPosition {
+    pieces: BoardPieces;
+}
+
 export interface Position {
     pieces: BoardPieces;
     fen: string;
@@ -120,7 +124,7 @@ export abstract class PositionNode {
     }
 }
 
-export class RootPositionNode extends PositionNode {}
+export class RootPositionNode extends PositionNode implements RootPosition {}
 
 export class ChildPositionNode extends PositionNode implements Position {
     _fen: string;

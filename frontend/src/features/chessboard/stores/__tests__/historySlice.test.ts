@@ -202,7 +202,7 @@ describe("HistorySlice", () => {
             await store.getState().stepPositionBackward();
 
             expect(updatePiecesMock).toHaveBeenCalledExactlyOnceWith(
-                positionHistory.rootPieces,
+                positionHistory.root.pieces,
             );
         });
 
@@ -236,7 +236,7 @@ describe("HistorySlice", () => {
             await store.getState().goToStartPosition();
 
             expect(updatePiecesMock).toHaveBeenCalledExactlyOnceWith(
-                positionHistory.rootPieces,
+                positionHistory.root.pieces,
             );
         });
     });
@@ -538,7 +538,7 @@ describe("HistorySlice", () => {
 
             const state = store.getState();
 
-            expect(state.positionHistory.rootPieces).toBe(newPieces);
+            expect(state.positionHistory.root.pieces).toBe(newPieces);
             expect(state.positionHistory.viewingPosition).toBeNull();
             expect(setImmediatePiecesMock).toHaveBeenCalledExactlyOnceWith(
                 newPieces,

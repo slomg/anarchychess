@@ -16,7 +16,7 @@ describe("PositionHistory", () => {
 
     describe("constructor", () => {
         it("should initialize with the given root pieces", () => {
-            expect(history.rootPieces).toBe(rootPieces);
+            expect(history.root.pieces).toBe(rootPieces);
             expect(history.mainPlyCount).toBe(0);
             expect(history.totalPlyCount).toBe(0);
             expect(history.viewingPosition).toBeNull();
@@ -29,10 +29,10 @@ describe("PositionHistory", () => {
             history.addNextPosition(createFakePositionProps());
             history.goToEnd();
 
-            const newRoot = createFakeBoardPieces();
-            history.overrideRoot(newRoot);
+            const newRootPieces = createFakeBoardPieces();
+            history.overrideRoot(newRootPieces);
 
-            expect(history.rootPieces).toBe(newRoot);
+            expect(history.root.pieces).toBe(newRootPieces);
             expect(history.viewingPosition).toBeNull();
         });
 

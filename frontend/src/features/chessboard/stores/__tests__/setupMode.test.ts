@@ -119,7 +119,7 @@ describe("SetupModeSlice", () => {
             const expectedPieces = new BoardPieces(pieces);
             expectedPieces.movePiece(piece.id, to);
 
-            expect(store.getState().positionHistory.rootPieces).toEqual(
+            expect(store.getState().positionHistory.root.pieces).toEqual(
                 expectedPieces,
             );
             expect(store.getState().pieces).toEqual(expectedPieces);

@@ -81,7 +81,7 @@ export function createChessboardProps(
 
     return {
         pieces: new BoardPieces(
-            lastPosition?.pieces ?? positionHistory.rootPieces,
+            lastPosition?.pieces ?? positionHistory.root.pieces,
         ),
         positionHistory,
 

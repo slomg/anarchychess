@@ -6,6 +6,7 @@ import {
     ChildPositionNode,
     PositionProps,
     RootPositionNode,
+    RootPosition,
 } from "./position";
 
 import BoardPieces from "./boardPieces";
@@ -26,8 +27,8 @@ export default class PositionHistory {
         this._root = new RootPositionNode(rootPieces);
     }
 
-    get rootPieces(): BoardPieces {
-        return this._root.pieces;
+    get root(): RootPosition {
+        return this._root;
     }
 
     get tail(): Position | null {

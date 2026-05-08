@@ -47,7 +47,7 @@ describe("processRootAnalysis", () => {
         const store = processRootAnalysis(position);
         const state = store.getState();
 
-        expect(state.positionHistory.rootPieces).toEqual(
+        expect(state.positionHistory.root.pieces).toEqual(
             createDefaultChessboard(),
         );
         expect(state.positionHistory.totalPlyCount).toEqual(0);

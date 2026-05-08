@@ -41,7 +41,7 @@ export default async function handleMoveUpdate(
 
     decodedMove ??= decodeMovePath(move.path);
 
-    let pieces = positionHistory.tail?.pieces ?? positionHistory.rootPieces;
+    let pieces = positionHistory.tail?.pieces ?? positionHistory.root.pieces;
     pieces = simulateMove(pieces, decodedMove).newPieces;
     if (!isPendingMoveAck) {
         await applyMoveAnimated(decodedMove);
