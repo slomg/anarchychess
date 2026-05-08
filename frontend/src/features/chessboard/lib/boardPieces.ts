@@ -154,6 +154,8 @@ export default class BoardPieces {
     }
 
     add(piece: Piece): void {
+        this.removeFrom(piece.position);
+
         this._byId.set(piece.id, { ...piece });
         this._byPosition.set(pointToStr(piece.position), piece.id);
         if (piece.stunnedForTurns > 0) {
@@ -162,6 +164,8 @@ export default class BoardPieces {
     }
 
     addAt(piece: Piece, position: LogicalPoint): void {
+        this.removeFrom(position);
+
         const newPiece = { ...piece, position };
         this._byId.set(newPiece.id, newPiece);
         this._byPosition.set(pointToStr(position), newPiece.id);
