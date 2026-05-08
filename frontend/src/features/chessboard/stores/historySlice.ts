@@ -2,7 +2,7 @@ import { StateCreator } from "zustand";
 
 import PositionHistory from "../lib/positionHistory";
 import { ChessboardStore } from "./chessboardStore";
-import { PositionProps } from "../lib/position";
+import { PositionProps, RootPositionProps } from "../lib/position";
 import { PositionId } from "../lib/position";
 import BoardPieces from "../lib/boardPieces";
 import { Position } from "../lib/position";
@@ -41,7 +41,7 @@ export interface HistorySlice {
         positionId?: PositionId,
     ): void;
     setLatestLegalMoves(legalMoves: LegalMoves): void;
-    overrideRoot(pieces: BoardPieces): void;
+    overrideRoot(props: RootPositionProps): void;
 
     setAllowHistoryChanges(value: boolean): void;
 }
@@ -58,7 +58,8 @@ export function createHistorySlice(
         legalMovesByPosition: initState.legalMovesByPosition,
         allowHistoryChanges: initState.allowHistoryChanges ?? false,
         positionHistory:
-            initState.positionHistory ?? new PositionHistory(initState.pieces),
+            initState.positionHistory ??
+            new PositionHistory({ pieces: initState.pieces }),
 
         setPosition(positionId) {
             set((state) => {
@@ -241,12 +242,12 @@ export function createHistorySlice(
             );
         },
 
-        overrideRoot(pieces) {
+        overrideRoot(props) {
             const { setImmediatePieces } = get();
             set((state) => {
-                state.positionHistory.overrideRoot(pieces);
+                state.positionHistory.overrideRoot(props);
             });
-            setImmediatePieces(pieces);
+            setImmediatePieces(props.pieces);
         },
 
         setAllowHistoryChanges(value) {

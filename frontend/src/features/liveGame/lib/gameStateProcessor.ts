@@ -125,7 +125,10 @@ function getPositionHistory(
 ): PositionHistory {
     let pieces = decodeFen(initialFen).pieces;
 
-    const positionHistory = new PositionHistory(pieces, initialFen);
+    const positionHistory = new PositionHistory({
+        pieces: pieces,
+        fen: initialFen,
+    });
     for (const moveSnapshot of moveHistory) {
         const move = decodeMovePath(moveSnapshot.path);
         const { newPieces } = simulateMove(pieces, move);

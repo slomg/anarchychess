@@ -7,10 +7,11 @@ import {
     PositionProps,
     RootPositionNode,
     RootPosition,
+    RootPositionProps,
 } from "./position";
 
+import { GameColor } from "@/lib/apiClient";
 import { encodeFen } from "./fenEncoder";
-import BoardPieces from "./boardPieces";
 import { MoveKey } from "./types";
 
 export default class PositionHistory {
@@ -24,9 +25,11 @@ export default class PositionHistory {
 
     _viewingPosition: ChildPositionNode | null = null;
 
-    constructor(rootPieces: BoardPieces, fen?: string) {
-        fen ??= encodeFen(rootPieces);
-        this._root = new RootPositionNode(rootPieces, fen);
+    constructor(props: RootPositionProps) {
+        const pieces = props.pieces;
+        const sideToMove = props.sideToMove ?? GameColor.WHITE;
+        const fen = props.fen ?? encodeFen({ pieces, sideToMove });
+        this._root = new RootPositionNode(pieces, fen, sideToMove);
     }
 
     get root(): RootPosition {
@@ -57,9 +60,11 @@ export default class PositionHistory {
         return this._viewingPosition?.positionId === this._tail?.positionId;
     }
 
-    overrideRoot(rootPieces: BoardPieces, fen?: string) {
-        fen ??= encodeFen(rootPieces);
-        this._root = new RootPositionNode(rootPieces, fen);
+    overrideRoot(props: RootPositionProps) {
+        const pieces = props.pieces;
+        const sideToMove = props.sideToMove ?? GameColor.WHITE;
+        const fen = props.fen ?? encodeFen({ pieces, sideToMove });
+        this._root = new RootPositionNode(pieces, fen, sideToMove);
 
         this._tail = null;
         this._viewingPosition = null;

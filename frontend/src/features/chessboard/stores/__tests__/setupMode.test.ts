@@ -44,7 +44,7 @@ describe("SetupModeSlice", () => {
                 position: logicalPoint({ x: 2, y: 7 }),
             });
             const pieces = BoardPieces.fromPieces(piece);
-            const positionHistory = new PositionHistory(pieces);
+            const positionHistory = new PositionHistory({ pieces });
 
             store.setState({
                 pieces,
@@ -63,7 +63,7 @@ describe("SetupModeSlice", () => {
                 position: logicalPoint({ x: 2, y: 7 }),
             });
             const pieces = BoardPieces.fromPieces(piece);
-            const positionHistory = new PositionHistory(pieces);
+            const positionHistory = new PositionHistory({ pieces });
 
             store.setState({
                 pieces,
@@ -82,7 +82,7 @@ describe("SetupModeSlice", () => {
                 position: logicalPoint({ x: 2, y: 7 }),
             });
             const pieces = BoardPieces.fromPieces(piece);
-            const positionHistory = new PositionHistory(pieces);
+            const positionHistory = new PositionHistory({ pieces });
 
             store.setState({
                 pieces,
@@ -104,7 +104,7 @@ describe("SetupModeSlice", () => {
 
             store.setState({
                 pieces: new BoardPieces(pieces),
-                positionHistory: new PositionHistory(pieces),
+                positionHistory: new PositionHistory({ pieces }),
                 selectedPieceId: piece.id,
                 lastMove: {
                     from: createRandomPoint(),

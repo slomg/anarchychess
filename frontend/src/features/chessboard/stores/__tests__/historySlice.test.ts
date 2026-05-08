@@ -9,9 +9,14 @@ import {
 import { createNFakePositionHistory } from "@/lib/testUtils/fakers/positionHistoryFaker";
 import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
 import { ChessboardStore, createChessboardStore } from "../chessboardStore";
-import { ChildPositionNode, PositionId } from "../../lib/position";
+import {
+    ChildPositionNode,
+    PositionId,
+    RootPositionProps,
+} from "../../lib/position";
 import PositionHistory from "../../lib/positionHistory";
 import LegalMoves from "../../lib/legalMoves";
+import { GameColor } from "@/lib/apiClient";
 
 describe("HistorySlice", () => {
     let store: StoreApi<ChessboardStore>;
@@ -22,9 +27,9 @@ describe("HistorySlice", () => {
 
     describe("setPosition", () => {
         it("should update viewingPosition when valid positionId is provided", () => {
-            const positionHistory = new PositionHistory(
-                createFakeBoardPieces(),
-            );
+            const positionHistory = new PositionHistory({
+                pieces: createFakeBoardPieces(),
+            });
             positionHistory.addNextPosition(createFakePositionProps());
             const pos = positionHistory.addNextPosition(
                 createFakePositionProps(),
@@ -64,9 +69,9 @@ describe("HistorySlice", () => {
         });
 
         it("should animate the move if stepping exactly one position forward", async () => {
-            const positionHistory = new PositionHistory(
-                createFakeBoardPieces(),
-            );
+            const positionHistory = new PositionHistory({
+                pieces: createFakeBoardPieces(),
+            });
             const pos1 = positionHistory.addNextPosition(
                 createFakePositionProps(),
             );
@@ -86,9 +91,9 @@ describe("HistorySlice", () => {
         });
 
         it("should update pieces when jumping backward", async () => {
-            const positionHistory = new PositionHistory(
-                createFakeBoardPieces(),
-            );
+            const positionHistory = new PositionHistory({
+                pieces: createFakeBoardPieces(),
+            });
             const pos1 = positionHistory.addNextPosition(
                 createFakePositionProps(),
             );
@@ -108,9 +113,9 @@ describe("HistorySlice", () => {
         });
 
         it("should update pieces from position when jumping multiple steps forward", async () => {
-            const positionHistory = new PositionHistory(
-                createFakeBoardPieces(),
-            );
+            const positionHistory = new PositionHistory({
+                pieces: createFakeBoardPieces(),
+            });
             const pos1 = positionHistory.addNextPosition(
                 createFakePositionProps(),
             );
@@ -149,9 +154,9 @@ describe("HistorySlice", () => {
         });
 
         it("should animate the move if we're not at the final position", async () => {
-            const positionHistory = new PositionHistory(
-                createFakeBoardPieces(),
-            );
+            const positionHistory = new PositionHistory({
+                pieces: createFakeBoardPieces(),
+            });
             const pos1 = positionHistory.addNextPosition(
                 createFakePositionProps(),
             );
@@ -189,9 +194,9 @@ describe("HistorySlice", () => {
         });
 
         it("should update pieces if we reached root position", async () => {
-            const positionHistory = new PositionHistory(
-                createFakeBoardPieces(),
-            );
+            const positionHistory = new PositionHistory({
+                pieces: createFakeBoardPieces(),
+            });
             const pos1 = positionHistory.addNextPosition(
                 createFakePositionProps(),
             );
@@ -207,9 +212,9 @@ describe("HistorySlice", () => {
         });
 
         it("should update pieces from position if we aren't at root position yet", async () => {
-            const positionHistory = new PositionHistory(
-                createFakeBoardPieces(),
-            );
+            const positionHistory = new PositionHistory({
+                pieces: createFakeBoardPieces(),
+            });
             const pos1 = positionHistory.addNextPosition(
                 createFakePositionProps(),
             );
@@ -527,21 +532,27 @@ describe("HistorySlice", () => {
             const setImmediatePiecesMock = vi.fn();
 
             const positionHistory = createNFakePositionHistory(3);
-            const newPieces = createFakeBoardPieces();
+            const props: RootPositionProps = {
+                pieces: createFakeBoardPieces(),
+                fen: "test fen",
+                sideToMove: GameColor.BLACK,
+            };
 
             store.setState({
                 positionHistory,
                 setImmediatePieces: setImmediatePiecesMock,
             });
 
-            store.getState().overrideRoot(newPieces);
+            store.getState().overrideRoot(props);
 
             const state = store.getState();
 
-            expect(state.positionHistory.root.pieces).toBe(newPieces);
+            expect(state.positionHistory.root.pieces).toEqual(
+                expect.objectContaining(props.pieces),
+            );
             expect(state.positionHistory.viewingPosition).toBeNull();
             expect(setImmediatePiecesMock).toHaveBeenCalledExactlyOnceWith(
-                newPieces,
+                props.pieces,
             );
         });
     });

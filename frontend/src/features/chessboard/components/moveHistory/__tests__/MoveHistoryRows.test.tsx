@@ -80,7 +80,9 @@ describe("MoveHistoryRows", () => {
     });
 
     it("should render root sub variations", () => {
-        const positionHistory = new PositionHistory(createFakeBoardPieces());
+        const positionHistory = new PositionHistory({
+            pieces: createFakeBoardPieces(),
+        });
         const pos1 = positionHistory.addNextPosition(
             createFakePositionProps({ san: "e4" }),
         );
@@ -106,7 +108,9 @@ describe("MoveHistoryRows", () => {
     });
 
     it("should render sub variations for the on white position", () => {
-        const positionHistory = new PositionHistory(createFakeBoardPieces());
+        const positionHistory = new PositionHistory({
+            pieces: createFakeBoardPieces(),
+        });
 
         const whitePos = positionHistory.addNextPosition(
             createFakePositionProps({ san: "e4" }),
@@ -131,7 +135,9 @@ describe("MoveHistoryRows", () => {
     });
 
     it("should render sub variations for the black position on the next move", () => {
-        const positionHistory = new PositionHistory(createFakeBoardPieces());
+        const positionHistory = new PositionHistory({
+            pieces: createFakeBoardPieces(),
+        });
 
         positionHistory.addNextPosition(createFakePositionProps({ san: "e4" }));
         const blackPos = positionHistory.addNextPosition(

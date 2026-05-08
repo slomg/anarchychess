@@ -11,21 +11,24 @@ import {
 import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
 import { logicalPoint } from "@/features/point/pointUtils";
 import BoardPieces from "../boardPieces";
+import { GameColor } from "@/lib/apiClient";
 
 describe("RootPositionNode", () => {
     let root: RootPositionNode;
     let pieces: BoardPieces;
     const fen = "test fen";
+    const sideToMove = GameColor.BLACK;
 
     beforeEach(() => {
         pieces = createFakeBoardPieces();
-        root = new RootPositionNode(pieces, fen);
+        root = new RootPositionNode(pieces, fen, sideToMove);
     });
 
     describe("constructor", () => {
         it("should create a root node with correct pieces", () => {
             expect(root.pieces).toBe(pieces);
             expect(root.fen).toBe(fen);
+            expect(root.sideToMove).toBe(sideToMove);
             expect(root.next).toBeNull();
             expect(root.variations).toEqual([]);
             expect(root.subVariationByKey.size).toBe(0);

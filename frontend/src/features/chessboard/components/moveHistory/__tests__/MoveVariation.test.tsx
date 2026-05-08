@@ -21,7 +21,7 @@ describe("MoveVariation", () => {
 
     beforeEach(() => {
         rootPieces = createFakeBoardPieces();
-        history = new PositionHistory(rootPieces);
+        history = new PositionHistory({ pieces: rootPieces });
         chessboardStore = createChessboardStore();
         chessboardStore.setState({ positionHistory: history });
     });

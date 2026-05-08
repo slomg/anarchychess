@@ -51,7 +51,9 @@ describe("BotDialog", () => {
         liveStore = createLiveChessStore(createFakeLiveChessStoreProps());
         chessboardStore = createChessboardStore();
 
-        const positionHistory = new PositionHistory(createFakeBoardPieces());
+        const positionHistory = new PositionHistory({
+            pieces: createFakeBoardPieces(),
+        });
         prevPieces = createFakeBoardPieces();
         positionHistory.addNextPosition(
             createFakePositionProps({ pieces: prevPieces }),
@@ -356,7 +358,9 @@ describe("BotDialog", () => {
 
     it("should set game start dialog when viewing first position", async () => {
         chessboardStore.setState({
-            positionHistory: new PositionHistory(createFakeBoardPieces()),
+            positionHistory: new PositionHistory({
+                pieces: createFakeBoardPieces(),
+            }),
         });
         getDialogForGameStartMock.mockReturnValue("start line");
         getDialogForMoveMock.mockReturnValueOnce("move line");

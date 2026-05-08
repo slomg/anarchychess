@@ -80,10 +80,10 @@ describe("useEnsureLegalMovesForViewedPosition", () => {
     it("should fetch using root fen if no viewing position exists", async () => {
         chessboardStore.setState({
             allowHistoryChanges: false,
-            positionHistory: new PositionHistory(
-                createFakeBoardPieces(),
-                "test fen",
-            ),
+            positionHistory: new PositionHistory({
+                pieces: createFakeBoardPieces(),
+                fen: "test fen",
+            }),
             legalMovesByPosition: new Map(),
         });
 

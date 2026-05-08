@@ -1,5 +1,5 @@
-import { decodeFen } from "../../../chessboard/lib/fenDecoder";
 import mockSequentialUUID from "@/lib/testUtils/mocks/mockUuids";
+import { decodeFen } from "../../../chessboard/lib/fenDecoder";
 import { logicalPoint } from "@/features/point/pointUtils";
 import { GameColor, PieceType } from "@/lib/apiClient";
 import createDefaultChessboard from "../defaultBoard";
@@ -9,8 +9,9 @@ import constants from "@/lib/constants";
 describe("decodeFen", () => {
     it("should parse a standard starting position correctly", () => {
         mockSequentialUUID();
-        const board = decodeFen(constants.INITIAL_FEN);
-        expect(board).toEqual(createDefaultChessboard());
+        const { pieces, sideToMove } = decodeFen(constants.INITIAL_FEN);
+        expect(pieces).toEqual(createDefaultChessboard());
+        expect(sideToMove).toBe(GameColor.WHITE);
     });
 
     it("should parse a custom position", () => {
@@ -51,8 +52,9 @@ describe("decodeFen", () => {
                 hasMoved: false,
             },
         );
-        const board = decodeFen(fen);
-        expect(board).toEqual(expectedBoard);
+        const { pieces, sideToMove } = decodeFen(fen);
+        expect(pieces).toEqual(expectedBoard);
+        expect(sideToMove).toBe(GameColor.WHITE);
     });
 
     it("should parse stunned pieces correctly", () => {

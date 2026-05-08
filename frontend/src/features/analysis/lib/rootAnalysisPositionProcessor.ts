@@ -15,7 +15,7 @@ export default function processRootAnalysis(
 ): StoreApi<ChessboardStore> {
     const pieces = decodeFen(position.fen).pieces;
     const legalMoves = decodeMovePathIntoLegalMoves(position.legalMoves);
-    const positionHistory = new PositionHistory(pieces, position.fen);
+    const positionHistory = new PositionHistory({ pieces, fen: position.fen });
 
     return createChessboardStore({
         pieces,

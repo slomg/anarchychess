@@ -59,7 +59,7 @@ const StaticChessboard = ({
         createChessboardStore({
             pieces: initialPosition,
             legalMovesByPosition: new Map(),
-            positionHistory: new PositionHistory(initialPosition),
+            positionHistory: new PositionHistory({ pieces: initialPosition }),
             viewingFrom,
             disableDrag,
             muteAudio,

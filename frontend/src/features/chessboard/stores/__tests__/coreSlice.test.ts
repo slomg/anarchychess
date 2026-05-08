@@ -57,9 +57,9 @@ describe("CoreSlice", () => {
                 updatePiecesFromPosition: updatePiecesFromPositionMock,
             });
 
-            newChessboardState.positionHistory = new PositionHistory(
-                createFakeBoardPieces(),
-            );
+            newChessboardState.positionHistory = new PositionHistory({
+                pieces: createFakeBoardPieces(),
+            });
             const latestPosition =
                 newChessboardState.positionHistory.addNextPosition(
                     createFakePositionProps({
@@ -80,9 +80,9 @@ describe("CoreSlice", () => {
                 updatePiecesFromPosition: updatePiecesFromPositionMock,
             });
 
-            newChessboardState.positionHistory = new PositionHistory(
-                newChessboardState.pieces,
-            );
+            newChessboardState.positionHistory = new PositionHistory({
+                pieces: newChessboardState.pieces,
+            });
 
             await store.getState().resetState(newChessboardState);
 

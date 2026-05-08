@@ -21,7 +21,9 @@ describe("MoveRow", () => {
     });
 
     it("should render white move correctly with row number", () => {
-        const positionHistory = new PositionHistory(createFakeBoardPieces());
+        const positionHistory = new PositionHistory({
+            pieces: createFakeBoardPieces(),
+        });
         const whitePos = positionHistory.addNextPosition(
             createFakePositionProps({ san: "e4" }),
         );
@@ -37,7 +39,9 @@ describe("MoveRow", () => {
     });
 
     it("should render black move correctly with row number", () => {
-        const positionHistory = new PositionHistory(createFakeBoardPieces());
+        const positionHistory = new PositionHistory({
+            pieces: createFakeBoardPieces(),
+        });
         const whitePos = positionHistory.addNextPosition(
             createFakePositionProps({ san: "e4" }),
         );
@@ -58,7 +62,9 @@ describe("MoveRow", () => {
     });
 
     it("should apply selected class when viewing white move", () => {
-        const positionHistory = new PositionHistory(createFakeBoardPieces());
+        const positionHistory = new PositionHistory({
+            pieces: createFakeBoardPieces(),
+        });
         const whitePos = positionHistory.addNextPosition(
             createFakePositionProps({ san: "e4" }),
         );
@@ -80,7 +86,9 @@ describe("MoveRow", () => {
     });
 
     it("should apply selected class when viewing black move", () => {
-        const positionHistory = new PositionHistory(createFakeBoardPieces());
+        const positionHistory = new PositionHistory({
+            pieces: createFakeBoardPieces(),
+        });
         const whitePos = positionHistory.addNextPosition(
             createFakePositionProps({ san: "e4" }),
         );
@@ -101,7 +109,9 @@ describe("MoveRow", () => {
     });
 
     it("should go to the white position when white move is clicked", async () => {
-        const positionHistory = new PositionHistory(createFakeBoardPieces());
+        const positionHistory = new PositionHistory({
+            pieces: createFakeBoardPieces(),
+        });
         const whitePos = positionHistory.addNextPosition(
             createFakePositionProps({ san: "e4" }),
         );
@@ -123,7 +133,9 @@ describe("MoveRow", () => {
     });
 
     it("should go to the black position when black move is clicked", async () => {
-        const positionHistory = new PositionHistory(createFakeBoardPieces());
+        const positionHistory = new PositionHistory({
+            pieces: createFakeBoardPieces(),
+        });
         const whitePos = positionHistory.addNextPosition(
             createFakePositionProps({ san: "e4" }),
         );
@@ -149,7 +161,9 @@ describe("MoveRow", () => {
     });
 
     it("should apply alternating row background color correctly", () => {
-        const positionHistory = new PositionHistory(createFakeBoardPieces());
+        const positionHistory = new PositionHistory({
+            pieces: createFakeBoardPieces(),
+        });
         const whitePos1 = positionHistory.addNextPosition(
             createFakePositionProps({ san: "e4" }),
         );

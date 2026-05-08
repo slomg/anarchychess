@@ -65,6 +65,6 @@ export const createSetupModeSlice: StateCreator<
         newPieces.movePiece(selectedPieceId, dest);
 
         resetLastMove();
-        overrideRoot(newPieces);
+        overrideRoot({ pieces: newPieces });
     },
 });

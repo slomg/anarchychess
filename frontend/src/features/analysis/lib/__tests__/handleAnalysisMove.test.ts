@@ -73,7 +73,10 @@ describe("addAnalysisMove", () => {
         move = createFakeMove();
 
         // set pieces to something else, like a move was just played and changed from prevPieces to that
-        const positionHistory = new PositionHistory(prevPieces, rootFen);
+        const positionHistory = new PositionHistory({
+            pieces: prevPieces,
+            fen: rootFen,
+        });
         chessboardStore.setState({
             positionHistory,
             pieces: newPieces,
@@ -149,7 +152,9 @@ describe("addAnalysisMove", () => {
     });
 
     it("should go directly to an existing position without calling the API", async () => {
-        const positionHistory = new PositionHistory(createFakeBoardPieces());
+        const positionHistory = new PositionHistory({
+            pieces: createFakeBoardPieces(),
+        });
         const existingPosition = positionHistory.addNextPosition(
             createFakePositionProps(),
         );

@@ -69,7 +69,7 @@ export function createChessboardStore(
     initState: ChessboardProps = {
         viewingFrom: GameColor.WHITE,
         pieces: new BoardPieces(),
-        positionHistory: new PositionHistory(new BoardPieces()),
+        positionHistory: new PositionHistory({ pieces: new BoardPieces() }),
         legalMovesByPosition: new Map(),
     },
 ) {

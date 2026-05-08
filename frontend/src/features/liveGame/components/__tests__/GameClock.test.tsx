@@ -368,7 +368,9 @@ describe("GameClock", () => {
             ]),
         });
 
-        const positionHistory = new PositionHistory(createFakeBoardPieces());
+        const positionHistory = new PositionHistory({
+            pieces: createFakeBoardPieces(),
+        });
         positionHistory.addNextPosition(createFakePositionProps());
         const pos2 = positionHistory.addNextPosition(createFakePositionProps());
         positionHistory.addNextPosition(createFakePositionProps());
@@ -389,7 +391,9 @@ describe("GameClock", () => {
             ]),
         });
 
-        const positionHistory = new PositionHistory(createFakeBoardPieces());
+        const positionHistory = new PositionHistory({
+            pieces: createFakeBoardPieces(),
+        });
         const pos1 = positionHistory.addNextPosition(createFakePositionProps());
         const pos2 = positionHistory.addNextPosition(createFakePositionProps());
         positionHistory.addNextPosition(createFakePositionProps());
