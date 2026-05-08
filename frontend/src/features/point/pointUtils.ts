@@ -12,17 +12,6 @@ import {
 
 import constants from "@/lib/constants";
 
-export function pointToStr(point: Point): StrPoint {
-    return `${point.x},${point.y}`;
-}
-
-export function idxToLogicalPoint(index: number): LogicalPoint {
-    return logicalPoint({
-        x: index % constants.BOARD_WIDTH,
-        y: Math.floor(index / constants.BOARD_WIDTH),
-    });
-}
-
 export function logicalPoint(point: Point): LogicalPoint {
     return point as LogicalPoint;
 }
@@ -53,6 +42,25 @@ export function viewToWorld(point: ViewPoint): Vector3 {
 export function logicalToAlgebraic(point: LogicalPoint): AlgebraicString {
     const aCode = "a".charCodeAt(0);
     return `${String.fromCharCode(aCode + point.x)}${point.y + 1}` as AlgebraicString;
+}
+
+export function pointToStr(point: Point): StrPoint {
+    return `${point.x},${point.y}`;
+}
+
+export function idxToLogicalPoint(index: number): LogicalPoint {
+    return logicalPoint({
+        x: index % constants.BOARD_WIDTH,
+        y: Math.floor(index / constants.BOARD_WIDTH),
+    });
+}
+
+export function algebraicToLogical(algebraic: string): LogicalPoint {
+    const aCode = "a".charCodeAt(0);
+    return logicalPoint({
+        x: algebraic.charCodeAt(0) - aCode,
+        y: parseInt(algebraic.slice(1)) - 1,
+    });
 }
 
 export function pointEquals(a?: Point | null, b?: Point | null): boolean {
