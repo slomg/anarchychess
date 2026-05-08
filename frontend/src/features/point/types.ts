@@ -16,3 +16,6 @@ export type ViewPoint = Brand<Point, typeof viewPointBrand>;
 export type Offset = Brand<Point, typeof offsetBrand>;
 
 export type StrPoint = `${number},${number}`;
+
+export declare const algebraicStringBrand: unique symbol;
+export type AlgebraicString = Brand<string, typeof algebraicStringBrand>;

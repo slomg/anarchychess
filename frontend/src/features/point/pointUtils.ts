@@ -7,6 +7,7 @@ import {
     LogicalPoint,
     Offset,
     StrPoint,
+    AlgebraicString,
 } from "@/features/point/types";
 
 import constants from "@/lib/constants";
@@ -47,6 +48,11 @@ export function viewToWorld(point: ViewPoint): Vector3 {
     const vx = point.x * squareSize - offset + squareSize / 2;
     const vy = offset - point.y * squareSize - squareSize / 2;
     return new Vector3(vx, vy);
+}
+
+export function logicalToAlgebraic(point: LogicalPoint): AlgebraicString {
+    const aCode = "a".charCodeAt(0);
+    return `${String.fromCharCode(aCode + point.x)}${point.y + 1}` as AlgebraicString;
 }
 
 export function pointEquals(a?: Point | null, b?: Point | null): boolean {
