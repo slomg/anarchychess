@@ -52,11 +52,6 @@ export const createSetupModeSlice: StateCreator<
             return;
         }
 
-        const dest = screenToLogicalPoint(to);
-        if (!dest) {
-            return;
-        }
-
         const piece = pieces.getById(selectedPieceId);
         if (!piece) {
             console.warn(
@@ -65,12 +60,17 @@ export const createSetupModeSlice: StateCreator<
             return;
         }
 
+        const dest = screenToLogicalPoint(to);
         if (pointEquals(piece.position, dest)) {
             return;
         }
 
         const newPieces = new BoardPieces(pieces);
-        newPieces.movePiece(selectedPieceId, dest);
+        if (dest) {
+            newPieces.movePiece(selectedPieceId, dest);
+        } else {
+            newPieces.remove(selectedPieceId);
+        }
 
         resetLastMove();
         overrideRoot({ pieces: newPieces });

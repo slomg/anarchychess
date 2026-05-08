@@ -136,6 +136,38 @@ describe("SetupModeSlice", () => {
             expect(store.getState().pieces).toEqual(expectedPieces);
             expect(store.getState().lastMove).toBeNull();
         });
+
+        it("should remove piece if destination is outside board", () => {
+            const piece = createFakePiece({
+                position: logicalPoint({ x: 0, y: 0 }),
+            });
+
+            const pieces = BoardPieces.fromPieces(piece);
+            const positionHistory = new PositionHistory({ pieces });
+
+            store.setState({
+                pieces,
+                positionHistory,
+                selectedPieceId: piece.id,
+                lastMove: {
+                    from: createRandomPoint(),
+                    to: createRandomPoint(),
+                },
+            });
+
+            store
+                .getState()
+                .makeSetupModeMove(screenPoint({ x: 9999, y: 9999 }));
+
+            const expectedPieces = new BoardPieces(pieces);
+            expectedPieces.remove(piece.id);
+
+            expect(store.getState().pieces).toEqual(expectedPieces);
+            expect(store.getState().positionHistory.root.pieces).toEqual(
+                expectedPieces,
+            );
+            expect(store.getState().lastMove).toBeNull();
+        });
     });
 
     describe("addSetupModePiece", () => {
