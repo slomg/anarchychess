@@ -35,6 +35,7 @@ describe("NavigationButtons", () => {
             pieces: BoardPieces.fromPieces({
                 ...piece,
                 position: logicalPoint({ x: 1, y: 0 }),
+                hasMoved: true,
             }),
             move: createFakeMove({
                 from: logicalPoint({ x: 0, y: 0 }),
@@ -45,6 +46,7 @@ describe("NavigationButtons", () => {
             pieces: BoardPieces.fromPieces({
                 ...piece,
                 position: logicalPoint({ x: 2, y: 0 }),
+                hasMoved: true,
             }),
             move: createFakeMove({
                 from: logicalPoint({ x: 1, y: 0 }),
