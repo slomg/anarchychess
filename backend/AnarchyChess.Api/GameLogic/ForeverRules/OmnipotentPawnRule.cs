@@ -25,7 +25,7 @@ public class OmnipotentPawnRule : IForeveRule
         yield return new Move(
             from: lastMove.To,
             to: lastMove.To,
-            piece: lastMove.Piece,
+            piece: new Piece(PieceType.Pawn, movingPlayer),
             captures: [new MoveCapture(lastMove.To, board)],
             pieceSpawns: [new PieceSpawn(PieceType.Pawn, Color: movingPlayer, lastMove.To)],
             specialMoveType: SpecialMoveType.OmnipotentPawnSpawn,

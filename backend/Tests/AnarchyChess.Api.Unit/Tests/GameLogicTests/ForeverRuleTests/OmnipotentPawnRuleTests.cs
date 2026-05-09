@@ -74,7 +74,7 @@ public class OmnipotentPawnRuleTests
         Move expectedMove = new(
             from: spawnPosition,
             to: spawnPosition,
-            piece: lastMove.Piece,
+            piece: new Piece(PieceType.Pawn, GameColor.White),
             captures: [new MoveCapture(spawnPosition, _board)],
             pieceSpawns: [new PieceSpawn(PieceType.Pawn, Color: GameColor.White, spawnPosition)],
             specialMoveType: SpecialMoveType.OmnipotentPawnSpawn,
@@ -103,7 +103,7 @@ public class OmnipotentPawnRuleTests
         Move expectedMove = new(
             from: spawnPosition,
             to: spawnPosition,
-            piece: lastMove.Piece,
+            piece: new Piece(PieceType.Pawn, GameColor.Black),
             captures: [new MoveCapture(spawnPosition, _board)],
             pieceSpawns: [new PieceSpawn(PieceType.Pawn, Color: GameColor.Black, spawnPosition)],
             specialMoveType: SpecialMoveType.OmnipotentPawnSpawn,
