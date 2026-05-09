@@ -32,8 +32,8 @@ public class LobotomizedLobotomizedAnarchyBot(IBotDecisionServiceFactory botDeci
             SimpleTacticChance: 1,
             CheckmateChance: 0.05,
             //
-            HangPenalty: -10,
-            OpponentHangBonus: -10,
+            HangPenalty: -70,
+            OpponentHangBonus: -70,
             CausesForcedMovePenalty: 500,
             MultiStepMovePenalty: 500,
             LosesRookCastlingRightPenalty: 50,
