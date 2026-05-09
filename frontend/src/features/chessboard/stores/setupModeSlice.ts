@@ -25,6 +25,7 @@ export interface SetupModeSlice {
     ): void;
     clearSetupModeBoard(): void;
     resetSetupModeBoard(): void;
+    setSetupModeSideToMove(sideToMove: GameColor): void;
 }
 
 export const createSetupModeSlice: StateCreator<
@@ -113,5 +114,16 @@ export const createSetupModeSlice: StateCreator<
 
         resetLastMove();
         overrideRoot({ pieces: createDefaultChessboard() });
+    },
+
+    setSetupModeSideToMove(sideToMove) {
+        const { positionHistory, overrideRoot, resetLastMove } = get();
+
+        const pieces =
+            positionHistory.viewingPosition?.pieces ??
+            positionHistory.root.pieces;
+
+        resetLastMove();
+        overrideRoot({ pieces, sideToMove });
     },
 });

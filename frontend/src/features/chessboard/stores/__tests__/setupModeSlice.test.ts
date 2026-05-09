@@ -13,6 +13,7 @@ import { GameColor, PieceType } from "@/lib/apiClient";
 import mockSequentialUUID from "@/lib/testUtils/mocks/mockUuids";
 import createDefaultChessboard from "../../lib/defaultBoard";
 import { MoveBounds } from "../../lib/types";
+import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
 
 describe("SetupModeSlice", () => {
     let store: StoreApi<ChessboardStore>;
@@ -252,6 +253,64 @@ describe("SetupModeSlice", () => {
                 expectedPieces,
             );
             expect(store.getState().pieces).toEqual(expectedPieces);
+            expect(store.getState().lastMove).toBeNull();
+        });
+    });
+
+    describe("setSetupModeSideToMove", () => {
+        it("should set side to move using root pieces when not viewing a position", () => {
+            const piece = createFakePiece({
+                position: logicalPoint({ x: 0, y: 0 }),
+            });
+            const pieces = BoardPieces.fromPieces(piece);
+            const positionHistory = new PositionHistory({ pieces });
+
+            store.setState({
+                pieces,
+                positionHistory,
+                lastMove,
+            });
+
+            store.getState().setSetupModeSideToMove(GameColor.BLACK);
+
+            expect(store.getState().positionHistory.root.pieces).toEqual(
+                pieces,
+            );
+            expect(store.getState().positionHistory.root.sideToMove).toBe(
+                GameColor.BLACK,
+            );
+            expect(store.getState().lastMove).toBeNull();
+        });
+
+        it("should set side to move using viewing position pieces", () => {
+            const rootPiece = createFakePiece({
+                position: logicalPoint({ x: 0, y: 0 }),
+            });
+            const viewingPiece = createFakePiece({
+                position: logicalPoint({ x: 1, y: 1 }),
+            });
+            const rootPieces = BoardPieces.fromPieces(rootPiece);
+            const viewingPieces = BoardPieces.fromPieces(viewingPiece);
+            const positionHistory = new PositionHistory({
+                pieces: rootPieces,
+            });
+            positionHistory.addNextPosition(
+                createFakePositionProps({ pieces: viewingPieces }),
+            );
+            store.setState({
+                pieces: rootPieces,
+                positionHistory,
+                lastMove,
+            });
+
+            store.getState().setSetupModeSideToMove(GameColor.BLACK);
+
+            expect(store.getState().positionHistory.root.pieces).toEqual(
+                viewingPieces,
+            );
+            expect(store.getState().positionHistory.root.sideToMove).toBe(
+                GameColor.BLACK,
+            );
             expect(store.getState().lastMove).toBeNull();
         });
     });
