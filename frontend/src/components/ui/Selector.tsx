@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import clsx from "clsx";
+import { twMerge } from "tailwind-merge";
 
 import Button from "./Button";
 
@@ -61,7 +61,7 @@ const Selector = <T,>({
             {options.map((option, i) => (
                 <Button
                     key={i}
-                    className={clsx(
+                    className={twMerge(
                         "flex-1 text-nowrap disabled:cursor-default",
                         i === selectedIndex && "border-secondary border-3",
                         className,
