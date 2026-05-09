@@ -123,7 +123,10 @@ const SetupPositionPieces = () => {
     });
 
     return (
-        <div className="bg-background grid grid-cols-5 rounded-md p-1">
+        <div
+            className="bg-background grid grid-cols-5 rounded-md p-1"
+            data-testid="setupPositionPieces"
+        >
             {PIECES.map((piece) => (
                 <SetupPiece
                     type={piece}
