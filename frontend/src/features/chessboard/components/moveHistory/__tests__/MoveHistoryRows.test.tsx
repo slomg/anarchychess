@@ -61,10 +61,22 @@ describe("MoveHistoryRows", () => {
         chessboardStore.setState({
             positionHistory: createFakePositionHistory({
                 pos: [
-                    createFakePositionProps({ san: "e4" }),
-                    createFakePositionProps({ san: "e5" }),
-                    createFakePositionProps({ san: "Nf3" }),
-                    createFakePositionProps({ san: "Nc6" }),
+                    createFakePositionProps({
+                        san: "e4",
+                        sideToMove: GameColor.BLACK,
+                    }),
+                    createFakePositionProps({
+                        san: "e5",
+                        sideToMove: GameColor.WHITE,
+                    }),
+                    createFakePositionProps({
+                        san: "Nf3",
+                        sideToMove: GameColor.BLACK,
+                    }),
+                    createFakePositionProps({
+                        san: "Nc6",
+                        sideToMove: GameColor.WHITE,
+                    }),
                 ],
             }),
         });
@@ -114,14 +126,21 @@ describe("MoveHistoryRows", () => {
             pieces: createFakeBoardPieces(),
         });
         const pos1 = positionHistory.addNextPosition(
-            createFakePositionProps({ san: "e4" }),
+            createFakePositionProps({ san: "e4", sideToMove: GameColor.BLACK }),
         );
         positionHistory.goToStart();
-        positionHistory.addNextPosition(createFakePositionProps({ san: "c4" }));
-        positionHistory.goToPosition(pos1.positionId);
-        positionHistory.addNextPosition(createFakePositionProps({ san: "e5" }));
         positionHistory.addNextPosition(
-            createFakePositionProps({ san: "Nf3" }),
+            createFakePositionProps({ san: "c4", sideToMove: GameColor.BLACK }),
+        );
+        positionHistory.goToPosition(pos1.positionId);
+        positionHistory.addNextPosition(
+            createFakePositionProps({ san: "e5", sideToMove: GameColor.WHITE }),
+        );
+        positionHistory.addNextPosition(
+            createFakePositionProps({
+                san: "Nf3",
+                sideToMove: GameColor.BLACK,
+            }),
         );
         chessboardStore.setState({ positionHistory });
 
@@ -143,11 +162,15 @@ describe("MoveHistoryRows", () => {
         });
 
         const whitePos = positionHistory.addNextPosition(
-            createFakePositionProps({ san: "e4" }),
+            createFakePositionProps({ san: "e4", sideToMove: GameColor.BLACK }),
         );
-        positionHistory.addNextPosition(createFakePositionProps({ san: "e5" }));
+        positionHistory.addNextPosition(
+            createFakePositionProps({ san: "e5", sideToMove: GameColor.WHITE }),
+        );
         positionHistory.goToPosition(whitePos.positionId);
-        positionHistory.addNextPosition(createFakePositionProps({ san: "c5" }));
+        positionHistory.addNextPosition(
+            createFakePositionProps({ san: "c5", sideToMove: GameColor.WHITE }),
+        );
         chessboardStore.setState({ positionHistory });
 
         render(
@@ -169,16 +192,24 @@ describe("MoveHistoryRows", () => {
             pieces: createFakeBoardPieces(),
         });
 
-        positionHistory.addNextPosition(createFakePositionProps({ san: "e4" }));
+        positionHistory.addNextPosition(
+            createFakePositionProps({ san: "e4", sideToMove: GameColor.BLACK }),
+        );
         const blackPos = positionHistory.addNextPosition(
-            createFakePositionProps({ san: "e5" }),
+            createFakePositionProps({ san: "e5", sideToMove: GameColor.WHITE }),
         );
         positionHistory.addNextPosition(
-            createFakePositionProps({ san: "Nf3" }),
+            createFakePositionProps({
+                san: "Nf3",
+                sideToMove: GameColor.BLACK,
+            }),
         );
         positionHistory.goToPosition(blackPos.positionId);
         positionHistory.addNextPosition(
-            createFakePositionProps({ san: "Nc3" }),
+            createFakePositionProps({
+                san: "Nc3",
+                sideToMove: GameColor.BLACK,
+            }),
         );
         chessboardStore.setState({ positionHistory });
 
@@ -198,10 +229,22 @@ describe("MoveHistoryRows", () => {
         chessboardStore.setState({
             positionHistory: createFakePositionHistory({
                 pos: [
-                    createFakePositionProps({ san: "e4" }),
-                    createFakePositionProps({ san: "e5" }),
-                    createFakePositionProps({ san: "Nf3" }),
-                    createFakePositionProps({ san: "Nf6" }),
+                    createFakePositionProps({
+                        san: "e4",
+                        sideToMove: GameColor.BLACK,
+                    }),
+                    createFakePositionProps({
+                        san: "e5",
+                        sideToMove: GameColor.WHITE,
+                    }),
+                    createFakePositionProps({
+                        san: "Nf3",
+                        sideToMove: GameColor.BLACK,
+                    }),
+                    createFakePositionProps({
+                        san: "Nf6",
+                        sideToMove: GameColor.WHITE,
+                    }),
                 ],
             }),
         });
@@ -234,6 +277,7 @@ describe("MoveHistoryRows", () => {
                 from: logicalPoint({ x: 0, y: 0 }),
                 to: logicalPoint({ x: 1, y: 0 }),
             }),
+            sideToMove: GameColor.BLACK,
         });
         const position2 = createFakePositionProps({
             pieces: BoardPieces.fromPieces({
@@ -244,6 +288,7 @@ describe("MoveHistoryRows", () => {
                 from: logicalPoint({ x: 1, y: 0 }),
                 to: logicalPoint({ x: 2, y: 0 }),
             }),
+            sideToMove: GameColor.WHITE,
         });
 
         chessboardStore.setState({
