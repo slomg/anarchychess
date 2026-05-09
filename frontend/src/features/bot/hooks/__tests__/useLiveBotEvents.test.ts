@@ -49,9 +49,9 @@ describe("useLiveBotEvents", () => {
 
     describe("SyncPlyNumberAsync", () => {
         it("should refetch the game if ply number out of sync", async () => {
-            const positionHistory = new PositionHistory(
-                createFakeBoardPieces(),
-            );
+            const positionHistory = new PositionHistory({
+                pieces: createFakeBoardPieces(),
+            });
             positionHistory.addNextPosition(createFakePositionProps());
             positionHistory.addNextPosition(createFakePositionProps());
             positionHistory.addNextPosition(createFakePositionProps());
@@ -70,9 +70,9 @@ describe("useLiveBotEvents", () => {
         });
 
         it("should not refetch if revision matches", async () => {
-            const positionHistory = new PositionHistory(
-                createFakeBoardPieces(),
-            );
+            const positionHistory = new PositionHistory({
+                pieces: createFakeBoardPieces(),
+            });
             positionHistory.addNextPosition(createFakePositionProps());
             positionHistory.addNextPosition(createFakePositionProps());
             positionHistory.addNextPosition(createFakePositionProps());

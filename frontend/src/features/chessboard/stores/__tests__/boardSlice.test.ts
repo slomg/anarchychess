@@ -1,12 +1,14 @@
 import { StoreApi } from "zustand";
-import { ChessboardStore, createChessboardStore } from "../chessboardStore";
-import { GameColor } from "@/lib/apiClient";
-import { BoardDimensions } from "../boardSlice";
+
 import {
     logicalPoint,
     screenPoint,
     viewPoint,
 } from "@/features/point/pointUtils";
+
+import { ChessboardStore, createChessboardStore } from "../chessboardStore";
+import { GameColor } from "@/lib/apiClient";
+import constants from "@/lib/constants";
 
 describe("BoardSlice", () => {
     let store: StoreApi<ChessboardStore>;
@@ -21,12 +23,11 @@ describe("BoardSlice", () => {
         x: 70,
         y: 80,
     } as DOMRect;
-    const boardDimensions: BoardDimensions = { width: 10, height: 10 };
 
     beforeEach(() => {
         vi.useFakeTimers();
         store = createChessboardStore();
-        store.setState({ boardDimensions, boardRect: rect });
+        store.setState({ boardRect: rect });
     });
 
     describe("screenToViewPoint / screenToLogicalPoint", () => {
@@ -40,14 +41,14 @@ describe("BoardSlice", () => {
         });
 
         it("should convert screen to view correctly", () => {
-            const { screenToViewPoint, boardDimensions } = store.getState();
+            const { screenToViewPoint } = store.getState();
 
             // center of view‑square (2, 2)
             const screen = screenPoint({
-                x: rect.left + ((2 + 0.5) / boardDimensions.width) * rect.width,
+                x: rect.left + ((2 + 0.5) / constants.BOARD_WIDTH) * rect.width,
                 y:
                     rect.top +
-                    ((2 + 0.5) / boardDimensions.height) * rect.height,
+                    ((2 + 0.5) / constants.BOARD_HEIGHT) * rect.height,
             });
 
             expect(screenToViewPoint(screen)).toEqual({ x: 2, y: 2 });
@@ -63,7 +64,7 @@ describe("BoardSlice", () => {
                     screenPoint({ x: rect.left + 1, y: rect.top + 1 }),
                 );
 
-            expect(logical).toEqual({ x: 0, y: boardDimensions.height - 1 });
+            expect(logical).toEqual({ x: 0, y: constants.BOARD_HEIGHT - 1 });
         });
 
         it("should convert screen to logical from black perspective", () => {
@@ -75,7 +76,7 @@ describe("BoardSlice", () => {
                     screenPoint({ x: rect.left + 1, y: rect.top + 1 }),
                 );
 
-            expect(logical).toEqual({ x: boardDimensions.width - 1, y: 0 });
+            expect(logical).toEqual({ x: constants.BOARD_WIDTH - 1, y: 0 });
         });
 
         it("should round‑trip correctly for white", () => {
@@ -101,6 +102,16 @@ describe("BoardSlice", () => {
 
             expect(logicalPointToViewPoint(logical)).toEqual(view);
         });
+
+        it("should return undefined when the point is outside board", () => {
+            expect(
+                store
+                    .getState()
+                    .screenToLogicalPoint(
+                        screenPoint({ x: 696969, y: 696969 }),
+                    ),
+            ).toBeUndefined();
+        });
     });
 
     describe("logicalPointToScreenPoint", () => {
@@ -120,13 +131,13 @@ describe("BoardSlice", () => {
             const point = store.getState().logicalPointToScreenPoint(
                 logicalPoint({
                     x: 0,
-                    y: boardDimensions.height - 1,
+                    y: constants.BOARD_HEIGHT - 1,
                 }),
             )!;
             const expectedX =
-                rect.left + ((0 + 0.5) / boardDimensions.width) * rect.width;
+                rect.left + ((0 + 0.5) / constants.BOARD_WIDTH) * rect.width;
             const expectedY =
-                rect.top + ((0 + 0.5) / boardDimensions.height) * rect.height;
+                rect.top + ((0 + 0.5) / constants.BOARD_HEIGHT) * rect.height;
 
             expect(point.x).toBeCloseTo(expectedX);
             expect(point.y).toBeCloseTo(expectedY);
@@ -137,15 +148,15 @@ describe("BoardSlice", () => {
 
             const point = store.getState().logicalPointToScreenPoint(
                 logicalPoint({
-                    x: boardDimensions.width - 1,
+                    x: constants.BOARD_WIDTH - 1,
                     y: 0,
                 }),
             )!;
 
             const expectedX =
-                rect.left + ((0 + 0.5) / boardDimensions.width) * rect.width;
+                rect.left + ((0 + 0.5) / constants.BOARD_WIDTH) * rect.width;
             const expectedY =
-                rect.top + ((0 + 0.5) / boardDimensions.height) * rect.height;
+                rect.top + ((0 + 0.5) / constants.BOARD_HEIGHT) * rect.height;
 
             expect(point.x).toBeCloseTo(expectedX);
             expect(point.y).toBeCloseTo(expectedY);

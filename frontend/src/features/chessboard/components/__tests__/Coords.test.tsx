@@ -1,13 +1,15 @@
 import { render, screen } from "@testing-library/react";
-import { pointToStr } from "@/features/point/pointUtils";
-import Coords from "../Coords";
 import { StoreApi } from "zustand";
+
 import {
     ChessboardStore,
     createChessboardStore,
 } from "../../stores/chessboardStore";
+
 import ChessboardStoreContext from "../../contexts/chessboardStoreContext";
+import { pointToStr } from "@/features/point/pointUtils";
 import { GameColor } from "@/lib/apiClient";
+import Coords from "../Coords";
 
 describe("Coords", () => {
     let store: StoreApi<ChessboardStore>;
@@ -17,7 +19,6 @@ describe("Coords", () => {
 
     beforeEach(() => {
         store = createChessboardStore();
-        store.setState({ boardDimensions: { width: 10, height: 10 } });
     });
 
     const renderWithStore = () =>

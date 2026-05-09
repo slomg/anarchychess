@@ -252,7 +252,10 @@ describe("PiecesSlice", () => {
                 expect(result).toEqual({ success: true });
                 expect(emittedMove).toEqual(move);
                 expect(emittedPrevPieces).toEqual(pieces);
-                expectPieces({ position: expectedPosition, piece });
+                expectPieces({
+                    position: expectedPosition,
+                    piece: { ...piece, hasMoved: true },
+                });
             },
         );
 

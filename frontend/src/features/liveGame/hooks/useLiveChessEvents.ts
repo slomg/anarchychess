@@ -18,7 +18,6 @@ export default function useLiveChessEvents(
     liveChessStore: StoreApi<LiveChessStore>,
     chessboardStore: StoreApi<ChessboardStore>,
 ) {
-    const boardDimensions = useStore(chessboardStore, (x) => x.boardDimensions);
     const gameToken = useStore(liveChessStore, (x) => x.gameToken);
     const router = useRouter();
 
@@ -40,7 +39,7 @@ export default function useLiveChessEvents(
         clocks: Clocks;
         legalMoves?: LegalMoves;
     }): Promise<void> {
-        const decodedMove = decodeMovePath(move.path, boardDimensions.width);
+        const decodedMove = decodeMovePath(move.path);
 
         const queuedOvertime = queuedOvertimeRef.current.get(plyNumber);
         if (queuedOvertime) {
@@ -100,10 +99,7 @@ export default function useLiveChessEvents(
             const { viewer } = liveChessStore.getState();
             if (viewer.playerColor === null) return;
 
-            const decodedLegalMoves = decodeLegalMoves({
-                encoded: encodedLegalMoves,
-                boardWidth: boardDimensions.width,
-            });
+            const decodedLegalMoves = decodeLegalMoves(encodedLegalMoves);
             await processMove({
                 move,
                 plyNumber,
@@ -124,10 +120,7 @@ export default function useLiveChessEvents(
             const { removePieceAt, addLegalMovesForPosition, positionHistory } =
                 chessboardStore.getState();
 
-            const legalMoves = decodeLegalMoves({
-                encoded: encodedLegalMoves,
-                boardWidth: boardDimensions.width,
-            });
+            const legalMoves = decodeLegalMoves(encodedLegalMoves);
 
             const plyDiff = plyNumber - positionHistory.mainPlyCount;
             if (plyDiff > 1) {

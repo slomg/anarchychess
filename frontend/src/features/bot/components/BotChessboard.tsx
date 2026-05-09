@@ -53,8 +53,8 @@ const BotChessboard = ({
         createChessboardStore(storeProps.board),
     );
 
-    useEnsureLegalMovesForViewedPosition(gameState.initialFen, chessboardStore);
     useSyncBoardInteraction(liveChessStore, chessboardStore);
+    useEnsureLegalMovesForViewedPosition(chessboardStore);
     useBotMoveEmitter(liveChessStore, chessboardStore);
     useLiveBotEvents(liveChessStore, chessboardStore);
     useInvalidateOnNavigate();

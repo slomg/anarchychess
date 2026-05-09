@@ -1,7 +1,7 @@
+import { LogicalPoint } from "@/features/point/types";
 import { GameColor } from "@/lib/apiClient";
 import BoardPieces from "./boardPieces";
 import { Move, MoveKey } from "./types";
-import { LogicalPoint } from "@/features/point/types";
 
 export type PositionId = string & { __brand: "PositionId" };
 
@@ -11,6 +11,19 @@ export interface PositionProps {
     sideToMove: GameColor;
     move: Move;
     san: string;
+}
+
+export interface RootPositionProps {
+    pieces: BoardPieces;
+    fen?: string;
+    sideToMove?: GameColor;
+}
+
+export interface RootPosition {
+    positionId: PositionId;
+    pieces: BoardPieces;
+    fen: string;
+    sideToMove: GameColor;
 }
 
 export interface Position {
@@ -29,8 +42,10 @@ export interface Position {
     [Symbol.iterator](): IterableIterator<Position>;
 }
 
-export abstract class PositionNode {
+abstract class PositionNode {
     _pieces: BoardPieces;
+    _fen: string;
+    _sideToMove: GameColor;
 
     _mainVariation: ChildPositionNode | null = null;
     _subVariationByKey: Map<MoveKey, ChildPositionNode> = new Map();
@@ -38,12 +53,22 @@ export abstract class PositionNode {
 
     _positionId: PositionId = crypto.randomUUID() as PositionId;
 
-    constructor(pieces: BoardPieces) {
+    constructor(pieces: BoardPieces, fen: string, sideToMove: GameColor) {
         this._pieces = pieces;
+        this._fen = fen;
+        this._sideToMove = sideToMove;
     }
 
     get pieces(): BoardPieces {
         return this._pieces;
+    }
+
+    get fen(): string {
+        return this._fen;
+    }
+
+    get sideToMove(): GameColor {
+        return this._sideToMove;
     }
 
     get positionId(): PositionId {
@@ -120,11 +145,9 @@ export abstract class PositionNode {
     }
 }
 
-export class RootPositionNode extends PositionNode {}
+export class RootPositionNode extends PositionNode implements RootPosition {}
 
 export class ChildPositionNode extends PositionNode implements Position {
-    _fen: string;
-    _sideToMove: GameColor;
     _move: Move;
     _san: string;
     _ply: number;
@@ -132,7 +155,7 @@ export class ChildPositionNode extends PositionNode implements Position {
     _parent: ChildPositionNode | null = null;
 
     constructor(props: PositionProps, parent: ChildPositionNode | null = null) {
-        super(props.pieces);
+        super(props.pieces, props.fen, props.sideToMove);
         this._parent = parent;
 
         this._pieces = new BoardPieces(props.pieces);
@@ -141,14 +164,6 @@ export class ChildPositionNode extends PositionNode implements Position {
         this._move = props.move;
         this._san = props.san;
         this._ply = parent ? parent.ply + 1 : 1;
-    }
-
-    get fen(): string {
-        return this._fen;
-    }
-
-    get sideToMove(): GameColor {
-        return this._sideToMove;
     }
 
     get move(): Move {

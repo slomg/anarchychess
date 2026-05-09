@@ -11,7 +11,10 @@ import {
     sortPoints,
     pointDistanceSquared,
     sortPointsByDistanceSquared,
+    logicalToAlgebraic,
+    algebraicToLogical,
 } from "../pointUtils";
+
 import { Point } from "../types";
 
 describe("pointToStr", () => {
@@ -24,10 +27,9 @@ describe("pointToStr", () => {
 describe("idxToLogicalPoint", () => {
     it("should convert an index to a logical point", () => {
         const index = 16;
-        const boardWidth = 10;
         const expectedPoint = logicalPoint({ x: 6, y: 1 });
 
-        const result = idxToLogicalPoint(index, boardWidth);
+        const result = idxToLogicalPoint(index);
         expect(result).toEqual(expectedPoint);
     });
 });
@@ -40,6 +42,28 @@ describe("viewToWorld", () => {
 
         expect(result.x).toBeCloseTo(1.1625);
         expect(result.y).toBeCloseTo(-3.4875);
+    });
+});
+
+describe("logicalToAlgebraic", () => {
+    it.each([
+        [logicalPoint({ x: 0, y: 0 }), "a1"],
+        [logicalPoint({ x: 1, y: 1 }), "b2"],
+        [logicalPoint({ x: 5, y: 7 }), "f8"],
+        [logicalPoint({ x: 25, y: 7 }), "z8"],
+    ])("should convert point to algebraic string", (point, expected) => {
+        expect(logicalToAlgebraic(point)).toBe(expected);
+    });
+});
+
+describe("algebraicToLogical", () => {
+    it.each([
+        ["a1", logicalPoint({ x: 0, y: 0 })],
+        ["b2", logicalPoint({ x: 1, y: 1 })],
+        ["f8", logicalPoint({ x: 5, y: 7 })],
+        ["z8", logicalPoint({ x: 25, y: 7 })],
+    ])("should convert algebraic to point", (algebraic, expected) => {
+        expect(algebraicToLogical(algebraic)).toEqual(expected);
     });
 });
 

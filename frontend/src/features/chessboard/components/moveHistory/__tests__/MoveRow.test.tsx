@@ -21,14 +21,16 @@ describe("MoveRow", () => {
     });
 
     it("should render white move correctly with row number", () => {
-        const positionHistory = new PositionHistory(createFakeBoardPieces());
+        const positionHistory = new PositionHistory({
+            pieces: createFakeBoardPieces(),
+        });
         const whitePos = positionHistory.addNextPosition(
             createFakePositionProps({ san: "e4" }),
         );
 
         render(
             <ChessboardStoreContext.Provider value={chessboardStore}>
-                <MoveRow whitePosition={whitePos} />
+                <MoveRow whitePosition={whitePos} ply={whitePos.ply} />
             </ChessboardStoreContext.Provider>,
         );
 
@@ -37,7 +39,9 @@ describe("MoveRow", () => {
     });
 
     it("should render black move correctly with row number", () => {
-        const positionHistory = new PositionHistory(createFakeBoardPieces());
+        const positionHistory = new PositionHistory({
+            pieces: createFakeBoardPieces(),
+        });
         const whitePos = positionHistory.addNextPosition(
             createFakePositionProps({ san: "e4" }),
         );
@@ -48,7 +52,11 @@ describe("MoveRow", () => {
 
         render(
             <ChessboardStoreContext.Provider value={chessboardStore}>
-                <MoveRow whitePosition={whitePos} blackPosition={blackPos} />
+                <MoveRow
+                    whitePosition={whitePos}
+                    blackPosition={blackPos}
+                    ply={whitePos.ply}
+                />
             </ChessboardStoreContext.Provider>,
         );
 
@@ -58,7 +66,9 @@ describe("MoveRow", () => {
     });
 
     it("should apply selected class when viewing white move", () => {
-        const positionHistory = new PositionHistory(createFakeBoardPieces());
+        const positionHistory = new PositionHistory({
+            pieces: createFakeBoardPieces(),
+        });
         const whitePos = positionHistory.addNextPosition(
             createFakePositionProps({ san: "e4" }),
         );
@@ -70,7 +80,11 @@ describe("MoveRow", () => {
 
         render(
             <ChessboardStoreContext.Provider value={chessboardStore}>
-                <MoveRow whitePosition={whitePos} blackPosition={blackPos} />
+                <MoveRow
+                    whitePosition={whitePos}
+                    blackPosition={blackPos}
+                    ply={whitePos.ply}
+                />
             </ChessboardStoreContext.Provider>,
         );
 
@@ -80,7 +94,9 @@ describe("MoveRow", () => {
     });
 
     it("should apply selected class when viewing black move", () => {
-        const positionHistory = new PositionHistory(createFakeBoardPieces());
+        const positionHistory = new PositionHistory({
+            pieces: createFakeBoardPieces(),
+        });
         const whitePos = positionHistory.addNextPosition(
             createFakePositionProps({ san: "e4" }),
         );
@@ -91,7 +107,11 @@ describe("MoveRow", () => {
 
         render(
             <ChessboardStoreContext.Provider value={chessboardStore}>
-                <MoveRow whitePosition={whitePos} blackPosition={blackPos} />
+                <MoveRow
+                    whitePosition={whitePos}
+                    blackPosition={blackPos}
+                    ply={whitePos.ply}
+                />
             </ChessboardStoreContext.Provider>,
         );
 
@@ -101,7 +121,9 @@ describe("MoveRow", () => {
     });
 
     it("should go to the white position when white move is clicked", async () => {
-        const positionHistory = new PositionHistory(createFakeBoardPieces());
+        const positionHistory = new PositionHistory({
+            pieces: createFakeBoardPieces(),
+        });
         const whitePos = positionHistory.addNextPosition(
             createFakePositionProps({ san: "e4" }),
         );
@@ -110,7 +132,7 @@ describe("MoveRow", () => {
         const user = userEvent.setup();
         render(
             <ChessboardStoreContext.Provider value={chessboardStore}>
-                <MoveRow whitePosition={whitePos} />
+                <MoveRow whitePosition={whitePos} ply={whitePos.ply} />
             </ChessboardStoreContext.Provider>,
         );
 
@@ -123,7 +145,9 @@ describe("MoveRow", () => {
     });
 
     it("should go to the black position when black move is clicked", async () => {
-        const positionHistory = new PositionHistory(createFakeBoardPieces());
+        const positionHistory = new PositionHistory({
+            pieces: createFakeBoardPieces(),
+        });
         const whitePos = positionHistory.addNextPosition(
             createFakePositionProps({ san: "e4" }),
         );
@@ -135,7 +159,11 @@ describe("MoveRow", () => {
         const user = userEvent.setup();
         render(
             <ChessboardStoreContext.Provider value={chessboardStore}>
-                <MoveRow whitePosition={whitePos} blackPosition={blackPos} />
+                <MoveRow
+                    whitePosition={whitePos}
+                    blackPosition={blackPos}
+                    ply={whitePos.ply}
+                />
             </ChessboardStoreContext.Provider>,
         );
 
@@ -149,7 +177,9 @@ describe("MoveRow", () => {
     });
 
     it("should apply alternating row background color correctly", () => {
-        const positionHistory = new PositionHistory(createFakeBoardPieces());
+        const positionHistory = new PositionHistory({
+            pieces: createFakeBoardPieces(),
+        });
         const whitePos1 = positionHistory.addNextPosition(
             createFakePositionProps({ san: "e4" }),
         );
@@ -167,7 +197,11 @@ describe("MoveRow", () => {
 
         const { rerender } = render(
             <ChessboardStoreContext.Provider value={chessboardStore}>
-                <MoveRow whitePosition={whitePos1} blackPosition={blackPos1} />
+                <MoveRow
+                    whitePosition={whitePos1}
+                    blackPosition={blackPos1}
+                    ply={whitePos1.ply}
+                />
             </ChessboardStoreContext.Provider>,
         );
         const oddRow = screen.getByTestId("moveRow");
@@ -175,10 +209,39 @@ describe("MoveRow", () => {
 
         rerender(
             <ChessboardStoreContext.Provider value={chessboardStore}>
-                <MoveRow whitePosition={whitePos2} blackPosition={blackPos2} />
+                <MoveRow
+                    whitePosition={whitePos2}
+                    blackPosition={blackPos2}
+                    ply={whitePos2.ply}
+                />
             </ChessboardStoreContext.Provider>,
         );
         const evenRow = screen.getByTestId("moveRow");
         expect(evenRow).toHaveClass("bg-white/10");
+    });
+
+    it("should render correctly with no whitePosition", () => {
+        const positionHistory = new PositionHistory({
+            pieces: createFakeBoardPieces(),
+        });
+        const blackPos = positionHistory.addNextPosition(
+            createFakePositionProps({ san: "e5" }),
+        );
+        chessboardStore.setState({ positionHistory });
+
+        render(
+            <ChessboardStoreContext.Provider value={chessboardStore}>
+                <MoveRow blackPosition={blackPos} ply={blackPos.ply} />
+            </ChessboardStoreContext.Provider>,
+        );
+
+        expect(screen.getByText("1.")).toBeInTheDocument();
+        expect(screen.getByText("e5")).toBeInTheDocument();
+
+        const buttons = screen.getAllByRole("button");
+        expect(buttons).toHaveLength(2);
+
+        expect(buttons[0]).toHaveTextContent("");
+        expect(buttons[1]).toHaveTextContent("e5");
     });
 });

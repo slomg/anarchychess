@@ -26,10 +26,9 @@ import PositionHistory from "@/features/chessboard/lib/positionHistory";
 import useBotDialog, { DialogContext } from "../../hooks/useBotDialog";
 import { BotClientEvents, useBotEvent } from "../../hooks/useBotHub";
 import { decodeMovePath } from "@/features/liveGame/lib/moveDecoder";
+import { BotType, GameColor, MoveSnapshot } from "@/lib/apiClient";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
 import { PlayerType } from "@/features/liveGame/lib/types";
-import { BotType, GameColor, MoveSnapshot } from "@/lib/apiClient";
-import constants from "@/lib/constants";
 
 vi.mock("../../hooks/useBotDialog");
 vi.mock("@/features/bot/hooks/useBotHub");
@@ -52,7 +51,9 @@ describe("BotDialog", () => {
         liveStore = createLiveChessStore(createFakeLiveChessStoreProps());
         chessboardStore = createChessboardStore();
 
-        const positionHistory = new PositionHistory(createFakeBoardPieces());
+        const positionHistory = new PositionHistory({
+            pieces: createFakeBoardPieces(),
+        });
         prevPieces = createFakeBoardPieces();
         positionHistory.addNextPosition(
             createFakePositionProps({ pieces: prevPieces }),
@@ -220,10 +221,7 @@ describe("BotDialog", () => {
 
         const { moveSnapshot, plyNumber, evalForBot } = await fireBotMoveMade();
 
-        const expectedMove = decodeMovePath(
-            moveSnapshot.path,
-            constants.BOARD_WIDTH,
-        );
+        const expectedMove = decodeMovePath(moveSnapshot.path);
         const expectedCtx: DialogContext = {
             move: expectedMove,
             prevPieces,
@@ -360,7 +358,9 @@ describe("BotDialog", () => {
 
     it("should set game start dialog when viewing first position", async () => {
         chessboardStore.setState({
-            positionHistory: new PositionHistory(createFakeBoardPieces()),
+            positionHistory: new PositionHistory({
+                pieces: createFakeBoardPieces(),
+            }),
         });
         getDialogForGameStartMock.mockReturnValue("start line");
         getDialogForMoveMock.mockReturnValueOnce("move line");

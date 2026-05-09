@@ -8,15 +8,10 @@ import { ScreenPoint } from "@/features/point/types";
 import { Point } from "@/features/point/types";
 import { logicalPoint, viewPoint } from "@/features/point/pointUtils";
 import { invertColor } from "@/lib/utils/chessUtils";
-
-export interface BoardDimensions {
-    width: number;
-    height: number;
-}
+import constants from "@/lib/constants";
 
 export interface BoardSliceProps {
     viewingFrom: GameColor;
-    boardDimensions: BoardDimensions;
 }
 
 interface ImmerDOMRect {
@@ -32,7 +27,6 @@ interface ImmerDOMRect {
 
 export interface BoardSlice extends BoardSliceProps {
     viewingFrom: GameColor;
-    boardDimensions: BoardDimensions;
     boardRect?: ImmerDOMRect;
 
     screenToLogicalPoint(screenPoint: ScreenPoint): LogicalPoint | undefined;
@@ -68,33 +62,39 @@ export function createBoardSlice(
             return viewPointToLogicalPoint(viewPoint);
         },
         screenToViewPoint(screenPoint) {
-            const { boardDimensions, boardRect } = get();
+            const { boardRect } = get();
             if (!boardRect) return;
 
             const relX = Math.max(screenPoint.x - boardRect.left, 0);
             const relY = Math.max(screenPoint.y - boardRect.top, 0);
 
             const x = Math.floor(
-                (relX / boardRect.width) * boardDimensions.width,
+                (relX / boardRect.width) * constants.BOARD_WIDTH,
             );
             const y = Math.floor(
-                (relY / boardRect.height) * boardDimensions.height,
+                (relY / boardRect.height) * constants.BOARD_HEIGHT,
             );
+
+            if (x >= constants.BOARD_WIDTH) {
+                return;
+            }
+            if (y >= constants.BOARD_WIDTH) {
+                return;
+            }
 
             return viewPoint({ x, y });
         },
         logicalPointToScreenPoint(logicalPoint) {
-            const { logicalPointToViewPoint, boardDimensions, boardRect } =
-                get();
+            const { logicalPointToViewPoint, boardRect } = get();
             if (!boardRect) return;
 
             const viewPoint = logicalPointToViewPoint(logicalPoint);
             const screenX =
                 boardRect.left +
-                ((viewPoint.x + 0.5) / boardDimensions.width) * boardRect.width;
+                ((viewPoint.x + 0.5) / constants.BOARD_WIDTH) * boardRect.width;
             const screenY =
                 boardRect.top +
-                ((viewPoint.y + 0.5) / boardDimensions.height) *
+                ((viewPoint.y + 0.5) / constants.BOARD_HEIGHT) *
                     boardRect.height;
 
             return { x: screenX, y: screenY } as ScreenPoint;
@@ -103,23 +103,15 @@ export function createBoardSlice(
         // both perform the same coordinate transformation
         // we have both for clarity
         viewPointToLogicalPoint(viewPoint) {
-            const { viewingFrom, boardDimensions } = get();
+            const { viewingFrom } = get();
             return logicalPoint(
-                flipPointForPerspective(
-                    viewPoint,
-                    viewingFrom,
-                    boardDimensions,
-                ),
+                flipPointForPerspective(viewPoint, viewingFrom),
             );
         },
         logicalPointToViewPoint(logicalPoint) {
-            const { viewingFrom, boardDimensions } = get();
+            const { viewingFrom } = get();
             return viewPoint(
-                flipPointForPerspective(
-                    logicalPoint,
-                    viewingFrom,
-                    boardDimensions,
-                ),
+                flipPointForPerspective(logicalPoint, viewingFrom),
             );
         },
 
@@ -145,16 +137,12 @@ export function createBoardSlice(
     });
 }
 
-function flipPointForPerspective(
-    point: Point,
-    viewingFrom: GameColor,
-    boardDimensions: BoardDimensions,
-) {
+function flipPointForPerspective(point: Point, viewingFrom: GameColor) {
     let { x, y } = point;
     if (viewingFrom === GameColor.WHITE) {
-        y = boardDimensions.height - y - 1;
+        y = constants.BOARD_HEIGHT - y - 1;
     } else {
-        x = boardDimensions.width - x - 1;
+        x = constants.BOARD_WIDTH - x - 1;
     }
     return { x, y };
 }

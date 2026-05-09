@@ -52,6 +52,7 @@ const OpenChallengeView = () => {
                         onClick={copyChallengeLink}
                         data-testid="openChallengeViewCopy"
                         className={clsx(
+                            "h-8 w-8 hover:opacity-50",
                             isOver && "cursor-not-allowed brightness-50",
                         )}
                     />

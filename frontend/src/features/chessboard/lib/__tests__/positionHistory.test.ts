@@ -4,6 +4,8 @@ import PositionHistory from "../positionHistory";
 import { PositionId } from "../position";
 import BoardPieces from "../boardPieces";
 import { MoveKey } from "../types";
+import { GameColor } from "@/lib/apiClient";
+import { encodeFen } from "../fenEncoder";
 
 describe("PositionHistory", () => {
     let rootPieces: BoardPieces;
@@ -11,16 +13,104 @@ describe("PositionHistory", () => {
 
     beforeEach(() => {
         rootPieces = createFakeBoardPieces();
-        history = new PositionHistory(rootPieces);
+        history = new PositionHistory({ pieces: rootPieces });
     });
 
     describe("constructor", () => {
         it("should initialize with the given root pieces", () => {
-            expect(history.rootPieces).toBe(rootPieces);
+            expect(history.root.pieces).toBe(rootPieces);
             expect(history.mainPlyCount).toBe(0);
             expect(history.totalPlyCount).toBe(0);
             expect(history.viewingPosition).toBeNull();
             expect([...history].length).toBe(0);
+        });
+
+        it("should use provided fen and sideToMove", () => {
+            const fen = "some-fen-string";
+            const history = new PositionHistory({
+                pieces: rootPieces,
+                fen,
+                sideToMove: GameColor.BLACK,
+            });
+            expect(history.root.fen).toBe(fen);
+            expect(history.root.sideToMove).toBe(GameColor.BLACK);
+        });
+
+        it("should encode fen from pieces when not provided", () => {
+            const history = new PositionHistory({
+                pieces: rootPieces,
+                sideToMove: GameColor.BLACK,
+            });
+            expect(history.root.fen).toBe(
+                encodeFen({ pieces: rootPieces, sideToMove: GameColor.BLACK }),
+            );
+        });
+    });
+
+    describe("overrideRoot", () => {
+        it("should replace the root pieces and reset viewing position", () => {
+            history.addNextPosition(createFakePositionProps());
+            history.goToEnd();
+
+            const newRootPieces = createFakeBoardPieces();
+            history.overrideRoot({ pieces: newRootPieces });
+
+            expect(history.root.pieces).toBe(newRootPieces);
+            expect(history.viewingPosition).toBeNull();
+        });
+
+        it("should clear history state after override", () => {
+            const pos1 = history.addNextPosition(createFakePositionProps());
+            history.addNextPosition(createFakePositionProps());
+            history.goToPosition(pos1.positionId);
+
+            history.overrideRoot({ pieces: createFakeBoardPieces() });
+
+            expect(history.getPositionWithPly(1)).toBeUndefined();
+            expect(history.totalPlyCount).toBe(0);
+            expect(history.mainPlyCount).toBe(0);
+            expect([...history]).toEqual([]);
+        });
+
+        it("should reset root but allow new positions to be added", () => {
+            history.addNextPosition(createFakePositionProps());
+
+            history.overrideRoot({ pieces: createFakeBoardPieces() });
+
+            const pos = history.addNextPosition(createFakePositionProps());
+
+            expect(history.mainPlyCount).toBe(1);
+            expect(history.totalPlyCount).toBe(1);
+            expect(history.viewingPosition).toBe(pos);
+        });
+
+        it("should use provided fen and sideToMove", () => {
+            const fen = "some-fen-string";
+            history.overrideRoot({
+                pieces: rootPieces,
+                fen,
+                sideToMove: GameColor.BLACK,
+            });
+
+            expect(history.root.fen).toBe(fen);
+            expect(history.root.sideToMove).toBe(GameColor.BLACK);
+        });
+
+        it("should encode fen from pieces when not provided", () => {
+            const newPieces = createFakeBoardPieces();
+            history.overrideRoot({
+                pieces: newPieces,
+                sideToMove: GameColor.BLACK,
+            });
+
+            expect(history.root.fen).toBe(
+                encodeFen({ pieces: newPieces, sideToMove: GameColor.BLACK }),
+            );
+        });
+
+        it("should default sideToMove to white when not provided", () => {
+            history.overrideRoot({ pieces: rootPieces });
+            expect(history.root.sideToMove).toBe(GameColor.WHITE);
         });
     });
 

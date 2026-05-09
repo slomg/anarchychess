@@ -16,22 +16,23 @@ interface GatheredMoves {
 export default class BoardPieces {
     _byId: Map<PieceID, Piece>;
     _byPosition: Map<StrPoint, PieceID>;
-    _stunnedPieces: Map<PieceID, number> = new Map();
+    _stunnedPieces: Map<PieceID, number>;
 
-    constructor(copy: BoardPieces | null = null) {
-        if (copy === null) {
+    constructor(other: BoardPieces | null = null) {
+        if (other === null) {
             this._byId = new Map();
             this._byPosition = new Map();
+            this._stunnedPieces = new Map();
             return;
         }
 
         this._byId = new Map(
-            [...copy._byId].map(([id, piece]) => {
+            [...other._byId].map(([id, piece]) => {
                 return [id, { ...piece }];
             }),
         );
-        this._byPosition = new Map(copy._byPosition);
-        this._stunnedPieces = new Map(copy._stunnedPieces);
+        this._byPosition = new Map(other._byPosition);
+        this._stunnedPieces = new Map(other._stunnedPieces);
     }
 
     static fromPieces(...pieces: Piece[]): BoardPieces {
@@ -92,6 +93,7 @@ export default class BoardPieces {
             const piece = this._byId.get(pieceMove.pieceId);
             if (piece) {
                 piece.position = pieceMove.to;
+                piece.hasMoved = true;
             }
         }
 
@@ -153,6 +155,8 @@ export default class BoardPieces {
     }
 
     add(piece: Piece): void {
+        this.removeFrom(piece.position);
+
         this._byId.set(piece.id, { ...piece });
         this._byPosition.set(pointToStr(piece.position), piece.id);
         if (piece.stunnedForTurns > 0) {
@@ -161,6 +165,8 @@ export default class BoardPieces {
     }
 
     addAt(piece: Piece, position: LogicalPoint): void {
+        this.removeFrom(position);
+
         const newPiece = { ...piece, position };
         this._byId.set(newPiece.id, newPiece);
         this._byPosition.set(pointToStr(position), newPiece.id);

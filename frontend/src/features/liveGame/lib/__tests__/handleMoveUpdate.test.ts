@@ -16,7 +16,7 @@ import { createFakePiece } from "@/lib/testUtils/fakers/chessboardFakers";
 import { Clocks, GameColor, MoveSnapshot } from "@/lib/apiClient";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
 import LegalMoves from "@/features/chessboard/lib/legalMoves";
-import { logicalPoint } from "@/features/point/pointUtils";
+import { idxToLogicalPoint, logicalPoint } from "@/features/point/pointUtils";
 import handleMoveUpdate from "../handleMoveUpdate";
 import { decodeMovePath } from "../moveDecoder";
 
@@ -67,6 +67,7 @@ describe("handleMoveUpdate", () => {
             position: isPendingMoveAck
                 ? logicalPoint({ x: 2, y: 1 })
                 : logicalPoint({ x: 1, y: 1 }),
+            hasMoved: isPendingMoveAck,
         });
 
         const historyPieces = BoardPieces.fromPieces({
@@ -135,7 +136,7 @@ describe("handleMoveUpdate", () => {
             ).toEqual(
                 expect.objectContaining({
                     san: move.san,
-                    move: decodeMovePath(move.path, 10),
+                    move: decodeMovePath(move.path),
                     pieces: piecesAfter,
                 }),
             );

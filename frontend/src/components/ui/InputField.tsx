@@ -36,7 +36,7 @@ const InputField = <C extends React.ElementType = "input">({
 
             {icon && (
                 <span
-                    className="bg-background h-full w-10 cursor-pointer
+                    className="bg-background flex cursor-pointer items-center
                         rounded-r-md p-1"
                 >
                     {icon}

@@ -33,6 +33,7 @@ import { createInteractionSlice, InteractionSlice } from "./interactionSlice";
 import { BoardSlice, BoardSliceProps, createBoardSlice } from "./boardSlice";
 import { AudioSlice, AudioSliceProps, createAudioSlice } from "./audioSlice";
 import { createPromotionSlice, PromotionSlice } from "./promotionSlice";
+import { createSetupModeSlice, SetupModeSlice } from "./setupModeSlice";
 import { OverlaySlice, createOverlaySlice } from "./overlaySlice";
 import { createPromptSlice, PromptSlice } from "./promptSlice";
 import { createThrowSlice, ThrowSlice } from "./throwSlice";
@@ -40,7 +41,6 @@ import { CoreSlice, createCoreSlice } from "./coreSlice";
 import PositionHistory from "../lib/positionHistory";
 import BoardPieces from "../lib/boardPieces";
 import { GameColor } from "@/lib/apiClient";
-import constants from "@/lib/constants";
 
 export type ChessboardStore = BoardSlice &
     PiecesSlice &
@@ -55,7 +55,8 @@ export type ChessboardStore = BoardSlice &
     AudioSlice &
     CoreSlice &
     ThrowSlice &
-    BoardEffectsSlice;
+    BoardEffectsSlice &
+    SetupModeSlice;
 export type ChessboardProps = BoardSliceProps &
     PieceSliceProps &
     HistorySliceProps &
@@ -67,12 +68,8 @@ enableMapSet();
 export function createChessboardStore(
     initState: ChessboardProps = {
         viewingFrom: GameColor.WHITE,
-        boardDimensions: {
-            width: constants.BOARD_WIDTH,
-            height: constants.BOARD_HEIGHT,
-        },
         pieces: new BoardPieces(),
-        positionHistory: new PositionHistory(new BoardPieces()),
+        positionHistory: new PositionHistory({ pieces: new BoardPieces() }),
         legalMovesByPosition: new Map(),
     },
 ) {
@@ -93,6 +90,7 @@ export function createChessboardStore(
                 ...createCoreSlice(...a),
                 ...createThrowSlice(...a),
                 ...createBoardEffectsSlice(...a),
+                ...createSetupModeSlice(...a),
             })),
             { name: "chessboardStore" },
         ),

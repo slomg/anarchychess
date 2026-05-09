@@ -14,7 +14,7 @@ export default function useBoardInteraction({
 
     onPress,
 }: {
-    shouldStartDrag: (info: InteractionInfo) => MaybePromise<boolean>;
+    shouldStartDrag?: (info: InteractionInfo) => MaybePromise<boolean>;
 
     onDragStart?: (point: ScreenPoint) => MaybePromise<void>;
     onDragMove?: (point: ScreenPoint) => MaybePromise<void>;
@@ -118,7 +118,7 @@ export default function useBoardInteraction({
             info: InteractionInfo,
         ): Promise<boolean> {
             const shouldStart =
-                await callbacksRef.current?.shouldStartDrag(info);
+                (await callbacksRef.current?.shouldStartDrag?.(info)) ?? false;
             if (shouldStart) await startDragging(info.point);
 
             return shouldStart;

@@ -15,7 +15,6 @@ import { MoveBounds } from "@/features/chessboard/lib/types";
 import { logicalPoint } from "@/features/point/pointUtils";
 import { processGameState } from "../gameStateProcessor";
 import { GameColor, GameResult } from "@/lib/apiClient";
-import constants from "@/lib/constants";
 
 describe("processGameState", () => {
     it("should create correct live store props", () => {
@@ -31,7 +30,6 @@ describe("processGameState", () => {
         expect(live).toEqual<LiveChessStoreProps>({
             gameToken: "game-token",
             sourceRevision: gameState.revision,
-            initialFen: gameState.initialFen,
 
             whitePlayer: gameState.whitePlayer,
             blackPlayer: gameState.blackPlayer,
@@ -50,7 +48,7 @@ describe("processGameState", () => {
         });
     });
 
-    it("should create board props with correct orientation and dimensions", () => {
+    it("should create board props with correct orientation", () => {
         const gameState = createFakeGameState();
         const viewerUserId = gameState.blackPlayer.userId;
 
@@ -61,10 +59,6 @@ describe("processGameState", () => {
         );
 
         expect(board.viewingFrom).toBe(GameColor.BLACK);
-        expect(board.boardDimensions).toEqual({
-            width: constants.BOARD_WIDTH,
-            height: constants.BOARD_HEIGHT,
-        });
     });
 
     it("should build position history and last move from move history", () => {
@@ -132,12 +126,15 @@ describe("processGameState", () => {
         mockSequentialUUID({ startAt: defaultChessboard.size });
         const baseMs = gameState.pool.timeControl.baseSeconds * 1000;
         let pieces = new BoardPieces(defaultChessboard);
-        const positionHistory = new PositionHistory(new BoardPieces(pieces));
+        const positionHistory = new PositionHistory({
+            pieces: new BoardPieces(pieces),
+            fen: gameState.initialFen,
+        });
         const moves = [
             {
                 from: logicalPoint({ x: 5, y: 1 }),
                 to: logicalPoint({ x: 5, y: 4 }),
-                decoded: decodeMovePath(gameState.moveHistory[0].path, 10),
+                decoded: decodeMovePath(gameState.moveHistory[0].path),
                 clocks: { whiteClock: 100, blackClock: baseMs },
                 fen: "fake-fen-1",
                 nextSideToMove: GameColor.BLACK,
@@ -146,7 +143,7 @@ describe("processGameState", () => {
             {
                 from: logicalPoint({ x: 5, y: 8 }),
                 to: logicalPoint({ x: 5, y: 5 }),
-                decoded: decodeMovePath(gameState.moveHistory[1].path, 10),
+                decoded: decodeMovePath(gameState.moveHistory[1].path),
                 clocks: { whiteClock: 100, blackClock: 100 },
                 fen: "fake-fen-2",
                 nextSideToMove: GameColor.WHITE,
@@ -155,7 +152,7 @@ describe("processGameState", () => {
             {
                 from: logicalPoint({ x: 8, y: 0 }),
                 to: logicalPoint({ x: 7, y: 2 }),
-                decoded: decodeMovePath(gameState.moveHistory[2].path, 10),
+                decoded: decodeMovePath(gameState.moveHistory[2].path),
                 clocks: { whiteClock: 50, blackClock: 100 },
                 fen: "fake-fen-3",
                 nextSideToMove: GameColor.BLACK,
@@ -164,7 +161,7 @@ describe("processGameState", () => {
             {
                 from: logicalPoint({ x: 1, y: 9 }),
                 to: logicalPoint({ x: 2, y: 7 }),
-                decoded: decodeMovePath(gameState.moveHistory[3].path, 10),
+                decoded: decodeMovePath(gameState.moveHistory[3].path),
                 clocks: { whiteClock: 50, blackClock: 50 },
                 fen: "fake-fen-4",
                 nextSideToMove: GameColor.WHITE,
@@ -208,10 +205,7 @@ describe("processGameState", () => {
 
         const positionId = board.positionHistory!.viewingPosition?.positionId;
         expect(board.legalMovesByPosition.get(positionId)).toEqual(
-            decodeMovePathIntoLegalMoves({
-                paths: gameState.legalMoves,
-                boardWidth: constants.BOARD_WIDTH,
-            }),
+            decodeMovePathIntoLegalMoves(gameState.legalMoves),
         );
     });
 

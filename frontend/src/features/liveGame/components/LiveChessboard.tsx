@@ -17,8 +17,8 @@ import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardSto
 import ChessboardWithSidebar from "@/features/chessboard/components/ChessboardWithSidebar";
 import ChessboardLayout from "@/features/chessboard/components/ChessboardLayout";
 import createLiveChessStore, { LiveChessStore } from "../stores/liveChessStore";
-import useSyncBoardInteraction from "../hooks/useSyncBoardInteraction";
 import LiveChessboardProfile, { ProfileSide } from "./LiveChessboardProfile";
+import useSyncBoardInteraction from "../hooks/useSyncBoardInteraction";
 import { useSessionUser } from "@/features/auth/hooks/useSessionUser";
 import useInvalidateOnNavigate from "@/hooks/useInvalidateOnNavigate";
 import LiveChessStoreContext from "../contexts/liveChessContext";
@@ -54,8 +54,8 @@ const LiveChessboard = ({
         createChessboardStore(storeProps.board),
     );
 
-    useEnsureLegalMovesForViewedPosition(gameState.initialFen, chessboardStore);
     useSyncBoardInteraction(liveChessStore, chessboardStore);
+    useEnsureLegalMovesForViewedPosition(chessboardStore);
     useLiveChessEvents(liveChessStore, chessboardStore);
     useLiveMoveEmitter(liveChessStore, chessboardStore);
     useInvalidateOnNavigate();

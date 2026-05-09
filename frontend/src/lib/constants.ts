@@ -201,9 +201,24 @@ const LETTER_TO_PIECE: Record<string, PieceType> = {
     h: PieceType.HORSEY,
     p: PieceType.PAWN,
     d: PieceType.UNDERAGE_PAWN,
+    s: PieceType.STERILE_PAWN,
     a: PieceType.ANTIQUEEN,
     "+": PieceType.TRAITOR_ROOK,
     c: PieceType.CHECKER,
+};
+const PIECE_TO_LETTER: Record<PieceType, string> = {
+    [PieceType.KING]: "k",
+    [PieceType.QUEEN]: "q",
+    [PieceType.ROOK]: "r",
+    [PieceType.KNOOK]: "n",
+    [PieceType.BISHOP]: "b",
+    [PieceType.HORSEY]: "h",
+    [PieceType.PAWN]: "p",
+    [PieceType.UNDERAGE_PAWN]: "d",
+    [PieceType.STERILE_PAWN]: "s",
+    [PieceType.ANTIQUEEN]: "a",
+    [PieceType.TRAITOR_ROOK]: "+",
+    [PieceType.CHECKER]: "c",
 };
 
 const ANIMATION_STEP_DELAY_MS = 30;
@@ -242,6 +257,7 @@ const constants = {
     ALLOW_ABORTION_UNTIL_MOVE,
     INITIAL_FEN,
     LETTER_TO_PIECE,
+    PIECE_TO_LETTER,
     SIGNALR_PATHS,
     PAGINATION_PAGE_SIZE,
     QUEST_WEEKDAY_NAMES,

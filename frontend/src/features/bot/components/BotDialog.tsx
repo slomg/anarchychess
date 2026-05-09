@@ -283,12 +283,12 @@ const BotDialog = ({
             return;
         }
 
-        const { positionHistory, boardDimensions } = chessboardStore.getState();
+        const { positionHistory } = chessboardStore.getState();
         const prevPosition = positionHistory.getPositionWithPly(plyNumber - 1);
         if (!prevPosition) {
             return;
         }
-        const decodedMove = decodeMovePath(move.path, boardDimensions.width);
+        const decodedMove = decodeMovePath(move.path);
         const newDialog = getDialogForMove({
             move: decodedMove,
             prevPieces: prevPosition.pieces,

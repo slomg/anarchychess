@@ -2,7 +2,7 @@ import { StateCreator } from "zustand";
 
 import PositionHistory from "../lib/positionHistory";
 import { ChessboardStore } from "./chessboardStore";
-import { PositionProps } from "../lib/position";
+import { PositionProps, RootPositionProps } from "../lib/position";
 import { PositionId } from "../lib/position";
 import BoardPieces from "../lib/boardPieces";
 import { Position } from "../lib/position";
@@ -41,6 +41,7 @@ export interface HistorySlice {
         positionId?: PositionId,
     ): void;
     setLatestLegalMoves(legalMoves: LegalMoves): void;
+    overrideRoot(props: RootPositionProps): void;
 
     setAllowHistoryChanges(value: boolean): void;
 }
@@ -57,7 +58,8 @@ export function createHistorySlice(
         legalMovesByPosition: initState.legalMovesByPosition,
         allowHistoryChanges: initState.allowHistoryChanges ?? false,
         positionHistory:
-            initState.positionHistory ?? new PositionHistory(initState.pieces),
+            initState.positionHistory ??
+            new PositionHistory({ pieces: initState.pieces }),
 
         setPosition(positionId) {
             set((state) => {
@@ -120,7 +122,7 @@ export function createHistorySlice(
             if (position) {
                 await updatePieces(position.pieces);
             } else {
-                await updatePieces(positionHistory.rootPieces);
+                await updatePieces(positionHistory.root.pieces);
             }
         },
 
@@ -132,7 +134,7 @@ export function createHistorySlice(
                 success = state.positionHistory.goToStart();
             });
             if (success) {
-                await updatePieces(positionHistory.rootPieces);
+                await updatePieces(positionHistory.root.pieces);
             }
         },
 
@@ -238,6 +240,14 @@ export function createHistorySlice(
                 legalMoves,
                 positionHistory.viewingPosition?.positionId,
             );
+        },
+
+        overrideRoot(props) {
+            const { setImmediatePieces } = get();
+            set((state) => {
+                state.positionHistory.overrideRoot(props);
+            });
+            setImmediatePieces(props.pieces);
         },
 
         setAllowHistoryChanges(value) {

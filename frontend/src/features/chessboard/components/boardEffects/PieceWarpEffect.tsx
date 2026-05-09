@@ -4,11 +4,11 @@ import { useTexture } from "@react-three/drei";
 import { useMemo, useRef } from "react";
 
 import { useChessboardStore } from "../../hooks/useChessboard";
+import { viewToWorld } from "@/features/point/pointUtils";
 import { GameColor, PieceType } from "@/lib/apiClient";
 import { LogicalPoint } from "@/features/point/types";
-import { getPieceImage } from "../../lib/pieceImage";
+import { getPieceImage } from "../../lib/pieceUtils";
 import { cubicBezier } from "@/lib/utils/mathUtils";
-import { viewToWorld } from "@/features/point/pointUtils";
 
 interface WarpUniforms {
     uSquareSize: { value: number };

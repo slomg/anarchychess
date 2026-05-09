@@ -25,9 +25,12 @@ describe("BoardPieces", () => {
 
             const movedPieceIdsResult = pieces.playMove(move);
 
-            expect(pieces.getById(movingPiece.id)?.position).toEqual(
-                logicalPoint({ x: 1, y: 1 }),
-            );
+            const pieceResult = pieces.getById(movingPiece.id);
+            expect(pieceResult).toEqual({
+                ...movingPiece,
+                position: logicalPoint({ x: 1, y: 1 }),
+                hasMoved: true,
+            });
             expect(movedPieceIdsResult).toEqual([movingPiece.id]);
             expect(pieces.getById(unrelatedPiece.id)).toEqual(unrelatedPiece);
         });
@@ -78,12 +81,18 @@ describe("BoardPieces", () => {
 
             const movedPieceIdsResult = pieces.playMove(move);
 
-            expect(pieces.getById(movingPiece.id)?.position).toEqual(
-                logicalPoint({ x: 2, y: 2 }),
-            );
-            expect(pieces.getById(sideEffectPiece.id)?.position).toEqual(
-                logicalPoint({ x: 3, y: 3 }),
-            );
+            const movingPieceResult = pieces.getById(movingPiece.id);
+            expect(movingPieceResult).toEqual({
+                ...movingPiece,
+                position: logicalPoint({ x: 2, y: 2 }),
+                hasMoved: true,
+            });
+            const sideEffectPieceResult = pieces.getById(sideEffectPiece.id);
+            expect(sideEffectPieceResult).toEqual({
+                ...sideEffectPiece,
+                position: logicalPoint({ x: 3, y: 3 }),
+                hasMoved: true,
+            });
             expect(movedPieceIdsResult).toEqual([
                 movingPiece.id,
                 sideEffectPiece.id,
@@ -349,38 +358,76 @@ describe("BoardPieces", () => {
         });
     });
 
-    it("should add a piece and be retrievable by id and position", () => {
-        const position = logicalPoint({ x: 1, y: 2 });
-        const piece = createFakePiece({ position });
-        const board = new BoardPieces();
+    describe("add", () => {
+        it("should add a piece and be retrievable by id and position", () => {
+            const position = logicalPoint({ x: 1, y: 2 });
+            const piece = createFakePiece({ position });
+            const board = new BoardPieces();
 
-        board.add(piece);
+            board.add(piece);
 
-        const byId = board.getById(piece.id);
-        const byPos = board.getByPosition(position);
+            const byId = board.getById(piece.id);
+            const byPos = board.getByPosition(position);
 
-        expect(byId).toEqual(piece);
-        expect(byPos).toEqual(piece);
+            expect(byId).toEqual(piece);
+            expect(byPos).toEqual(piece);
 
-        // copy
-        expect(byId).not.toBe(piece);
-        expect(byPos).not.toBe(piece);
+            // copy
+            expect(byId).not.toBe(piece);
+            expect(byPos).not.toBe(piece);
+        });
+
+        it("should remove the piece that was taking the square", () => {
+            const position = logicalPoint({ x: 1, y: 2 });
+            const existingPiece = createFakePiece({ position });
+            const newPiece = createFakePiece({ position });
+            const board = BoardPieces.fromPieces(existingPiece);
+
+            board.add(newPiece);
+
+            expect(board.getById(existingPiece.id)).toBeUndefined();
+            expect(board.getByPosition(position)).toEqual(
+                board.getById(newPiece.id),
+            );
+            expect(board.getById(newPiece.id)).toEqual(newPiece);
+        });
     });
 
-    it("should add a piece at a specific position and copy it", () => {
-        const originalPos = logicalPoint({ x: 0, y: 0 });
-        const piece = createFakePiece({ position: originalPos });
-        const board = new BoardPieces();
-        const customPos = logicalPoint({ x: 5, y: 5 });
+    describe("addAt", () => {
+        it("should add a piece at a specific position and copy it", () => {
+            const originalPos = logicalPoint({ x: 0, y: 0 });
+            const piece = createFakePiece({ position: originalPos });
+            const board = new BoardPieces();
+            const customPos = logicalPoint({ x: 5, y: 5 });
 
-        board.addAt(piece, customPos);
+            board.addAt(piece, customPos);
 
-        const addedPiece = board.getById(piece.id);
-        expect(addedPiece?.position).toEqual(customPos);
-        expect(board.getByPosition(customPos)).toEqual(addedPiece);
+            const addedPiece = board.getById(piece.id);
+            expect(addedPiece?.position).toEqual(customPos);
+            expect(board.getByPosition(customPos)).toEqual(addedPiece);
 
-        expect(piece.position).toEqual(originalPos);
-        expect(addedPiece).not.toBe(piece); // copy
+            expect(piece.position).toEqual(originalPos);
+            expect(addedPiece).not.toBe(piece); // copy
+        });
+
+        it("should remove the piece that was taking the square", () => {
+            const targetPosition = logicalPoint({ x: 5, y: 5 });
+            const existingPiece = createFakePiece({
+                position: targetPosition,
+            });
+            const newPiece = createFakePiece({
+                position: logicalPoint({ x: 0, y: 0 }),
+            });
+            const board = BoardPieces.fromPieces(existingPiece);
+
+            board.addAt(newPiece, targetPosition);
+
+            expect(board.getById(existingPiece.id)).toBeUndefined();
+
+            const addedPiece = board.getById(newPiece.id);
+            expect(addedPiece?.position).toEqual(targetPosition);
+            expect(board.getByPosition(targetPosition)).toEqual(addedPiece);
+        });
     });
 
     describe("remove", () => {

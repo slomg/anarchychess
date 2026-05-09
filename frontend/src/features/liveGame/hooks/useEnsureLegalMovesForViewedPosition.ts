@@ -6,7 +6,6 @@ import { decodeMovePathIntoLegalMoves } from "../lib/moveDecoder";
 import { getNextLegalMoves } from "@/lib/apiClient";
 
 export default function useEnsureLegalMovesForViewedPosition(
-    initialFen: string,
     chessboardStore: StoreApi<ChessboardStore>,
 ) {
     useEffect(() => {
@@ -28,7 +27,9 @@ export default function useEnsureLegalMovesForViewedPosition(
             }
 
             const { error, data: movePaths } = await getNextLegalMoves({
-                query: { fen: viewingPosition?.fen ?? initialFen },
+                query: {
+                    fen: viewingPosition?.fen ?? state.positionHistory.root.fen,
+                },
             });
             if (error || movePaths === undefined) {
                 console.error(
@@ -38,15 +39,12 @@ export default function useEnsureLegalMovesForViewedPosition(
                 return;
             }
 
-            const legalMoves = decodeMovePathIntoLegalMoves({
-                paths: movePaths,
-                boardWidth: state.boardDimensions.width,
-            });
+            const legalMoves = decodeMovePathIntoLegalMoves(movePaths);
             state.addLegalMovesForPosition(
                 legalMoves,
                 viewingPosition?.positionId,
             );
         });
         return unsub;
-    }, [initialFen, chessboardStore]);
+    }, [chessboardStore]);
 }

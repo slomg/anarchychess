@@ -18,49 +18,35 @@ import {
     SpecialMoveType,
 } from "@/lib/apiClient";
 
-import { idxToLogicalPoint } from "@/features/point/pointUtils";
 import { createPieceId } from "@/features/chessboard/lib/pieceUtils";
+import { idxToLogicalPoint } from "@/features/point/pointUtils";
 import LegalMoves from "@/features/chessboard/lib/legalMoves";
 
-export function decodeMovePathIntoLegalMoves({
-    paths,
-    boardWidth,
-}: {
-    paths: MovePath[];
-    boardWidth: number;
-}): LegalMoves {
+export function decodeMovePathIntoLegalMoves(paths: MovePath[]): LegalMoves {
     const legalMoves = new LegalMoves();
     for (const path of paths) {
-        const move = decodeMovePath(path, boardWidth);
+        const move = decodeMovePath(path);
         legalMoves.addMove(move);
     }
 
     return legalMoves;
 }
 
-export function decodeMovePath(path: MovePath, boardWidth: number): Move {
-    const from = idxToLogicalPoint(path.fromIdx, boardWidth);
-    const to = idxToLogicalPoint(path.toIdx, boardWidth);
+export function decodeMovePath(path: MovePath): Move {
+    const from = idxToLogicalPoint(path.fromIdx);
+    const to = idxToLogicalPoint(path.toIdx);
     const triggers =
-        path.triggerIdxs?.map((idx) => idxToLogicalPoint(idx, boardWidth)) ??
-        [];
+        path.triggerIdxs?.map((idx) => idxToLogicalPoint(idx)) ?? [];
     const captures =
-        path.capturedIdxs?.map((idx) => idxToLogicalPoint(idx, boardWidth)) ??
-        [];
+        path.capturedIdxs?.map((idx) => idxToLogicalPoint(idx)) ?? [];
     const intermediates =
-        path.intermediateSquares?.map((x) =>
-            parseIntermediateSquares(x, boardWidth),
-        ) ?? [];
-    const sideEffects =
-        path.sideEffects?.map((x) => parseSideEffect(x, boardWidth)) ?? [];
-    const pieceSpawns =
-        path.pieceSpawns?.map((x) => parsePieceSpawns(x, boardWidth)) ?? [];
-    const stuns = path.stuns?.map((x) => parseStuns(x, boardWidth)) ?? [];
+        path.intermediateSquares?.map((x) => parseIntermediateSquares(x)) ?? [];
+    const sideEffects = path.sideEffects?.map((x) => parseSideEffect(x)) ?? [];
+    const pieceSpawns = path.pieceSpawns?.map((x) => parsePieceSpawns(x)) ?? [];
+    const stuns = path.stuns?.map((x) => parseStuns(x)) ?? [];
 
     const overtimeRemovals =
-        path.overtimeRemovalIdxs?.map((idx) =>
-            idxToLogicalPoint(idx, boardWidth),
-        ) ?? [];
+        path.overtimeRemovalIdxs?.map((idx) => idxToLogicalPoint(idx)) ?? [];
 
     return {
         from,
@@ -80,55 +66,46 @@ export function decodeMovePath(path: MovePath, boardWidth: number): Move {
     };
 }
 
-function parseSideEffect(
-    path: MoveSideEffectPath,
-    boardWidth: number,
-): MoveSideEffect {
-    const from = idxToLogicalPoint(path.fromIdx, boardWidth);
-    const to = idxToLogicalPoint(path.toIdx, boardWidth);
+function parseSideEffect(path: MoveSideEffectPath): MoveSideEffect {
+    const from = idxToLogicalPoint(path.fromIdx);
+    const to = idxToLogicalPoint(path.toIdx);
     return {
         from,
         to,
     };
 }
 
-function parsePieceSpawns(path: PieceSpawnPath, boardWidth: number): Piece {
-    const position = idxToLogicalPoint(path.posIdx, boardWidth);
+function parsePieceSpawns(path: PieceSpawnPath): Piece {
+    const position = idxToLogicalPoint(path.posIdx);
     return {
         id: createPieceId(),
         type: path.type,
         color: path.color ?? null,
         position,
         stunnedForTurns: 0,
+        hasMoved: false,
     };
 }
 
 function parseIntermediateSquares(
     path: IntermediateSquarePath,
-    boardWidth: number,
 ): IntermediateSquare {
-    const position = idxToLogicalPoint(path.posIdx, boardWidth);
+    const position = idxToLogicalPoint(path.posIdx);
     return {
         position,
         isCapture: path.isCapture,
     };
 }
 
-function parseStuns(path: MoveStunPath, boardWidth: number): MoveStun {
-    const position = idxToLogicalPoint(path.posIdx, boardWidth);
+function parseStuns(path: MoveStunPath): MoveStun {
+    const position = idxToLogicalPoint(path.posIdx);
     return {
         position,
         stunForTurns: path.stunForTurns,
     };
 }
 
-export function decodeLegalMoves({
-    encoded,
-    boardWidth,
-}: {
-    encoded: string;
-    boardWidth: number;
-}): LegalMoves {
+export function decodeLegalMoves(encoded: string): LegalMoves {
     if (encoded.length === 0) {
         return new LegalMoves();
     }
@@ -136,9 +113,6 @@ export function decodeLegalMoves({
     const buffer = Buffer.from(encoded, "base64");
     const decompressed = brotliDecompress(buffer);
     const decoded = new TextDecoder().decode(decompressed);
-    const moves = decodeMovePathIntoLegalMoves({
-        paths: JSON.parse(decoded),
-        boardWidth,
-    });
+    const moves = decodeMovePathIntoLegalMoves(JSON.parse(decoded));
     return moves;
 }

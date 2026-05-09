@@ -53,7 +53,9 @@ describe("OvertimeAlert", () => {
     });
 
     it("should emphasize the square when the ply number is matching", () => {
-        const positionHistory = new PositionHistory(createFakeBoardPieces());
+        const positionHistory = new PositionHistory({
+            pieces: createFakeBoardPieces(),
+        });
         positionHistory.addNextPosition(createFakePositionProps());
         positionHistory.addNextPosition(createFakePositionProps());
         chessboardStore.setState({ positionHistory });
@@ -80,7 +82,9 @@ describe("OvertimeAlert", () => {
     });
 
     it("should not emphasize the square when the ply number is not matching", () => {
-        const positionHistory = new PositionHistory(createFakeBoardPieces());
+        const positionHistory = new PositionHistory({
+            pieces: createFakeBoardPieces(),
+        });
         positionHistory.addNextPosition(createFakePositionProps());
         positionHistory.addNextPosition(createFakePositionProps());
         positionHistory.addNextPosition(createFakePositionProps());

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import clsx from "clsx";
+import { twMerge } from "tailwind-merge";
 
 import Button from "./Button";
 
@@ -10,13 +10,17 @@ type Option<T> = {
     value: T;
 };
 
+export interface SelectorEvent<T> {
+    target: { name?: string; value: T };
+}
+
 interface SelectorProps<T> {
     id?: string;
     name?: string;
     options: Option<T>[];
     value?: T;
     className?: string;
-    onChange?: (e: { target: { name?: string; value: T } }) => void;
+    onChange?: (e: SelectorEvent<T>) => void;
     onBlur?: React.FocusEventHandler<HTMLDivElement>;
     "data-testid"?: string;
 }
@@ -61,7 +65,7 @@ const Selector = <T,>({
             {options.map((option, i) => (
                 <Button
                     key={i}
-                    className={clsx(
+                    className={twMerge(
                         "flex-1 text-nowrap disabled:cursor-default",
                         i === selectedIndex && "border-secondary border-3",
                         className,

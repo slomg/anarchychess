@@ -18,7 +18,7 @@ const DEFAULT_RECT = {
 } as DOMRect;
 
 export function mockBoundingClientRect(
-    elementTestIds: Record<string, DOMRect>,
+    elementTestIds: Record<string, Partial<DOMRect>>,
 ): void {
     vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
         function (this: HTMLElement) {
@@ -26,7 +26,7 @@ export function mockBoundingClientRect(
             if (!testId) return DEFAULT_RECT;
 
             const rect = elementTestIds[testId];
-            return rect ?? DEFAULT_RECT;
+            return { ...DEFAULT_RECT, ...rect };
         },
     );
 }

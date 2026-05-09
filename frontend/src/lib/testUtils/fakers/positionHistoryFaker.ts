@@ -5,7 +5,9 @@ import { createFakePositionProps } from "./positionPropsFaker";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
 
 export function createNFakePositionHistory(amount: number): PositionHistory {
-    const positionHistory = new PositionHistory(createFakeBoardPieces());
+    const positionHistory = new PositionHistory({
+        pieces: createFakeBoardPieces(),
+    });
     for (let i = 0; i < amount; i++) {
         positionHistory.addNextPosition(createFakePositionProps());
     }
@@ -21,7 +23,7 @@ export function createFakePositionHistory({
     pos: PositionProps[];
 }): PositionHistory {
     rootPieces ??= createFakeBoardPieces();
-    const positionHistory = new PositionHistory(rootPieces);
+    const positionHistory = new PositionHistory({ pieces: rootPieces });
     for (const props of pos) {
         positionHistory.addNextPosition(props);
     }

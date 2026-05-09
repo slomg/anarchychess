@@ -28,6 +28,7 @@ export function createFakePiece(override?: Partial<Piece>): Piece {
         color: faker.helpers.enumValue(GameColor),
         position: createRandomPoint(),
         stunnedForTurns: 0,
+        hasMoved: false,
         ...override,
     };
 }

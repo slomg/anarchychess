@@ -239,7 +239,8 @@ describe("simulateMoveAnimated", () => {
         expect(resultSteps[1].isCapture).toBe(intermediates[1].isCapture);
 
         const expectedFinal = new BoardPieces(pieces);
-        expectedFinal.movePiece(movingPiece.id, move.to);
+        expectedFinal.remove(movingPiece.id);
+        expectedFinal.addAt({ ...movingPiece, hasMoved: true }, move.to);
         expect(resultSteps[2].newPieces).toEqual(expectedFinal);
 
         resultSteps.forEach((r) => {

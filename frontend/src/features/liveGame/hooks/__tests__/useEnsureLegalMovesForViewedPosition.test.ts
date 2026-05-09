@@ -14,19 +14,16 @@ import {
 import useEnsureLegalMovesForViewedPosition from "../useEnsureLegalMovesForViewedPosition";
 import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
 import { createFakeMovePath } from "@/lib/testUtils/fakers/movePathFaker";
+import PositionHistory from "@/features/chessboard/lib/positionHistory";
 import { decodeMovePathIntoLegalMoves } from "../../lib/moveDecoder";
 import LegalMoves from "@/features/chessboard/lib/legalMoves";
 import { getNextLegalMoves } from "@/lib/apiClient";
-import constants from "@/lib/constants";
-
-import PositionHistory from "@/features/chessboard/lib/positionHistory";
 
 vi.mock("@/lib/apiClient/definition");
 
 describe("useEnsureLegalMovesForViewedPosition", () => {
     let chessboardStore: StoreApi<ChessboardStore>;
     let expectedLegalMoves: LegalMoves;
-    const initialFen = "initial fen";
 
     const getNextLegalMovesMock = vi.mocked(getNextLegalMoves);
 
@@ -40,10 +37,7 @@ describe("useEnsureLegalMovesForViewedPosition", () => {
             response: new Response(),
         });
 
-        expectedLegalMoves = decodeMovePathIntoLegalMoves({
-            paths: legalMoves,
-            boardWidth: constants.BOARD_WIDTH,
-        });
+        expectedLegalMoves = decodeMovePathIntoLegalMoves(legalMoves);
     });
 
     it("should fetch and add legal moves when they do not exist for the viewed position", async () => {
@@ -53,9 +47,7 @@ describe("useEnsureLegalMovesForViewedPosition", () => {
             legalMovesByPosition: new Map(),
         });
 
-        renderHook(() =>
-            useEnsureLegalMovesForViewedPosition(initialFen, chessboardStore),
-        );
+        renderHook(() => useEnsureLegalMovesForViewedPosition(chessboardStore));
 
         await act(() =>
             chessboardStore.getState().addPosition(createFakePositionProps()),
@@ -75,9 +67,7 @@ describe("useEnsureLegalMovesForViewedPosition", () => {
         const prevLegalMoves = createFakeLegalMoves();
         chessboardStore.getState().setLatestLegalMoves(prevLegalMoves);
 
-        renderHook(() =>
-            useEnsureLegalMovesForViewedPosition(initialFen, chessboardStore),
-        );
+        renderHook(() => useEnsureLegalMovesForViewedPosition(chessboardStore));
 
         act(() => chessboardStore.getState().setAllowHistoryChanges(true));
 
@@ -87,21 +77,22 @@ describe("useEnsureLegalMovesForViewedPosition", () => {
         ).toEqual(prevLegalMoves);
     });
 
-    it("should fetch using initialFen if no viewing position exists", async () => {
+    it("should fetch using root fen if no viewing position exists", async () => {
         chessboardStore.setState({
             allowHistoryChanges: false,
-            positionHistory: new PositionHistory(createFakeBoardPieces()),
+            positionHistory: new PositionHistory({
+                pieces: createFakeBoardPieces(),
+                fen: "test fen",
+            }),
             legalMovesByPosition: new Map(),
         });
 
-        renderHook(() =>
-            useEnsureLegalMovesForViewedPosition(initialFen, chessboardStore),
-        );
+        renderHook(() => useEnsureLegalMovesForViewedPosition(chessboardStore));
 
         act(() => chessboardStore.getState().setAllowHistoryChanges(true));
 
         expect(getNextLegalMovesMock).toHaveBeenCalledWith({
-            query: { fen: initialFen },
+            query: { fen: "test fen" },
         });
     });
 
@@ -113,9 +104,7 @@ describe("useEnsureLegalMovesForViewedPosition", () => {
             legalMovesByPosition: new Map(),
         });
 
-        renderHook(() =>
-            useEnsureLegalMovesForViewedPosition(initialFen, chessboardStore),
-        );
+        renderHook(() => useEnsureLegalMovesForViewedPosition(chessboardStore));
 
         await act(() => chessboardStore.getState().addPosition(position));
 

@@ -10,10 +10,10 @@ import {
     createChessboardStore,
 } from "../chessboardStore";
 
+import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
+import PositionHistory from "../../lib/positionHistory";
 import { PositionId } from "../../lib/position";
 import { GameColor } from "@/lib/apiClient";
-import PositionHistory from "../../lib/positionHistory";
-import { createFakePositionProps } from "@/lib/testUtils/fakers/positionPropsFaker";
 
 describe("CoreSlice", () => {
     let store: StoreApi<ChessboardStore>;
@@ -29,10 +29,6 @@ describe("CoreSlice", () => {
         beforeEach(() => {
             newChessboardState = {
                 viewingFrom: GameColor.BLACK,
-                boardDimensions: {
-                    width: 6,
-                    height: 9,
-                },
                 pieces: createFakeBoardPieces(),
                 legalMovesByPosition: new Map([
                     [
@@ -61,9 +57,9 @@ describe("CoreSlice", () => {
                 updatePiecesFromPosition: updatePiecesFromPositionMock,
             });
 
-            newChessboardState.positionHistory = new PositionHistory(
-                createFakeBoardPieces(),
-            );
+            newChessboardState.positionHistory = new PositionHistory({
+                pieces: createFakeBoardPieces(),
+            });
             const latestPosition =
                 newChessboardState.positionHistory.addNextPosition(
                     createFakePositionProps({
@@ -84,9 +80,9 @@ describe("CoreSlice", () => {
                 updatePiecesFromPosition: updatePiecesFromPositionMock,
             });
 
-            newChessboardState.positionHistory = new PositionHistory(
-                newChessboardState.pieces,
-            );
+            newChessboardState.positionHistory = new PositionHistory({
+                pieces: newChessboardState.pieces,
+            });
 
             await store.getState().resetState(newChessboardState);
 

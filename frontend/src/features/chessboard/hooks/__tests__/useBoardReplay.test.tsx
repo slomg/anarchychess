@@ -1,17 +1,19 @@
+import { act, renderHook } from "@testing-library/react";
 import { StoreApi } from "zustand";
+
 import {
     ChessboardStore,
     createChessboardStore,
 } from "../../stores/chessboardStore";
-import { act, renderHook } from "@testing-library/react";
-import useBoardReplay from "../useBoardReplay";
+
+import mockSequentialUUID from "@/lib/testUtils/mocks/mockUuids";
 import expandMinimalMove from "../../lib/expandMinimalMove";
-import { decodeFen } from "../../lib/fenDecoder";
-import { GameReplay } from "../../lib/types";
 import { logicalPoint } from "@/features/point/pointUtils";
 import { simulateMove } from "../../lib/simulateMove";
-import mockSequentialUUID from "@/lib/testUtils/mocks/mockUuids";
+import { decodeFen } from "../../lib/fenDecoder";
 import BoardPieces from "../../lib/boardPieces";
+import useBoardReplay from "../useBoardReplay";
+import { GameReplay } from "../../lib/types";
 
 describe("useBoardReplay", () => {
     let chessboardStore: StoreApi<ChessboardStore>;
@@ -64,7 +66,7 @@ describe("useBoardReplay", () => {
 
         mockSequentialUUID();
         expect(chessboardStore.getState().pieces).toEqual(
-            decodeFen(replays[0].startingFen),
+            decodeFen(replays[0].startingFen).pieces,
         );
     });
 
@@ -80,7 +82,7 @@ describe("useBoardReplay", () => {
 
         mockSequentialUUID();
         expect(chessboardStore.getState().pieces).toEqual(
-            decodeFen(replays[0].startingFen),
+            decodeFen(replays[0].startingFen).pieces,
         );
 
         act(() => vi.advanceTimersByTime(1000));
@@ -108,7 +110,7 @@ describe("useBoardReplay", () => {
 
         mockSequentialUUID();
         expect(chessboardStore.getState().pieces).toEqual(
-            decodeFen(replays[1].startingFen),
+            decodeFen(replays[1].startingFen).pieces,
         );
     });
 
@@ -126,7 +128,7 @@ describe("useBoardReplay", () => {
 
         mockSequentialUUID();
         expect(chessboardStore.getState().pieces).toEqual(
-            decodeFen(replays[0].startingFen),
+            decodeFen(replays[0].startingFen).pieces,
         );
     });
 
@@ -142,7 +144,7 @@ describe("useBoardReplay", () => {
 
         mockSequentialUUID();
         expect(chessboardStore.getState().pieces).toEqual(
-            decodeFen(replays[0].startingFen),
+            decodeFen(replays[0].startingFen).pieces,
         );
     });
 });

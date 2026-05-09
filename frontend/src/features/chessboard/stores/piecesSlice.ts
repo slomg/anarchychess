@@ -28,6 +28,7 @@ export interface PiecesSlice {
     selectedPieceId: PieceID | null;
     disableDrag: boolean;
     isProcessingMove: boolean;
+    isSetupMode: boolean;
 
     pieceMovementEvent: EventBus<[event: PieceMovementEvent], void>;
 
@@ -146,6 +147,7 @@ export function createPiecesSlice(
             selectedPieceId: null,
             animatingPieces: new Set(),
             isProcessingMove: false,
+            isSetupMode: false,
 
             pieceMovementEvent: new EventBus(),
 

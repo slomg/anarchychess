@@ -21,7 +21,6 @@ import { simulateMove } from "@/features/chessboard/lib/simulateMove";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
 import { decodeFen } from "../../chessboard/lib/fenDecoder";
 import { LiveChessViewer } from "../stores/gamePlaySlice";
-import constants from "@/lib/constants";
 import { ClockSnapshot } from "./types";
 
 export interface ProcessedGameState {
@@ -43,7 +42,6 @@ export function processGameState(
 
     const live: LiveChessStoreProps = {
         gameToken,
-        initialFen: gameState.initialFen,
 
         whitePlayer: gameState.whitePlayer,
         blackPlayer: gameState.blackPlayer,
@@ -75,20 +73,14 @@ export function createChessboardProps(
     legalMovePaths: MovePath[],
     resultData?: GameResultData | null,
 ): ChessboardProps {
-    const boardWidth = constants.BOARD_WIDTH;
-    const boardHeight = constants.BOARD_HEIGHT;
-
-    const legalMoves = decodeMovePathIntoLegalMoves({
-        paths: legalMovePaths,
-        boardWidth,
-    });
+    const legalMoves = decodeMovePathIntoLegalMoves(legalMovePaths);
 
     const positionHistory = getPositionHistory(initialFen, moveHistory);
     const lastPosition = positionHistory.viewingPosition;
 
     return {
         pieces: new BoardPieces(
-            lastPosition?.pieces ?? positionHistory.rootPieces,
+            lastPosition?.pieces ?? positionHistory.root.pieces,
         ),
         positionHistory,
 
@@ -100,7 +92,6 @@ export function createChessboardProps(
             to: lastPosition.move.to,
         },
 
-        boardDimensions: { width: boardWidth, height: boardHeight },
         viewingFrom: viewer.playerColor ?? GameColor.WHITE,
         allowHistoryChanges: resultData != null,
     };
@@ -132,11 +123,14 @@ function getPositionHistory(
     initialFen: string,
     moveHistory: MoveSnapshot[],
 ): PositionHistory {
-    let pieces = decodeFen(initialFen);
+    let pieces = decodeFen(initialFen).pieces;
 
-    const positionHistory = new PositionHistory(pieces);
+    const positionHistory = new PositionHistory({
+        pieces: pieces,
+        fen: initialFen,
+    });
     for (const moveSnapshot of moveHistory) {
-        const move = decodeMovePath(moveSnapshot.path, constants.BOARD_WIDTH);
+        const move = decodeMovePath(moveSnapshot.path);
         const { newPieces } = simulateMove(pieces, move);
 
         positionHistory.addNextPosition({

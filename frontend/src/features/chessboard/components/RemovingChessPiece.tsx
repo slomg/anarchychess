@@ -1,5 +1,5 @@
 import { useChessboardStore } from "../hooks/useChessboard";
-import { getPieceImage } from "../lib/pieceImage";
+import { getPieceImage } from "../lib/pieceUtils";
 import { PieceID } from "../lib/types";
 import ChessSquare from "./ChessSquare";
 

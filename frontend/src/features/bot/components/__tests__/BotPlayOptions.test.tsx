@@ -1,9 +1,9 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
-import traitorRook from "@public/assets/pieces/traitor_rook_neutral.png";
-import whiteKing from "@public/assets/pieces/king_white.png";
-import blackKing from "@public/assets/pieces/king_black.png";
+import traitorRook from "@public/assets/pieces-svg/traitorrook.svg";
+import whiteKing from "@public/assets/pieces-svg/king-white.svg";
+import blackKing from "@public/assets/pieces-svg/king-black.svg";
 import { BotType, GameColor } from "@/lib/apiClient";
 import useBotMatch from "../../hooks/useBotMatch";
 import BotPlayOptions from "../BotPlayOptions";
