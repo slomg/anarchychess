@@ -30,7 +30,7 @@ describe("MoveRow", () => {
 
         render(
             <ChessboardStoreContext.Provider value={chessboardStore}>
-                <MoveRow whitePosition={whitePos} />
+                <MoveRow whitePosition={whitePos} ply={whitePos.ply} />
             </ChessboardStoreContext.Provider>,
         );
 
@@ -52,7 +52,11 @@ describe("MoveRow", () => {
 
         render(
             <ChessboardStoreContext.Provider value={chessboardStore}>
-                <MoveRow whitePosition={whitePos} blackPosition={blackPos} />
+                <MoveRow
+                    whitePosition={whitePos}
+                    blackPosition={blackPos}
+                    ply={whitePos.ply}
+                />
             </ChessboardStoreContext.Provider>,
         );
 
@@ -76,7 +80,11 @@ describe("MoveRow", () => {
 
         render(
             <ChessboardStoreContext.Provider value={chessboardStore}>
-                <MoveRow whitePosition={whitePos} blackPosition={blackPos} />
+                <MoveRow
+                    whitePosition={whitePos}
+                    blackPosition={blackPos}
+                    ply={whitePos.ply}
+                />
             </ChessboardStoreContext.Provider>,
         );
 
@@ -99,7 +107,11 @@ describe("MoveRow", () => {
 
         render(
             <ChessboardStoreContext.Provider value={chessboardStore}>
-                <MoveRow whitePosition={whitePos} blackPosition={blackPos} />
+                <MoveRow
+                    whitePosition={whitePos}
+                    blackPosition={blackPos}
+                    ply={whitePos.ply}
+                />
             </ChessboardStoreContext.Provider>,
         );
 
@@ -120,7 +132,7 @@ describe("MoveRow", () => {
         const user = userEvent.setup();
         render(
             <ChessboardStoreContext.Provider value={chessboardStore}>
-                <MoveRow whitePosition={whitePos} />
+                <MoveRow whitePosition={whitePos} ply={whitePos.ply} />
             </ChessboardStoreContext.Provider>,
         );
 
@@ -147,7 +159,11 @@ describe("MoveRow", () => {
         const user = userEvent.setup();
         render(
             <ChessboardStoreContext.Provider value={chessboardStore}>
-                <MoveRow whitePosition={whitePos} blackPosition={blackPos} />
+                <MoveRow
+                    whitePosition={whitePos}
+                    blackPosition={blackPos}
+                    ply={whitePos.ply}
+                />
             </ChessboardStoreContext.Provider>,
         );
 
@@ -181,7 +197,11 @@ describe("MoveRow", () => {
 
         const { rerender } = render(
             <ChessboardStoreContext.Provider value={chessboardStore}>
-                <MoveRow whitePosition={whitePos1} blackPosition={blackPos1} />
+                <MoveRow
+                    whitePosition={whitePos1}
+                    blackPosition={blackPos1}
+                    ply={whitePos1.ply}
+                />
             </ChessboardStoreContext.Provider>,
         );
         const oddRow = screen.getByTestId("moveRow");
@@ -189,10 +209,39 @@ describe("MoveRow", () => {
 
         rerender(
             <ChessboardStoreContext.Provider value={chessboardStore}>
-                <MoveRow whitePosition={whitePos2} blackPosition={blackPos2} />
+                <MoveRow
+                    whitePosition={whitePos2}
+                    blackPosition={blackPos2}
+                    ply={whitePos2.ply}
+                />
             </ChessboardStoreContext.Provider>,
         );
         const evenRow = screen.getByTestId("moveRow");
         expect(evenRow).toHaveClass("bg-white/10");
+    });
+
+    it("should render correctly with no whitePosition", () => {
+        const positionHistory = new PositionHistory({
+            pieces: createFakeBoardPieces(),
+        });
+        const blackPos = positionHistory.addNextPosition(
+            createFakePositionProps({ san: "e5" }),
+        );
+        chessboardStore.setState({ positionHistory });
+
+        render(
+            <ChessboardStoreContext.Provider value={chessboardStore}>
+                <MoveRow blackPosition={blackPos} ply={blackPos.ply} />
+            </ChessboardStoreContext.Provider>,
+        );
+
+        expect(screen.getByText("1.")).toBeInTheDocument();
+        expect(screen.getByText("e5")).toBeInTheDocument();
+
+        const buttons = screen.getAllByRole("button");
+        expect(buttons).toHaveLength(2);
+
+        expect(buttons[0]).toHaveTextContent("");
+        expect(buttons[1]).toHaveTextContent("e5");
     });
 });

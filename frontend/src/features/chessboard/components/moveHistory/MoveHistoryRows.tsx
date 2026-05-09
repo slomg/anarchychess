@@ -1,10 +1,12 @@
 import { useEffect, useRef } from "react";
+import { twMerge } from "tailwind-merge";
 
 import { useChessboardStore } from "../../hooks/useChessboard";
 import useAutoScroll from "@/hooks/useAutoScroll";
+import { Position } from "../../lib/position";
 import MoveVariation from "./MoveVariation";
+import { GameColor } from "@/lib/apiClient";
 import MoveRow from "./MoveRow";
-import { twMerge } from "tailwind-merge";
 
 const MoveHistoryRows = ({ className }: { className?: string }) => {
     const { totalPlyCount, positionHistory } = useChessboardStore((x) => ({
@@ -66,27 +68,47 @@ const MoveHistoryRows = ({ className }: { className?: string }) => {
     const moveRows: React.ReactElement[] = [];
     const iterator = positionHistory[Symbol.iterator]();
     while (true) {
-        const white = iterator.next();
-        const black = iterator.next();
+        const pos1 = iterator.next();
+        if (pos1.done) {
+            break;
+        }
 
-        if (white.done) break;
+        let whitePosition: Position | undefined;
+        let blackPosition: Position | undefined;
 
-        const whitePosition = white.value;
-        const blackPosition = black.done ? undefined : black.value;
-        moveRows.push(
-            <MoveRow
-                key={whitePosition.ply}
-                whitePosition={whitePosition}
-                blackPosition={blackPosition}
-            />,
-        );
+        if (pos1.value.sideToMove === GameColor.WHITE) {
+            blackPosition = pos1.value;
+            moveRows.push(
+                <MoveRow
+                    ply={pos1.value.ply}
+                    blackPosition={pos1.value}
+                    key={pos1.value.ply}
+                />,
+            );
+        } else {
+            whitePosition = pos1.value;
+
+            const pos2 = iterator.next();
+            blackPosition = pos2.done ? undefined : pos2.value;
+
+            const plyOffset =
+                positionHistory.root.sideToMove === GameColor.BLACK ? 1 : 0;
+            moveRows.push(
+                <MoveRow
+                    ply={pos1.value.ply + plyOffset}
+                    whitePosition={pos1.value}
+                    blackPosition={blackPosition}
+                    key={pos1.value.ply}
+                />,
+            );
+        }
 
         if (pendingWhiteMoveVariation) {
             moveRows.push(pendingWhiteMoveVariation);
             pendingWhiteMoveVariation = null;
         }
 
-        if (whitePosition.subVariationByKey.size > 0) {
+        if (whitePosition && whitePosition.subVariationByKey.size > 0) {
             moveRows.push(
                 <MoveVariation
                     key={"variation:" + whitePosition.positionId}

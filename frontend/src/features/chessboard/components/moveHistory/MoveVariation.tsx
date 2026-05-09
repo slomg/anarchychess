@@ -1,6 +1,8 @@
 import clsx from "clsx";
+
 import { useChessboardStore } from "../../hooks/useChessboard";
 import { Position } from "../../lib/position";
+import { GameColor } from "@/lib/apiClient";
 
 const MoveVariation = ({ variations }: { variations: readonly Position[] }) => {
     const nodes: React.ReactElement[] = [];
@@ -51,8 +53,17 @@ const Line = ({ positions }: { positions: Position[] }) => {
         position: Position,
         index: number,
     ): string {
-        const isWhiteMove = position.ply % 2 !== 0;
-        const moveNumber = Math.ceil(position.ply / 2);
+        // compare to the opposite color because position.sideToMove refers to the side to move after the move was played
+        const isWhiteMove = position.sideToMove === GameColor.BLACK;
+
+        const startedWithBlack =
+            (isWhiteMove && position.ply % 2 === 0) ||
+            (!isWhiteMove && position.ply % 2 !== 0);
+
+        const moveNumber = startedWithBlack
+            ? Math.ceil((position.ply + 1) / 2)
+            : Math.ceil(position.ply / 2);
+
         if (index !== 0 && !isWhiteMove) return "";
 
         const dots = isWhiteMove ? "." : "...";

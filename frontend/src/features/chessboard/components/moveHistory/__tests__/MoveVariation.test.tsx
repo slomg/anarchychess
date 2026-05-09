@@ -13,6 +13,7 @@ import { createFakeBoardPieces } from "@/lib/testUtils/fakers/chessboardFakers";
 import PositionHistory from "@/features/chessboard/lib/positionHistory";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
 import MoveVariation from "../MoveVariation";
+import { GameColor } from "@/lib/apiClient";
 
 describe("MoveVariation", () => {
     let rootPieces: BoardPieces;
@@ -32,12 +33,15 @@ describe("MoveVariation", () => {
          */
 
         const pos1 = history.addNextPosition(
-            createFakePositionProps({ san: "e4" }),
+            createFakePositionProps({ san: "e4", sideToMove: GameColor.BLACK }),
         );
-        history.addNextPosition(createFakePositionProps({ san: "e5" }));
+        history.addNextPosition(
+            createFakePositionProps({ san: "e5", sideToMove: GameColor.WHITE }),
+        );
         history.addNextPosition(
             createFakePositionProps({
                 san: "Nf3",
+                sideToMove: GameColor.BLACK,
             }),
         );
 
@@ -64,28 +68,36 @@ describe("MoveVariation", () => {
          */
 
         const e4 = history.addNextPosition(
-            createFakePositionProps({ san: "e4" }),
+            createFakePositionProps({ san: "e4", sideToMove: GameColor.BLACK }),
         );
         const e5 = history.addNextPosition(
-            createFakePositionProps({ san: "e5" }),
+            createFakePositionProps({ san: "e5", sideToMove: GameColor.WHITE }),
         );
-        history.addNextPosition(createFakePositionProps({ san: "Nf3" }));
+        history.addNextPosition(
+            createFakePositionProps({
+                san: "Nf3",
+                sideToMove: GameColor.BLACK,
+            }),
+        );
 
         history.goToPosition(e5.positionId);
         const nc3 = history.addNextPosition(
             createFakePositionProps({
                 san: "Nc3",
+                sideToMove: GameColor.BLACK,
             }),
         );
         history.addNextPosition(
             createFakePositionProps({
                 san: "Nf6",
+                sideToMove: GameColor.WHITE,
             }),
         );
         history.goToPosition(nc3.positionId);
         history.addNextPosition(
             createFakePositionProps({
                 san: "Nc6",
+                sideToMove: GameColor.WHITE,
             }),
         );
 
@@ -93,6 +105,7 @@ describe("MoveVariation", () => {
         history.addNextPosition(
             createFakePositionProps({
                 san: "d4",
+                sideToMove: GameColor.BLACK,
             }),
         );
 
@@ -139,10 +152,10 @@ describe("MoveVariation", () => {
 
     it("highlights selected move correctly", async () => {
         const pos1 = history.addNextPosition(
-            createFakePositionProps({ san: "e4" }),
+            createFakePositionProps({ san: "e4", sideToMove: GameColor.BLACK }),
         );
         const pos2 = history.addNextPosition(
-            createFakePositionProps({ san: "e5" }),
+            createFakePositionProps({ san: "e5", sideToMove: GameColor.WHITE }),
         );
 
         render(
@@ -171,5 +184,51 @@ describe("MoveVariation", () => {
         );
         expect(e5Button).toHaveClass("bg-blue-300/30");
         expect(e4Button).not.toHaveClass("bg-blue-300/30");
+    });
+
+    it("should render correct move number dots for sub variations when root side to move is black", () => {
+        /**
+         * ├ 1...e5
+         * |   ├ 2.Nf3
+         * |   └ 2.Nc3
+         */
+
+        const history = new PositionHistory({
+            pieces: rootPieces,
+            sideToMove: GameColor.BLACK,
+        });
+
+        chessboardStore.setState({ positionHistory: history });
+
+        const e5 = history.addNextPosition(
+            createFakePositionProps({ san: "e5", sideToMove: GameColor.WHITE }),
+        );
+        history.addNextPosition(
+            createFakePositionProps({
+                san: "Nf3",
+                sideToMove: GameColor.BLACK,
+            }),
+        );
+
+        history.goToPosition(e5.positionId);
+
+        history.addNextPosition(
+            createFakePositionProps({
+                san: "Nc3",
+                sideToMove: GameColor.BLACK,
+            }),
+        );
+
+        render(
+            <ChessboardStoreContext.Provider value={chessboardStore}>
+                <MoveVariation variations={[e5]} />
+            </ChessboardStoreContext.Provider>,
+        );
+
+        const lines = screen.getAllByTestId("lineVariation");
+
+        expect(lines[0]).toHaveTextContent("1...e5");
+        expect(lines[1]).toHaveTextContent("2.Nf3");
+        expect(lines[2]).toHaveTextContent("2.Nc3");
     });
 });

@@ -20,6 +20,7 @@ import BoardPieces from "@/features/chessboard/lib/boardPieces";
 import { mockScrollTo } from "@/lib/testUtils/mocks/mockDom";
 import { logicalPoint } from "@/features/point/pointUtils";
 import MoveHistoryRows from "../MoveHistoryRows";
+import { GameColor } from "@/lib/apiClient";
 
 describe("MoveHistoryRows", () => {
     let chessboardStore: StoreApi<ChessboardStore>;
@@ -76,6 +77,35 @@ describe("MoveHistoryRows", () => {
 
         expect(screen.getByTestId("moveHistoryRows")).toHaveTextContent(
             "1.e4 e5 2.Nf3 Nc6".replaceAll(" ", ""),
+        );
+    });
+
+    it("should handle black to move as root", () => {
+        const positionHistory = new PositionHistory({
+            pieces: createFakeBoardPieces(),
+            sideToMove: GameColor.BLACK,
+        });
+
+        positionHistory.addNextPosition(
+            createFakePositionProps({ san: "e5", sideToMove: GameColor.WHITE }),
+        );
+        positionHistory.addNextPosition(
+            createFakePositionProps({
+                san: "Nf3",
+                sideToMove: GameColor.BLACK,
+            }),
+        );
+
+        chessboardStore.setState({ positionHistory });
+
+        render(
+            <ChessboardStoreContext.Provider value={chessboardStore}>
+                <MoveHistoryRows />
+            </ChessboardStoreContext.Provider>,
+        );
+
+        expect(screen.getByTestId("moveHistoryRows")).toHaveTextContent(
+            "1.e5 2.Nf3".replaceAll(" ", ""),
         );
     });
 

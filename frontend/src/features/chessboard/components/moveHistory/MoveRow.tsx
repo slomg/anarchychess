@@ -1,15 +1,17 @@
+import { useRef } from "react";
 import clsx from "clsx";
 
 import { useChessboardStore } from "../../hooks/useChessboard";
-import { Position } from "../../lib/position";
-import { useRef } from "react";
 import useHorizontalScroll from "@/hooks/useHorizontalScroll";
+import { Position } from "../../lib/position";
 
 const MoveRow = ({
+    ply,
     whitePosition,
     blackPosition,
 }: {
-    whitePosition: Position;
+    ply: number;
+    whitePosition?: Position;
     blackPosition?: Position;
 }) => {
     const whiteMoveRef = useRef<HTMLButtonElement>(null);
@@ -32,7 +34,7 @@ const MoveRow = ({
         }),
     );
 
-    const moveNumber = Math.ceil(whitePosition.ply / 2);
+    const moveNumber = Math.ceil(ply / 2);
     const color = moveNumber % 2 === 0 ? "bg-white/10" : "";
     const selectedClass = "bg-blue-300/30";
     return (
