@@ -61,13 +61,13 @@ describe("SetupPositionPieces", () => {
         const setupPiece = screen.getByTestId(
             `setupPiece-${PieceType.QUEEN}-${GameColor.WHITE}`,
         );
-        expect(setupPiece).not.toHaveClass("bg-accent");
+        expect(setupPiece).not.toHaveClass("bg-primary");
 
         await user.click(setupPiece);
-        expect(setupPiece).toHaveClass("bg-accent");
+        expect(setupPiece).toHaveClass("bg-primary");
 
         await user.click(setupPiece);
-        expect(setupPiece).not.toHaveClass("bg-accent");
+        expect(setupPiece).not.toHaveClass("bg-primary");
     });
 
     it("should switch selection when clicking a different piece", async () => {
@@ -86,12 +86,12 @@ describe("SetupPositionPieces", () => {
         );
 
         await user.click(queen);
-        expect(queen).toHaveClass("bg-accent");
-        expect(rook).not.toHaveClass("bg-accent");
+        expect(queen).toHaveClass("bg-primary");
+        expect(rook).not.toHaveClass("bg-primary");
 
         await user.click(rook);
-        expect(rook).toHaveClass("bg-accent");
-        expect(queen).not.toHaveClass("bg-accent");
+        expect(rook).toHaveClass("bg-primary");
+        expect(queen).not.toHaveClass("bg-primary");
     });
 
     it("should not highlight black piece when white piece of same type is selected", async () => {
@@ -110,8 +110,8 @@ describe("SetupPositionPieces", () => {
         );
 
         await user.click(whiteQueen);
-        expect(whiteQueen).toHaveClass("bg-accent");
-        expect(blackQueen).not.toHaveClass("bg-accent");
+        expect(whiteQueen).toHaveClass("bg-primary");
+        expect(blackQueen).not.toHaveClass("bg-primary");
     });
 
     it("should select neutral piece independently from colored pieces", async () => {
@@ -130,8 +130,8 @@ describe("SetupPositionPieces", () => {
         );
 
         await user.click(neutralPiece);
-        expect(neutralPiece).toHaveClass("bg-accent");
-        expect(whitePiece).not.toHaveClass("bg-accent");
+        expect(neutralPiece).toHaveClass("bg-primary");
+        expect(whitePiece).not.toHaveClass("bg-primary");
     });
 
     it("should select piece when dragged less than threshold", async () => {
@@ -155,7 +155,7 @@ describe("SetupPositionPieces", () => {
             { keys: "[/MouseLeft]" },
         ]);
 
-        expect(queen).toHaveClass("bg-accent");
+        expect(queen).toHaveClass("bg-primary");
     });
 
     it("should not select piece when dragged past threshold", async () => {
@@ -179,7 +179,7 @@ describe("SetupPositionPieces", () => {
             { keys: "[/MouseLeft]" },
         ]);
 
-        expect(queen).not.toHaveClass("bg-accent");
+        expect(queen).not.toHaveClass("bg-primary");
     });
 
     it("should show ghost image while dragging", async () => {

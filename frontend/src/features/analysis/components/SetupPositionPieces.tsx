@@ -124,7 +124,7 @@ const SetupPositionPieces = () => {
 
     return (
         <div
-            className="bg-background grid grid-cols-5 rounded-md p-1"
+            className="bg-background grid grid-cols-5 rounded-md"
             data-testid="setupPositionPieces"
         >
             {PIECES.map((piece) => (
@@ -204,7 +204,7 @@ const SetupPiece = ({
         <Image
             className={clsx(
                 "h-full w-full cursor-pointer touch-none select-none",
-                isSelected && "bg-accent rounded-md",
+                isSelected && "bg-primary rounded-md",
             )}
             src={getPieceImage(type, color)}
             onPointerDown={onPress}
