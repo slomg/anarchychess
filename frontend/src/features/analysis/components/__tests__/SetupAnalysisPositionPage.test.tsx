@@ -95,6 +95,24 @@ describe("SetupAnalysisPositionPage", () => {
         expect(screen.getByTestId("setupPositionPieces")).toBeInTheDocument();
     });
 
+    it("should render piece properties", () => {
+        const piece = createFakePiece();
+        store.setState({
+            selectedPieceId: piece.id,
+            pieces: BoardPieces.fromPieces(piece),
+        });
+
+        render(
+            <ChessboardStoreContext.Provider value={store}>
+                <SetupAnalysisPositionPage
+                    setSelectedPage={setSelectedPageMock}
+                />
+            </ChessboardStoreContext.Provider>,
+        );
+
+        expect(screen.getByTestId("setupPieceProperties")).toBeInTheDocument();
+    });
+
     it("should reset board when clicking reset board button", async () => {
         const user = userEvent.setup();
         render(

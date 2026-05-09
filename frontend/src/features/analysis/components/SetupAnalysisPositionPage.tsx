@@ -10,6 +10,7 @@ import MoveHistoryToolbar from "@/features/chessboard/components/moveHistory/Mov
 import { decodeMovePathIntoLegalMoves } from "@/features/liveGame/lib/moveDecoder";
 import FlipButton from "@/features/chessboard/components/moveHistory/FlipButton";
 import { useChessboardStore } from "@/features/chessboard/hooks/useChessboard";
+import SetupPositionPieceProperties from "./SetupPositionPieceProperties";
 import { PositionId } from "@/features/chessboard/lib/position";
 import { GameColor, getNextLegalMoves } from "@/lib/apiClient";
 import SetupPositionPieces from "./SetupPositionPieces";
@@ -103,11 +104,13 @@ const SetupAnalysisPositionPage = ({
             />
 
             <div
-                className="order-2 flex flex-1 flex-col gap-3 overflow-auto p-4
+                className="order-2 flex flex-1 flex-col gap-5 overflow-auto p-4
                     lg:order-1"
                 data-testid="analysisPositionSetup"
             >
                 <SetupPositionPieces />
+
+                <hr className="text-secondary/30" />
 
                 <Selector
                     options={[
@@ -129,6 +132,8 @@ const SetupAnalysisPositionPage = ({
                     }
                     data-testid="setupPositionSideToMove"
                 />
+
+                <SetupPositionPieceProperties />
             </div>
         </>
     );

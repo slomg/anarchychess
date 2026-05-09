@@ -7,6 +7,7 @@ import type { ChessboardStore } from "./chessboardStore";
 import { GameColor, PieceType } from "@/lib/apiClient";
 import { createPieceId } from "../lib/pieceUtils";
 import BoardPieces from "../lib/boardPieces";
+import { PieceID } from "../lib/types";
 
 export interface SetupModeMoveEvent {
     from: LogicalPoint;
@@ -23,9 +24,13 @@ export interface SetupModeSlice {
         color: GameColor | null,
         at: ScreenPoint,
     ): void;
+
     clearSetupModeBoard(): void;
     resetSetupModeBoard(): void;
+
     setSetupModeSideToMove(sideToMove: GameColor): void;
+    setSetupModePieceHasMoved(pieceId: PieceID, hasMoved: boolean): void;
+    setSetupModePieceStunned(pieceId: PieceID, stunnedForTurns: number): void;
 }
 
 export const createSetupModeSlice: StateCreator<
@@ -117,13 +122,37 @@ export const createSetupModeSlice: StateCreator<
     },
 
     setSetupModeSideToMove(sideToMove) {
-        const { positionHistory, overrideRoot, resetLastMove } = get();
-
-        const pieces =
-            positionHistory.viewingPosition?.pieces ??
-            positionHistory.root.pieces;
+        const { pieces, overrideRoot, resetLastMove } = get();
 
         resetLastMove();
         overrideRoot({ pieces, sideToMove });
+    },
+    setSetupModePieceHasMoved(pieceId, hasMoved) {
+        const { pieces, overrideRoot, resetLastMove } = get();
+
+        const piece = pieces.getById(pieceId);
+        if (!piece) {
+            return;
+        }
+
+        const newPieces = new BoardPieces(pieces);
+        newPieces.add({ ...piece, hasMoved });
+
+        resetLastMove();
+        overrideRoot({ pieces: newPieces });
+    },
+    setSetupModePieceStunned(pieceId, stunnedForTurns) {
+        const { pieces, overrideRoot, resetLastMove } = get();
+
+        const piece = pieces.getById(pieceId);
+        if (!piece) {
+            return;
+        }
+
+        const newPieces = new BoardPieces(pieces);
+        newPieces.add({ ...piece, stunnedForTurns });
+
+        resetLastMove();
+        overrideRoot({ pieces: newPieces });
     },
 });

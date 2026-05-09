@@ -10,13 +10,17 @@ type Option<T> = {
     value: T;
 };
 
+export interface SelectorEvent<T> {
+    target: { name?: string; value: T };
+}
+
 interface SelectorProps<T> {
     id?: string;
     name?: string;
     options: Option<T>[];
     value?: T;
     className?: string;
-    onChange?: (e: { target: { name?: string; value: T } }) => void;
+    onChange?: (e: SelectorEvent<T>) => void;
     onBlur?: React.FocusEventHandler<HTMLDivElement>;
     "data-testid"?: string;
 }
