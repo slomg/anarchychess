@@ -4,7 +4,7 @@ import clsx from "clsx";
 import { useChessboardStore } from "../hooks/useChessboard";
 import { PromotionRequest } from "../stores/promotionSlice";
 import { logicalPoint } from "@/features/point/pointUtils";
-import { getPieceImage } from "../lib/pieceImage";
+import { getPieceImage } from "../lib/pieceUtils";
 import { PieceType } from "@/lib/apiClient";
 import ChessSquare from "./ChessSquare";
 import constants from "@/lib/constants";

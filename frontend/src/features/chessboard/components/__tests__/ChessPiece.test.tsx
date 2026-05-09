@@ -16,7 +16,7 @@ import ChessboardStoreContext from "@/features/chessboard/contexts/chessboardSto
 import { mockBoundingClientRect } from "@/lib/testUtils/mocks/mockDom";
 import { logicalPoint, pointToStr } from "@/features/point/pointUtils";
 import { LogicalPoint } from "@/features/point/types";
-import { getPieceImage } from "../../lib/pieceImage";
+import { getPieceImage } from "../../lib/pieceUtils";
 import ChessboardLayout from "../ChessboardLayout";
 import BoardPieces from "../../lib/boardPieces";
 import { Point } from "@/features/point/types";

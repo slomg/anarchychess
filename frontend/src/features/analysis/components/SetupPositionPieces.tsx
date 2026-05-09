@@ -4,7 +4,7 @@ import clsx from "clsx";
 
 import useBoardInteraction from "@/features/chessboard/hooks/useBoardInteraction";
 import { useChessboardStore } from "@/features/chessboard/hooks/useChessboard";
-import { getPieceImage } from "@/features/chessboard/lib/pieceImage";
+import { getPieceImage } from "@/features/chessboard/lib/pieceUtils";
 import { screenPoint } from "@/features/point/pointUtils";
 import { GameColor, PieceType } from "@/lib/apiClient";
 

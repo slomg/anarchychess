@@ -11,7 +11,7 @@ import EmphasizedSquaresRenderer from "./EmphasizedSquare";
 import { GameColor, PieceType } from "@/lib/apiClient";
 import BoardEffects from "./boardEffects/BoardEffects";
 import LastMoveHighlight from "./LastMoveHighlight";
-import { getPieceImage } from "../lib/pieceImage";
+import { getPieceImage } from "../lib/pieceUtils";
 import OverlayRenderer from "./OverlayRenderer";
 import PromotionPrompt from "./PromotionPrompt";
 import PieceRenderer from "./PieceRenderer";

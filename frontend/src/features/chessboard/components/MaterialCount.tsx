@@ -2,7 +2,7 @@ import Image from "next/image";
 
 import getEffectivePieceColor from "../lib/effectivePieceColor";
 import { useChessboardStore } from "../hooks/useChessboard";
-import { getMaterialPieceImage } from "../lib/pieceImage";
+import { getMaterialPieceImage } from "../lib/pieceUtils";
 import { GameColor, PieceType } from "@/lib/apiClient";
 import { invertColor } from "@/lib/utils/chessUtils";
 

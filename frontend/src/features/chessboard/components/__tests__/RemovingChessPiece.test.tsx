@@ -1,14 +1,16 @@
-import { createFakePiece } from "@/lib/testUtils/fakers/chessboardFakers";
-import ChessboardStoreContext from "../../contexts/chessboardStoreContext";
+import { render, screen } from "@testing-library/react";
+import { StoreApi } from "zustand";
+
 import {
     ChessboardStore,
     createChessboardStore,
 } from "../../stores/chessboardStore";
-import RemovingChessPiece from "../RemovingChessPiece";
-import { render, screen } from "@testing-library/react";
-import { StoreApi } from "zustand";
-import { getPieceImage } from "../../lib/pieceImage";
+
+import ChessboardStoreContext from "../../contexts/chessboardStoreContext";
+import { createFakePiece } from "@/lib/testUtils/fakers/chessboardFakers";
 import { pointToStr } from "@/features/point/pointUtils";
+import RemovingChessPiece from "../RemovingChessPiece";
+import { getPieceImage } from "../../lib/pieceUtils";
 
 describe("RemovingChessPiece", () => {
     let store: StoreApi<ChessboardStore>;

@@ -4,7 +4,7 @@ import clsx from "clsx";
 import { useChessboardStore } from "@/features/chessboard/hooks/useChessboard";
 import DoubleClickIndicator, { DoubleClickRef } from "./DoubleClickIndicator";
 import useBoardInteraction from "../hooks/useBoardInteraction";
-import { getPieceImage } from "../lib/pieceImage";
+import { getPieceImage } from "../lib/pieceUtils";
 import { Point } from "@/features/point/types";
 import { ChessSquareRef } from "./CoordSquare";
 import ChessSquare from "./ChessSquare";
