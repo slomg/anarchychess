@@ -281,4 +281,60 @@ describe("SetupModeSlice", () => {
             expect(store.getState().lastMove).toBeNull();
         });
     });
+
+    describe("setSetupModePieceHasMoved", () => {
+        it("should update piece hasMoved state", () => {
+            const piece = createFakePiece({
+                hasMoved: false,
+            });
+            const pieces = BoardPieces.fromPieces(piece);
+            store.setState({
+                pieces,
+                positionHistory: new PositionHistory({ pieces }),
+                lastMove,
+            });
+
+            store.getState().setSetupModePieceHasMoved(piece.id, true);
+
+            const expectedPieces = new BoardPieces(pieces);
+            expectedPieces.add({
+                ...piece,
+                hasMoved: true,
+            });
+
+            expect(store.getState().pieces).toEqual(expectedPieces);
+            expect(store.getState().positionHistory.root.pieces).toEqual(
+                expectedPieces,
+            );
+            expect(store.getState().lastMove).toBeNull();
+        });
+    });
+
+    describe("setSetupModePieceStunned", () => {
+        it("should update piece stunnedForTurns state", () => {
+            const piece = createFakePiece({
+                stunnedForTurns: 0,
+            });
+            const pieces = BoardPieces.fromPieces(piece);
+            store.setState({
+                pieces,
+                positionHistory: new PositionHistory({ pieces }),
+                lastMove,
+            });
+
+            store.getState().setSetupModePieceStunned(piece.id, 3);
+
+            const expectedPieces = new BoardPieces(pieces);
+            expectedPieces.add({
+                ...piece,
+                stunnedForTurns: 3,
+            });
+
+            expect(store.getState().pieces).toEqual(expectedPieces);
+            expect(store.getState().positionHistory.root.pieces).toEqual(
+                expectedPieces,
+            );
+            expect(store.getState().lastMove).toBeNull();
+        });
+    });
 });
