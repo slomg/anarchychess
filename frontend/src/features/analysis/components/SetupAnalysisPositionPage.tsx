@@ -4,7 +4,7 @@ import {
     TrashIcon,
 } from "@heroicons/react/24/outline";
 
-import { useEffect, useEffectEvent, useRef } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 
 import MoveHistoryToolbar from "@/features/chessboard/components/moveHistory/MoveHistoryToolbar";
 import { decodeMovePathIntoLegalMoves } from "@/features/liveGame/lib/moveDecoder";
@@ -39,6 +39,8 @@ const SetupAnalysisPositionPage = ({
         setSetupModeSideToMove: x.setSetupModeSideToMove,
     }));
 
+    const [isFetching, setIsFetching] = useState(false);
+
     const rootIdBeforeRef = useRef<PositionId | null>(null);
     const updateIdBeforeEvent = useEffectEvent(
         () => (rootIdBeforeRef.current = positionHistory.root.positionId),
@@ -57,22 +59,27 @@ const SetupAnalysisPositionPage = ({
             return;
         }
 
-        const { error, data: movePaths } = await getNextLegalMoves({
-            query: {
-                fen: positionHistory.root.fen,
-            },
-        });
-        if (error || movePaths === undefined) {
-            console.error(
-                "SetupAnalysisPositionPage goBack getNextLegalMoves",
-                error,
-            );
-            return;
-        }
+        setIsFetching(true);
+        try {
+            const { error, data: movePaths } = await getNextLegalMoves({
+                query: {
+                    fen: positionHistory.root.fen,
+                },
+            });
+            if (error || movePaths === undefined) {
+                console.error(
+                    "SetupAnalysisPositionPage goBack getNextLegalMoves",
+                    error,
+                );
+                return;
+            }
 
-        const legalMoves = decodeMovePathIntoLegalMoves(movePaths);
-        setLatestLegalMoves(legalMoves);
-        setSelectedPage(AnalysisPageType.Main);
+            const legalMoves = decodeMovePathIntoLegalMoves(movePaths);
+            setLatestLegalMoves(legalMoves);
+            setSelectedPage(AnalysisPageType.Main);
+        } finally {
+            setIsFetching(false);
+        }
     }
 
     return (
@@ -80,7 +87,11 @@ const SetupAnalysisPositionPage = ({
             <MoveHistoryToolbar
                 className="order-1 lg:order-2"
                 leftActions={
-                    <Button title="Go Back" onClick={goBack}>
+                    <Button
+                        title="Go Back"
+                        onClick={goBack}
+                        disabled={isFetching}
+                    >
                         <ArrowUturnLeftIcon className="h-8 w-8" />
                     </Button>
                 }

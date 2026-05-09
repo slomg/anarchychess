@@ -16,7 +16,7 @@ import { createFakePiece } from "@/lib/testUtils/fakers/chessboardFakers";
 import { Clocks, GameColor, MoveSnapshot } from "@/lib/apiClient";
 import BoardPieces from "@/features/chessboard/lib/boardPieces";
 import LegalMoves from "@/features/chessboard/lib/legalMoves";
-import { idxToLogicalPoint, logicalPoint } from "@/features/point/pointUtils";
+import { logicalPoint } from "@/features/point/pointUtils";
 import handleMoveUpdate from "../handleMoveUpdate";
 import { decodeMovePath } from "../moveDecoder";
 
