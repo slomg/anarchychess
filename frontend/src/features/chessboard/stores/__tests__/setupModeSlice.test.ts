@@ -11,9 +11,12 @@ import PositionHistory from "../../lib/positionHistory";
 import BoardPieces from "../../lib/boardPieces";
 import { GameColor, PieceType } from "@/lib/apiClient";
 import mockSequentialUUID from "@/lib/testUtils/mocks/mockUuids";
+import createDefaultChessboard from "../../lib/defaultBoard";
+import { MoveBounds } from "../../lib/types";
 
 describe("SetupModeSlice", () => {
     let store: StoreApi<ChessboardStore>;
+    let lastMove: MoveBounds;
 
     beforeEach(() => {
         store = createChessboardStore();
@@ -25,6 +28,11 @@ describe("SetupModeSlice", () => {
                 height: 100,
             } as DOMRect,
         });
+
+        lastMove = {
+            from: createRandomPoint(),
+            to: createRandomPoint(),
+        };
     });
 
     describe("setSetupMode", () => {
@@ -117,10 +125,7 @@ describe("SetupModeSlice", () => {
                 pieces: new BoardPieces(pieces),
                 positionHistory: new PositionHistory({ pieces }),
                 selectedPieceId: piece.id,
-                lastMove: {
-                    from: createRandomPoint(),
-                    to: createRandomPoint(),
-                },
+                lastMove,
             });
 
             const to = logicalPoint({ x: 2, y: 7 });
@@ -149,10 +154,7 @@ describe("SetupModeSlice", () => {
                 pieces,
                 positionHistory,
                 selectedPieceId: piece.id,
-                lastMove: {
-                    from: createRandomPoint(),
-                    to: createRandomPoint(),
-                },
+                lastMove,
             });
 
             store
@@ -177,10 +179,7 @@ describe("SetupModeSlice", () => {
             store.setState({
                 pieces: new BoardPieces(pieces),
                 positionHistory: new PositionHistory({ pieces }),
-                lastMove: {
-                    from: createRandomPoint(),
-                    to: createRandomPoint(),
-                },
+                lastMove,
             });
 
             mockSequentialUUID();
@@ -203,6 +202,52 @@ describe("SetupModeSlice", () => {
                 hasMoved: false,
             });
 
+            expect(store.getState().positionHistory.root.pieces).toEqual(
+                expectedPieces,
+            );
+            expect(store.getState().pieces).toEqual(expectedPieces);
+            expect(store.getState().lastMove).toBeNull();
+        });
+    });
+
+    describe("clearSetupModeBoard", () => {
+        it("should clear all pieces and override root", () => {
+            const piece = createFakePiece({
+                position: logicalPoint({ x: 0, y: 0 }),
+            });
+            const pieces = BoardPieces.fromPieces(piece);
+            store.setState({
+                pieces: new BoardPieces(pieces),
+                positionHistory: new PositionHistory({ pieces }),
+                lastMove,
+            });
+
+            store.getState().clearSetupModeBoard();
+
+            const expectedPieces = new BoardPieces();
+            expect(store.getState().positionHistory.root.pieces).toEqual(
+                expectedPieces,
+            );
+            expect(store.getState().pieces).toEqual(expectedPieces);
+            expect(store.getState().lastMove).toBeNull();
+        });
+    });
+
+    describe("resetSetupModeBoard", () => {
+        it("should reset pieces to default chessboard and override root", () => {
+            const piece = createFakePiece({
+                position: logicalPoint({ x: 0, y: 0 }),
+            });
+            const pieces = BoardPieces.fromPieces(piece);
+            store.setState({
+                pieces: new BoardPieces(pieces),
+                positionHistory: new PositionHistory({ pieces }),
+                lastMove,
+            });
+
+            store.getState().resetSetupModeBoard();
+
+            const expectedPieces = createDefaultChessboard();
             expect(store.getState().positionHistory.root.pieces).toEqual(
                 expectedPieces,
             );
