@@ -25,9 +25,12 @@ describe("BoardPieces", () => {
 
             const movedPieceIdsResult = pieces.playMove(move);
 
-            expect(pieces.getById(movingPiece.id)?.position).toEqual(
-                logicalPoint({ x: 1, y: 1 }),
-            );
+            const pieceResult = pieces.getById(movingPiece.id);
+            expect(pieceResult).toEqual({
+                ...movingPiece,
+                position: logicalPoint({ x: 1, y: 1 }),
+                hasMoved: true,
+            });
             expect(movedPieceIdsResult).toEqual([movingPiece.id]);
             expect(pieces.getById(unrelatedPiece.id)).toEqual(unrelatedPiece);
         });
@@ -78,12 +81,18 @@ describe("BoardPieces", () => {
 
             const movedPieceIdsResult = pieces.playMove(move);
 
-            expect(pieces.getById(movingPiece.id)?.position).toEqual(
-                logicalPoint({ x: 2, y: 2 }),
-            );
-            expect(pieces.getById(sideEffectPiece.id)?.position).toEqual(
-                logicalPoint({ x: 3, y: 3 }),
-            );
+            const movingPieceResult = pieces.getById(movingPiece.id);
+            expect(movingPieceResult).toEqual({
+                ...movingPiece,
+                position: logicalPoint({ x: 2, y: 2 }),
+                hasMoved: true,
+            });
+            const sideEffectPieceResult = pieces.getById(sideEffectPiece.id);
+            expect(sideEffectPieceResult).toEqual({
+                ...sideEffectPiece,
+                position: logicalPoint({ x: 3, y: 3 }),
+                hasMoved: true,
+            });
             expect(movedPieceIdsResult).toEqual([
                 movingPiece.id,
                 sideEffectPiece.id,

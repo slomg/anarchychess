@@ -93,6 +93,7 @@ export default class BoardPieces {
             const piece = this._byId.get(pieceMove.pieceId);
             if (piece) {
                 piece.position = pieceMove.to;
+                piece.hasMoved = true;
             }
         }
 
