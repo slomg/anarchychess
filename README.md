@@ -10,7 +10,7 @@
 
 # Features
 
-- **New Pieces & Rules:** Knook, Checker, Traitor Rook, Antiqueen, Underage Pawn, King Capture, King Touch = Draw, Forced En Passant, Long Passant, Il Vaticano, Omnipotent Pawn, Vertical Castling, Knooklear Fusion, Queen Beta Decay.\
+- **New Pieces & Rules:** 5 new pieces and 16 new rules.\
   _See the [full guide](https://anarchychess.org/guide) for detailed explanations of all pieces and rules_
 
 - **Analysis:** Analysis board with branching positions and variations, available standalone or from finished games
