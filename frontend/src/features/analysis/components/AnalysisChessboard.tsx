@@ -42,8 +42,8 @@ const AnalysisChessboard = ({
                 }
                 aside={
                     <aside
-                        className="flex h-96 min-h-25 w-full overflow-auto
-                            md:h-full lg:max-w-sm"
+                        className="flex min-h-96 w-full overflow-auto md:h-full
+                            lg:max-w-sm"
                     >
                         <AnalysisSide />
                     </aside>
