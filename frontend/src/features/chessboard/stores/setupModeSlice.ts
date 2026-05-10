@@ -118,7 +118,10 @@ export const createSetupModeSlice: StateCreator<
         const { overrideRoot, resetLastMove } = get();
 
         resetLastMove();
-        overrideRoot({ pieces: createDefaultChessboard() });
+        overrideRoot({
+            pieces: createDefaultChessboard(),
+            sideToMove: GameColor.WHITE,
+        });
     },
 
     setSetupModeSideToMove(sideToMove) {

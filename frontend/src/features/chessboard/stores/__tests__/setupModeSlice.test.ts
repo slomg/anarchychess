@@ -1,6 +1,7 @@
 import { StoreApi } from "zustand";
 
 import {
+    createFakeBoardPieces,
     createFakePiece,
     createRandomPoint,
 } from "@/lib/testUtils/fakers/chessboardFakers";
@@ -235,10 +236,7 @@ describe("SetupModeSlice", () => {
 
     describe("resetSetupModeBoard", () => {
         it("should reset pieces to default chessboard and override root", () => {
-            const piece = createFakePiece({
-                position: logicalPoint({ x: 0, y: 0 }),
-            });
-            const pieces = BoardPieces.fromPieces(piece);
+            const pieces = createFakeBoardPieces();
             store.setState({
                 pieces: new BoardPieces(pieces),
                 positionHistory: new PositionHistory({ pieces }),
@@ -254,14 +252,27 @@ describe("SetupModeSlice", () => {
             expect(store.getState().pieces).toEqual(expectedPieces);
             expect(store.getState().lastMove).toBeNull();
         });
+
+        it("should set side to move to white", () => {
+            const pieces = createFakeBoardPieces();
+            store.setState({
+                positionHistory: new PositionHistory({
+                    pieces,
+                    sideToMove: GameColor.BLACK,
+                }),
+            });
+
+            store.getState().resetSetupModeBoard();
+
+            expect(store.getState().positionHistory.root.sideToMove).toBe(
+                GameColor.WHITE,
+            );
+        });
     });
 
     describe("setSetupModeSideToMove", () => {
         it("should set side to move", () => {
-            const piece = createFakePiece({
-                position: logicalPoint({ x: 0, y: 0 }),
-            });
-            const pieces = BoardPieces.fromPieces(piece);
+            const pieces = createFakeBoardPieces();
             const positionHistory = new PositionHistory({ pieces });
 
             store.setState({
