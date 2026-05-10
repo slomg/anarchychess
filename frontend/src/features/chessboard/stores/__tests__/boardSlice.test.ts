@@ -103,13 +103,21 @@ describe("BoardSlice", () => {
             expect(logicalPointToViewPoint(logical)).toEqual(view);
         });
 
-        it("should return undefined when the point is outside board", () => {
+        it("should return undefined when the point is outside board positive", () => {
             expect(
                 store
                     .getState()
                     .screenToLogicalPoint(
                         screenPoint({ x: 696969, y: 696969 }),
                     ),
+            ).toBeUndefined();
+        });
+
+        it("should return undefined when the point is outside board negative", () => {
+            expect(
+                store
+                    .getState()
+                    .screenToLogicalPoint(screenPoint({ x: -1, y: -1 })),
             ).toBeUndefined();
         });
     });

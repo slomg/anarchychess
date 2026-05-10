@@ -65,8 +65,11 @@ export function createBoardSlice(
             const { boardRect } = get();
             if (!boardRect) return;
 
-            const relX = Math.max(screenPoint.x - boardRect.left, 0);
-            const relY = Math.max(screenPoint.y - boardRect.top, 0);
+            const relX = screenPoint.x - boardRect.left;
+            const relY = screenPoint.y - boardRect.top;
+            if (relX < 0 || relY < 0) {
+                return;
+            }
 
             const x = Math.floor(
                 (relX / boardRect.width) * constants.BOARD_WIDTH,
