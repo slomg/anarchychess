@@ -67,7 +67,6 @@ export default class PositionHistory {
     overrideRoot(props: RootPositionProps) {
         const pieces = props.pieces;
         const sideToMove = props.sideToMove ?? this.currentPosition.sideToMove;
-        console.log(props.sideToMove, sideToMove);
         const fen = props.fen ?? encodeFen({ pieces, sideToMove });
         this._root = new RootPositionNode({ pieces, fen, sideToMove, ply: 0 });
 
