@@ -2,8 +2,8 @@ import { useEffect, useRef } from "react";
 import { twMerge } from "tailwind-merge";
 
 import { useChessboardStore } from "../../hooks/useChessboard";
+import { ChildPosition } from "../../lib/position";
 import useAutoScroll from "@/hooks/useAutoScroll";
-import { Position } from "../../lib/position";
 import MoveVariation from "./MoveVariation";
 import { GameColor } from "@/lib/apiClient";
 import MoveRow from "./MoveRow";
@@ -73,8 +73,8 @@ const MoveHistoryRows = ({ className }: { className?: string }) => {
             break;
         }
 
-        let whitePosition: Position | undefined;
-        let blackPosition: Position | undefined;
+        let whitePosition: ChildPosition | undefined;
+        let blackPosition: ChildPosition | undefined;
 
         if (pos1.value.sideToMove === GameColor.WHITE) {
             blackPosition = pos1.value;

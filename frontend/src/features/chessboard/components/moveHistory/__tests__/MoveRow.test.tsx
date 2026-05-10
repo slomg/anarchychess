@@ -139,7 +139,7 @@ describe("MoveRow", () => {
         const whiteButton = screen.getByText("e4");
         await user.click(whiteButton);
 
-        expect(chessboardStore.getState().positionHistory.viewingPosition).toBe(
+        expect(chessboardStore.getState().positionHistory.currentNode).toBe(
             whitePos,
         );
     });
@@ -171,8 +171,8 @@ describe("MoveRow", () => {
         await user.click(blackButton);
 
         expect(
-            chessboardStore.getState().positionHistory.viewingPosition
-                ?.positionId,
+            chessboardStore.getState().positionHistory.currentPosition
+                .positionId,
         ).toBe(blackPos.positionId);
     });
 

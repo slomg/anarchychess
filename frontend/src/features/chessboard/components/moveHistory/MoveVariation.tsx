@@ -1,15 +1,19 @@
 import clsx from "clsx";
 
 import { useChessboardStore } from "../../hooks/useChessboard";
-import { Position } from "../../lib/position";
+import { ChildPosition } from "../../lib/position";
 import { GameColor } from "@/lib/apiClient";
 
-const MoveVariation = ({ variations }: { variations: readonly Position[] }) => {
+const MoveVariation = ({
+    variations,
+}: {
+    variations: readonly ChildPosition[];
+}) => {
     const nodes: React.ReactElement[] = [];
 
     for (const variation of variations) {
-        const untilMultiVariation: Position[] = [];
-        let withMultiVariation: Position | undefined;
+        const untilMultiVariation: ChildPosition[] = [];
+        let withMultiVariation: ChildPosition | undefined;
         for (const nextPosition of variation) {
             untilMultiVariation.push(nextPosition);
             if (nextPosition.variations.length > 1) {
@@ -48,9 +52,9 @@ const MoveVariation = ({ variations }: { variations: readonly Position[] }) => {
 };
 export default MoveVariation;
 
-const Line = ({ positions }: { positions: Position[] }) => {
+const Line = ({ positions }: { positions: ChildPosition[] }) => {
     function getPositionFormattedMoveNumber(
-        position: Position,
+        position: ChildPosition,
         index: number,
     ): string {
         // compare to the opposite color because position.sideToMove refers to the side to move after the move was played
@@ -88,11 +92,17 @@ const Line = ({ positions }: { positions: Position[] }) => {
     );
 };
 
-const LineMove = ({ position, dots }: { position: Position; dots: string }) => {
+const LineMove = ({
+    position,
+    dots,
+}: {
+    position: ChildPosition;
+    dots: string;
+}) => {
     const { goToPosition, isSelected } = useChessboardStore((x) => ({
         goToPosition: x.goToPosition,
         isSelected:
-            x.positionHistory.viewingPosition?.positionId ===
+            x.positionHistory.currentPosition.positionId ===
             position.positionId,
     }));
 

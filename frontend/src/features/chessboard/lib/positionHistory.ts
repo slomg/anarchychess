@@ -1,12 +1,12 @@
 import { immerable } from "immer";
 
 import {
-    Position,
+    ChildPosition,
     PositionId,
     ChildPositionNode,
     PositionProps,
     RootPositionNode,
-    RootPosition,
+    Position,
     RootPositionProps,
 } from "./position";
 
@@ -23,29 +23,33 @@ export default class PositionHistory {
     _root: RootPositionNode;
     _tail: ChildPositionNode | null = null;
 
-    _viewingPosition: ChildPositionNode | null = null;
+    _currentNode: ChildPositionNode | null = null;
 
     constructor(props: RootPositionProps) {
         const pieces = props.pieces;
         const sideToMove = props.sideToMove ?? GameColor.WHITE;
         const fen = props.fen ?? encodeFen({ pieces, sideToMove });
-        this._root = new RootPositionNode(pieces, fen, sideToMove);
+        this._root = new RootPositionNode({ pieces, fen, sideToMove, ply: 0 });
     }
 
-    get root(): RootPosition {
+    get root(): Position {
         return this._root;
     }
 
-    get tail(): Position | null {
+    get tail(): ChildPosition | null {
         return this._tail;
     }
 
-    get rootSubVariationByKey(): ReadonlyMap<MoveKey, Position> {
+    get rootSubVariationByKey(): ReadonlyMap<MoveKey, ChildPosition> {
         return this._root.subVariationByKey;
     }
 
-    get viewingPosition(): Position | null {
-        return this._viewingPosition;
+    get currentNode(): ChildPosition | null {
+        return this._currentNode;
+    }
+
+    get currentPosition(): Position {
+        return this._currentNode ?? this._root;
     }
 
     get mainPlyCount(): number {
@@ -57,29 +61,28 @@ export default class PositionHistory {
     }
 
     get isViewingLatestPosition(): boolean {
-        return this._viewingPosition?.positionId === this._tail?.positionId;
+        return this._currentNode?.positionId === this._tail?.positionId;
     }
 
     overrideRoot(props: RootPositionProps) {
         const pieces = props.pieces;
-        const sideToMove = props.sideToMove ?? GameColor.WHITE;
+        const sideToMove = props.sideToMove ?? this.currentPosition.sideToMove;
+        console.log(props.sideToMove, sideToMove);
         const fen = props.fen ?? encodeFen({ pieces, sideToMove });
-        this._root = new RootPositionNode(pieces, fen, sideToMove);
+        this._root = new RootPositionNode({ pieces, fen, sideToMove, ply: 0 });
 
         this._tail = null;
-        this._viewingPosition = null;
+        this._currentNode = null;
         this._byPositionId = new Map();
         this._byPly = new Map();
     }
 
-    getPositionWithPly(ply: number): Position | undefined {
+    getPositionWithPly(ply: number): ChildPosition | undefined {
         return this._byPly.get(ply);
     }
 
-    getNextPositionWithKey(key: MoveKey): Position | undefined {
-        const currPosition = this._viewingPosition
-            ? this._viewingPosition
-            : this._root;
+    getNextPositionWithKey(key: MoveKey): ChildPosition | undefined {
+        const currPosition = this._currentNode ? this._currentNode : this._root;
 
         if (currPosition.next?.move.moveKey === key) return currPosition.next;
         else return currPosition.subVariationByKey.get(key);
@@ -94,17 +97,16 @@ export default class PositionHistory {
             return { success: false, isOneStepForward: false };
         }
 
-        const viewingPosition = this._viewingPosition ?? this._root;
-        const isOneStepForward = viewingPosition.isPositionNext(node);
+        const isOneStepForward = this.currentPosition.isPositionNext(node);
 
-        this._viewingPosition = node;
+        this._currentNode = node;
         return { success: true, isOneStepForward };
     }
 
     goToStart(): boolean {
-        if (this._viewingPosition === null) return false;
+        if (this._currentNode === null) return false;
 
-        this._viewingPosition = null;
+        this._currentNode = null;
         return true;
     }
 
@@ -112,44 +114,44 @@ export default class PositionHistory {
         success: boolean;
         isOneStepForward: boolean;
     } {
-        if (this._viewingPosition?.positionId === this._tail?.positionId)
+        if (this._currentNode?.positionId === this._tail?.positionId)
             return { success: false, isOneStepForward: false };
 
         const isOneStepForward =
-            this._viewingPosition?.isPositionNext(this._tail) ?? false;
-        this._viewingPosition = this._tail;
+            this._currentNode?.isPositionNext(this._tail) ?? false;
+        this._currentNode = this._tail;
         return { success: true, isOneStepForward };
     }
 
     stepBackward(): boolean {
-        if (!this._viewingPosition) return false;
+        if (!this._currentNode) return false;
 
-        const prev = this._viewingPosition.prev;
+        const prev = this._currentNode.prev;
         if (!prev) {
-            this._viewingPosition = null;
+            this._currentNode = null;
             return true;
         }
 
-        this._viewingPosition = prev;
+        this._currentNode = prev;
         return true;
     }
 
     stepForward(): boolean {
-        if (!this._viewingPosition && !this._root.next) return false;
-        if (!this._viewingPosition) {
-            this._viewingPosition = this._root.next;
+        if (!this._currentNode && !this._root.next) return false;
+        if (!this._currentNode) {
+            this._currentNode = this._root.next;
             return true;
         }
 
-        const next = this._viewingPosition.next;
+        const next = this._currentNode.next;
         if (!next) return false;
 
-        this._viewingPosition = next;
+        this._currentNode = next;
         return true;
     }
 
-    addNextPosition(props: PositionProps): Position {
-        const parent = this._viewingPosition ?? this._root;
+    addNextPosition(props: PositionProps): ChildPosition {
+        const parent = this._currentNode ?? this._root;
         const { child: nextPosition, isMainVariation } =
             parent.createChild(props);
         this._trackPosition(nextPosition);
@@ -162,15 +164,15 @@ export default class PositionHistory {
         return nextPosition;
     }
 
-    addNextSidelinePosition(props: PositionProps): Position {
-        const parent = this._viewingPosition ?? this._root;
+    addNextSidelinePosition(props: PositionProps): ChildPosition {
+        const parent = this._currentNode ?? this._root;
         let nextPosition: ChildPositionNode;
 
         // if viewing the tail, create a sub variation
         // if NOT viewing the tail, it's safe to call createChild because we're either viewing a position that is
         // - off the main line, so adding a main variation won't affect the main line
         // - on the main line but not the tail, so it must already have a main variation and calling createChild will not replace the main variation
-        if (this._viewingPosition?.positionId === this._tail?.positionId) {
+        if (this._currentNode?.positionId === this._tail?.positionId) {
             nextPosition = parent.createSubVariationChild(props);
         } else {
             nextPosition = parent.createChild(props).child;
@@ -182,10 +184,10 @@ export default class PositionHistory {
 
     _trackPosition(position: ChildPositionNode) {
         this._byPositionId.set(position.positionId, position);
-        this._viewingPosition = position;
+        this._currentNode = position;
     }
 
-    *[Symbol.iterator](): IterableIterator<Position> {
+    *[Symbol.iterator](): IterableIterator<ChildPosition> {
         yield* this._root;
     }
 }

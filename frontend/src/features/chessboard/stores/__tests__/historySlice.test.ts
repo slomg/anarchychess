@@ -26,7 +26,7 @@ describe("HistorySlice", () => {
     });
 
     describe("setPosition", () => {
-        it("should update viewingPosition when valid positionId is provided", () => {
+        it("should update current node when valid positionId is provided", () => {
             const positionHistory = new PositionHistory({
                 pieces: createFakeBoardPieces(),
             });
@@ -40,7 +40,7 @@ describe("HistorySlice", () => {
             store.getState().setPosition(pos.positionId);
 
             expect(
-                store.getState().positionHistory.viewingPosition?.positionId,
+                store.getState().positionHistory.currentPosition.positionId,
             ).toBe(pos.positionId);
         });
     });
@@ -251,7 +251,7 @@ describe("HistorySlice", () => {
             const updatePiecesMock = vi.fn();
 
             const positionHistory = createNFakePositionHistory(3);
-            const expectedPosition = positionHistory.viewingPosition;
+            const expectedPosition = positionHistory.currentNode;
             positionHistory.goToStart();
 
             store.setState({
@@ -371,7 +371,7 @@ describe("HistorySlice", () => {
                 hideLegalMoves: true,
                 positionHistory,
                 legalMovesByPosition: new Map([
-                    [positionHistory.viewingPosition?.positionId, legalMoves],
+                    [positionHistory.currentPosition.positionId, legalMoves],
                 ]),
             });
 
@@ -388,7 +388,7 @@ describe("HistorySlice", () => {
                 allowHistoryChanges: false,
                 positionHistory,
                 legalMovesByPosition: new Map([
-                    [positionHistory.viewingPosition?.positionId, legalMoves],
+                    [positionHistory.currentPosition.positionId, legalMoves],
                 ]),
             });
 
@@ -405,7 +405,7 @@ describe("HistorySlice", () => {
                 allowHistoryChanges: true,
                 positionHistory,
                 legalMovesByPosition: new Map([
-                    [positionHistory.viewingPosition?.positionId, legalMoves],
+                    [positionHistory.currentPosition.positionId, legalMoves],
                 ]),
             });
 
@@ -420,7 +420,7 @@ describe("HistorySlice", () => {
             store.setState({
                 positionHistory,
                 legalMovesByPosition: new Map([
-                    [positionHistory.viewingPosition?.positionId, legalMoves],
+                    [positionHistory.currentPosition.positionId, legalMoves],
                 ]),
             });
 
@@ -438,21 +438,6 @@ describe("HistorySlice", () => {
 
             const result = store.getState().getViewedPositionLegalMoves();
             expect(result).toBe(LegalMoves.StableEmpty);
-        });
-
-        it("should handle undefined viewing position id", () => {
-            const legalMoves = createFakeLegalMoves();
-            const positionHistory = createNFakePositionHistory(1);
-            positionHistory.goToStart();
-
-            store.setState({
-                allowHistoryChanges: true,
-                positionHistory,
-                legalMovesByPosition: new Map([[undefined, legalMoves]]),
-            });
-
-            const result = store.getState().getViewedPositionLegalMoves();
-            expect(result).toEqual(legalMoves);
         });
     });
 
@@ -489,7 +474,7 @@ describe("HistorySlice", () => {
             const state = store.getState();
             expect(
                 state.legalMovesByPosition.get(
-                    positionHistory.viewingPosition?.positionId,
+                    positionHistory.currentPosition.positionId,
                 ),
             ).toEqual(legalMoves);
         });
@@ -514,15 +499,6 @@ describe("HistorySlice", () => {
             const result = store
                 .getState()
                 .hasLegalMovesForPosition(positionId);
-            expect(result).toBe(true);
-        });
-
-        it("should correctly handle undefined position id", () => {
-            const { goToStartPosition, setLatestLegalMoves } = store.getState();
-            goToStartPosition();
-            setLatestLegalMoves(createFakeLegalMoves());
-
-            const result = store.getState().hasLegalMovesForPosition(undefined);
             expect(result).toBe(true);
         });
     });
@@ -550,7 +526,7 @@ describe("HistorySlice", () => {
             expect(state.positionHistory.root.pieces).toEqual(
                 expect.objectContaining(props.pieces),
             );
-            expect(state.positionHistory.viewingPosition).toBeNull();
+            expect(state.positionHistory.currentNode).toBeNull();
             expect(setImmediatePiecesMock).toHaveBeenCalledExactlyOnceWith(
                 props.pieces,
             );

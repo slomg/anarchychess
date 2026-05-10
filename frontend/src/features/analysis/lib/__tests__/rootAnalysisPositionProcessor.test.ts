@@ -31,7 +31,7 @@ describe("processRootAnalysis", () => {
         expect(state.legalMovesByPosition.size).toBe(1);
         expect(
             state.legalMovesByPosition.get(
-                state.positionHistory.viewingPosition?.positionId,
+                state.positionHistory.currentPosition.positionId,
             ),
         ).toEqual(expectedLegalMoves);
     });

@@ -64,9 +64,7 @@ async function fetchNextPosition({
     try {
         ({ error, data } = await getNextAnalysisPosition({
             body: {
-                fen:
-                    positionHistory.viewingPosition?.fen ??
-                    positionHistory.root.fen,
+                fen: positionHistory.currentPosition.fen,
                 piecePosition: move.from,
                 moveKey: move.moveKey,
             },

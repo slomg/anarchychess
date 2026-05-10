@@ -3,7 +3,7 @@ import clsx from "clsx";
 
 import { useChessboardStore } from "../../hooks/useChessboard";
 import useHorizontalScroll from "@/hooks/useHorizontalScroll";
-import { Position } from "../../lib/position";
+import { ChildPosition } from "../../lib/position";
 
 const MoveRow = ({
     ply,
@@ -11,8 +11,8 @@ const MoveRow = ({
     blackPosition,
 }: {
     ply: number;
-    whitePosition?: Position;
-    blackPosition?: Position;
+    whitePosition?: ChildPosition;
+    blackPosition?: ChildPosition;
 }) => {
     const whiteMoveRef = useRef<HTMLButtonElement>(null);
     const blackMoveRef = useRef<HTMLButtonElement>(null);
@@ -25,11 +25,11 @@ const MoveRow = ({
             goToPosition: x.goToPosition,
             isViewingWhite:
                 whitePosition &&
-                x.positionHistory.viewingPosition?.positionId ===
+                x.positionHistory.currentPosition.positionId ===
                     whitePosition.positionId,
             isViewingBlack:
                 blackPosition &&
-                x.positionHistory.viewingPosition?.positionId ===
+                x.positionHistory.currentPosition.positionId ===
                     blackPosition.positionId,
         }),
     );

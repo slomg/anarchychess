@@ -19,9 +19,10 @@ describe("PositionHistory", () => {
     describe("constructor", () => {
         it("should initialize with the given root pieces", () => {
             expect(history.root.pieces).toBe(rootPieces);
+            expect(history.root.ply).toBe(0);
             expect(history.mainPlyCount).toBe(0);
             expect(history.totalPlyCount).toBe(0);
-            expect(history.viewingPosition).toBeNull();
+            expect(history.currentNode).toBeNull();
             expect([...history].length).toBe(0);
         });
 
@@ -47,6 +48,26 @@ describe("PositionHistory", () => {
         });
     });
 
+    describe("currentPosition", () => {
+        it("should return root when not viewing a node", () => {
+            expect(history.currentPosition).toBe(history.root);
+        });
+
+        it("should return the current node when viewing a node", () => {
+            const pos = history.addNextPosition(createFakePositionProps());
+
+            expect(history.currentPosition).toBe(pos);
+        });
+
+        it("should return root again after going to start", () => {
+            history.addNextPosition(createFakePositionProps());
+
+            history.goToStart();
+
+            expect(history.currentPosition).toBe(history.root);
+        });
+    });
+
     describe("overrideRoot", () => {
         it("should replace the root pieces and reset viewing position", () => {
             history.addNextPosition(createFakePositionProps());
@@ -56,7 +77,8 @@ describe("PositionHistory", () => {
             history.overrideRoot({ pieces: newRootPieces });
 
             expect(history.root.pieces).toBe(newRootPieces);
-            expect(history.viewingPosition).toBeNull();
+            expect(history.root.ply).toBe(0);
+            expect(history.currentNode).toBeNull();
         });
 
         it("should clear history state after override", () => {
@@ -81,7 +103,7 @@ describe("PositionHistory", () => {
 
             expect(history.mainPlyCount).toBe(1);
             expect(history.totalPlyCount).toBe(1);
-            expect(history.viewingPosition).toBe(pos);
+            expect(history.currentNode).toBe(pos);
         });
 
         it("should use provided fen and sideToMove", () => {
@@ -108,10 +130,19 @@ describe("PositionHistory", () => {
             );
         });
 
-        it("should default sideToMove to white when not provided", () => {
-            history.overrideRoot({ pieces: rootPieces });
-            expect(history.root.sideToMove).toBe(GameColor.WHITE);
-        });
+        it.each([GameColor.WHITE, GameColor.BLACK])(
+            "should default sideToMove to previous root sideToMove when not provided",
+            (prevSideToMove) => {
+                const history = new PositionHistory({
+                    pieces: createFakeBoardPieces(),
+                    sideToMove: prevSideToMove,
+                });
+
+                history.overrideRoot({ pieces: rootPieces });
+
+                expect(history.root.sideToMove).toBe(prevSideToMove);
+            },
+        );
     });
 
     describe("getPositionWithPly", () => {
@@ -149,7 +180,7 @@ describe("PositionHistory", () => {
             ).toBeUndefined();
         });
 
-        it("should detect the first mainline position when viewingPosition is null", () => {
+        it("should detect the first mainline position when not viewing a position", () => {
             const firstPosition = history.addNextPosition(
                 createFakePositionProps(),
             );
@@ -161,7 +192,7 @@ describe("PositionHistory", () => {
             ).toBe(firstPosition);
         });
 
-        it("should detect a first mainline sub variation when viewingPosition is null", () => {
+        it("should detect a first mainline sub variation when not viewing a position", () => {
             history.addNextPosition(createFakePositionProps());
 
             history.goToStart();
@@ -176,7 +207,7 @@ describe("PositionHistory", () => {
             );
         });
 
-        it("should return false for an unknown key when viewingPosition is null", () => {
+        it("should return false for an unknown key when not viewing a position", () => {
             history.addNextPosition(createFakePositionProps());
             history.goToStart();
 
@@ -233,14 +264,14 @@ describe("PositionHistory", () => {
     });
 
     describe("isViewingLatestPosition", () => {
-        it("should return true when viewingPosition is the tail", () => {
+        it("should return true when viewing the tail", () => {
             history.addNextPosition(createFakePositionProps());
             history.addNextPosition(createFakePositionProps());
 
             expect(history.isViewingLatestPosition).toBe(true);
         });
 
-        it("should return false when viewingPosition is not the tail", () => {
+        it("should return false when not viewing the tail", () => {
             history.addNextPosition(createFakePositionProps());
             history.addNextPosition(createFakePositionProps());
 
@@ -269,10 +300,10 @@ describe("PositionHistory", () => {
 
             expect(result.success).toBe(true);
             expect(result.isOneStepForward).toBe(false);
-            expect(history.viewingPosition).toBe(pos1);
+            expect(history.currentNode).toBe(pos1);
         });
 
-        it("should detect one step forward when viewingPosition is null", () => {
+        it("should detect one step forward when not viewing a position", () => {
             const pos1 = history.addNextPosition(createFakePositionProps());
             history.addNextPosition(createFakePositionProps());
             history.goToStart();
@@ -325,7 +356,7 @@ describe("PositionHistory", () => {
             expect(result.isOneStepForward).toBe(false);
         });
 
-        it("should detect one step forward when viewingPosition is null", () => {
+        it("should detect one step forward when not viewing a position", () => {
             const pos1 = history.addNextPosition(createFakePositionProps());
             history.addNextPosition(createFakePositionProps());
             history.goToStart();
@@ -339,23 +370,23 @@ describe("PositionHistory", () => {
             history.addNextPosition(createFakePositionProps());
             const pos2 = history.addNextPosition(createFakePositionProps());
 
-            history.goToStart(); // viewingPosition is at root
+            history.goToStart();
 
             const result = history.goToPosition(pos2.positionId);
 
             expect(result.success).toBe(true);
             expect(result.isOneStepForward).toBe(false); // not the immediate next position
-            expect(history.viewingPosition).toBe(pos2);
+            expect(history.currentNode).toBe(pos2);
         });
     });
 
     describe("goToStart", () => {
-        it("should set viewingPosition to null", () => {
+        it("should set clear current node", () => {
             history.addNextPosition(createFakePositionProps());
             history.addNextPosition(createFakePositionProps());
 
             expect(history.goToStart()).toBe(true);
-            expect(history.viewingPosition).toBeNull();
+            expect(history.currentNode).toBeNull();
         });
 
         it("should return false if we're already at the end", () => {
@@ -379,12 +410,12 @@ describe("PositionHistory", () => {
 
             expect(result.success).toBe(true);
             expect(result.isOneStepForward).toBe(true);
-            expect(history.viewingPosition).toBe(pos3);
+            expect(history.currentNode).toBe(pos3);
         });
 
         it("should do nothing if history is empty", () => {
             history.goToStart();
-            expect(history.viewingPosition).toBeNull();
+            expect(history.currentNode).toBeNull();
         });
 
         it("should return false if already at the tail", () => {
@@ -395,7 +426,7 @@ describe("PositionHistory", () => {
             const result = history.goToEnd();
             expect(result.success).toBe(false);
             expect(result.isOneStepForward).toBe(false);
-            expect(history.viewingPosition).toBe(pos2);
+            expect(history.currentNode).toBe(pos2);
         });
 
         it("should return isOneStepForward false when jumping multiple moves ahead", () => {
@@ -408,27 +439,27 @@ describe("PositionHistory", () => {
 
             expect(result.success).toBe(true);
             expect(result.isOneStepForward).toBe(false);
-            expect(history.viewingPosition).toBe(pos3);
+            expect(history.currentNode).toBe(pos3);
         });
     });
 
     describe("stepBackward", () => {
-        it("should move viewingPosition backward along mainline", () => {
+        it("should move current node backward along mainline", () => {
             const pos1 = history.addNextPosition(createFakePositionProps());
             const pos2 = history.addNextPosition(createFakePositionProps());
             const pos3 = history.addNextPosition(createFakePositionProps());
 
             history.goToEnd();
-            expect(history.viewingPosition).toBe(pos3);
+            expect(history.currentNode).toBe(pos3);
 
             expect(history.stepBackward()).toBe(true);
-            expect(history.viewingPosition).toBe(pos2);
+            expect(history.currentNode).toBe(pos2);
 
             expect(history.stepBackward()).toBe(true);
-            expect(history.viewingPosition).toBe(pos1);
+            expect(history.currentNode).toBe(pos1);
 
             expect(history.stepBackward()).toBe(true);
-            expect(history.viewingPosition).toBe(null);
+            expect(history.currentNode).toBe(null);
         });
 
         it("should return false if history is empty", () => {
@@ -437,33 +468,33 @@ describe("PositionHistory", () => {
     });
 
     describe("stepForward", () => {
-        it("should move viewingPosition forward along mainline", () => {
+        it("should move current node forward along mainline", () => {
             const pos1 = history.addNextPosition(createFakePositionProps());
             const pos2 = history.addNextPosition(createFakePositionProps());
             const pos3 = history.addNextPosition(createFakePositionProps());
 
             history.goToPosition(pos1.positionId);
-            expect(history.viewingPosition).toBe(pos1);
+            expect(history.currentNode).toBe(pos1);
 
             expect(history.stepForward()).toBe(true);
-            expect(history.viewingPosition).toBe(pos2);
+            expect(history.currentNode).toBe(pos2);
 
             expect(history.stepForward()).toBe(true);
-            expect(history.viewingPosition).toBe(pos3);
+            expect(history.currentNode).toBe(pos3);
 
             // cannot go past tail
             expect(history.stepForward()).toBe(false);
-            expect(history.viewingPosition).toBe(pos3);
+            expect(history.currentNode).toBe(pos3);
         });
 
-        it("should go to first mainline position if viewingPosition is null", () => {
+        it("should go to first mainline position if not viewing a position", () => {
             const firstPosition = history.addNextPosition(
                 createFakePositionProps(),
             );
             history.goToStart();
 
             expect(history.stepForward()).toBe(true);
-            expect(history.viewingPosition).toBe(firstPosition);
+            expect(history.currentNode).toBe(firstPosition);
         });
 
         it("should return null if history is empty", () => {
@@ -479,7 +510,7 @@ describe("PositionHistory", () => {
             expect(pos).toEqual(expect.objectContaining(props));
             expect(history.mainPlyCount).toBe(1);
             expect(history.totalPlyCount).toBe(1);
-            expect(history.viewingPosition).toBe(pos);
+            expect(history.currentNode).toBe(pos);
             expect(history.getPositionWithPly(1)).toEqual(pos);
         });
 
@@ -490,7 +521,7 @@ describe("PositionHistory", () => {
             expect(history.mainPlyCount).toBe(2);
             expect(history.totalPlyCount).toBe(2);
             expect([...history]).toEqual([pos1, pos2]);
-            expect(history.viewingPosition).toBe(pos2);
+            expect(history.currentNode).toBe(pos2);
             expect(history.getPositionWithPly(2)).toEqual(pos2);
         });
 
@@ -502,7 +533,7 @@ describe("PositionHistory", () => {
             const duplicatePos = history.addNextPosition(props);
 
             expect(duplicatePos).toBe(pos);
-            expect(history.viewingPosition).toBe(pos);
+            expect(history.currentNode).toBe(pos);
             expect([...history]).toEqual([pos]);
         });
 
@@ -516,7 +547,7 @@ describe("PositionHistory", () => {
             const firstPositionVariation = history.addNextPosition(newProps);
 
             expect(firstPositionVariation).not.toBe(firstPosition);
-            expect(history.viewingPosition).toBe(firstPositionVariation);
+            expect(history.currentNode).toBe(firstPositionVariation);
             expect(history.mainPlyCount).toBe(1);
             expect(history.totalPlyCount).toBe(2);
             expect(history.getPositionWithPly(2)).toBeUndefined();
@@ -525,7 +556,7 @@ describe("PositionHistory", () => {
                 firstPositionVariation.positionId,
             );
             expect(retrieved.success).toBe(true);
-            expect(history.viewingPosition).toBe(firstPositionVariation);
+            expect(history.currentNode).toBe(firstPositionVariation);
             expect(history.rootSubVariationByKey).toEqual(
                 new Map([
                     [
@@ -537,7 +568,7 @@ describe("PositionHistory", () => {
 
             history.goToStart();
             expect(history.stepForward()).toBe(true);
-            expect(history.viewingPosition).toBe(firstPosition);
+            expect(history.currentNode).toBe(firstPosition);
         });
 
         it("should add a variation when viewing a non tail position", () => {
@@ -596,7 +627,7 @@ describe("PositionHistory", () => {
 
             expect(history.mainPlyCount).toBe(2);
             expect(history.totalPlyCount).toBe(3);
-            expect(history.viewingPosition).toBe(sideline);
+            expect(history.currentNode).toBe(sideline);
 
             expect([...history]).toEqual([main1, tail]);
 
@@ -614,7 +645,7 @@ describe("PositionHistory", () => {
 
             expect(history.totalPlyCount).toBe(3);
             expect(history.mainPlyCount).toBe(2);
-            expect(history.viewingPosition).toBe(variation);
+            expect(history.currentNode).toBe(variation);
 
             expect([...history]).toEqual([main1, tail]);
 
@@ -631,7 +662,7 @@ describe("PositionHistory", () => {
                 createFakePositionProps(),
             );
 
-            expect(history.viewingPosition).toBe(sub2);
+            expect(history.currentNode).toBe(sub2);
             expect(history.mainPlyCount).toBe(2);
             expect(history.totalPlyCount).toBe(4);
 
@@ -646,7 +677,7 @@ describe("PositionHistory", () => {
                 createFakePositionProps(),
             );
 
-            expect(history.viewingPosition).toBe(sub);
+            expect(history.currentNode).toBe(sub);
             expect(history.mainPlyCount).toBe(0);
             expect(history.totalPlyCount).toBe(1);
             expect([...history].length).toBe(0);

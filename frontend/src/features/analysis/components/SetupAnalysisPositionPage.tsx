@@ -137,10 +137,7 @@ const SetupAnalysisPositionPage = ({
                     onChange={(event) =>
                         setSetupModeSideToMove(event.target.value)
                     }
-                    value={
-                        positionHistory.viewingPosition?.sideToMove ??
-                        positionHistory.root.sideToMove
-                    }
+                    value={positionHistory.currentPosition.sideToMove}
                     data-testid="setupPositionSideToMove"
                 />
 

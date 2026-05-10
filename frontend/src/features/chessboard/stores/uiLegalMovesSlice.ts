@@ -15,7 +15,7 @@ export interface UiLegalMovesSliceProps {
 export interface UiLegalMovesSlice {
     hideLegalMoves: boolean;
 
-    hasLegalMovesForPosition(positionId?: PositionId): boolean;
+    hasLegalMovesForPosition(positionId: PositionId): boolean;
     setHideLegalMoves(value: boolean): void;
 
     getLegalMove(

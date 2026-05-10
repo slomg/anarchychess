@@ -172,14 +172,14 @@ describe("MoveVariation", () => {
         expect(e4Button).not.toHaveClass("bg-blue-300/30");
 
         await user.click(e4Button);
-        expect(chessboardStore.getState().positionHistory.viewingPosition).toBe(
+        expect(chessboardStore.getState().positionHistory.currentNode).toBe(
             pos1,
         );
         expect(e4Button).toHaveClass("bg-blue-300/30");
         expect(e5Button).not.toHaveClass("bg-blue-300/30");
 
         await user.click(e5Button);
-        expect(chessboardStore.getState().positionHistory.viewingPosition).toBe(
+        expect(chessboardStore.getState().positionHistory.currentNode).toBe(
             pos2,
         );
         expect(e5Button).toHaveClass("bg-blue-300/30");

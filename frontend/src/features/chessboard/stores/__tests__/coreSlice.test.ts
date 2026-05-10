@@ -51,7 +51,7 @@ describe("CoreSlice", () => {
             });
         });
 
-        it("should animate pieces from the old position if viewingPosition exists", async () => {
+        it("should animate pieces from the old position if viewing a position", async () => {
             const updatePiecesFromPositionMock = vi.fn();
             store.setState({
                 updatePiecesFromPosition: updatePiecesFromPositionMock,
@@ -74,7 +74,7 @@ describe("CoreSlice", () => {
             );
         });
 
-        it("should not call updatePiecesFromPosition if viewingPosition is undefined", async () => {
+        it("should not call updatePiecesFromPosition if not viewing a position", async () => {
             const updatePiecesFromPositionMock = vi.fn();
             store.setState({
                 updatePiecesFromPosition: updatePiecesFromPositionMock,

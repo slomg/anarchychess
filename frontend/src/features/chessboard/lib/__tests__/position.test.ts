@@ -21,7 +21,7 @@ describe("RootPositionNode", () => {
 
     beforeEach(() => {
         pieces = createFakeBoardPieces();
-        root = new RootPositionNode(pieces, fen, sideToMove);
+        root = new RootPositionNode({ pieces, fen, sideToMove, ply: 0 });
     });
 
     describe("constructor", () => {

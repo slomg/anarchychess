@@ -19,33 +19,32 @@ export interface RootPositionProps {
     sideToMove?: GameColor;
 }
 
-export interface RootPosition {
+export interface Position {
     positionId: PositionId;
     pieces: BoardPieces;
     fen: string;
     sideToMove: GameColor;
-}
-
-export interface Position {
-    pieces: BoardPieces;
-    fen: string;
-    sideToMove: GameColor;
-    move: Move;
-    san: string;
     ply: number;
 
-    positionId: PositionId;
-    variations: readonly Position[];
-    subVariationByKey: ReadonlyMap<MoveKey, Position>;
+    variations: readonly ChildPosition[];
+    subVariationByKey: ReadonlyMap<MoveKey, ChildPosition>;
+
+    isPositionNext(position: ChildPositionNode | null): boolean;
+    [Symbol.iterator](): IterableIterator<ChildPosition>;
+}
+
+export interface ChildPosition extends Position {
+    move: Move;
+    san: string;
 
     commitOvertimeRemoval(removeFrom: LogicalPoint): void;
-    [Symbol.iterator](): IterableIterator<Position>;
 }
 
 abstract class PositionNode {
     _pieces: BoardPieces;
     _fen: string;
     _sideToMove: GameColor;
+    _ply: number;
 
     _mainVariation: ChildPositionNode | null = null;
     _subVariationByKey: Map<MoveKey, ChildPositionNode> = new Map();
@@ -53,10 +52,21 @@ abstract class PositionNode {
 
     _positionId: PositionId = crypto.randomUUID() as PositionId;
 
-    constructor(pieces: BoardPieces, fen: string, sideToMove: GameColor) {
+    constructor({
+        pieces,
+        fen,
+        sideToMove,
+        ply,
+    }: {
+        pieces: BoardPieces;
+        fen: string;
+        sideToMove: GameColor;
+        ply: number;
+    }) {
         this._pieces = pieces;
         this._fen = fen;
         this._sideToMove = sideToMove;
+        this._ply = ply;
     }
 
     get pieces(): BoardPieces {
@@ -71,6 +81,10 @@ abstract class PositionNode {
         return this._sideToMove;
     }
 
+    get ply(): number {
+        return this._ply;
+    }
+
     get positionId(): PositionId {
         return this._positionId;
     }
@@ -79,11 +93,11 @@ abstract class PositionNode {
         return this._mainVariation;
     }
 
-    get variations(): readonly Position[] {
+    get variations(): readonly ChildPosition[] {
         return this._allVariations;
     }
 
-    get subVariationByKey(): ReadonlyMap<MoveKey, Position> {
+    get subVariationByKey(): ReadonlyMap<MoveKey, ChildPosition> {
         return this._subVariationByKey;
     }
 
@@ -145,17 +159,21 @@ abstract class PositionNode {
     }
 }
 
-export class RootPositionNode extends PositionNode implements RootPosition {}
+export class RootPositionNode extends PositionNode implements Position {}
 
-export class ChildPositionNode extends PositionNode implements Position {
+export class ChildPositionNode extends PositionNode implements ChildPosition {
     _move: Move;
     _san: string;
-    _ply: number;
 
     _parent: ChildPositionNode | null = null;
 
     constructor(props: PositionProps, parent: ChildPositionNode | null = null) {
-        super(props.pieces, props.fen, props.sideToMove);
+        super({
+            pieces: props.pieces,
+            fen: props.fen,
+            sideToMove: props.sideToMove,
+            ply: parent ? parent.ply + 1 : 1,
+        });
         this._parent = parent;
 
         this._pieces = new BoardPieces(props.pieces);
@@ -163,7 +181,6 @@ export class ChildPositionNode extends PositionNode implements Position {
         this._sideToMove = props.sideToMove;
         this._move = props.move;
         this._san = props.san;
-        this._ply = parent ? parent.ply + 1 : 1;
     }
 
     get move(): Move {
@@ -172,10 +189,6 @@ export class ChildPositionNode extends PositionNode implements Position {
 
     get san(): string {
         return this._san;
-    }
-
-    get ply(): number {
-        return this._ply;
     }
 
     get prev(): ChildPositionNode | null {

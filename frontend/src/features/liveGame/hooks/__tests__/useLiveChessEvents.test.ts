@@ -403,7 +403,7 @@ describe("useLiveChessEvents", () => {
                 );
             });
             const latestPosition =
-                chessboardStore.getState().positionHistory.viewingPosition!;
+                chessboardStore.getState().positionHistory.currentNode!;
             expect(latestPosition.move.overtimeRemovals.length).toBe(0);
 
             const move = await triggerMoveMade({ sideToMove: GameColor.BLACK });

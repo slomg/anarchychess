@@ -10,10 +10,10 @@ export default function useEnsureLegalMovesForViewedPosition(
 ) {
     useEffect(() => {
         const unsub = chessboardStore.subscribe(async (state, prev) => {
-            const viewingPosition = state.positionHistory.viewingPosition;
+            const currentPosition = state.positionHistory.currentPosition;
             if (
-                viewingPosition?.positionId ===
-                    prev.positionHistory.viewingPosition?.positionId &&
+                currentPosition.positionId ===
+                    prev.positionHistory.currentPosition.positionId &&
                 state.allowHistoryChanges === prev.allowHistoryChanges
             ) {
                 return;
@@ -21,14 +21,14 @@ export default function useEnsureLegalMovesForViewedPosition(
 
             if (
                 !state.allowHistoryChanges ||
-                state.hasLegalMovesForPosition(viewingPosition?.positionId)
+                state.hasLegalMovesForPosition(currentPosition.positionId)
             ) {
                 return;
             }
 
             const { error, data: movePaths } = await getNextLegalMoves({
                 query: {
-                    fen: viewingPosition?.fen ?? state.positionHistory.root.fen,
+                    fen: currentPosition.fen,
                 },
             });
             if (error || movePaths === undefined) {
@@ -42,7 +42,7 @@ export default function useEnsureLegalMovesForViewedPosition(
             const legalMoves = decodeMovePathIntoLegalMoves(movePaths);
             state.addLegalMovesForPosition(
                 legalMoves,
-                viewingPosition?.positionId,
+                currentPosition.positionId,
             );
         });
         return unsub;

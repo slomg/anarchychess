@@ -132,7 +132,7 @@ describe("handleMoveUpdate", () => {
             }
 
             expect(
-                chessboardStore.getState().positionHistory.viewingPosition,
+                chessboardStore.getState().positionHistory.currentNode,
             ).toEqual(
                 expect.objectContaining({
                     san: move.san,
@@ -159,7 +159,7 @@ describe("handleMoveUpdate", () => {
         } = chessboardStore.getState();
 
         expect(updatedPositionHistory.isViewingLatestPosition).toBe(true);
-        expect(updatedPositionHistory.viewingPosition?.pieces).toEqual(
+        expect(updatedPositionHistory.currentPosition.pieces).toEqual(
             updatedPieces,
         );
     });

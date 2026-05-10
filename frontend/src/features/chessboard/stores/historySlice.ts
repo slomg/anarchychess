@@ -1,15 +1,15 @@
 import { StateCreator } from "zustand";
 
+import { PositionProps, RootPositionProps } from "../lib/position";
 import PositionHistory from "../lib/positionHistory";
 import { ChessboardStore } from "./chessboardStore";
-import { PositionProps, RootPositionProps } from "../lib/position";
+import { ChildPosition } from "../lib/position";
 import { PositionId } from "../lib/position";
 import BoardPieces from "../lib/boardPieces";
-import { Position } from "../lib/position";
 import LegalMoves from "../lib/legalMoves";
 
 export interface HistorySliceProps {
-    legalMovesByPosition: Map<PositionId | undefined, LegalMoves>;
+    legalMovesByPosition: Map<PositionId, LegalMoves>;
     positionHistory?: PositionHistory;
     allowHistoryChanges?: boolean;
     pieces: BoardPieces;
@@ -17,7 +17,7 @@ export interface HistorySliceProps {
 
 export interface HistorySlice {
     positionHistory: PositionHistory;
-    legalMovesByPosition: Map<PositionId | undefined, LegalMoves>;
+    legalMovesByPosition: Map<PositionId, LegalMoves>;
     allowHistoryChanges: boolean;
 
     setPosition(positionId: PositionId): void;
@@ -28,17 +28,20 @@ export interface HistorySlice {
     goToStartPosition(): Promise<void>;
     goToLatestPosition(): Promise<void>;
 
-    addPosition(props: PositionProps, legalMoves?: LegalMoves): Position;
-    addLatestPosition(props: PositionProps, legalMoves?: LegalMoves): Position;
+    addPosition(props: PositionProps, legalMoves?: LegalMoves): ChildPosition;
+    addLatestPosition(
+        props: PositionProps,
+        legalMoves?: LegalMoves,
+    ): ChildPosition;
     addSidelinePosition(
         props: PositionProps,
         legalMoves?: LegalMoves,
-    ): Position;
+    ): ChildPosition;
 
     getViewedPositionLegalMoves(): LegalMoves;
     addLegalMovesForPosition(
         legalMoves: LegalMoves,
-        positionId?: PositionId,
+        positionId: PositionId,
     ): void;
     setLatestLegalMoves(legalMoves: LegalMoves): void;
     overrideRoot(props: RootPositionProps): void;
@@ -70,13 +73,13 @@ export function createHistorySlice(
         async goToPosition(positionId) {
             const { applyMoveAnimated, updatePieces } = get();
 
-            let position!: Position | null;
+            let position!: ChildPosition | null;
             let success!: boolean;
             let isOneStepForward!: boolean;
             set((state) => {
                 ({ success, isOneStepForward } =
                     state.positionHistory.goToPosition(positionId));
-                position = state.positionHistory.viewingPosition;
+                position = state.positionHistory.currentNode;
             });
 
             if (!success || !position) {
@@ -94,10 +97,10 @@ export function createHistorySlice(
             const { applyMoveAnimated } = get();
 
             let success!: boolean;
-            let position!: Position | null;
+            let position!: ChildPosition | null;
             set((state) => {
                 success = state.positionHistory.stepForward();
-                position = state.positionHistory.viewingPosition;
+                position = state.positionHistory.currentNode;
             });
 
             if (success && position) {
@@ -109,10 +112,10 @@ export function createHistorySlice(
             const { updatePieces } = get();
 
             let success!: boolean;
-            let position!: Position | null;
+            let position!: ChildPosition | null;
             set((state) => {
                 success = state.positionHistory.stepBackward();
-                position = state.positionHistory.viewingPosition;
+                position = state.positionHistory.currentNode;
             });
             if (!success) {
                 return;
@@ -141,13 +144,13 @@ export function createHistorySlice(
         async goToLatestPosition() {
             const { updatePieces, applyMoveAnimated } = get();
 
-            let position!: Position | null;
+            let position!: ChildPosition | null;
             let success!: boolean;
             let isOneStepForward!: boolean;
             set((state) => {
                 ({ success, isOneStepForward } =
                     state.positionHistory.goToEnd());
-                position = state.positionHistory.viewingPosition;
+                position = state.positionHistory.currentNode;
             });
 
             if (!success || !position) {
@@ -162,7 +165,7 @@ export function createHistorySlice(
         },
 
         addPosition(props, legalMoves) {
-            let position!: Position;
+            let position!: ChildPosition;
             set((state) => {
                 position = state.positionHistory.addNextPosition(props);
                 if (legalMoves) {
@@ -177,7 +180,7 @@ export function createHistorySlice(
         },
 
         addLatestPosition(props, legalMoves) {
-            let position!: Position;
+            let position!: ChildPosition;
             set((state) => {
                 state.positionHistory.goToEnd();
                 position = state.positionHistory.addNextPosition(props);
@@ -192,7 +195,7 @@ export function createHistorySlice(
         },
 
         addSidelinePosition(props, legalMoves) {
-            let position!: Position;
+            let position!: ChildPosition;
             set((state) => {
                 position = state.positionHistory.addNextSidelinePosition(props);
                 if (legalMoves) {
@@ -223,7 +226,7 @@ export function createHistorySlice(
 
             return (
                 legalMovesByPosition.get(
-                    positionHistory.viewingPosition?.positionId,
+                    positionHistory.currentPosition.positionId,
                 ) ?? LegalMoves.StableEmpty
             );
         },
@@ -238,7 +241,7 @@ export function createHistorySlice(
 
             addLegalMovesForPosition(
                 legalMoves,
-                positionHistory.viewingPosition?.positionId,
+                positionHistory.currentPosition.positionId,
             );
         },
 

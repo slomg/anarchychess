@@ -184,7 +184,7 @@ describe("processGameState", () => {
             });
         }
 
-        const lastPosition = positionHistory.viewingPosition!;
+        const lastPosition = positionHistory.currentNode!;
         const lastMove: MoveBounds = {
             from: lastPosition.move.from,
             to: lastPosition.move.to,
@@ -203,7 +203,7 @@ describe("processGameState", () => {
             gameState,
         );
 
-        const positionId = board.positionHistory!.viewingPosition?.positionId;
+        const positionId = board.positionHistory!.currentPosition.positionId;
         expect(board.legalMovesByPosition.get(positionId)).toEqual(
             decodeMovePathIntoLegalMoves(gameState.legalMoves),
         );

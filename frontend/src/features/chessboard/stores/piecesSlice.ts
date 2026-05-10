@@ -7,8 +7,8 @@ import { simulateMoveAnimated } from "../lib/simulateMove";
 import type { ChessboardStore } from "./chessboardStore";
 import { LogicalPoint } from "@/features/point/types";
 import { ScreenPoint } from "@/features/point/types";
+import { ChildPosition } from "../lib/position";
 import BoardPieces from "../lib/boardPieces";
-import { Position } from "../lib/position";
 import EventBus from "@/lib/eventBus";
 import { Move } from "../lib/types";
 
@@ -44,7 +44,7 @@ export interface PiecesSlice {
         isDoubleClick: boolean;
     }): Promise<{ success: boolean; needsDoubleClick?: boolean }>;
 
-    updatePiecesFromPosition(position: Position): Promise<void>;
+    updatePiecesFromPosition(position: ChildPosition): Promise<void>;
     updatePieces(newPieces: BoardPieces): Promise<void>;
     setImmediatePieces(pieces: BoardPieces): void;
 

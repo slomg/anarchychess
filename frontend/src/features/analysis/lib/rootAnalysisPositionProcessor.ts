@@ -21,7 +21,7 @@ export default function processRootAnalysis(
         pieces,
         positionHistory,
         legalMovesByPosition: new Map([
-            [positionHistory.viewingPosition?.positionId, legalMoves],
+            [positionHistory.currentPosition.positionId, legalMoves],
         ]),
 
         viewingFrom: GameColor.WHITE,

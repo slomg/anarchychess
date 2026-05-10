@@ -76,7 +76,7 @@ export function createChessboardProps(
     const legalMoves = decodeMovePathIntoLegalMoves(legalMovePaths);
 
     const positionHistory = getPositionHistory(initialFen, moveHistory);
-    const lastPosition = positionHistory.viewingPosition;
+    const lastPosition = positionHistory.currentNode;
 
     return {
         pieces: new BoardPieces(
@@ -85,7 +85,7 @@ export function createChessboardProps(
         positionHistory,
 
         legalMovesByPosition: new Map([
-            [positionHistory.viewingPosition?.positionId, legalMoves],
+            [positionHistory.currentPosition.positionId, legalMoves],
         ]),
         lastMove: lastPosition?.move && {
             from: lastPosition.move.from,

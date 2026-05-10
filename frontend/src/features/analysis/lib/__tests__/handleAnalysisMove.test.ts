@@ -168,7 +168,7 @@ describe("addAnalysisMove", () => {
         });
 
         expect(getNextAnalysisPositionMock).not.toHaveBeenCalled();
-        expect(chessboardStore.getState().positionHistory.viewingPosition).toBe(
+        expect(chessboardStore.getState().positionHistory.currentNode).toBe(
             existingPosition,
         );
     });

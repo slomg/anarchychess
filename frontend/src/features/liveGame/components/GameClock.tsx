@@ -22,7 +22,7 @@ const GameClock = ({ color }: { color: GameColor }) => {
     );
 
     const viewingPlyNumber = useChessboardStore(
-        (x) => x.positionHistory.viewingPosition?.ply ?? 0,
+        (x) => x.positionHistory.currentPosition.ply,
     );
     const snapshotTimeLeftMs = useLiveChessStore((x) => {
         const clockSnapshot = x.getClockSnapshot(viewingPlyNumber);
