@@ -50,7 +50,7 @@ const NewPiecesGuide = ({ id }: { id?: string }) => {
             />
 
             <GuideCard
-                title="Traitor Rook (Neutral Piece)"
+                title="Traitor Rook"
                 points={[
                     "Moves like a regular rook.",
                     "Controlled by whichever side has more ADJACENT pieces (NOT overall pieces on the board, just adjacent ones).",
