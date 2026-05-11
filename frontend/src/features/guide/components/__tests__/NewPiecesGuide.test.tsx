@@ -18,7 +18,7 @@ describe("NewPiecesGuide", () => {
             "Knook",
             "Underage Pawn",
             "Checker",
-            "Traitor Rook (Neutral Piece)",
+            "Traitor Rook",
             "Antiqueen",
         ];
 
