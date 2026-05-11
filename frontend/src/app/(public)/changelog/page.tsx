@@ -117,7 +117,7 @@ export default function ChangeLogPage() {
             <ChangeLogMonthDivider date="March 2026" />
 
             <ChangeLogCard type={ChangeLogType.FEATURE} date="March 20">
-                Added quest support to quests
+                Added guest support to quests
             </ChangeLogCard>
 
             <ChangeLogCard type={ChangeLogType.TWEAK} date="March 19">
