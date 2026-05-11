@@ -50,9 +50,13 @@ describe("LowerNavItems", () => {
     it("should render with the correct href when not authenticated", () => {
         render(<LowerNavItems isLoggedIn={false} isCollapsed={false} />);
 
-        expect(screen.queryByText("Guide")?.closest("a")).toHaveAttribute(
+        expect(screen.getByText("Guide").closest("a")).toHaveAttribute(
             "href",
             constants.PATHS.GUIDE,
+        );
+        expect(screen.getByText("Change Log").closest("a")).toHaveAttribute(
+            "href",
+            constants.PATHS.CHANGELOG,
         );
         expect(screen.queryByText("Settings")).not.toBeInTheDocument();
         expect(screen.queryByText("Logout")).not.toBeInTheDocument();
@@ -61,9 +65,13 @@ describe("LowerNavItems", () => {
     it("should render with the correct href when authenticated", () => {
         render(<LowerNavItems isLoggedIn={true} isCollapsed={false} />);
 
-        expect(screen.queryByText("Guide")?.closest("a")).toHaveAttribute(
+        expect(screen.getByText("Guide").closest("a")).toHaveAttribute(
             "href",
             constants.PATHS.GUIDE,
+        );
+        expect(screen.getByText("Change Log").closest("a")).toHaveAttribute(
+            "href",
+            constants.PATHS.CHANGELOG,
         );
         expect(screen.getByText("Settings").closest("a")).toHaveAttribute(
             "href",
