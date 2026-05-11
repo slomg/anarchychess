@@ -54,7 +54,7 @@ export default function ChangeLogPage() {
             </ChangeLogCard>
 
             <ChangeLogCard type={ChangeLogType.FIX} date="May 5">
-                Fixed a bug where different pawn types could promote to normal
+                Fixed a bug where different pawn types could promote to a normal
                 pawn
             </ChangeLogCard>
 
