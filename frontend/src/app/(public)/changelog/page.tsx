@@ -36,7 +36,7 @@ export default function ChangeLogPage() {
             <ChangeLogMonthDivider date="May 2026" />
 
             <ChangeLogCard type={ChangeLogType.FEATURE} date="May 11">
-                Added change log
+                Added a change log
             </ChangeLogCard>
 
             <ChangeLogCard type={ChangeLogType.FIX} date="May 11">
