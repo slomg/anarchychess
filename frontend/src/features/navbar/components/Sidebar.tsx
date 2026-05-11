@@ -6,10 +6,10 @@ import clsx from "clsx";
 import getSidebarCollapseWidthCls from "../lib/sidebarWidth";
 import { LowerNavItems, UpperNavItems } from "./NavItems";
 import LogoText from "@public/assets/logo-text.svg";
+import useCookieValue from "@/hooks/useCookieValue";
 import Logo from "@public/assets/logo-no-bg.svg";
 import constants from "@/lib/constants";
 import NavItem from "./NavItem";
-import useCookieValue from "@/hooks/useCookieValue";
 
 const Sidebar = ({
     isCollapsed,

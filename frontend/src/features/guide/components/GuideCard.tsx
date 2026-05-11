@@ -47,8 +47,8 @@ const GuideCard = ({
 
     return (
         <div
-            className="grid grid-rows-[auto_auto] items-center gap-5 rounded-md
-                bg-white/5 p-5 md:grid-cols-[auto_min-content] md:grid-rows-1"
+            className="bg-card grid grid-rows-[auto_auto] items-center gap-5
+                rounded-md p-5 md:grid-cols-[auto_min-content] md:grid-rows-1"
             id={id}
             data-testid="guideCard"
         >

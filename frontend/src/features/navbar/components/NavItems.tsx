@@ -10,10 +10,10 @@ import {
     MagnifyingGlassIcon,
     ArrowLeftEndOnRectangleIcon,
     BookOpenIcon,
+    CircleStackIcon,
 } from "@heroicons/react/24/outline";
 
 import { HeartIcon } from "@heroicons/react/16/solid";
-
 import Link from "next/link";
 
 import constants from "@/lib/constants";
@@ -148,6 +148,17 @@ export const LowerNavItems = ({
             >
                 Guide
             </NavItem>
+
+            <NavItem
+                as={Link}
+                prefetch={false}
+                href={constants.PATHS.CHANGELOG}
+                icon={<CircleStackIcon />}
+                isCollapsed={isCollapsed}
+            >
+                Change Log
+            </NavItem>
+
             {isLoggedIn && authedLinks}
         </>
     );

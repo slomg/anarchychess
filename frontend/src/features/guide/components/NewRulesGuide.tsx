@@ -39,11 +39,14 @@ import overtime1 from "@public/assets/examples/overtime1.png";
 import overtime2 from "@public/assets/examples/overtime2.png";
 
 import GuideCard from "@/features/guide/components/GuideCard";
-import Card from "@/components/ui/Card";
 
 const NewRulesGuide = ({ id }: { id?: string }) => {
     return (
-        <Card className="scroll-mt-5 gap-5 p-5" id={id}>
+        <section
+            className="flex flex-1 scroll-mt-5 flex-col justify-center gap-5
+                p-3"
+            id={id}
+        >
             <h2 className="text-6xl">New Rules</h2>
 
             <hr className="text-secondary/50" />
@@ -231,7 +234,7 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
                 ]}
                 images={[queenBetaDecay1, queenBetaDecay2]}
             />
-        </Card>
+        </section>
     );
 };
 

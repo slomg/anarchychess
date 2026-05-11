@@ -48,6 +48,7 @@ const PATHS = {
     SETTINGS_BASE: "/settings",
     SETTINGS_PROFILE: "/settings/profile",
     SETTINGS_SOCIAL: "/settings/social",
+    CHANGELOG: "/changelog",
     OAUTH: `${process.env.NEXT_PUBLIC_OAUTH_URL}/api/oauth/signin/`,
     TOS: "/tos",
     PRIVACY: "/privacy",
