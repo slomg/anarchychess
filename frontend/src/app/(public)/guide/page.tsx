@@ -8,7 +8,7 @@ export default function GuidePage() {
     return (
         <main className="flex flex-1 justify-center gap-3 p-5">
             <GuideSide piecesGuideHref="#pieces" rulesGuideHref="#rules" />
-            <div className="flex w-full max-w-7xl flex-1 flex-col gap-10">
+            <div className="flex w-full max-w-7xl flex-1 flex-col gap-5">
                 <NewPiecesGuide id="pieces" />
                 <NewRulesGuide id="rules" />
             </div>
