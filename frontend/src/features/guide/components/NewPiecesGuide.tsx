@@ -9,12 +9,15 @@ import checker2 from "@public/assets/examples/checker2.png";
 import checker3 from "@public/assets/examples/checker3.png";
 import knook1 from "@public/assets/examples/knook1.png";
 
-import Card from "@/components/ui/Card";
 import GuideCard from "./GuideCard";
 
 const NewPiecesGuide = ({ id }: { id?: string }) => {
     return (
-        <Card className="scroll-mt-5 gap-5 p-5" id={id}>
+        <section
+            className="flex flex-1 scroll-mt-5 flex-col justify-center gap-5
+                p-3"
+            id={id}
+        >
             <h2 className="text-6xl">New Pieces</h2>
 
             <hr className="text-secondary/50" />
@@ -68,7 +71,7 @@ const NewPiecesGuide = ({ id }: { id?: string }) => {
                 ]}
                 images={[antiqueen1]}
             />
-        </Card>
+        </section>
     );
 };
 
