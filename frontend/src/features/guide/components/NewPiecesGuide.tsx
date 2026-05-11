@@ -55,6 +55,7 @@ const NewPiecesGuide = ({ id }: { id?: string }) => {
                     "Moves like a regular rook.",
                     "Controlled by whichever side has more ADJACENT pieces (NOT overall pieces on the board, just adjacent ones).",
                     "If tied, both sides can move it but neither can capture with it.",
+                    "Stunned pieces don't count towards adjacency.",
                 ]}
                 images={[traitorRook1, traitorRook2, traitorRook3]}
             />
