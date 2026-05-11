@@ -5,6 +5,8 @@ export enum ChangeLogType {
     FIX,
     TWEAK,
     FEATURE,
+    IMPROVEMENT,
+    UPDATE,
 }
 
 export const CHANGELOG_TYPE_COLORS: Record<
@@ -15,6 +17,8 @@ export const CHANGELOG_TYPE_COLORS: Record<
     [ChangeLogType.FIX]: { background: "#0F2018", border: "#1A4028" },
     [ChangeLogType.TWEAK]: { background: "#221608", border: "#3A2A10" },
     [ChangeLogType.FEATURE]: { background: "#1A1228", border: "#2E1E48" },
+    [ChangeLogType.IMPROVEMENT]: { background: "#1A0B12", border: "#3c001a" },
+    [ChangeLogType.UPDATE]: { background: "#11161C", border: "#3C4A5A" },
 };
 
 const ChangeLogCard = ({
