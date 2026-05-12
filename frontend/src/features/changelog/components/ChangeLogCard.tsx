@@ -34,7 +34,7 @@ const ChangeLogCard = ({
 
     return (
         <Card className="gap-2">
-            <div className="text-text/80 flex items-center gap-2">
+            <div className="flex items-center gap-2">
                 <span
                     className="rounded border px-2 py-1"
                     style={{
@@ -44,7 +44,7 @@ const ChangeLogCard = ({
                 >
                     {ChangeLogType[type]}
                 </span>
-                <span>{date}</span>
+                <span className="text-text/80">{date}</span>
             </div>
 
             <p>{children}</p>
