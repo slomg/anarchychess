@@ -135,7 +135,7 @@ export default function ChangeLogPage() {
                 Added Lobotomized Anarchy Bot
             </ChangeLogCard>
 
-            <ChangeLogCard type={ChangeLogType.TWEAK} date="March 5">
+            <ChangeLogCard type={ChangeLogType.FEATURE} date="March 5">
                 Added navigation buttons to move history
             </ChangeLogCard>
 
