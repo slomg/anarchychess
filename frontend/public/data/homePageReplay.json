@@ -148,7 +148,7 @@
                         "id": "5b295cf6-35e4-4cd1-aff6-11586b52a094"
                     }
                 ],
-                "specialType": 6
+                "specialType": 7
             }
         ]
     },
@@ -180,7 +180,7 @@
                     { "x": 5, "y": 8 },
                     { "x": 5, "y": 7 }
                 ],
-                "specialType": 5,
+                "specialType": 6,
                 "promotesTo": 6
             }
         ]
