@@ -168,7 +168,10 @@ const BOT_DIALOGS: Record<BotType, BotDialogOptions> = {
         {
             startDialog: ["something something lobotomized anarchy bot? me?"],
             reactionDialog: REACTION_DIALOG,
-            generalDialog: GENERAL_DIALOG,
+            generalDialog: [
+                ...GENERAL_DIALOG,
+                "pieces ? for the ones in basic spots  how to you fit in in board, making it bigger ?",
+            ],
             botWinDialog: BOT_WIN_DIALOG,
             botLoseDialog: BOT_LOSE_DIALOG,
         },
@@ -176,9 +179,12 @@ const BOT_DIALOGS: Record<BotType, BotDialogOptions> = {
     ),
     [BotType.LOBOTOMIZED_LOBOTOMIZED_ANARCHY_BOT]: jumbleDialogOptions(
         {
-            reactionDialog: REACTION_DIALOG,
-            generalDialog: GENERAL_DIALOG,
             startDialog: ["i m anarchy bot?? play???"],
+            reactionDialog: REACTION_DIALOG,
+            generalDialog: [
+                ...GENERAL_DIALOG,
+                "pieces ? for the ones in basic spots  how to you fit in in board, making it bigger ?",
+            ],
             botWinDialog: BOT_WIN_DIALOG,
             botLoseDialog: BOT_LOSE_DIALOG,
         },
