@@ -69,6 +69,9 @@ dotnet restore
 
 4. Initialize & set secrets
 
+You can set google and discord OAuth to dummy values, but for login to work you need to create an app on https://discord.com/developers/applications and set the OAuth redirect to `https://localhost:7266/api/oauth/discord/callback`. \
+JWT secret can be whatever you want as long as it's at least 32 bytes (256 bits) long.
+
 ```bash
 dotnet user-secrets init
 
@@ -80,14 +83,14 @@ dotnet user-secrets set "AppSettings:Secrets:DiscordOAuth:ClientSecret" "<client
 
 dotnet user-secrets set "AppSettings:Secrets:JwtSecret" "<jwt-secret>"
 
-dotnet user-secrets set "AppSettings:Secrets:DatabaseConnString" "<connection-string>"
-dotnet user-secrets set "AppSettings:Secrets:BlobStorageConnString" "<connection-string>"
-dotnet user-secrets set "AppSettings:Secrets:RedisConnString" "<connection-string>"
+dotnet user-secrets set "AppSettings:Secrets:DatabaseConnString" "Host=localhost;Port=5432;Username=postgres;Password=postgres;Database=anarchychess;MaxPoolSize=15;"
+dotnet user-secrets set "AppSettings:Secrets:BlobStorageConnString" "azure.blob://emu"
+dotnet user-secrets set "AppSettings:Secrets:RedisConnString" "localhost,abortConnect=false"
 
-dotnet user-secrets set "AppSettings:Secrets:TableCheckpointerConnString" "<connection-string>"
-dotnet user-secrets set "AppSettings:Secrets:EventHubConnString" "<connection-string>"
-dotnet user-secrets set "AppSettings:Secrets:EventHubName" "<connection-string>"
-dotnet user-secrets set "AppSettings:Secrets:EventHubConsumerGroup" "<connection-string>"
+dotnet user-secrets set "AppSettings:Secrets:TableCheckpointerConnString" "UseDevelopmentStorage=true"
+dotnet user-secrets set "AppSettings:Secrets:EventHubConnString" "Endpoint=sb://localhost;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;"
+dotnet user-secrets set "AppSettings:Secrets:EventHubName" "eh1"
+dotnet user-secrets set "AppSettings:Secrets:EventHubConsumerGroup" "cg1"
 ```
 
 5. Run the backend server
