@@ -204,5 +204,33 @@ public class BitPawnDefinitionTestData : TheoryData<PieceTestCase>
                 .GoesTo("f3")
                 .WithDescription("Throws aren't generated beyond 4 depth deep")
         );
+
+        Add(
+            PieceTestCase
+                .From("f2", whitePawn)
+                .WithPieceAt("e1", whiteThrower)
+                .WithPieceAt("f1", whiteThrower)
+                .WithPieceAt("g1", whiteThrower)
+                .WithStun("e1")
+                .WithStun("f1")
+                .WithStun("g1")
+                .WithPieceAt("f6", blackTarget)
+                .GoesTo("f3")
+                .WithDescription("White stunned pieces can't be used to throw")
+        );
+
+        Add(
+            PieceTestCase
+                .From("f9", blackPawn)
+                .WithPieceAt("e10", blackThrower)
+                .WithPieceAt("f10", blackThrower)
+                .WithPieceAt("g10", blackThrower)
+                .WithStun("e10")
+                .WithStun("f10")
+                .WithStun("g10")
+                .WithPieceAt("f6", whiteTarget)
+                .GoesTo("f8")
+                .WithDescription("Black stunned pieces can't be used to throw")
+        );
     }
 }

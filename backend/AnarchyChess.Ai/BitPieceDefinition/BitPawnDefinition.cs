@@ -86,7 +86,7 @@ public sealed class BitPawnDefinition : IBitPieceDefinition
         }
     }
 
-    private static (UInt128, UInt128) GenerateWhiteThrowMask(
+    private static (UInt128 throwMask, UInt128 attackableSquares) GenerateWhiteThrowMask(
         BitBoard board,
         UInt128 positionBit,
         byte position,
@@ -97,33 +97,42 @@ public sealed class BitPawnDefinition : IBitPieceDefinition
 
         // forward
         UInt128 forwardThrower = (positionBit & BitboardConstants.BottomEdgeExcludeMask) >> 10;
-        if ((board.ValidWhiteThrowers & forwardThrower) != 0)
+        if (
+            (board.ValidWhiteThrowers & forwardThrower) != 0
+            && (board.StunnedPieces & forwardThrower) == 0
+        )
         {
             mask |= PieceMasks.WhiteThrowForwardMasks[position];
         }
 
         // right
         UInt128 rightThrower = (positionBit & BitboardConstants.BottomLeftEdgeExcludeMask) >> 11;
-        if ((board.ValidWhiteThrowers & rightThrower) != 0)
+        if (
+            (board.ValidWhiteThrowers & rightThrower) != 0
+            && (board.StunnedPieces & rightThrower) == 0
+        )
         {
             mask |= PieceMasks.WhiteThrowRightMasks[position];
         }
 
         // left
         UInt128 leftThrower = (positionBit & BitboardConstants.BottomRightEdgeExcludeMask) >> 9;
-        if ((board.ValidWhiteThrowers & leftThrower) != 0)
+        if (
+            (board.ValidWhiteThrowers & leftThrower) != 0
+            && (board.StunnedPieces & leftThrower) == 0
+        )
         {
             mask |= PieceMasks.WhiteThrowLeftMasks[position];
         }
 
         return (
-            mask,
-            ((nonPawnEnemies & BitboardConstants.RightEdgeExcludeMask) >> 9)
+            throwMask: mask,
+            attackableSquares: ((nonPawnEnemies & BitboardConstants.RightEdgeExcludeMask) >> 9)
                 | ((nonPawnEnemies & BitboardConstants.LeftEdgeExcludeMask) >> 11)
         );
     }
 
-    private static (UInt128, UInt128) GenerateBlackThrowMask(
+    private static (UInt128 throwMask, UInt128 attackableSquares) GenerateBlackThrowMask(
         BitBoard board,
         UInt128 positionBit,
         byte position,
@@ -134,28 +143,37 @@ public sealed class BitPawnDefinition : IBitPieceDefinition
 
         // forward
         UInt128 forwardThrower = (positionBit & BitboardConstants.TopEdgeExcludeMask) << 10;
-        if ((board.ValidBlackThrowers & forwardThrower) != 0)
+        if (
+            (board.ValidBlackThrowers & forwardThrower) != 0
+            && (board.StunnedPieces & forwardThrower) == 0
+        )
         {
             mask |= PieceMasks.BlackThrowForwardMasks[position];
         }
 
         // right
         UInt128 rightThrower = (positionBit & BitboardConstants.TopLeftEdgeExcludeMask) << 9;
-        if ((board.ValidBlackThrowers & rightThrower) != 0)
+        if (
+            (board.ValidBlackThrowers & rightThrower) != 0
+            && (board.StunnedPieces & rightThrower) == 0
+        )
         {
             mask |= PieceMasks.BlackThrowRightMasks[position];
         }
 
         // left
         UInt128 leftThrower = (positionBit & BitboardConstants.TopRightEdgeExcludeMask) << 11;
-        if ((board.ValidBlackThrowers & leftThrower) != 0)
+        if (
+            (board.ValidBlackThrowers & leftThrower) != 0
+            && (board.StunnedPieces & leftThrower) == 0
+        )
         {
             mask |= PieceMasks.BlackThrowLeftMasks[position];
         }
 
         return (
-            mask,
-            ((nonPawnEnemies & BitboardConstants.RightEdgeExcludeMask) << 11)
+            throwMask: mask,
+            attackableSquares: ((nonPawnEnemies & BitboardConstants.RightEdgeExcludeMask) << 11)
                 | ((nonPawnEnemies & BitboardConstants.LeftEdgeExcludeMask) << 9)
         );
     }
