@@ -36,7 +36,7 @@ export default function ChangeLogPage() {
             <ChangeLogMonthDivider date="May 2026" />
 
             <ChangeLogCard type={ChangeLogType.FIX} date="May 13">
-                Fix a bug where anarchybot thought it could use stunned pieces
+                Fixed a bug where anarchybot thought it could use stunned pieces
                 to throw pawns
             </ChangeLogCard>
 
