@@ -139,13 +139,7 @@ npm run dev
 CREATE DATABASE anarchychess;
 ```
 
-2. Set the connection string
-
-```bash
-dotnet user-secrets set "AppSettings:Secrets:DatabaseConnString" "<connection-string>"
-```
-
-3. Run Orleans SQL Setup Scripts
+2. Run Orleans SQL Setup Scripts
 
 Run these scripts in order against your database:
 
@@ -158,7 +152,7 @@ backend/Scripts/Orleans
 |- 005-streaming.sql
 ```
 
-4. Apply EF Core migrations
+3. Apply EF Core migrations
 
 In development the backend automatically applies migrations on startup. Otherwise, run
 
