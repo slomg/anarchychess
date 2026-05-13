@@ -47,19 +47,27 @@ Anarchy Bot is the AI used on Anarchy Chess, built from scratch.
 
 ## Backend Setup
 
-1. Navigate to the backend directory
+1. Run the docker compose
+
+```bash
+cd docker-compose
+docker compose up -d
+cd ..
+```
+
+2. Navigate to the backend directory
 
 ```bash
 cd backend/AnarchyChess.Api
 ```
 
-2. Restore dependencies
+3. Restore dependencies
 
 ```bash
 dotnet restore
 ```
 
-3. Initialize & set secrets
+4. Initialize & set secrets
 
 ```bash
 dotnet user-secrets init
@@ -82,7 +90,7 @@ dotnet user-secrets set "AppSettings:Secrets:EventHubName" "<connection-string>"
 dotnet user-secrets set "AppSettings:Secrets:EventHubConsumerGroup" "<connection-string>"
 ```
 
-4. Run the backend server
+5. Run the backend server
 
 ```bash
 dotnet run
