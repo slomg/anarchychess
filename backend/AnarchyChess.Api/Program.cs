@@ -556,6 +556,7 @@ builder
 
 #region Vote
 builder.Services.AddScoped<IVoteRepository, VoteRepository>();
+builder.Services.AddScoped<IVoteService, VoteService>();
 #endregion
 
 builder.Services.AddSingleton<IShardRouter, ShardRouter>();

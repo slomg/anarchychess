@@ -83,4 +83,8 @@ public static class ErrorCodes
     public const string BotOffline = "Bot.Offline";
     public const string BotNoMove = "Bot.NoMove";
     public const string BotFailure = "Bot.Failure";
+
+    public const string VoteNoUnseenPairFound = "Vote.NoUnSeenPairFound";
+    public const string VoteNoPendingVote = "Vote.NoPendingVote";
+    public const string VoteInvalid = "Vote.Invalid";
 }
