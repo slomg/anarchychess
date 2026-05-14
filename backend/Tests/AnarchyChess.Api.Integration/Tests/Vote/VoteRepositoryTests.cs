@@ -132,7 +132,7 @@ public class VoteRepositoryTests : BaseIntegrationTest
         var pair1 = new VoteOptionPairFaker().Generate();
         var pair2 = new VoteOptionPairFaker().Generate();
         var vote1 = new UserVoteFaker(pair: pair1).Generate();
-        var vote2 = new UserVoteFaker(userId: vote1.UserId, pair: pair1).Generate();
+        var vote2 = new UserVoteFaker(userId: vote1.UserId, pair: pair2).Generate();
         await DbContext.AddRangeAsync(pair1, pair2, vote1, vote2);
         await DbContext.SaveChangesAsync(CT);
 
