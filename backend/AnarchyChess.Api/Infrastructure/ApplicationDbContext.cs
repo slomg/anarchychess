@@ -8,6 +8,7 @@ using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Quests.Entities;
 using AnarchyChess.Api.Social.Entities;
 using AnarchyChess.Api.UserRating.Entities;
+using AnarchyChess.Api.Vote.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -34,11 +35,20 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public required DbSet<UserQuestPoints> QuestPoints { get; set; }
 
+    public required DbSet<UserVote> UserVotes { get; set; }
+    public required DbSet<PendingUserVote> PendingUserVotes { get; set; }
+    public required DbSet<VoteOptionPair> VoteOptionPairs { get; set; }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.Entity<StarredUser>().Navigation(x => x.Starred).AutoInclude();
         builder.Entity<BlockedUser>().Navigation(x => x.Blocked).AutoInclude();
         builder.Entity<UserQuestPoints>().Navigation(x => x.User).AutoInclude();
+
+        builder.Entity<UserVote>().Navigation(x => x.VotePair).AutoInclude();
+        builder.Entity<PendingUserVote>().Navigation(x => x.VotePair).AutoInclude();
+        builder.Entity<VoteOptionPair>().Navigation(x => x.OptionA).AutoInclude();
+        builder.Entity<VoteOptionPair>().Navigation(x => x.OptionB).AutoInclude();
 
         base.OnModelCreating(builder);
     }

@@ -554,6 +554,10 @@ builder
     );
 #endregion
 
+#region Vote
+builder.Services.AddScoped<IVoteRepository, VoteRepository>();
+#endregion
+
 builder.Services.AddSingleton<IShardRouter, ShardRouter>();
 builder.Services.AddSingleton<IRandomCodeGenerator, RandomCodeGenerator>();
 builder.Services.AddSingleton<IRandomProvider, RandomProvider>();
