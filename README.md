@@ -142,7 +142,15 @@ NEXT_PUBLIC_OAUTH_URL="https://localhost:7266"
 NEXT_PUBLIC_ASSETS_URL="http://127.0.0.1:10000/devstoreaccount1/assets"
 ```
 
-4. Upload pieces and sfx to your blob storage emulator (upload `/sfx` to `/assets/sfx`, `/pieces/full-png` to `/assets/pieces` and `/pieces/full-material` to `/assets/material-pieces`)
+4. Upload pieces and sfx to the azure blob storage emulator (included in the docker compose):
+
+- `/sfx` -> `/assets/sfx`
+- `/pieces/full-png` -> `/assets/pieces`
+- `/pieces/material-png` -> `/assets/material-pieces`
+
+In production, these assets are not served from next.js public folder.
+Instead they are hosted in blob storage behind a CDN because every request to `/public` assets on vercel is counted as an edge request.
+Since these files are accessed frequently, hosting them on blob storage saves money.
 
 5. Let node trust aspnet dev certificates
 
