@@ -45,29 +45,49 @@ Anarchy Bot is the AI used on Anarchy Chess, built from scratch.
 
 # Running Locally
 
-## Backend Setup
-
-1. Run the docker compose
+First, run the docker compose
 
 ```bash
 cd docker-compose
 docker compose up -d
-cd ..
 ```
 
-2. Navigate to the backend directory
+## Database Setup
+
+1. Create a database
+
+```sql
+CREATE DATABASE anarchychess;
+```
+
+2. Run Orleans SQL Setup Scripts
+
+Run these scripts in order against your database:
+
+```bash
+backend/Scripts/Orleans
+|- 001-query.sql
+|- 002-reminders.sql
+|- 003-storage.sql
+|- 004-clustering.sql
+|- 005-streaming.sql
+```
+
+## Backend Setup
+
+1. Navigate to the backend directory
 
 ```bash
 cd backend/AnarchyChess.Api
 ```
 
-3. Restore dependencies
+2. Restore dependencies
 
 ```bash
 dotnet restore
 ```
 
-4. Initialize & set secrets
+3. Initialize & set secrets
 
 You can set google and discord OAuth to dummy values, but for login to work you need to create an app on https://discord.com/developers/applications and set the OAuth redirect to `https://localhost:7266/api/oauth/discord/callback`. \
 JWT secret can be whatever you want as long as it's at least 32 bytes (256 bits) long.
@@ -93,7 +113,7 @@ dotnet user-secrets set "AppSettings:Secrets:EventHubName" "eh1"
 dotnet user-secrets set "AppSettings:Secrets:EventHubConsumerGroup" "cg1"
 ```
 
-5. Run the backend server
+4. Run the backend server
 
 ```bash
 dotnet run
@@ -129,35 +149,6 @@ NEXT_PUBLIC_ASSETS_URL="http://127.0.0.1:10000/devstoreaccount1/assets"
 
 ```bash
 npm run dev
-```
-
-## Database Setup
-
-1. Create a database
-
-```sql
-CREATE DATABASE anarchychess;
-```
-
-2. Run Orleans SQL Setup Scripts
-
-Run these scripts in order against your database:
-
-```bash
-backend/Scripts/Orleans
-|- 001-query.sql
-|- 002-reminders.sql
-|- 003-storage.sql
-|- 004-clustering.sql
-|- 005-streaming.sql
-```
-
-3. Apply EF Core migrations
-
-In development the backend automatically applies migrations on startup. Otherwise, run
-
-```bash
-dotnet ef database update
 ```
 
 # Running Tests
