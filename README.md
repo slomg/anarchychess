@@ -152,6 +152,8 @@ In production, these assets are not served from next.js public folder.
 Instead they are hosted in blob storage behind a CDN because every request to `/public` assets on vercel is counted as an edge request.
 Since these files are accessed frequently, hosting them on blob storage saves money.
 
+You also need to make sure the assets blob container has a read public access level, and configure blob container cors settings.
+
 5. Let node trust aspnet dev certificates
 
 ```bash
