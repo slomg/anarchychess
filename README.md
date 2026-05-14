@@ -70,7 +70,6 @@ backend/Scripts/Orleans
 |- 002-reminders.sql
 |- 003-storage.sql
 |- 004-clustering.sql
-|- 005-streaming.sql
 ```
 
 ## Backend Setup
@@ -135,7 +134,7 @@ npm install
 
 3. Setup environment variables
 
-    Create a .env file:
+Create a .env file:
 
 ```
 NEXT_PUBLIC_API_URL="https://localhost:7266"
@@ -145,7 +144,29 @@ NEXT_PUBLIC_ASSETS_URL="http://127.0.0.1:10000/devstoreaccount1/assets"
 
 4. Upload pieces and sfx to your blob storage emulator (upload `/sfx` to `/assets/sfx`, `/pieces/full-png` to `/assets/pieces` and `/pieces/full-material` to `/assets/material-pieces`)
 
-5. Run the development server:
+5. Let node trust aspnet dev certificates
+
+```bash
+dotnet dev-certs https --trust
+dotnet dev-certs https --export-path <path to wherever you'd like to store certs>/localhost.crt --format Pem
+```
+
+Then set a permanent environment variable `NODE_EXTRA_CA_CERTS` pointing to the path of the cert
+
+windows:
+
+```cmd
+setx NODE_EXTRA_CA_CERTS "C:\path\to\localhost.crt"
+```
+
+bash:
+
+```bash
+echo 'export NODE_EXTRA_CA_CERTS="$HOME/path/to/localhost.crt"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+6. Run the development server:
 
 ```bash
 npm run dev
