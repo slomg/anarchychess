@@ -34,12 +34,12 @@ public class VoteServiceTests : BaseIntegrationTest
         result.IsError.Should().BeFalse();
         PendingUserVoteDto expected = new(
             new VoteOptionDto(
-                pending.VotePair.OptionA.Id,
+                pending.VotePair.OptionA.Key,
                 pending.VotePair.OptionA.Name,
                 pending.VotePair.OptionA.Description
             ),
             new VoteOptionDto(
-                pending.VotePair.OptionB.Id,
+                pending.VotePair.OptionB.Key,
                 pending.VotePair.OptionB.Name,
                 pending.VotePair.OptionB.Description
             )
@@ -75,8 +75,8 @@ public class VoteServiceTests : BaseIntegrationTest
         inDb.VotePair.Id.Should().Be(pair.Id);
 
         var expected = new PendingUserVoteDto(
-            new VoteOptionDto(pair.OptionA.Id, pair.OptionA.Name, pair.OptionA.Description),
-            new VoteOptionDto(pair.OptionB.Id, pair.OptionB.Name, pair.OptionB.Description)
+            new VoteOptionDto(pair.OptionA.Key, pair.OptionA.Name, pair.OptionA.Description),
+            new VoteOptionDto(pair.OptionB.Key, pair.OptionB.Name, pair.OptionB.Description)
         );
 
         result.Value.Should().BeEquivalentTo(expected);
@@ -118,8 +118,8 @@ public class VoteServiceTests : BaseIntegrationTest
 
         result.IsError.Should().BeFalse();
 
-        result.Value.OptionA.OptionId.Should().Be(pair2.OptionA.Id);
-        result.Value.OptionB.OptionId.Should().Be(pair2.OptionB.Id);
+        result.Value.OptionA.OptionKey.Should().Be(pair2.OptionA.Key);
+        result.Value.OptionB.OptionKey.Should().Be(pair2.OptionB.Key);
     }
 
     [Fact]
@@ -127,7 +127,7 @@ public class VoteServiceTests : BaseIntegrationTest
     {
         var user = new AuthedUserFaker().Generate();
 
-        var result = await _voteService.CompleteVoteAsync(user.Id, IP, 123, CT);
+        var result = await _voteService.CompleteVoteAsync(user.Id, IP, "option key", CT);
 
         result.IsError.Should().BeTrue();
         result.FirstError.Should().Be(VoteErrors.NoPendingVote);
@@ -140,7 +140,7 @@ public class VoteServiceTests : BaseIntegrationTest
         await DbContext.AddAsync(pending, CT);
         await DbContext.SaveChangesAsync(CT);
 
-        var result = await _voteService.CompleteVoteAsync(pending.UserId, IP, 999999, CT);
+        var result = await _voteService.CompleteVoteAsync(pending.UserId, IP, "option key", CT);
 
         result.IsError.Should().BeTrue();
         result.FirstError.Should().Be(VoteErrors.InvalidVote);
@@ -156,7 +156,7 @@ public class VoteServiceTests : BaseIntegrationTest
         var result = await _voteService.CompleteVoteAsync(
             pending.UserId,
             IP,
-            pending.VotePair.OptionA.Id,
+            pending.VotePair.OptionA.Key,
             CT
         );
 
@@ -193,7 +193,7 @@ public class VoteServiceTests : BaseIntegrationTest
         var result = await _voteService.CompleteVoteAsync(
             guestId,
             IP,
-            pending.VotePair.OptionA.Id,
+            pending.VotePair.OptionA.Key,
             CT
         );
 
@@ -214,7 +214,7 @@ public class VoteServiceTests : BaseIntegrationTest
         var result = await _voteService.CompleteVoteAsync(
             pending.UserId,
             IP,
-            pending.VotePair.OptionB.Id,
+            pending.VotePair.OptionB.Key,
             CT
         );
 

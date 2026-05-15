@@ -3,6 +3,7 @@ using AnarchyChess.Api.Shared.Services;
 using AnarchyChess.Api.Vote.DTOs;
 using AnarchyChess.Api.Vote.Entities;
 using AnarchyChess.Api.Vote.Errors;
+using AnarchyChess.Api.Vote.Models;
 using AnarchyChess.Api.Vote.Repositories;
 using ErrorOr;
 
@@ -13,7 +14,7 @@ public interface IVoteService
     Task<ErrorOr<Success>> CompleteVoteAsync(
         UserId userId,
         string ip,
-        int voteOptionId,
+        VoteOptionKey voteOptionKey,
         CancellationToken token = default
     );
     Task<ErrorOr<PendingUserVoteDto>> SelectNextPairAsync(
@@ -63,7 +64,7 @@ public class VoteService(IVoteRepository voteRepository, IUnitOfWork unitOfWork)
     public async Task<ErrorOr<Success>> CompleteVoteAsync(
         UserId userId,
         string ip,
-        int voteOptionId,
+        VoteOptionKey voteOptionKey,
         CancellationToken token = default
     )
     {
@@ -74,8 +75,8 @@ public class VoteService(IVoteRepository voteRepository, IUnitOfWork unitOfWork)
         }
 
         if (
-            voteOptionId != pendingVote.VotePair.OptionA.Id
-            && voteOptionId != pendingVote.VotePair.OptionB.Id
+            voteOptionKey != pendingVote.VotePair.OptionAKey
+            && voteOptionKey != pendingVote.VotePair.OptionBKey
         )
         {
             return VoteErrors.InvalidVote;
@@ -89,7 +90,7 @@ public class VoteService(IVoteRepository voteRepository, IUnitOfWork unitOfWork)
                 IpAddress = ip,
                 VotePairId = pendingVote.VotePair.Id,
                 VotePair = pendingVote.VotePair,
-                PickedOptionA = voteOptionId == pendingVote.VotePair.OptionA.Id,
+                PickedOptionA = voteOptionKey == pendingVote.VotePair.OptionAKey,
                 VoteWeight = userId.IsAuthed ? AuthedWeight : GuestWeight,
             }
         );

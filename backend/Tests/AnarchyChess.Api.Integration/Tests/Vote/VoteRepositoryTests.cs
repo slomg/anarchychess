@@ -1,5 +1,6 @@
 ﻿using AnarchyChess.Api.TestInfrastructure;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
+using AnarchyChess.Api.Vote.Entities;
 using AnarchyChess.Api.Vote.Repositories;
 using AwesomeAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -86,6 +87,41 @@ public class VoteRepositoryTests : BaseIntegrationTest
         var db = await DbContext.UserVotes.AsNoTracking().SingleAsync(CT);
 
         db.Should().BeEquivalentTo(vote);
+    }
+
+    [Fact]
+    public async Task BulkAddVoteOptionsIfNotExistAsync_adds_options()
+    {
+        await DbContext.VoteOptions.ExecuteDeleteAsync(CT);
+
+        var options = new VoteOptionFaker().Generate(3);
+
+        await _repository.BulkAddVoteOptionsIfNotExistAsync(options, CT);
+        await _repository.BulkAddVoteOptionsIfNotExistAsync(options, CT);
+
+        var db = await DbContext.VoteOptions.AsNoTracking().ToListAsync(CT);
+
+        db.Should().BeEquivalentTo(options);
+    }
+
+    [Fact]
+    public async Task BulkAddVoteOptionPairsIfNotExistAsync_adds_pairs()
+    {
+        await DbContext.VoteOptionPairs.ExecuteDeleteAsync(CT);
+
+        var pairs = new VoteOptionPairFaker().Generate(3);
+
+        await _repository.BulkAddVoteOptionsIfNotExistAsync(
+            pairs.SelectMany(x => new VoteOption[] { x.OptionA, x.OptionB }),
+            CT
+        );
+
+        await _repository.BulkAddVoteOptionPairsIfNotExistAsync(pairs, CT);
+        await _repository.BulkAddVoteOptionPairsIfNotExistAsync(pairs, CT);
+
+        var db = await DbContext.VoteOptionPairs.AsNoTracking().ToListAsync(CT);
+
+        db.Should().BeEquivalentTo(pairs, options => options.Excluding(x => x.Id));
     }
 
     [Fact]

@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AnarchyChess.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260514164130_Vote")]
+    [Migration("20260515121833_Vote")]
     partial class Vote
     {
         /// <inheritdoc />
@@ -522,12 +522,9 @@ namespace AnarchyChess.Api.Migrations
 
             modelBuilder.Entity("AnarchyChess.Api.Vote.Entities.VoteOption", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<string>("Key")
+                        .HasColumnType("text")
+                        .HasColumnName("key");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -539,10 +536,10 @@ namespace AnarchyChess.Api.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name");
 
-                    b.HasKey("Id")
-                        .HasName("pk_vote_option");
+                    b.HasKey("Key")
+                        .HasName("pk_vote_options");
 
-                    b.ToTable("vote_option", (string)null);
+                    b.ToTable("vote_options", (string)null);
                 });
 
             modelBuilder.Entity("AnarchyChess.Api.Vote.Entities.VoteOptionPair", b =>
@@ -554,22 +551,25 @@ namespace AnarchyChess.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("OptionAId")
-                        .HasColumnType("integer")
-                        .HasColumnName("option_a_id");
+                    b.Property<string>("OptionAKey")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("option_a_key");
 
-                    b.Property<int>("OptionBId")
-                        .HasColumnType("integer")
-                        .HasColumnName("option_b_id");
+                    b.Property<string>("OptionBKey")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("option_b_key");
 
                     b.HasKey("Id")
                         .HasName("pk_vote_option_pairs");
 
-                    b.HasIndex("OptionAId")
-                        .HasDatabaseName("ix_vote_option_pairs_option_a_id");
+                    b.HasIndex("OptionBKey")
+                        .HasDatabaseName("ix_vote_option_pairs_option_b_key");
 
-                    b.HasIndex("OptionBId")
-                        .HasDatabaseName("ix_vote_option_pairs_option_b_id");
+                    b.HasIndex("OptionAKey", "OptionBKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_vote_option_pairs_option_a_key_option_b_key");
 
                     b.ToTable("vote_option_pairs", (string)null);
                 });
@@ -835,17 +835,17 @@ namespace AnarchyChess.Api.Migrations
                 {
                     b.HasOne("AnarchyChess.Api.Vote.Entities.VoteOption", "OptionA")
                         .WithMany()
-                        .HasForeignKey("OptionAId")
+                        .HasForeignKey("OptionAKey")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_vote_option_pairs_vote_option_option_a_id");
+                        .HasConstraintName("fk_vote_option_pairs_vote_options_option_a_key");
 
                     b.HasOne("AnarchyChess.Api.Vote.Entities.VoteOption", "OptionB")
                         .WithMany()
-                        .HasForeignKey("OptionBId")
+                        .HasForeignKey("OptionBKey")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_vote_option_pairs_vote_option_option_b_id");
+                        .HasConstraintName("fk_vote_option_pairs_vote_options_option_b_key");
 
                     b.Navigation("OptionA");
 

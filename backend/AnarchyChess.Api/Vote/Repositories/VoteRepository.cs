@@ -1,6 +1,7 @@
 ﻿using AnarchyChess.Api.Infrastructure;
 using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Vote.Entities;
+using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace AnarchyChess.Api.Vote.Repositories;
@@ -19,6 +20,14 @@ public interface IVoteRepository
     );
     void RemovePendingUserVote(PendingUserVote pendingVote);
     void AddPendingUserVote(PendingUserVote pendingVote);
+    Task BulkAddVoteOptionPairsIfNotExistAsync(
+        IEnumerable<VoteOptionPair> pairs,
+        CancellationToken token = default
+    );
+    Task BulkAddVoteOptionsIfNotExistAsync(
+        IEnumerable<VoteOption> options,
+        CancellationToken token = default
+    );
 }
 
 public class VoteRepository(ApplicationDbContext dbContext) : IVoteRepository
@@ -37,6 +46,37 @@ public class VoteRepository(ApplicationDbContext dbContext) : IVoteRepository
         _dbContext.PendingUserVotes.Remove(pendingVote);
 
     public void AddUserVote(UserVote vote) => _dbContext.UserVotes.Add(vote);
+
+    public Task BulkAddVoteOptionPairsIfNotExistAsync(
+        IEnumerable<VoteOptionPair> pairs,
+        CancellationToken token = default
+    ) =>
+        _dbContext.BulkInsertOrUpdateAsync(
+            pairs,
+            config =>
+            {
+                config.PropertiesToInclude = [];
+                config.UpdateByProperties =
+                [
+                    nameof(VoteOptionPair.OptionAKey),
+                    nameof(VoteOptionPair.OptionBKey),
+                ];
+            },
+            cancellationToken: token
+        );
+
+    public Task BulkAddVoteOptionsIfNotExistAsync(
+        IEnumerable<VoteOption> options,
+        CancellationToken token = default
+    ) =>
+        _dbContext.BulkInsertOrUpdateAsync(
+            options,
+            config =>
+            {
+                config.PropertiesToInclude = [];
+            },
+            cancellationToken: token
+        );
 
     public Task<VoteOptionPair?> GetNextPairAsync(
         UserId userId,

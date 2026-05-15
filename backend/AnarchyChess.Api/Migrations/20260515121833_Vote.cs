@@ -13,17 +13,16 @@ namespace AnarchyChess.Api.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "vote_option",
+                name: "vote_options",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    key = table.Column<string>(type: "text", nullable: false),
                     name = table.Column<string>(type: "text", nullable: false),
                     description = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_vote_option", x => x.id);
+                    table.PrimaryKey("pk_vote_options", x => x.key);
                 });
 
             migrationBuilder.CreateTable(
@@ -32,23 +31,23 @@ namespace AnarchyChess.Api.Migrations
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    option_a_id = table.Column<int>(type: "integer", nullable: false),
-                    option_b_id = table.Column<int>(type: "integer", nullable: false)
+                    option_a_key = table.Column<string>(type: "text", nullable: false),
+                    option_b_key = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_vote_option_pairs", x => x.id);
                     table.ForeignKey(
-                        name: "fk_vote_option_pairs_vote_option_option_a_id",
-                        column: x => x.option_a_id,
-                        principalTable: "vote_option",
-                        principalColumn: "id",
+                        name: "fk_vote_option_pairs_vote_options_option_a_key",
+                        column: x => x.option_a_key,
+                        principalTable: "vote_options",
+                        principalColumn: "key",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "fk_vote_option_pairs_vote_option_option_b_id",
-                        column: x => x.option_b_id,
-                        principalTable: "vote_option",
-                        principalColumn: "id",
+                        name: "fk_vote_option_pairs_vote_options_option_b_key",
+                        column: x => x.option_b_key,
+                        principalTable: "vote_options",
+                        principalColumn: "key",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -108,14 +107,15 @@ namespace AnarchyChess.Api.Migrations
                 column: "vote_pair_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_vote_option_pairs_option_a_id",
+                name: "ix_vote_option_pairs_option_a_key_option_b_key",
                 table: "vote_option_pairs",
-                column: "option_a_id");
+                columns: new[] { "option_a_key", "option_b_key" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "ix_vote_option_pairs_option_b_id",
+                name: "ix_vote_option_pairs_option_b_key",
                 table: "vote_option_pairs",
-                column: "option_b_id");
+                column: "option_b_key");
         }
 
         /// <inheritdoc />
@@ -131,7 +131,7 @@ namespace AnarchyChess.Api.Migrations
                 name: "vote_option_pairs");
 
             migrationBuilder.DropTable(
-                name: "vote_option");
+                name: "vote_options");
         }
     }
 }

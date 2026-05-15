@@ -9,6 +9,7 @@ using AnarchyChess.Api.Quests.Entities;
 using AnarchyChess.Api.Social.Entities;
 using AnarchyChess.Api.UserRating.Entities;
 using AnarchyChess.Api.Vote.Entities;
+using AnarchyChess.Api.Vote.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -38,6 +39,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public required DbSet<UserVote> UserVotes { get; set; }
     public required DbSet<PendingUserVote> PendingUserVotes { get; set; }
     public required DbSet<VoteOptionPair> VoteOptionPairs { get; set; }
+    public required DbSet<VoteOption> VoteOptions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -61,6 +63,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         configurationBuilder
             .Properties<GameToken>()
             .HaveConversion<StructStringValueConverter<GameToken>>();
+        configurationBuilder
+            .Properties<VoteOptionKey>()
+            .HaveConversion<StructStringValueConverter<VoteOptionKey>>();
         base.ConfigureConventions(configurationBuilder);
     }
 }

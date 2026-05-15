@@ -57,6 +57,9 @@ using AnarchyChess.Api.Social.Services;
 using AnarchyChess.Api.Streaming;
 using AnarchyChess.Api.UserRating.Repositories;
 using AnarchyChess.Api.UserRating.Services;
+using AnarchyChess.Api.Vote;
+using AnarchyChess.Api.Vote.Repositories;
+using AnarchyChess.Api.Vote.Services;
 using ErrorOr;
 using FluentStorage;
 using FluentValidation;
@@ -557,6 +560,8 @@ builder
 #region Vote
 builder.Services.AddScoped<IVoteRepository, VoteRepository>();
 builder.Services.AddScoped<IVoteService, VoteService>();
+builder.Services.AddScoped<IVoteSeeder, VoteSeeder>();
+builder.Services.AddHostedService<VoteSeederHostedService>();
 #endregion
 
 builder.Services.AddSingleton<IShardRouter, ShardRouter>();
