@@ -8,7 +8,7 @@ public class VoteOptionPairFaker : Faker<VoteOptionPair>
     public VoteOptionPairFaker()
     {
         StrictMode(true);
-        RuleFor(x => x.Id, f => f.IndexFaker);
+        RuleFor(x => x.Id, 0);
 
         RuleFor(x => x.OptionA, f => new VoteOptionFaker().Generate());
         RuleFor(x => x.OptionAKey, (f, x) => x.OptionA.Key);

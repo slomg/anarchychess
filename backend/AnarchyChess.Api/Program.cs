@@ -3,6 +3,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using AnarchyChess.Ai.Service.DTO;
 using AnarchyChess.Ai.Service.Services;
 using AnarchyChess.Api.Analysis.Services;
@@ -45,6 +46,7 @@ using AnarchyChess.Api.Preferences.Repositories;
 using AnarchyChess.Api.Preferences.Services;
 using AnarchyChess.Api.Profile.DTOs;
 using AnarchyChess.Api.Profile.Entities;
+using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Profile.Services;
 using AnarchyChess.Api.Profile.Validators;
 using AnarchyChess.Api.QuestLogic.QuestDefinitions;
@@ -145,6 +147,32 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddSignalR().AddStackExchangeRedis(appSettings.Secrets.RedisConnString);
+
+#region Rate Limit
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy(
+        VoteConstants.VoteRateLimiter,
+        httpContext =>
+        {
+            UserId userId = httpContext.User.Identity?.Name ?? "";
+            return RateLimitPartition.GetSlidingWindowLimiter(
+                partitionKey: userId.IsAuthed
+                    ? httpContext.User.Identity?.Name
+                    : httpContext.Connection.RemoteIpAddress?.ToString(),
+                factory: _ => new SlidingWindowRateLimiterOptions()
+                {
+                    PermitLimit = 100,
+                    Window = TimeSpan.FromHours(1),
+                    SegmentsPerWindow = 6,
+                }
+            );
+        }
+    );
+
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
+#endregion
 
 #region Database
 builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
@@ -607,14 +635,16 @@ if (app.Environment.IsProduction())
 
 app.UseCors(AllowCorsOriginName);
 
+app.UseForwardedHeaders(
+    new ForwardedHeadersOptions { ForwardedHeaders = ForwardedHeaders.XForwardedFor }
+);
+
 app.UseStatusCodePagesWithReExecute("/error");
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.UseRateLimiter();
 app.UseHttpsRedirection();
-
 app.UseExceptionHandler();
-
 app.MapControllers();
 
 app.MapHub<ChallengeHub>("/api/hub/challenge");

@@ -10,6 +10,7 @@ using AnarchyChess.Api.Profile.DTOs;
 using AnarchyChess.Api.Quests.DTOs;
 using AnarchyChess.Api.Shared.Models;
 using AnarchyChess.Api.UserRating.Models;
+using AnarchyChess.Api.Vote.DTOs;
 using AnarchyChess.EngineShared;
 using Refit;
 
@@ -196,5 +197,13 @@ public interface IAnarchyChessApi
 
     [Post("/api/bot/start")]
     Task<IApiResponse<string>> StartBotGameAsync(GameColor myColor, BotType botType);
+    #endregion
+
+    #region Vote
+    [Get("/api/vote/next")]
+    Task<IApiResponse<PendingUserVoteDto>> GetNextVotePairAsync();
+
+    [Post("/api/vote/complete")]
+    Task<IApiResponse> CompleteVoteAsync([Query] string optionKey);
     #endregion
 }
