@@ -27,7 +27,7 @@ public interface IVoteService
 public class VoteService(IVoteRepository voteRepository, IUnitOfWork unitOfWork) : IVoteService
 {
     public const float AuthedWeight = 1;
-    public const float GuestWeight = 0.5f;
+    public const float GuestWeight = 0.1f;
 
     private readonly IVoteRepository _voteRepository = voteRepository;
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
