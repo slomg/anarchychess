@@ -16,56 +16,65 @@ public class VoteSeeder(IVoteRepository voteRepository, IUnitOfWork unitOfWork) 
         new()
         {
             Key = "a",
-            Name = "a",
-            Description = "1",
+            Name = "Pawn Bankruptcy",
+            Description =
+                "If a pawn reaches the last rank and is not promoted immediately, it is removed from the board for indecision.",
         },
         new()
         {
             Key = "b",
-            Name = "b",
-            Description = "2",
+            Name = "Knight Momentum",
+            Description =
+                "Knights may continue moving in the same direction if they capture a piece, chaining knight moves in a straight flow.",
         },
         new()
         {
             Key = "c",
-            Name = "c",
-            Description = "3",
+            Name = "Royal Confusion",
+            Description =
+                "If a king is attacked twice in a row from different pieces, it must randomly teleport to any empty square.",
         },
         new()
         {
             Key = "d",
-            Name = "d",
-            Description = "4",
+            Name = "Bishop Diagonal Law",
+            Description =
+                "Bishops may permanently convert one diagonal they travel on into blocked terrain for both players.",
         },
         new()
         {
             Key = "e",
-            Name = "e",
-            Description = "5",
+            Name = "Rook Lockdown",
+            Description =
+                "When a rook captures a piece, the captured piece’s entire row becomes frozen for one turn.",
         },
         new()
         {
             Key = "f",
-            Name = "f",
-            Description = "6",
+            Name = "En Passant Echo",
+            Description =
+                "Every en passant capture creates a phantom pawn that repeats the same move on the next turn before disappearing.",
         },
         new()
         {
             Key = "g",
-            Name = "g",
-            Description = "7",
+            Name = "Queen Fracture",
+            Description =
+                "A queen may split into a rook and bishop once per game, both becoming independent pieces permanently.",
         },
         new()
         {
             Key = "h",
-            Name = "h",
-            Description = "8",
+            Name = "Check Instability",
+            Description =
+                "Delivering check forces the checking piece to move again immediately if it has a legal move.",
         },
         new()
         {
             Key = "i",
-            Name = "i",
-            Description = "9",
+            Name = "Board Rotation Shift",
+            Description =
+                "After any capture, the board rotates 90 degrees clockwise, preserving piece positions relative to the grid.",
         },
     ];
 
