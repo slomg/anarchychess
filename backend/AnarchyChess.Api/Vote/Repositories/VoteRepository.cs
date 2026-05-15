@@ -68,15 +68,7 @@ public class VoteRepository(ApplicationDbContext dbContext) : IVoteRepository
     public Task BulkAddVoteOptionsIfNotExistAsync(
         IEnumerable<VoteOption> options,
         CancellationToken token = default
-    ) =>
-        _dbContext.BulkInsertOrUpdateAsync(
-            options,
-            config =>
-            {
-                config.PropertiesToInclude = [];
-            },
-            cancellationToken: token
-        );
+    ) => _dbContext.BulkInsertOrUpdateAsync(options, cancellationToken: token);
 
     public Task<VoteOptionPair?> GetNextPairAsync(
         UserId userId,
