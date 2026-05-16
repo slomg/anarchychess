@@ -4,7 +4,7 @@ using AnarchyChess.Api.TestInfrastructure.TestData;
 using AnarchyChess.EngineShared;
 using AwesomeAssertions;
 
-namespace AnarchyChess.Api.Functional.Tests.Analysis;
+namespace AnarchyChess.Api.Functional.Tests.AnalysisTests;
 
 public class AnalysisControllerTests(AnarchyChessWebApplicationFactory factory)
     : BaseFunctionalTest(factory)

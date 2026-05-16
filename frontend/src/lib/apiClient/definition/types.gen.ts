@@ -4,36 +4,15 @@ export type ClientOptions = {
     baseUrl: "https://localhost:7266" | (string & {});
 };
 
-export type RatingOverview = {
-    timeControl: TimeControl;
-    ratings: Array<Rating>;
-    current: number;
-    highest: number;
-    lowest: number;
+export type PendingUserVote = {
+    optionA: VoteOption;
+    optionB: VoteOption;
 };
 
-export enum TimeControl {
-    /**
-     * Bullet
-     */
-    BULLET = 0,
-    /**
-     * Blitz
-     */
-    BLITZ = 1,
-    /**
-     * Rapid
-     */
-    RAPID = 2,
-    /**
-     * Classical
-     */
-    CLASSICAL = 3,
-}
-
-export type Rating = {
-    rating: number;
-    achievedAt: string;
+export type VoteOption = {
+    optionKey: string;
+    name: string;
+    description: string;
 };
 
 export type ApiProblemDetails = ProblemDetails & {
@@ -68,6 +47,38 @@ export type ProblemDetails = {
         | string
         | null
         | undefined;
+};
+
+export type RatingOverview = {
+    timeControl: TimeControl;
+    ratings: Array<Rating>;
+    current: number;
+    highest: number;
+    lowest: number;
+};
+
+export enum TimeControl {
+    /**
+     * Bullet
+     */
+    BULLET = 0,
+    /**
+     * Blitz
+     */
+    BLITZ = 1,
+    /**
+     * Rapid
+     */
+    RAPID = 2,
+    /**
+     * Classical
+     */
+    CLASSICAL = 3,
+}
+
+export type Rating = {
+    rating: number;
+    achievedAt: string;
 };
 
 export type CurrentRatingStatus = {
@@ -656,7 +667,55 @@ export enum ErrorCode {
     BOT_OFFLINE = "Bot.Offline",
     BOT_NO_MOVE = "Bot.NoMove",
     BOT_FAILURE = "Bot.Failure",
+    VOTE_NO_UN_SEEN_PAIR_FOUND = "Vote.NoUnSeenPairFound",
+    VOTE_NO_PENDING_VOTE = "Vote.NoPendingVote",
+    VOTE_INVALID = "Vote.Invalid",
 }
+
+export type GetNextVotePairData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: "/api/Vote/next";
+};
+
+export type GetNextVotePairErrors = {
+    401: ApiProblemDetails;
+    429: ApiProblemDetails;
+};
+
+export type GetNextVotePairError =
+    GetNextVotePairErrors[keyof GetNextVotePairErrors];
+
+export type GetNextVotePairResponses = {
+    200: PendingUserVote;
+};
+
+export type GetNextVotePairResponse =
+    GetNextVotePairResponses[keyof GetNextVotePairResponses];
+
+export type CompleteVoteData = {
+    body?: never;
+    path?: never;
+    query?: {
+        optionKey?: string;
+    };
+    url: "/api/Vote/complete";
+};
+
+export type CompleteVoteErrors = {
+    400: ApiProblemDetails;
+    401: ApiProblemDetails;
+};
+
+export type CompleteVoteError = CompleteVoteErrors[keyof CompleteVoteErrors];
+
+export type CompleteVoteResponses = {
+    204: void;
+};
+
+export type CompleteVoteResponse =
+    CompleteVoteResponses[keyof CompleteVoteResponses];
 
 export type GetRatingArchivesData = {
     body?: never;

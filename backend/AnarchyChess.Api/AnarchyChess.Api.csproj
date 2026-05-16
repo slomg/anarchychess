@@ -11,6 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="EFCore.BulkExtensions" Version="10.0.1" />
     <PackageReference Include="EFCore.NamingConventions" Version="10.0.1" />
     <PackageReference Include="ErrorOr" Version="2.0.1" />
     <PackageReference Include="FluentStorage" Version="6.0.2" />

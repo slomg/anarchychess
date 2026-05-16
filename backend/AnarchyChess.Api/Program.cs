@@ -3,6 +3,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using AnarchyChess.Ai.Service.DTO;
 using AnarchyChess.Ai.Service.Services;
 using AnarchyChess.Api.Analysis.Services;
@@ -45,6 +46,7 @@ using AnarchyChess.Api.Preferences.Repositories;
 using AnarchyChess.Api.Preferences.Services;
 using AnarchyChess.Api.Profile.DTOs;
 using AnarchyChess.Api.Profile.Entities;
+using AnarchyChess.Api.Profile.Models;
 using AnarchyChess.Api.Profile.Services;
 using AnarchyChess.Api.Profile.Validators;
 using AnarchyChess.Api.QuestLogic.QuestDefinitions;
@@ -57,6 +59,9 @@ using AnarchyChess.Api.Social.Services;
 using AnarchyChess.Api.Streaming;
 using AnarchyChess.Api.UserRating.Repositories;
 using AnarchyChess.Api.UserRating.Services;
+using AnarchyChess.Api.Vote;
+using AnarchyChess.Api.Vote.Repositories;
+using AnarchyChess.Api.Vote.Services;
 using ErrorOr;
 using FluentStorage;
 using FluentValidation;
@@ -142,6 +147,46 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddSignalR().AddStackExchangeRedis(appSettings.Secrets.RedisConnString);
+
+#region Rate Limit
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy(
+        VoteConstants.VoteRateLimiter,
+        httpContext =>
+        {
+            UserId userId = httpContext.User.Identity?.Name ?? "";
+            string? key = userId.IsAuthed
+                ? httpContext.User.Identity?.Name
+                : httpContext.Connection.RemoteIpAddress?.ToString();
+
+            return RateLimitPartition.Get(
+                key,
+                _ =>
+                    RateLimiter.CreateChained(
+                        new FixedWindowRateLimiter(
+                            new FixedWindowRateLimiterOptions
+                            {
+                                PermitLimit = 1,
+                                Window = TimeSpan.FromSeconds(5),
+                            }
+                        ),
+                        new SlidingWindowRateLimiter(
+                            new SlidingWindowRateLimiterOptions
+                            {
+                                PermitLimit = 60,
+                                Window = TimeSpan.FromHours(1),
+                                SegmentsPerWindow = 6,
+                            }
+                        )
+                    )
+            );
+        }
+    );
+
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
+#endregion
 
 #region Database
 builder.Services.AddDbContextPool<ApplicationDbContext>(options =>
@@ -554,6 +599,13 @@ builder
     );
 #endregion
 
+#region Vote
+builder.Services.AddScoped<IVoteRepository, VoteRepository>();
+builder.Services.AddScoped<IVoteService, VoteService>();
+builder.Services.AddScoped<IVoteSeeder, VoteSeeder>();
+builder.Services.AddHostedService<VoteSeederHostedService>();
+#endregion
+
 builder.Services.AddSingleton<IShardRouter, ShardRouter>();
 builder.Services.AddSingleton<IRandomCodeGenerator, RandomCodeGenerator>();
 builder.Services.AddSingleton<IRandomProvider, RandomProvider>();
@@ -597,14 +649,16 @@ if (app.Environment.IsProduction())
 
 app.UseCors(AllowCorsOriginName);
 
+app.UseForwardedHeaders(
+    new ForwardedHeadersOptions { ForwardedHeaders = ForwardedHeaders.XForwardedFor }
+);
+
 app.UseStatusCodePagesWithReExecute("/error");
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.UseRateLimiter();
 app.UseHttpsRedirection();
-
 app.UseExceptionHandler();
-
 app.MapControllers();
 
 app.MapHub<ChallengeHub>("/api/hub/challenge");

@@ -28,6 +28,9 @@ import type {
     CollectQuestRewardData,
     CollectQuestRewardErrors,
     CollectQuestRewardResponses,
+    CompleteVoteData,
+    CompleteVoteErrors,
+    CompleteVoteResponses,
     CreateChallengeData,
     CreateChallengeErrors,
     CreateChallengeResponses,
@@ -81,6 +84,9 @@ import type {
     GetNextLegalMovesData,
     GetNextLegalMovesErrors,
     GetNextLegalMovesResponses,
+    GetNextVotePairData,
+    GetNextVotePairErrors,
+    GetNextVotePairResponses,
     GetPreferencesData,
     GetPreferencesErrors,
     GetPreferencesResponses,
@@ -159,6 +165,24 @@ export type Options<
      */
     meta?: Record<string, unknown>;
 };
+
+export const getNextVotePair = <ThrowOnError extends boolean = false>(
+    options?: Options<GetNextVotePairData, ThrowOnError>,
+) =>
+    (options?.client ?? client).get<
+        GetNextVotePairResponses,
+        GetNextVotePairErrors,
+        ThrowOnError
+    >({ url: "/api/Vote/next", ...options });
+
+export const completeVote = <ThrowOnError extends boolean = false>(
+    options?: Options<CompleteVoteData, ThrowOnError>,
+) =>
+    (options?.client ?? client).post<
+        CompleteVoteResponses,
+        CompleteVoteErrors,
+        ThrowOnError
+    >({ url: "/api/Vote/complete", ...options });
 
 export const getRatingArchives = <ThrowOnError extends boolean = false>(
     options: Options<GetRatingArchivesData, ThrowOnError>,
