@@ -6,10 +6,14 @@ import HomeVote from "../HomeVote";
 vi.mock("@/features/vote/components/VoteView");
 
 describe("HomeVote", () => {
-    it("should render the heading", () => {
+    it("should render the heading and subheading", () => {
         render(<HomeVote />);
+
         expect(
-            screen.getByRole("heading", { name: /would you rather/i }),
+            screen.getByRole("heading", { name: "Would You Rather" }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText("Ideas from Discord. Vote for your favorites."),
         ).toBeInTheDocument();
     });
 
