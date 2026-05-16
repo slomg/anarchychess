@@ -81,9 +81,15 @@ const VoteView = () => {
             holdTimeout.current = null;
             castVote();
         }, VOTE_HOLD_TIME_MS);
+
+        document.addEventListener("pointerup", cancelHold);
+        document.addEventListener("pointercancel", cancelHold);
     }
 
     function cancelHold() {
+        document.removeEventListener("pointerup", cancelHold);
+        document.removeEventListener("pointercancel", cancelHold);
+
         if (holdTimeout.current) {
             clearTimeout(holdTimeout.current);
             holdTimeout.current = null;
@@ -159,9 +165,6 @@ const VoteView = () => {
                 )}
                 disabled={selectedOptionType === null || isFetching}
                 onPointerDown={startHold}
-                onPointerUp={cancelHold}
-                onPointerLeave={cancelHold}
-                onPointerCancel={cancelHold}
             >
                 {selectedOption ? (
                     <>
