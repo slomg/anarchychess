@@ -156,7 +156,7 @@ const VoteView = () => {
 
             <Button
                 className={clsx(
-                    "bg-card relative text-2xl",
+                    "bg-card relative text-2xl select-none",
                     isHolding && "cursor-grabbing",
                 )}
                 disabled={selectedOptionType === null || isFetching}
