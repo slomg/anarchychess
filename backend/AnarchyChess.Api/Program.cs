@@ -156,16 +156,30 @@ builder.Services.AddRateLimiter(options =>
         httpContext =>
         {
             UserId userId = httpContext.User.Identity?.Name ?? "";
-            return RateLimitPartition.GetSlidingWindowLimiter(
-                partitionKey: userId.IsAuthed
-                    ? httpContext.User.Identity?.Name
-                    : httpContext.Connection.RemoteIpAddress?.ToString(),
-                factory: _ => new SlidingWindowRateLimiterOptions()
-                {
-                    PermitLimit = 100,
-                    Window = TimeSpan.FromHours(1),
-                    SegmentsPerWindow = 6,
-                }
+            string? key = userId.IsAuthed
+                ? httpContext.User.Identity?.Name
+                : httpContext.Connection.RemoteIpAddress?.ToString();
+
+            return RateLimitPartition.Get(
+                key,
+                _ =>
+                    RateLimiter.CreateChained(
+                        new FixedWindowRateLimiter(
+                            new FixedWindowRateLimiterOptions
+                            {
+                                PermitLimit = 1,
+                                Window = TimeSpan.FromSeconds(5),
+                            }
+                        ),
+                        new SlidingWindowRateLimiter(
+                            new SlidingWindowRateLimiterOptions
+                            {
+                                PermitLimit = 50,
+                                Window = TimeSpan.FromHours(1),
+                                SegmentsPerWindow = 6,
+                            }
+                        )
+                    )
             );
         }
     );
