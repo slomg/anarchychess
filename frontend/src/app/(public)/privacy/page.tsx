@@ -40,7 +40,9 @@ export default function PrivacyPage() {
                         </li>
                         <li>
                             IP Address: Used initially to set your country flag;
-                            you may change this later in your settings.
+                            you may change this later in your settings. Your IP
+                            address is also recorded when you cast votes to
+                            prevent abuse.
                         </li>
                         <li>
                             In-Game Chat: Messages are saved privately for
@@ -172,7 +174,7 @@ export default function PrivacyPage() {
                     </p>
                 </section>
 
-                <p className="text-text/70">Last Updated: January 9, 2026</p>
+                <p className="text-text/70">Last Updated: May 16, 2026</p>
             </Card>
         </main>
     );
