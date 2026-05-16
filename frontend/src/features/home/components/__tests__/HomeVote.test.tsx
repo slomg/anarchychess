@@ -13,7 +13,9 @@ describe("HomeVote", () => {
             screen.getByRole("heading", { name: "Would You Rather" }),
         ).toBeInTheDocument();
         expect(
-            screen.getByText("Ideas from Discord. Vote for your favorites."),
+            screen.getByText(
+                "Ideas from the Discord. Vote for your favorites.",
+            ),
         ).toBeInTheDocument();
     });
 
