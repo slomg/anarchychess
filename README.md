@@ -115,7 +115,7 @@ dotnet user-secrets set "AppSettings:Secrets:EventHubConsumerGroup" "cg1"
 4. Run the backend server
 
 ```bash
-dotnet run
+dotnet run --launch-profile https
 ```
 
 ## Frontend Setup
