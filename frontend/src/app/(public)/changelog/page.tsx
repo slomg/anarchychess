@@ -35,6 +35,10 @@ export default function ChangeLogPage() {
 
             <ChangeLogMonthDivider date="May 2026" />
 
+            <ChangeLogCard type={ChangeLogType.FEATURE} date="May 16">
+                Added website-wise pair voting system for new ideas
+            </ChangeLogCard>
+
             <ChangeLogCard type={ChangeLogType.FIX} date="May 13">
                 Fixed a bug where anarchybot thought it could use stunned pieces
                 to throw pawns
