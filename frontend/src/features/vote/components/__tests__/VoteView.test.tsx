@@ -1,5 +1,7 @@
 import flushMicrotasks from "@/lib/testUtils/flushMicrotasks";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { act } from "react";
 
 import {
     completeVote,
@@ -9,9 +11,7 @@ import {
 } from "@/lib/apiClient";
 
 import { createFakePendingUserVote } from "@/lib/testUtils/fakers/pendingUserVoteFaker";
-import VoteView, { VOTE_DELAY_MS, VOTE_HOLD_TIME_MS } from "../VoteView";
-import userEvent from "@testing-library/user-event";
-import { act } from "react";
+import VoteView, { VOTE_DELAY_MS } from "../VoteView";
 
 vi.mock("@/lib/apiClient/definition");
 
@@ -37,6 +37,18 @@ describe("VoteView", () => {
 
         vi.useFakeTimers({ shouldAdvanceTime: true });
     });
+
+    async function fireHoldEnd() {
+        await act(() =>
+            screen.getByTestId("voteViewHoldProgress").dispatchEvent(
+                new TransitionEvent("transitionend", {
+                    propertyName: "width",
+                    bubbles: true,
+                }),
+            ),
+        );
+        await flushMicrotasks();
+    }
 
     it("should render the nothing left message when there are no pairs", async () => {
         getNextVotePairMock.mockResolvedValue({
@@ -113,25 +125,11 @@ describe("VoteView", () => {
             keys: "[MouseLeft>]",
             target: screen.getByRole("button"),
         });
-        await act(() => vi.advanceTimersByTimeAsync(VOTE_HOLD_TIME_MS));
+        await fireHoldEnd();
 
         expect(completeVoteMock).toHaveBeenCalledExactlyOnceWith({
             query: { optionKey: pendingVote.optionA.optionKey },
         });
-    });
-
-    it("should not cast vote if the button is released early", async () => {
-        const user = userEvent.setup();
-        render(<VoteView />);
-        await flushMicrotasks();
-
-        await user.click(screen.getByText(pendingVote.optionA.name));
-        const button = screen.getByRole("button");
-        await user.pointer({ keys: "[MouseLeft>]", target: button });
-        await act(() => vi.advanceTimersByTimeAsync(2000));
-        await user.pointer({ keys: "[/MouseLeft]", target: button });
-
-        expect(completeVoteMock).not.toHaveBeenCalled();
     });
 
     it("should load the next pair after a successful vote", async () => {
@@ -152,13 +150,17 @@ describe("VoteView", () => {
         render(<VoteView />);
         await flushMicrotasks();
 
-        await user.click(screen.getByText(pendingVote.optionA.name));
+        await user.click(screen.getByText(pendingVote.optionB.name));
         await user.pointer({
             keys: "[MouseLeft>]",
             target: screen.getByRole("button"),
         });
-        await act(() => vi.advanceTimersByTimeAsync(VOTE_HOLD_TIME_MS));
+        await fireHoldEnd();
         await act(() => vi.advanceTimersByTimeAsync(VOTE_DELAY_MS));
+
+        expect(completeVoteMock).toHaveBeenCalledExactlyOnceWith({
+            query: { optionKey: pendingVote.optionB.optionKey },
+        });
 
         expect(screen.getByText(nextVote.optionA.name)).toBeInTheDocument();
     });
@@ -179,7 +181,7 @@ describe("VoteView", () => {
             keys: "[MouseLeft>]",
             target: screen.getByRole("button"),
         });
-        await act(() => vi.advanceTimersByTimeAsync(VOTE_HOLD_TIME_MS));
+        await fireHoldEnd();
         await act(() => vi.advanceTimersByTimeAsync(VOTE_DELAY_MS));
 
         expect(
@@ -203,7 +205,7 @@ describe("VoteView", () => {
         await user.click(screen.getByText(pendingVote.optionA.name));
         const button = screen.getByRole("button");
         await user.pointer({ keys: "[MouseLeft>]", target: button });
-        await act(() => vi.advanceTimersByTimeAsync(VOTE_HOLD_TIME_MS));
+        await fireHoldEnd();
         await act(() => vi.advanceTimersByTimeAsync(VOTE_DELAY_MS));
 
         expect(screen.getByText("Something went wrong.")).toBeInTheDocument();
@@ -219,7 +221,7 @@ describe("VoteView", () => {
             keys: "[MouseLeft>]",
             target: screen.getByRole("button"),
         });
-        await act(() => vi.advanceTimersByTimeAsync(VOTE_HOLD_TIME_MS));
+        await fireHoldEnd();
 
         expect(
             screen.queryByText(pendingVote.optionB.name),

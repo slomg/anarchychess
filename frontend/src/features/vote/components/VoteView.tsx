@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import clsx from "clsx";
 
 import {
@@ -18,7 +18,6 @@ enum VoteOptionType {
     OPTION_B,
 }
 
-export const VOTE_HOLD_TIME_MS = 4000;
 export const VOTE_DELAY_MS = 1000;
 
 const VoteView = () => {
@@ -70,30 +69,27 @@ const VoteView = () => {
         setSelectedOptionType(null);
     }
 
-    const holdTimeout = useRef<NodeJS.Timeout | null>(null);
     function startHold() {
         if (!selectedOption || isFetching) {
             return;
         }
 
         setIsHolding(true);
-        holdTimeout.current = setTimeout(() => {
-            holdTimeout.current = null;
-            castVote();
-        }, VOTE_HOLD_TIME_MS);
-
         document.addEventListener("pointerup", cancelHold);
         document.addEventListener("pointercancel", cancelHold);
     }
 
-    function cancelHold() {
+    const cancelHold = useCallback(() => {
         document.removeEventListener("pointerup", cancelHold);
         document.removeEventListener("pointercancel", cancelHold);
+        setIsHolding(false);
+    }, []);
 
-        if (holdTimeout.current) {
-            clearTimeout(holdTimeout.current);
-            holdTimeout.current = null;
-            setIsHolding(false);
+    async function handleHoldTransitionEnd(event: React.TransitionEvent) {
+        if (event.propertyName === "width" && isHolding) {
+            document.removeEventListener("pointerup", cancelHold);
+            document.removeEventListener("pointercancel", cancelHold);
+            await castVote();
         }
     }
 
@@ -180,10 +176,12 @@ const VoteView = () => {
                 <div
                     className={clsx(
                         "bg-primary/60 absolute top-0 left-0 h-full rounded-md",
-                        isHolding
-                            ? "w-full transition-[width] duration-4000 ease-in"
-                            : "w-0",
+                        isHolding ? "w-full" : "w-0",
+                        selectedOptionType !== null &&
+                            "transition-[width] duration-4000 ease-in",
                     )}
+                    onTransitionEnd={handleHoldTransitionEnd}
+                    data-testid="voteViewHoldProgress"
                 />
             </Button>
             {error && <span className="text-error">{error}</span>}
