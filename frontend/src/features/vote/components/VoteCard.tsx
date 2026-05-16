@@ -21,6 +21,7 @@ const VoteCard = ({
                 hover:scale-102`,
                 isSelected && "outline-secondary outline-3",
             )}
+            data-testid={`voteCard-${optionLetter}`}
             onClick={onClick}
         >
             <div className="flex items-center gap-2">

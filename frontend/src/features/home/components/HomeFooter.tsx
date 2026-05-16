@@ -4,7 +4,7 @@ import constants from "@/lib/constants";
 
 const HomeFooter = () => {
     return (
-        <footer className="bg-background">
+        <footer className="bg-navbar">
             <div
                 className="mx-auto grid max-w-5xl flex-1 grid-cols-2 gap-5 p-3
                     py-10 md:grid-cols-3 md:grid-rows-1"
