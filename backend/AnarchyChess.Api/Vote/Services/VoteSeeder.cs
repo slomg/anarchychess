@@ -95,7 +95,7 @@ public class VoteSeeder(IVoteRepository voteRepository, IUnitOfWork unitOfWork) 
             Key = "pawn-stacking",
             Name = "Pawn Stacking",
             Description =
-                "Pawns can be placed on top of other pawns. Clicking a stack moves the entire stack, while double-clicking moves only the top pawn. If a stack is captured, all pawns in it die. A stack cannot reach the last rank and must be disassembled before promotion.",
+                "Pawns can be placed on top of other pawns. Once the stack becomes 5 pawns tall it starts moving like a rook. Clicking a stack moves the entire stack, while double-clicking moves only the top pawn. If a stack is captured, all pawns in it die. A stack cannot reach the last rank and must be disassembled before promotion.",
         },
         new()
         {
