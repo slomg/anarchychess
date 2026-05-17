@@ -168,7 +168,7 @@ builder.Services.AddRateLimiter(options =>
                             new FixedWindowRateLimiterOptions
                             {
                                 PermitLimit = 1,
-                                Window = TimeSpan.FromSeconds(5),
+                                Window = TimeSpan.FromSeconds(4),
                             }
                         ),
                         new SlidingWindowRateLimiter(
