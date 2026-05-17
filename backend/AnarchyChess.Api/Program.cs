@@ -178,6 +178,14 @@ builder.Services.AddRateLimiter(options =>
                                 Window = TimeSpan.FromHours(1),
                                 SegmentsPerWindow = 6,
                             }
+                        ),
+                        new SlidingWindowRateLimiter(
+                            new SlidingWindowRateLimiterOptions
+                            {
+                                PermitLimit = 200,
+                                Window = TimeSpan.FromDays(1),
+                                SegmentsPerWindow = 24,
+                            }
                         )
                     )
             );
