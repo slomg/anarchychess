@@ -280,6 +280,13 @@ public class VoteSeeder(IVoteRepository voteRepository, IUnitOfWork unitOfWork) 
             Description =
                 "If both of your opponent's rooks can be captured by a single piece, you can capture both at the same time.",
         },
+        new()
+        {
+            Key = "cannibalistic-pawns",
+            Name = "Cannibalistic Pawns",
+            Description =
+                "You may capture your own pawns with a pawn. The capturing pawn will be able to move 2 steps the next turn.",
+        },
     ];
 
     private readonly IVoteRepository _voteRepository = voteRepository;
