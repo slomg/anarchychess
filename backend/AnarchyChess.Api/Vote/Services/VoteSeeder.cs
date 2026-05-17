@@ -273,6 +273,13 @@ public class VoteSeeder(IVoteRepository voteRepository, IUnitOfWork unitOfWork) 
             Description =
                 "When a bishop bounces and ends up on the same square it started from, it smashes into the square, permanently removing it and pushing adjacent pieces one square away. The bishop has 1 turn to move off the broken square or it falls and is captured.",
         },
+        new()
+        {
+            Key = "911-gambit",
+            Name = "9/11 Gambit",
+            Description =
+                "If both of your opponent's rooks can be captured by a single piece, you can capture both at the same time.",
+        },
     ];
 
     private readonly IVoteRepository _voteRepository = voteRepository;
