@@ -197,7 +197,7 @@ public class VoteSeeder(IVoteRepository voteRepository, IUnitOfWork unitOfWork) 
         new()
         {
             Key = "elle-eurasia",
-            Name = "Elle Eurasia (Diagonal Il Vaticano)",
+            Name = "Elle Eurasia",
             Description = "Allow il vaticano diagonally using rooks.",
         },
         new()
