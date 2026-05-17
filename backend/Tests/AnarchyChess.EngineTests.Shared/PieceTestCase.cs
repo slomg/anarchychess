@@ -78,10 +78,10 @@ public class PieceTestCase
         }
     }
 
-    public int Depth { get; private set; } = EngineConstants.MaxDepth;
-    public int MaxDepth { get; private set; } = EngineConstants.MaxDepth;
+    public int Depth { get; set; } = EngineConstants.MaxDepth;
+    public int MaxDepth { get; set; } = EngineConstants.MaxDepth;
 
-    public string TestDecription { get; private set; } = "";
+    public string TestDecription { get; set; } = "";
 
     private readonly ChessBoard _board = new();
 
