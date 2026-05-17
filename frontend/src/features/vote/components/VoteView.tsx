@@ -5,6 +5,7 @@ import clsx from "clsx";
 
 import {
     completeVote,
+    ErrorCode,
     getNextVotePair,
     PendingUserVote,
     VoteOption,
@@ -111,13 +112,21 @@ const VoteView = () => {
             if (response.status === 429) {
                 setError("You are being rate limited. Please try again later.");
                 return;
-            } else if (error) {
+            } else if (
+                error &&
+                // this could happen if 1 account is voting on 2 devices
+                error?.errors[0]?.errorCode !== ErrorCode.VOTE_INVALID &&
+                error?.errors[0]?.errorCode !== ErrorCode.VOTE_NO_PENDING_VOTE
+            ) {
                 console.error("HomeVote castVote completeVote", error);
                 setError("Something went wrong.");
                 return;
             }
 
             await setNextVotePair();
+        } catch (error) {
+            console.error("VoteView castVote completeVote", error);
+            setError("Something went wrong.");
         } finally {
             setIsFetching(false);
             setIsHolding(false);

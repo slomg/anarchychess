@@ -165,6 +165,51 @@ describe("VoteView", () => {
         expect(screen.getByText(nextVote.optionA.name)).toBeInTheDocument();
     });
 
+    it.each([ErrorCode.VOTE_INVALID, ErrorCode.VOTE_NO_PENDING_VOTE])(
+        "should load the next pair after vote fails due to invalid vote",
+        async (errorCode) => {
+            const nextVote = createFakePendingUserVote();
+            getNextVotePairMock
+                .mockResolvedValueOnce({
+                    error: undefined,
+                    data: pendingVote,
+                    response: new Response(),
+                })
+                .mockResolvedValueOnce({
+                    error: undefined,
+                    data: nextVote,
+                    response: new Response(),
+                });
+            completeVoteMock.mockResolvedValue({
+                error: {
+                    errors: [
+                        {
+                            errorCode,
+                            description: "",
+                            metadata: {},
+                        },
+                    ],
+                },
+                data: undefined,
+                response: new Response(),
+            });
+
+            const user = userEvent.setup();
+            render(<VoteView />);
+            await flushMicrotasks();
+
+            await user.click(screen.getByText(pendingVote.optionB.name));
+            await user.pointer({
+                keys: "[MouseLeft>]",
+                target: screen.getByRole("button"),
+            });
+            await fireHoldEnd();
+            await act(() => vi.advanceTimersByTimeAsync(VOTE_DELAY_MS));
+
+            expect(screen.getByText(nextVote.optionA.name)).toBeInTheDocument();
+        },
+    );
+
     it("should show a rate limit error on a 429 response", async () => {
         completeVoteMock.mockResolvedValue({
             error: undefined,
@@ -191,12 +236,8 @@ describe("VoteView", () => {
         ).toBeInTheDocument();
     });
 
-    it("should show a generic error when completeVote fails", async () => {
-        completeVoteMock.mockResolvedValue({
-            error: { errors: [] },
-            data: undefined,
-            response: new Response(),
-        });
+    it("should show a generic error when completeVote throws", async () => {
+        completeVoteMock.mockRejectedValue(new Error("test error"));
 
         const user = userEvent.setup();
         render(<VoteView />);
