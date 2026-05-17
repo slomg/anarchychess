@@ -146,6 +146,19 @@ const VoteView = () => {
                     isSelected={selectedOptionType === VoteOptionType.OPTION_A}
                     onClick={() => selectOption(VoteOptionType.OPTION_A)}
                 />
+
+                <div className="hidden flex-col items-center gap-3 md:flex">
+                    <div className="h-[50%] border-l border-white/30" />
+                    <span className="rotate-90">OR</span>
+                    <div className="h-[50%] border-l border-white/30" />
+                </div>
+
+                <div className="flex items-center gap-3 md:hidden">
+                    <hr className="w-[50%] text-white/30" />
+                    <span>OR</span>
+                    <hr className="w-[50%] text-white/30" />
+                </div>
+
                 <VoteCard
                     option={votePair.optionB}
                     optionLetter="B"

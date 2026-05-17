@@ -9,6 +9,7 @@ describe("HomeVote", () => {
     it("should render the heading and subheading", () => {
         render(<HomeVote />);
 
+        expect(screen.getByTestId("homeVote")).toHaveAttribute("id", "vote");
         expect(
             screen.getByRole("heading", { name: "Would You Rather" }),
         ).toBeInTheDocument();
