@@ -32,7 +32,7 @@ const HomeIntroSection = () => {
                 <p className="text-text/80 text-sm">
                     look at this cool game{" "}
                     <span className="hidden lg:inline">to the side</span>
-                    <span className="inline lg:hidden">bellow</span> though{" "}
+                    <span className="inline lg:hidden">below</span> though{" "}
                     <Image
                         src={Pog}
                         alt="pog"
