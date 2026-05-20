@@ -10,7 +10,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
     return (
         <SessionProvider user={null}>
             <div
-                className="flex min-h-screen max-w-screen min-w-[300px] flex-col
+                className="flex min-h-screen max-w-screen min-w-75 flex-col
                     md:flex-row"
             >
                 <NavMobile />
