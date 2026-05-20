@@ -1,5 +1,3 @@
-import { JSX } from "react";
-
 import {
     PersistentBoardEffectType,
     TransientBoardEffectType,
@@ -20,7 +18,7 @@ const BoardEffects = () => {
         (x) => x.activeTransientBoardEffects,
     );
 
-    const result: JSX.Element[] = [];
+    const result: React.ReactNode[] = [];
     for (const [id, effect] of persistentEffects) {
         switch (effect.type) {
             case PersistentBoardEffectType.THROW_AIM_LINE:

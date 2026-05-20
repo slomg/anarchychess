@@ -29,6 +29,7 @@ const COOKIES = {
     ACCESS_TOKEN: "accessToken",
     IS_LOGGED_IN: "isLoggedIn",
     AUTH_FAILURE: "authFailed",
+    DISMISSED_WEBGL_WARNING: "dismissedWebGLWarning",
 };
 
 const PATHS = {

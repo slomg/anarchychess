@@ -24,6 +24,7 @@ const StaticChessboardWithSidebar = ({
                         },
                     ]}
                     defaultOffset={{ width: 626, height: 40 }} // height gap-5 + p-5
+                    disableDrag
                 />
             }
             aside={aside}
