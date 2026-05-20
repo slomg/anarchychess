@@ -1,16 +1,16 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useGLTF, useSpriteLoader, useTexture } from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
 import { twMerge } from "tailwind-merge";
 
 import { useChessboardStore } from "@/features/chessboard/hooks/useChessboard";
 import AudioPlayer, { AudioType } from "@/features/audio/audioPlayer";
 import HighlightedLegalMovesRenderer from "./HighlightedLegalMove";
+import BoardEffectsCanvas from "./boardEffects/BoardEffectsCanvas";
 import IntermediateSquarePrompt from "./IntermediateSquarePrompt";
 import EmphasizedSquaresRenderer from "./EmphasizedSquare";
 import { GameColor, PieceType } from "@/lib/apiClient";
-import BoardEffects from "./boardEffects/BoardEffects";
 import LastMoveHighlight from "./LastMoveHighlight";
+import WebGLWarningAlert from "./WebGLWarningAlert";
 import { getPieceImage } from "../lib/pieceUtils";
 import OverlayRenderer from "./OverlayRenderer";
 import PromotionPrompt from "./PromotionPrompt";
@@ -148,35 +148,36 @@ const ChessboardLayout = ({
     }, [boardSize, ref, setBoardRect]);
 
     return (
-        <div
-            data-testid="chessboard"
-            className={twMerge(
-                "relative cursor-pointer overflow-hidden select-none",
-                !disableDrag && "touch-none",
-                className,
-            )}
-            style={{ width: `${boardSize}px`, height: `${boardSize}px` }}
-            ref={ref}
-            onPointerDown={onPointerDown}
-            onPointerUp={onPointerUp}
-            onContextMenu={(e) => e.preventDefault()}
-        >
-            <svg
-                viewBox={`0 0 ${constants.BOARD_WIDTH} ${constants.BOARD_HEIGHT}`}
-                preserveAspectRatio="none"
-                className="absolute inset-0 h-full w-full rounded-md"
-                shapeRendering="crispEdges"
+        <>
+            <div
+                data-testid="chessboard"
+                className={twMerge(
+                    "relative cursor-pointer overflow-hidden select-none",
+                    !disableDrag && "touch-none",
+                    className,
+                )}
+                style={{ width: `${boardSize}px`, height: `${boardSize}px` }}
+                ref={ref}
+                onPointerDown={onPointerDown}
+                onPointerUp={onPointerUp}
+                onContextMenu={(e) => e.preventDefault()}
             >
-                <rect
-                    x="0"
-                    y="0"
-                    width={constants.BOARD_WIDTH}
-                    height={constants.BOARD_HEIGHT}
-                    fill="#577298"
-                />
-                <path
-                    fill="#e9e9d4"
-                    d="
+                <svg
+                    viewBox={`0 0 ${constants.BOARD_WIDTH} ${constants.BOARD_HEIGHT}`}
+                    preserveAspectRatio="none"
+                    className="absolute inset-0 h-full w-full rounded-md"
+                    shapeRendering="crispEdges"
+                >
+                    <rect
+                        x="0"
+                        y="0"
+                        width={constants.BOARD_WIDTH}
+                        height={constants.BOARD_HEIGHT}
+                        fill="#577298"
+                    />
+                    <path
+                        fill="#e9e9d4"
+                        d="
                         M 0,0 H 10 v 1 H 0 z
                         m 0,2 H 10 v 1 H 0 z
                         m 0,2 H 10 v 1 H 0 z
@@ -187,28 +188,24 @@ const ChessboardLayout = ({
                         m 2,0 V 10 h 1 V 0 z
                         m 2,0 V 10 h 1 V 0 z
                         m 2,0 V 10 h 1 V 0 z"
-                />
-            </svg>
+                    />
+                </svg>
 
-            <Canvas
-                className="pointer-events-none! absolute! inset-0 z-40
-                    touch-none select-none"
-                data-testid="boardEffects"
-            >
-                <BoardEffects />
-            </Canvas>
+                <HighlightedLegalMovesRenderer />
+                <EmphasizedSquaresRenderer />
+                <IntermediateSquarePrompt />
+                <BoardEffectsCanvas />
+                <LastMoveHighlight />
+                <OverlayRenderer />
+                <PromotionPrompt />
+                <PieceRenderer />
+                <ThrowPrompt />
+                <Coords />
+                {children}
+            </div>
 
-            <HighlightedLegalMovesRenderer />
-            <EmphasizedSquaresRenderer />
-            <IntermediateSquarePrompt />
-            <LastMoveHighlight />
-            <OverlayRenderer />
-            <PromotionPrompt />
-            <PieceRenderer />
-            <ThrowPrompt />
-            <Coords />
-            {children}
-        </div>
+            <WebGLWarningAlert />
+        </>
     );
 };
 export default ChessboardLayout;
