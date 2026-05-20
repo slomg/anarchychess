@@ -1,12 +1,14 @@
+import WebGL from "three/examples/jsm/capabilities/WebGL.js";
+
 import {
     createFakeMove,
     createFakePiece,
 } from "@/lib/testUtils/fakers/chessboardFakers";
 
 import { TransientBoardEffectType } from "../../stores/boardEffectsSlice";
+import { GameColor, PieceType, SpecialMoveType } from "@/lib/apiClient";
 import { simulateMove, simulateMoveAnimated } from "../simulateMove";
 import { AnimationStep, IntermediateSquare } from "../types";
-import { GameColor, PieceType, SpecialMoveType } from "@/lib/apiClient";
 import { logicalPoint } from "@/features/point/pointUtils";
 import BoardPieces from "../boardPieces";
 
@@ -209,6 +211,10 @@ describe("simulateMove", () => {
 });
 
 describe("simulateMoveAnimated", () => {
+    beforeEach(() => {
+        vi.spyOn(WebGL, "isWebGL2Available").mockReturnValue(true);
+    });
+
     it("should return intermediate positions and final move", () => {
         const movingPiece = createFakePiece({
             position: logicalPoint({ x: 0, y: 0 }),
@@ -317,113 +323,217 @@ describe("simulateMoveAnimated", () => {
         expect(finalStep.movedPieceIds).toEqual([movingPiece.id]);
     });
 
-    it("should simulate throw moves correctly", () => {
-        const movingPiece = createFakePiece({
-            position: logicalPoint({ x: 1, y: 1 }),
+    describe("SpecialMoveType.THROW", () => {
+        it("should simulate throw moves correctly", () => {
+            const movingPiece = createFakePiece({
+                position: logicalPoint({ x: 1, y: 1 }),
+            });
+            const pieces = BoardPieces.fromPieces(movingPiece);
+
+            const move = createFakeMove({
+                from: movingPiece.position,
+                to: logicalPoint({ x: 4, y: 4 }),
+                specialType: SpecialMoveType.THROW,
+            });
+
+            const resultSteps = simulateMoveAnimated(pieces, move);
+
+            expect(resultSteps).toHaveLength(2);
+
+            const expectedThrowPieces = new BoardPieces(pieces);
+            expectedThrowPieces.removeFrom(move.from);
+            expect(resultSteps[0]).toEqual<AnimationStep>({
+                newPieces: expectedThrowPieces,
+                movedPieceIds: [],
+                boardEffect: {
+                    type: TransientBoardEffectType.PAWN_THROW,
+                    from: move.from,
+                    to: move.to,
+                    color: movingPiece.color,
+                },
+                disableStepDelay: true,
+                mute: true,
+            });
+
+            expect(resultSteps[1]).toEqual(simulateMove(pieces, move));
         });
-        const pieces = BoardPieces.fromPieces(movingPiece);
 
-        const move = createFakeMove({
-            from: movingPiece.position,
-            to: logicalPoint({ x: 4, y: 4 }),
-            specialType: SpecialMoveType.THROW,
+        it("should not use board effects when webgl is disabled", () => {
+            vi.spyOn(WebGL, "isWebGL2Available").mockReturnValue(false);
+
+            const movingPiece = createFakePiece({
+                position: logicalPoint({ x: 1, y: 1 }),
+            });
+            const pieces = BoardPieces.fromPieces(movingPiece);
+
+            const move = createFakeMove({
+                from: movingPiece.position,
+                to: logicalPoint({ x: 4, y: 4 }),
+                specialType: SpecialMoveType.THROW,
+            });
+
+            const resultSteps = simulateMoveAnimated(pieces, move);
+            expect(resultSteps).toHaveLength(1);
+            expect(resultSteps[0]).toEqual(simulateMove(pieces, move));
         });
-
-        const resultSteps = simulateMoveAnimated(pieces, move);
-
-        expect(resultSteps).toHaveLength(2);
-
-        const expectedThrowPieces = new BoardPieces(pieces);
-        expectedThrowPieces.removeFrom(move.from);
-        expect(resultSteps[0]).toEqual<AnimationStep>({
-            newPieces: expectedThrowPieces,
-            movedPieceIds: [],
-            boardEffect: {
-                type: TransientBoardEffectType.PAWN_THROW,
-                from: move.from,
-                to: move.to,
-                color: movingPiece.color,
-            },
-            disableStepDelay: true,
-            mute: true,
-        });
-
-        expect(resultSteps[1]).toEqual(simulateMove(pieces, move));
     });
 
-    it("should simulate knooklear fusion moves correctly", () => {
-        const movingPiece = createFakePiece({
-            position: logicalPoint({ x: 2, y: 2 }),
-        });
-        const removedPiece1 = createFakePiece({
-            position: logicalPoint({ x: 3, y: 3 }),
-        });
-        const removedPiece2 = createFakePiece({
-            position: logicalPoint({ x: 4, y: 4 }),
+    describe("SpecialMoveType.KNOOKLEAR_FUSION", () => {
+        it("should simulate knooklear fusion moves correctly", () => {
+            const movingPiece = createFakePiece({
+                position: logicalPoint({ x: 2, y: 2 }),
+            });
+            const removedPiece1 = createFakePiece({
+                position: logicalPoint({ x: 3, y: 3 }),
+            });
+            const removedPiece2 = createFakePiece({
+                position: logicalPoint({ x: 4, y: 4 }),
+            });
+
+            const pieces = BoardPieces.fromPieces(
+                movingPiece,
+                removedPiece1,
+                removedPiece2,
+            );
+
+            const move = createFakeMove({
+                from: movingPiece.position,
+                to: logicalPoint({ x: 5, y: 5 }),
+                specialType: SpecialMoveType.KNOOKLEAR_FUSION,
+                captures: [removedPiece1.position, removedPiece2.position],
+            });
+
+            const resultSteps = simulateMoveAnimated(pieces, move);
+
+            expect(resultSteps).toHaveLength(2);
+
+            const expectedFusionPieces = new BoardPieces(pieces);
+            const expectedRemoved =
+                expectedFusionPieces.removeRemovedPiecesFromMove(move);
+            expect(resultSteps[0]).toEqual<AnimationStep>({
+                newPieces: expectedFusionPieces,
+                movedPieceIds: [],
+                fadedPieces: expectedRemoved,
+                boardEffect: {
+                    type: TransientBoardEffectType.EXPLOSION,
+                    at: move.to,
+                },
+                mute: true,
+            });
+
+            expect(resultSteps[1]).toEqual(simulateMove(pieces, move));
         });
 
-        const pieces = BoardPieces.fromPieces(
-            movingPiece,
-            removedPiece1,
-            removedPiece2,
+        it("should not use board effects when webgl is disabled", () => {
+            vi.spyOn(WebGL, "isWebGL2Available").mockReturnValue(false);
+
+            const movingPiece = createFakePiece({
+                position: logicalPoint({ x: 2, y: 2 }),
+            });
+            const removedPiece1 = createFakePiece({
+                position: logicalPoint({ x: 3, y: 3 }),
+            });
+            const pieces = BoardPieces.fromPieces(movingPiece, removedPiece1);
+
+            const move = createFakeMove({
+                from: movingPiece.position,
+                to: logicalPoint({ x: 5, y: 5 }),
+                specialType: SpecialMoveType.KNOOKLEAR_FUSION,
+                captures: [removedPiece1.position],
+            });
+
+            const resultSteps = simulateMoveAnimated(pieces, move);
+            expect(resultSteps).toHaveLength(1);
+            expect(resultSteps[0]).toEqual(simulateMove(pieces, move));
+        });
+    });
+
+    describe("SpecialMoveType.QUEENTUM_TUNNEL", () => {
+        it.each([
+            {
+                mainPieceType: PieceType.QUEEN,
+                secondaryPieceType: PieceType.ANTIQUEEN,
+                color: GameColor.WHITE,
+            },
+            {
+                mainPieceType: PieceType.ANTIQUEEN,
+                secondaryPieceType: PieceType.QUEEN,
+                color: GameColor.WHITE,
+            },
+            {
+                mainPieceType: PieceType.QUEEN,
+                secondaryPieceType: PieceType.ANTIQUEEN,
+                color: GameColor.BLACK,
+            },
+        ])(
+            "should simulate queentum tunnel moves correctly",
+            ({ mainPieceType, secondaryPieceType, color }) => {
+                const movingPiece = createFakePiece({
+                    type: mainPieceType,
+                    position: logicalPoint({ x: 2, y: 2 }),
+                    color,
+                });
+                const secondaryPiece = createFakePiece({
+                    type: secondaryPieceType,
+                    position: logicalPoint({ x: 7, y: 7 }),
+                    color,
+                });
+                const pieces = BoardPieces.fromPieces(
+                    movingPiece,
+                    secondaryPiece,
+                );
+                const move = createFakeMove({
+                    from: movingPiece.position,
+                    to: secondaryPiece.position,
+                    specialType: SpecialMoveType.QUEENTUM_TUNNEL,
+                    sideEffects: [
+                        {
+                            from: secondaryPiece.position,
+                            to: movingPiece.position,
+                        },
+                    ],
+                });
+
+                const resultSteps = simulateMoveAnimated(pieces, move);
+
+                expect(resultSteps).toHaveLength(2);
+                expect(resultSteps[0]).toEqual<AnimationStep>({
+                    newPieces: pieces,
+                    movedPieceIds: [],
+                    boardEffect: {
+                        type: TransientBoardEffectType.QUEENTUM_TUNNELLING,
+                        queenPosition:
+                            mainPieceType === PieceType.QUEEN
+                                ? movingPiece.position
+                                : secondaryPiece.position,
+                        antiqueenPosition:
+                            mainPieceType === PieceType.QUEEN
+                                ? secondaryPiece.position
+                                : movingPiece.position,
+                        color: movingPiece.color,
+                    },
+                    specialType: SpecialMoveType.QUEENTUM_TUNNEL,
+                });
+                expect(resultSteps[1]).toEqual({
+                    ...simulateMove(pieces, move),
+                    movedPieceIds: [],
+                    mute: true,
+                });
+            },
         );
 
-        const move = createFakeMove({
-            from: movingPiece.position,
-            to: logicalPoint({ x: 5, y: 5 }),
-            specialType: SpecialMoveType.KNOOKLEAR_FUSION,
-            captures: [removedPiece1.position, removedPiece2.position],
-        });
+        it("should not use board effects when webgl is disabled", () => {
+            vi.spyOn(WebGL, "isWebGL2Available").mockReturnValue(false);
 
-        const resultSteps = simulateMoveAnimated(pieces, move);
-
-        expect(resultSteps).toHaveLength(2);
-
-        const expectedFusionPieces = new BoardPieces(pieces);
-        const expectedRemoved =
-            expectedFusionPieces.removeRemovedPiecesFromMove(move);
-        expect(resultSteps[0]).toEqual<AnimationStep>({
-            newPieces: expectedFusionPieces,
-            movedPieceIds: [],
-            fadedPieces: expectedRemoved,
-            boardEffect: {
-                type: TransientBoardEffectType.EXPLOSION,
-                at: move.to,
-            },
-            mute: true,
-        });
-
-        expect(resultSteps[1]).toEqual(simulateMove(pieces, move));
-    });
-
-    it.each([
-        {
-            mainPieceType: PieceType.QUEEN,
-            secondaryPieceType: PieceType.ANTIQUEEN,
-            color: GameColor.WHITE,
-        },
-        {
-            mainPieceType: PieceType.ANTIQUEEN,
-            secondaryPieceType: PieceType.QUEEN,
-            color: GameColor.WHITE,
-        },
-        {
-            mainPieceType: PieceType.QUEEN,
-            secondaryPieceType: PieceType.ANTIQUEEN,
-            color: GameColor.BLACK,
-        },
-    ])(
-        "should simulate queentum tunnel moves correctly",
-        ({ mainPieceType, secondaryPieceType, color }) => {
             const movingPiece = createFakePiece({
-                type: mainPieceType,
+                type: PieceType.QUEEN,
                 position: logicalPoint({ x: 2, y: 2 }),
-                color,
+                color: GameColor.WHITE,
             });
             const secondaryPiece = createFakePiece({
-                type: secondaryPieceType,
+                type: PieceType.ANTIQUEEN,
                 position: logicalPoint({ x: 7, y: 7 }),
-                color,
+                color: GameColor.BLACK,
             });
             const pieces = BoardPieces.fromPieces(movingPiece, secondaryPiece);
             const move = createFakeMove({
@@ -431,35 +541,16 @@ describe("simulateMoveAnimated", () => {
                 to: secondaryPiece.position,
                 specialType: SpecialMoveType.QUEENTUM_TUNNEL,
                 sideEffects: [
-                    { from: secondaryPiece.position, to: movingPiece.position },
+                    {
+                        from: secondaryPiece.position,
+                        to: movingPiece.position,
+                    },
                 ],
             });
 
             const resultSteps = simulateMoveAnimated(pieces, move);
-
-            expect(resultSteps).toHaveLength(2);
-            expect(resultSteps[0]).toEqual<AnimationStep>({
-                newPieces: pieces,
-                movedPieceIds: [],
-                boardEffect: {
-                    type: TransientBoardEffectType.QUEENTUM_TUNNELLING,
-                    queenPosition:
-                        mainPieceType === PieceType.QUEEN
-                            ? movingPiece.position
-                            : secondaryPiece.position,
-                    antiqueenPosition:
-                        mainPieceType === PieceType.QUEEN
-                            ? secondaryPiece.position
-                            : movingPiece.position,
-                    color: movingPiece.color,
-                },
-                specialType: SpecialMoveType.QUEENTUM_TUNNEL,
-            });
-            expect(resultSteps[1]).toEqual({
-                ...simulateMove(pieces, move),
-                movedPieceIds: [],
-                mute: true,
-            });
-        },
-    );
+            expect(resultSteps).toHaveLength(1);
+            expect(resultSteps[0]).toEqual(simulateMove(pieces, move));
+        });
+    });
 });

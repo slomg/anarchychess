@@ -1,15 +1,17 @@
+import WebGL from "three/examples/jsm/capabilities/WebGL.js";
+
 import { TransientBoardEffectType } from "../stores/boardEffectsSlice";
 import { AnimationStep, MoveBounds, Piece, PieceID } from "./types";
 import { PieceType, SpecialMoveType } from "@/lib/apiClient";
+import { LogicalPoint } from "@/features/point/types";
 import BoardPieces from "./boardPieces";
 import { Move } from "./types";
-import { LogicalPoint } from "@/features/point/types";
 
-type SpecialMoveAnimationHandler = (
-    basePieces: BoardPieces,
-    move: Move,
-    fromPiece: Piece,
-) => AnimationStep[];
+type SpecialMoveAnimationHandler = (options: {
+    basePieces: BoardPieces;
+    move: Move;
+    fromPiece: Piece;
+}) => AnimationStep[];
 
 interface SpecialMoveAnimation {
     handler: SpecialMoveAnimationHandler;
@@ -42,7 +44,13 @@ export function simulateMoveAnimated(
     const shouldPlaySpecialHandler =
         !skipAlreadyPlayedLocally || !specialHandler?.alreadyPlayedLocally;
     if (specialHandler && shouldPlaySpecialHandler) {
-        steps.push(...specialHandler.handler(pieces, move, fromPiece));
+        steps.push(
+            ...specialHandler.handler({
+                basePieces: pieces,
+                move,
+                fromPiece,
+            }),
+        );
         return steps;
     }
 
@@ -79,11 +87,11 @@ const SPECIAL_MOVE_ANIMATION_HANDLERS: Partial<
     Record<SpecialMoveType, SpecialMoveAnimation>
 > = {
     [SpecialMoveType.THROW]: {
-        handler: (
-            basePieces: BoardPieces,
-            move: Move,
-            fromPiece: Piece,
-        ): AnimationStep[] => {
+        handler: ({ basePieces, move, fromPiece }): AnimationStep[] => {
+            if (!WebGL.isWebGL2Available()) {
+                return [simulateMove(basePieces, move)];
+            }
+
             const newPieces = new BoardPieces(basePieces);
             newPieces.removeFrom(move.from);
 
@@ -107,7 +115,11 @@ const SPECIAL_MOVE_ANIMATION_HANDLERS: Partial<
         alreadyPlayedLocally: false,
     },
     [SpecialMoveType.KNOOKLEAR_FUSION]: {
-        handler: (basePieces: BoardPieces, move: Move): AnimationStep[] => {
+        handler: ({ basePieces, move }): AnimationStep[] => {
+            if (!WebGL.isWebGL2Available()) {
+                return [simulateMove(basePieces, move)];
+            }
+
             const newPieces = new BoardPieces(basePieces);
             const removedPieces = newPieces.removeRemovedPiecesFromMove(move);
 
@@ -128,11 +140,11 @@ const SPECIAL_MOVE_ANIMATION_HANDLERS: Partial<
         alreadyPlayedLocally: false,
     },
     [SpecialMoveType.QUEENTUM_TUNNEL]: {
-        handler: (
-            basePieces: BoardPieces,
-            move: Move,
-            fromPiece: Piece,
-        ): AnimationStep[] => {
+        handler: ({ basePieces, move, fromPiece }): AnimationStep[] => {
+            if (!WebGL.isWebGL2Available()) {
+                return [simulateMove(basePieces, move)];
+            }
+
             let queenPosition: LogicalPoint;
             let antiqueenPosition: LogicalPoint;
             if (fromPiece.type === PieceType.QUEEN) {
