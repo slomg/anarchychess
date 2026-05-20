@@ -5,7 +5,6 @@ import BoardEffectsWebGLFallback from "./BoardEffectsWebGLFallback";
 import BoardEffects from "./BoardEffects";
 
 const BoardEffectsCanvas = () => {
-    const test = Canvas;
     return WebGL.isWebGL2Available() ? (
         <Canvas
             className="pointer-events-none! absolute! inset-0 z-40 touch-none

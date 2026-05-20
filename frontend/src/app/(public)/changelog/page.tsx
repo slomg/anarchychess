@@ -35,6 +35,11 @@ export default function ChangeLogPage() {
 
             <ChangeLogMonthDivider date="May 2026" />
 
+            <ChangeLogCard type={ChangeLogType.FIX} date="May 20">
+                Fixed pawn throwing and queentum tunnelling freezing when WebGL
+                is not supported & added webgl fallback
+            </ChangeLogCard>
+
             <ChangeLogCard type={ChangeLogType.FEATURE} date="May 16">
                 Added pair voting system for new ideas
             </ChangeLogCard>
