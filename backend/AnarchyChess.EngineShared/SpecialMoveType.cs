@@ -14,4 +14,5 @@ public enum SpecialMoveType
     Throw,
     HyperAcceleratedBongcloud,
     QueentumTunnel,
+    LaBastarda,
 }
