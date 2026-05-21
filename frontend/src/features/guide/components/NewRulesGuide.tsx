@@ -15,6 +15,8 @@ import knooklearFusion1 from "@public/assets/examples/knooklear-fusion1.png";
 import knooklearFusion2 from "@public/assets/examples/knooklear-fusion2.png";
 import queenBetaDecay1 from "@public/assets/examples/queen-beta-decay1.png";
 import queenBetaDecay2 from "@public/assets/examples/queen-beta-decay2.png";
+import LaBastarda1 from "@public/assets/examples/la-bastarda1.png";
+import Labastarda2 from "@public/assets/examples/la-bastarda2.png";
 import bouncingBishop1 from "@public/assets/examples/bouncing-bishop1.png";
 import bouncingBishop2 from "@public/assets/examples/bouncing-bishop2.png";
 import bouncingBishop3 from "@public/assets/examples/bouncing-bishop3.png";
@@ -233,6 +235,17 @@ const NewRulesGuide = ({ id }: { id?: string }) => {
                     "The rook and knight can later perform Knooklear Fusion for massive effect.",
                 ]}
                 images={[queenBetaDecay1, queenBetaDecay2]}
+            />
+
+            <GuideCard
+                title="La Bastarda"
+                points={[
+                    "If an unstunned ennemy queen is adjacent to your king",
+                    "Moving your king away from her in any direction will spawn an underage pawn",
+                    "The underage pawn will have opponent color",
+                    "if close to multiple queens, moving away from any of them triggers it"
+                ]}
+                images={[LaBastarda1, Labastarda2]}
             />
         </section>
     );
