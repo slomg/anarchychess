@@ -50,6 +50,9 @@ public readonly record struct AlgebraicPoint(int X, int Y)
     public static AlgebraicPoint operator -(AlgebraicPoint left, Offset right) =>
         new(left.X - right.X, left.Y - right.Y);
 
+    public static Offset operator -(AlgebraicPoint left, AlgebraicPoint right) =>
+        new(left.X - right.X, left.Y - right.Y);
+
     public string AsAlgebraic()
     {
         var rank = (char)('a' + X);
