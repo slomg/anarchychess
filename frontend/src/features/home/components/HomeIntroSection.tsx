@@ -13,9 +13,8 @@ const typedHomePageReplay = homePageReplay as GameReplay[];
 const HomeIntroSection = () => {
     return (
         <section
-            className="grid grid-rows-[auto_auto] justify-center gap-10
-                bg-[#0b131a] p-15 lg:grid-cols-[auto_auto] lg:grid-rows-1
-                lg:gap-x-20"
+            className="bg-background grid grid-rows-[auto_auto] justify-center
+                gap-10 p-15 lg:grid-cols-[auto_auto] lg:grid-rows-1 lg:gap-x-20"
         >
             <div
                 className="flex w-full flex-col items-center gap-3 text-center

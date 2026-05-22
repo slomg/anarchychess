@@ -3,7 +3,7 @@ import VoteView from "@/features/vote/components/VoteView";
 const HomeVote = () => {
     return (
         <section
-            className="bg-background p-5 lg:p-15"
+            className="bg-[#0b131a] p-5 lg:p-15"
             id="vote"
             data-testid="homeVote"
         >
