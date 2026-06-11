@@ -29,7 +29,6 @@ async function HomePage() {
         >
             <HomeHero />
             <HomeDiscordSection />
-            <HomeVote />
             <HomeIntroSection />
             <HomeFooter />
         </main>
