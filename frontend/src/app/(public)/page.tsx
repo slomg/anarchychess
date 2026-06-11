@@ -4,7 +4,6 @@ import HomeDiscordSection from "@/features/home/components/HomeDiscordSection";
 import HomeIntroSection from "@/features/home/components/HomeIntroSection";
 import HomeFooter from "@/features/home/components/HomeFooter";
 import HomeHero from "@/features/home/components/HomeHero";
-import HomeVote from "@/features/home/components/HomeVote";
 
 export const metadata: Metadata = {
     title: "Anarchy Chess",
