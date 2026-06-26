@@ -209,7 +209,6 @@ public sealed class BitBishopDefinition : IBitPieceDefinition
                     ? ForcedMovePriority.UnderagePawn
                     : ForcedMovePriority.None;
 
-            byte targetBishopSquare = BitboardHelpers.BitScanForward(ref targetBishopMask);
             BitMove move = new()
             {
                 From = position,
