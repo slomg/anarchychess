@@ -116,7 +116,7 @@ public sealed class BitCheckerDefinition : IBitPieceDefinition
         byte secondHopPosition = (byte)(position + 22);
 
         UInt128 firstHop = BitboardHelpers.ShiftUpRight(positionBit);
-        UInt128 secondHop = BitboardHelpers.ShiftUpLeft(firstHop);
+        UInt128 secondHop = BitboardHelpers.ShiftUpRight(firstHop);
         return new()
         {
             FirstHop = firstHop,
