@@ -69,7 +69,11 @@ public static class BitboardHelpers
         (mask & BitboardConstants.NotLeftEdgeMask) >> 1;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static UInt128 ShiftUp(UInt128 mask) => mask << 10;
+    // we need to mask out the top edge because we have left out bits at the top
+    public static UInt128 ShiftUp(UInt128 mask) => (mask & BitboardConstants.NotTopEdgeMask) << 10;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static UInt128 ShiftUpUnmasked(UInt128 mask) => mask << 10;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static UInt128 ShiftUpRight(UInt128 mask) =>

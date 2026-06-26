@@ -147,6 +147,32 @@ public class BitboardHelpersTests
     }
 
     [Fact]
+    public void ShiftUp_drops_bits_on_top_edge()
+    {
+        UInt128 result = BitboardHelpers.ShiftUp(BitboardConstants.TopEdgeMask);
+
+        result.Should().Be(0);
+    }
+
+    [Fact]
+    public void ShiftUpUnmasked_moves_bits_up_one_rank()
+    {
+        UInt128 mask = UInt128.One << 12;
+
+        UInt128 result = BitboardHelpers.ShiftUpUnmasked(mask);
+
+        result.Should().Be(UInt128.One << 22);
+    }
+
+    [Fact]
+    public void ShiftUpUnmasked_keeps_top_edge_bits()
+    {
+        UInt128 result = BitboardHelpers.ShiftUpUnmasked(BitboardConstants.TopEdgeMask);
+
+        result.Should().Be(BitboardConstants.TopEdgeMask << 10);
+    }
+
+    [Fact]
     public void ShiftDown_moves_bits_down_one_rank()
     {
         UInt128 mask = UInt128.One << 22;
