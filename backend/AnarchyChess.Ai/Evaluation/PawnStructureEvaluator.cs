@@ -46,10 +46,10 @@ public static class PawnStructureEvaluator
 
     private static int CountIsolated(UInt128 pawns)
     {
-        UInt128 rightExclude = pawns & BitboardConstants.RightEdgeExcludeMask;
+        UInt128 rightExclude = pawns & BitboardConstants.NotRightEdgeMask;
         UInt128 rightNeighbors = rightExclude << 1 | rightExclude << 11 | rightExclude >> 9;
 
-        UInt128 leftExclude = pawns & BitboardConstants.LeftEdgeExcludeMask;
+        UInt128 leftExclude = pawns & BitboardConstants.NotLeftEdgeMask;
         UInt128 leftNeighbors = leftExclude >> 1 | leftExclude << 9 | leftExclude >> 11;
 
         UInt128 nonIsolated = pawns & (leftNeighbors | rightNeighbors);
@@ -61,21 +61,21 @@ public static class PawnStructureEvaluator
     private static int CountWhiteBackwards(UInt128 pawns, UInt128 enemyPawns)
     {
         UInt128 defendedPawns =
-            ((pawns & BitboardConstants.LeftEdgeExcludeMask) << 9)
-            | ((pawns & BitboardConstants.RightEdgeExcludeMask) << 11);
+            ((pawns & BitboardConstants.NotLeftEdgeMask) << 9)
+            | ((pawns & BitboardConstants.NotRightEdgeMask) << 11);
         UInt128 undefendedPawns = pawns & ~defendedPawns;
 
         UInt128 blockedPawns = enemyPawns >> 10;
         undefendedPawns &= ~blockedPawns;
 
         UInt128 adjacentFiles =
-            ((pawns & BitboardConstants.LeftEdgeExcludeMask) << 1)
-            | ((pawns & BitboardConstants.RightEdgeExcludeMask) >> 1);
+            ((pawns & BitboardConstants.NotLeftEdgeMask) << 1)
+            | ((pawns & BitboardConstants.NotRightEdgeMask) >> 1);
         undefendedPawns &= ~adjacentFiles;
 
         UInt128 enemyAttacks =
-            ((enemyPawns & BitboardConstants.RightEdgeExcludeMask) >> 9)
-            | ((enemyPawns & BitboardConstants.LeftEdgeExcludeMask) >> 11);
+            ((enemyPawns & BitboardConstants.NotRightEdgeMask) >> 9)
+            | ((enemyPawns & BitboardConstants.NotLeftEdgeMask) >> 11);
 
         UInt128 front = undefendedPawns << 10;
         UInt128 backwardPawns = front & enemyAttacks;
@@ -86,21 +86,21 @@ public static class PawnStructureEvaluator
     private static int CountBlackBackwards(UInt128 pawns, UInt128 enemyPawns)
     {
         UInt128 defendedPawns =
-            ((pawns & BitboardConstants.LeftEdgeExcludeMask) >> 11)
-            | ((pawns & BitboardConstants.RightEdgeExcludeMask) >> 9);
+            ((pawns & BitboardConstants.NotLeftEdgeMask) >> 11)
+            | ((pawns & BitboardConstants.NotRightEdgeMask) >> 9);
         UInt128 undefendedPawns = pawns & ~defendedPawns;
 
         UInt128 blockedPawns = enemyPawns << 10;
         undefendedPawns &= ~blockedPawns;
 
         UInt128 adjacentFiles =
-            ((pawns & BitboardConstants.LeftEdgeExcludeMask) << 1)
-            | ((pawns & BitboardConstants.RightEdgeExcludeMask) >> 1);
+            ((pawns & BitboardConstants.NotLeftEdgeMask) << 1)
+            | ((pawns & BitboardConstants.NotRightEdgeMask) >> 1);
         undefendedPawns &= ~adjacentFiles;
 
         UInt128 enemyAttacks =
-            ((enemyPawns & BitboardConstants.RightEdgeExcludeMask) << 11)
-            | ((enemyPawns & BitboardConstants.LeftEdgeExcludeMask) << 9);
+            ((enemyPawns & BitboardConstants.NotRightEdgeMask) << 11)
+            | ((enemyPawns & BitboardConstants.NotLeftEdgeMask) << 9);
 
         UInt128 front = undefendedPawns >> 10;
         UInt128 backwardPawns = front & enemyAttacks;

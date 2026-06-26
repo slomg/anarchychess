@@ -11,8 +11,8 @@ public sealed class PawnStructureHelpers
         }
         mask &= (UInt128.One << 100) - 1;
 
-        UInt128 leftMask = (mask & BitboardConstants.LeftEdgeExcludeMask) >> 1;
-        UInt128 rightMask = (mask & BitboardConstants.RightEdgeExcludeMask) << 1;
+        UInt128 leftMask = (mask & BitboardConstants.NotLeftEdgeMask) >> 1;
+        UInt128 rightMask = (mask & BitboardConstants.NotRightEdgeMask) << 1;
 
         UInt128 blocking = mask | leftMask | rightMask;
         return pawns & ~blocking;
@@ -27,8 +27,8 @@ public sealed class PawnStructureHelpers
         }
         mask &= (UInt128.One << 100) - 1;
 
-        UInt128 leftMask = (mask & BitboardConstants.LeftEdgeExcludeMask) >> 1;
-        UInt128 rightMask = (mask & BitboardConstants.RightEdgeExcludeMask) << 1;
+        UInt128 leftMask = (mask & BitboardConstants.NotLeftEdgeMask) >> 1;
+        UInt128 rightMask = (mask & BitboardConstants.NotRightEdgeMask) << 1;
 
         UInt128 blocking = mask | leftMask | rightMask;
         return pawns & ~blocking;

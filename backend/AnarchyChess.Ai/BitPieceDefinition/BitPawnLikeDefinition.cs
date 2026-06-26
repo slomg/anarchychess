@@ -88,7 +88,7 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
     )
     {
         UInt128 captureLeftMask =
-            (positionBit & BitboardConstants.TopRightEdgeExcludeMask) << 11 & enemyPieces;
+            (positionBit & BitboardConstants.NotTopRightEdgeMask) << 11 & enemyPieces;
         if (captureLeftMask != 0)
         {
             GenerateRegularCapturePromotionMove(
@@ -104,7 +104,7 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
         }
 
         UInt128 captureRightMask =
-            (positionBit & BitboardConstants.TopLeftEdgeExcludeMask) << 9 & enemyPieces;
+            (positionBit & BitboardConstants.NotTopLeftEdgeMask) << 9 & enemyPieces;
         if (captureRightMask != 0)
         {
             GenerateRegularCapturePromotionMove(
@@ -119,8 +119,7 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
             );
         }
 
-        UInt128 stepPositionMask =
-            (positionBit & BitboardConstants.TopEdgeExcludeMask) << 10 & empty;
+        UInt128 stepPositionMask = (positionBit & BitboardConstants.NotTopEdgeMask) << 10 & empty;
         if (stepPositionMask == 0)
         {
             return;
@@ -145,8 +144,7 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
         int remainingStep = _maxInitialSteps - 1;
         while (remainingStep > 0)
         {
-            stepPositionMask =
-                (stepPositionMask & BitboardConstants.TopEdgeExcludeMask) << 10 & empty;
+            stepPositionMask = (stepPositionMask & BitboardConstants.NotTopEdgeMask) << 10 & empty;
             if (stepPositionMask == 0)
             {
                 break;
@@ -180,7 +178,7 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
     )
     {
         UInt128 captureRightMask =
-            (positionBit & BitboardConstants.BottomRightEdgeExcludeMask) >> 9 & enemyPieces;
+            (positionBit & BitboardConstants.NotBottomRightEdgeMask) >> 9 & enemyPieces;
         if (captureRightMask != 0)
         {
             GenerateRegularCapturePromotionMove(
@@ -196,7 +194,7 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
         }
 
         UInt128 captureLeftMask =
-            (positionBit & BitboardConstants.BottomLeftEdgeExcludeMask) >> 11 & enemyPieces;
+            (positionBit & BitboardConstants.NotBottomLeftEdgeMask) >> 11 & enemyPieces;
         if (captureLeftMask != 0)
         {
             GenerateRegularCapturePromotionMove(
@@ -212,7 +210,7 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
         }
 
         UInt128 stepPositionMask =
-            (positionBit & BitboardConstants.BottomEdgeExcludeMask) >> 10 & empty;
+            (positionBit & BitboardConstants.NotBottomEdgeMask) >> 10 & empty;
         if (stepPositionMask == 0)
         {
             return;
@@ -238,7 +236,7 @@ public sealed class BitPawnLikeDefinition(PieceType[] promotesTo, int maxInitial
         while (remainingStep > 0)
         {
             stepPositionMask =
-                (stepPositionMask & BitboardConstants.BottomEdgeExcludeMask) >> 10 & empty;
+                (stepPositionMask & BitboardConstants.NotBottomEdgeMask) >> 10 & empty;
             if (stepPositionMask == 0)
             {
                 break;

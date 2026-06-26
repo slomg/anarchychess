@@ -18,15 +18,15 @@ public static class BitboardConstants
     public static readonly UInt128 EdgeMasks =
         LeftEdgeMask | RightEdgeMask | BottomEdgeMask | TopEdgeMask;
 
-    public static readonly UInt128 LeftEdgeExcludeMask = ~LeftEdgeMask;
-    public static readonly UInt128 RightEdgeExcludeMask = ~RightEdgeMask;
-    public static readonly UInt128 BottomEdgeExcludeMask = ~BottomEdgeMask;
-    public static readonly UInt128 TopEdgeExcludeMask = ~TopEdgeMask;
+    public static readonly UInt128 NotLeftEdgeMask = ~LeftEdgeMask;
+    public static readonly UInt128 NotRightEdgeMask = ~RightEdgeMask;
+    public static readonly UInt128 NotBottomEdgeMask = ~BottomEdgeMask;
+    public static readonly UInt128 NotTopEdgeMask = ~TopEdgeMask;
 
-    public static readonly UInt128 TopRightEdgeExcludeMask = ~TopRightEdgeMask;
-    public static readonly UInt128 TopLeftEdgeExcludeMask = ~TopLeftEdgeMask;
-    public static readonly UInt128 BottomRightEdgeExcludeMask = ~BottomRightEdgeMask;
-    public static readonly UInt128 BottomLeftEdgeExcludeMask = ~BottomLeftEdgeMask;
+    public static readonly UInt128 NotTopRightEdgeMask = ~TopRightEdgeMask;
+    public static readonly UInt128 NotTopLeftEdgeMask = ~TopLeftEdgeMask;
+    public static readonly UInt128 NotBottomRightEdgeMask = ~BottomRightEdgeMask;
+    public static readonly UInt128 NotBottomLeftEdgeMask = ~BottomLeftEdgeMask;
 
     // all castling masks don't include king and rook destinations, because we can capture our own bishop, so it's checked seperately
     public static readonly UInt128 WhiteKingSideBetweenMask =

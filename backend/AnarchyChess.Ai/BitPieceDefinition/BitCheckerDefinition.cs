@@ -114,8 +114,8 @@ public sealed class BitCheckerDefinition : IBitPieceDefinition
         byte firstHopPosition = (byte)(position + 11);
         byte secondHopPosition = (byte)(position + 22);
 
-        UInt128 firstHop = (positionBit & BitboardConstants.TopRightEdgeExcludeMask) << 11;
-        UInt128 secondHop = (firstHop & BitboardConstants.TopRightEdgeExcludeMask) << 11;
+        UInt128 firstHop = (positionBit & BitboardConstants.NotTopRightEdgeMask) << 11;
+        UInt128 secondHop = (firstHop & BitboardConstants.NotTopRightEdgeMask) << 11;
         return new()
         {
             FirstHop = firstHop,
@@ -131,8 +131,8 @@ public sealed class BitCheckerDefinition : IBitPieceDefinition
         byte firstHopPosition = (byte)(position + 9);
         byte secondHopPosition = (byte)(position + 18);
 
-        UInt128 firstHop = (positionBit & BitboardConstants.TopLeftEdgeExcludeMask) << 9;
-        UInt128 secondHop = (firstHop & BitboardConstants.TopLeftEdgeExcludeMask) << 9;
+        UInt128 firstHop = (positionBit & BitboardConstants.NotTopLeftEdgeMask) << 9;
+        UInt128 secondHop = (firstHop & BitboardConstants.NotTopLeftEdgeMask) << 9;
         return new()
         {
             FirstHop = firstHop,
@@ -148,8 +148,8 @@ public sealed class BitCheckerDefinition : IBitPieceDefinition
         byte firstHopPosition = (byte)(position - 9);
         byte secondHopPosition = (byte)(position - 18);
 
-        UInt128 firstHop = (positionBit & BitboardConstants.BottomRightEdgeExcludeMask) >> 9;
-        UInt128 secondHop = (firstHop & BitboardConstants.BottomRightEdgeExcludeMask) >> 9;
+        UInt128 firstHop = (positionBit & BitboardConstants.NotBottomRightEdgeMask) >> 9;
+        UInt128 secondHop = (firstHop & BitboardConstants.NotBottomRightEdgeMask) >> 9;
         return new()
         {
             FirstHop = firstHop,
@@ -165,8 +165,8 @@ public sealed class BitCheckerDefinition : IBitPieceDefinition
         byte firstHopPosition = (byte)(position - 11);
         byte secondHopPosition = (byte)(position - 22);
 
-        UInt128 firstHop = (positionBit & BitboardConstants.BottomLeftEdgeExcludeMask) >> 11;
-        UInt128 secondHop = (firstHop & BitboardConstants.BottomLeftEdgeExcludeMask) >> 11;
+        UInt128 firstHop = (positionBit & BitboardConstants.NotBottomLeftEdgeMask) >> 11;
+        UInt128 secondHop = (firstHop & BitboardConstants.NotBottomLeftEdgeMask) >> 11;
         return new()
         {
             FirstHop = firstHop,
