@@ -101,6 +101,160 @@ public class BitboardHelpersTests
     }
 
     [Fact]
+    public void ShiftRight_moves_bits_one_file_right()
+    {
+        UInt128 mask = UInt128.One << 11;
+
+        UInt128 result = BitboardHelpers.ShiftRight(mask);
+
+        result.Should().Be(UInt128.One << 12);
+    }
+
+    [Fact]
+    public void ShiftRight_drops_bits_on_right_edge()
+    {
+        UInt128 result = BitboardHelpers.ShiftRight(BitboardConstants.RightEdgeMask);
+
+        result.Should().Be(0);
+    }
+
+    [Fact]
+    public void ShiftLeft_moves_bits_one_file_left()
+    {
+        UInt128 mask = UInt128.One << 11;
+
+        UInt128 result = BitboardHelpers.ShiftLeft(mask);
+
+        result.Should().Be(UInt128.One << 10);
+    }
+
+    [Fact]
+    public void ShiftLeft_drops_bits_on_left_edge()
+    {
+        UInt128 result = BitboardHelpers.ShiftLeft(BitboardConstants.LeftEdgeMask);
+
+        result.Should().Be(0);
+    }
+
+    [Fact]
+    public void ShiftUp_moves_bits_up_one_rank()
+    {
+        UInt128 mask = UInt128.One << 12;
+
+        UInt128 result = BitboardHelpers.ShiftUp(mask);
+
+        result.Should().Be(UInt128.One << 22);
+    }
+
+    [Fact]
+    public void ShiftUp_drops_bits_on_top_edge()
+    {
+        UInt128 result = BitboardHelpers.ShiftUp(BitboardConstants.TopEdgeMask);
+
+        result.Should().Be(0);
+    }
+
+    [Fact]
+    public void ShiftUpUnmasked_moves_bits_up_one_rank()
+    {
+        UInt128 mask = UInt128.One << 12;
+
+        UInt128 result = BitboardHelpers.ShiftUpUnmasked(mask);
+
+        result.Should().Be(UInt128.One << 22);
+    }
+
+    [Fact]
+    public void ShiftUpUnmasked_keeps_top_edge_bits()
+    {
+        UInt128 result = BitboardHelpers.ShiftUpUnmasked(BitboardConstants.TopEdgeMask);
+
+        result.Should().Be(BitboardConstants.TopEdgeMask << 10);
+    }
+
+    [Fact]
+    public void ShiftDown_moves_bits_down_one_rank()
+    {
+        UInt128 mask = UInt128.One << 22;
+
+        UInt128 result = BitboardHelpers.ShiftDown(mask);
+
+        result.Should().Be(UInt128.One << 12);
+    }
+
+    [Fact]
+    public void ShiftUpRight_moves_bits_diagonally()
+    {
+        UInt128 mask = UInt128.One << 12;
+
+        UInt128 result = BitboardHelpers.ShiftUpRight(mask);
+
+        result.Should().Be(UInt128.One << 23);
+    }
+
+    [Fact]
+    public void ShiftUpRight_drops_bits_on_top_right_edge()
+    {
+        UInt128 result = BitboardHelpers.ShiftUpRight(BitboardConstants.TopRightEdgeMask);
+
+        result.Should().Be(0);
+    }
+
+    [Fact]
+    public void ShiftUpLeft_moves_bits_diagonally()
+    {
+        UInt128 mask = UInt128.One << 12;
+
+        UInt128 result = BitboardHelpers.ShiftUpLeft(mask);
+
+        result.Should().Be(UInt128.One << 21);
+    }
+
+    [Fact]
+    public void ShiftUpLeft_drops_bits_on_top_left_edge()
+    {
+        UInt128 result = BitboardHelpers.ShiftUpLeft(BitboardConstants.TopLeftEdgeMask);
+
+        result.Should().Be(0);
+    }
+
+    [Fact]
+    public void ShiftDownRight_moves_bits_diagonally()
+    {
+        UInt128 mask = UInt128.One << 21;
+
+        UInt128 result = BitboardHelpers.ShiftDownRight(mask);
+
+        result.Should().Be(UInt128.One << 12);
+    }
+
+    [Fact]
+    public void ShiftDownRight_drops_bits_on_bottom_right_edge()
+    {
+        UInt128 result = BitboardHelpers.ShiftDownRight(BitboardConstants.BottomRightEdgeMask);
+
+        result.Should().Be(0);
+    }
+
+    [Fact]
+    public void ShiftDownLeft_moves_bits_diagonally()
+    {
+        UInt128 mask = UInt128.One << 23;
+
+        UInt128 result = BitboardHelpers.ShiftDownLeft(mask);
+
+        result.Should().Be(UInt128.One << 12);
+    }
+
+    [Fact]
+    public void ShiftDownLeft_drops_bits_on_bottom_left_edge()
+    {
+        UInt128 result = BitboardHelpers.ShiftDownLeft(BitboardConstants.BottomLeftEdgeMask);
+
+        result.Should().Be(0);
+    }
+
+    [Fact]
     public void CreateMoveFromAttacks_handles_mixed_quiet_and_capture()
     {
         Span<BitMove> moves = new BitMove[10];

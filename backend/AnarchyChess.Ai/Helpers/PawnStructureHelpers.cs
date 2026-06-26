@@ -7,12 +7,12 @@ public sealed class PawnStructureHelpers
         UInt128 mask = enemyPawns;
         for (int file = 0; file < 10; file++)
         {
-            mask |= mask >> 10;
+            mask |= BitboardHelpers.ShiftDown(mask);
         }
         mask &= (UInt128.One << 100) - 1;
 
-        UInt128 leftMask = (mask & BitboardConstants.LeftEdgeExcludeMask) >> 1;
-        UInt128 rightMask = (mask & BitboardConstants.RightEdgeExcludeMask) << 1;
+        UInt128 leftMask = BitboardHelpers.ShiftLeft(mask);
+        UInt128 rightMask = BitboardHelpers.ShiftRight(mask);
 
         UInt128 blocking = mask | leftMask | rightMask;
         return pawns & ~blocking;
@@ -23,12 +23,12 @@ public sealed class PawnStructureHelpers
         UInt128 mask = enemyPawns;
         for (int file = 0; file < 10; file++)
         {
-            mask |= mask << 10;
+            mask |= BitboardHelpers.ShiftUpUnmasked(mask);
         }
         mask &= (UInt128.One << 100) - 1;
 
-        UInt128 leftMask = (mask & BitboardConstants.LeftEdgeExcludeMask) >> 1;
-        UInt128 rightMask = (mask & BitboardConstants.RightEdgeExcludeMask) << 1;
+        UInt128 leftMask = BitboardHelpers.ShiftLeft(mask);
+        UInt128 rightMask = BitboardHelpers.ShiftRight(mask);
 
         UInt128 blocking = mask | leftMask | rightMask;
         return pawns & ~blocking;

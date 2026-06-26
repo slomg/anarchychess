@@ -46,11 +46,15 @@ public static class PawnStructureEvaluator
 
     private static int CountIsolated(UInt128 pawns)
     {
-        UInt128 rightExclude = pawns & BitboardConstants.RightEdgeExcludeMask;
-        UInt128 rightNeighbors = rightExclude << 1 | rightExclude << 11 | rightExclude >> 9;
+        UInt128 rightNeighbors =
+            BitboardHelpers.ShiftRight(pawns)
+            | BitboardHelpers.ShiftUpRight(pawns)
+            | BitboardHelpers.ShiftDownRight(pawns);
 
-        UInt128 leftExclude = pawns & BitboardConstants.LeftEdgeExcludeMask;
-        UInt128 leftNeighbors = leftExclude >> 1 | leftExclude << 9 | leftExclude >> 11;
+        UInt128 leftNeighbors =
+            BitboardHelpers.ShiftLeft(pawns)
+            | BitboardHelpers.ShiftUpLeft(pawns)
+            | BitboardHelpers.ShiftDownLeft(pawns);
 
         UInt128 nonIsolated = pawns & (leftNeighbors | rightNeighbors);
         UInt128 isolated = pawns & ~nonIsolated;
@@ -61,23 +65,20 @@ public static class PawnStructureEvaluator
     private static int CountWhiteBackwards(UInt128 pawns, UInt128 enemyPawns)
     {
         UInt128 defendedPawns =
-            ((pawns & BitboardConstants.LeftEdgeExcludeMask) << 9)
-            | ((pawns & BitboardConstants.RightEdgeExcludeMask) << 11);
+            BitboardHelpers.ShiftUpLeft(pawns) | BitboardHelpers.ShiftUpRight(pawns);
         UInt128 undefendedPawns = pawns & ~defendedPawns;
 
-        UInt128 blockedPawns = enemyPawns >> 10;
+        UInt128 blockedPawns = BitboardHelpers.ShiftDown(enemyPawns);
         undefendedPawns &= ~blockedPawns;
 
         UInt128 adjacentFiles =
-            ((pawns & BitboardConstants.LeftEdgeExcludeMask) << 1)
-            | ((pawns & BitboardConstants.RightEdgeExcludeMask) >> 1);
+            BitboardHelpers.ShiftLeft(pawns) | BitboardHelpers.ShiftRight(pawns);
         undefendedPawns &= ~adjacentFiles;
 
         UInt128 enemyAttacks =
-            ((enemyPawns & BitboardConstants.RightEdgeExcludeMask) >> 9)
-            | ((enemyPawns & BitboardConstants.LeftEdgeExcludeMask) >> 11);
+            BitboardHelpers.ShiftDownRight(enemyPawns) | BitboardHelpers.ShiftDownLeft(enemyPawns);
 
-        UInt128 front = undefendedPawns << 10;
+        UInt128 front = BitboardHelpers.ShiftUp(undefendedPawns);
         UInt128 backwardPawns = front & enemyAttacks;
 
         return BitboardHelpers.CountBits(backwardPawns);
@@ -86,23 +87,20 @@ public static class PawnStructureEvaluator
     private static int CountBlackBackwards(UInt128 pawns, UInt128 enemyPawns)
     {
         UInt128 defendedPawns =
-            ((pawns & BitboardConstants.LeftEdgeExcludeMask) >> 11)
-            | ((pawns & BitboardConstants.RightEdgeExcludeMask) >> 9);
+            BitboardHelpers.ShiftDownLeft(pawns) | BitboardHelpers.ShiftDownRight(pawns);
         UInt128 undefendedPawns = pawns & ~defendedPawns;
 
-        UInt128 blockedPawns = enemyPawns << 10;
+        UInt128 blockedPawns = BitboardHelpers.ShiftUp(enemyPawns);
         undefendedPawns &= ~blockedPawns;
 
         UInt128 adjacentFiles =
-            ((pawns & BitboardConstants.LeftEdgeExcludeMask) << 1)
-            | ((pawns & BitboardConstants.RightEdgeExcludeMask) >> 1);
+            BitboardHelpers.ShiftRight(pawns) | BitboardHelpers.ShiftLeft(pawns);
         undefendedPawns &= ~adjacentFiles;
 
         UInt128 enemyAttacks =
-            ((enemyPawns & BitboardConstants.RightEdgeExcludeMask) << 11)
-            | ((enemyPawns & BitboardConstants.LeftEdgeExcludeMask) << 9);
+            BitboardHelpers.ShiftUpRight(enemyPawns) | BitboardHelpers.ShiftUpLeft(enemyPawns);
 
-        UInt128 front = undefendedPawns >> 10;
+        UInt128 front = BitboardHelpers.ShiftDown(undefendedPawns);
         UInt128 backwardPawns = front & enemyAttacks;
         return BitboardHelpers.CountBits(backwardPawns);
     }
