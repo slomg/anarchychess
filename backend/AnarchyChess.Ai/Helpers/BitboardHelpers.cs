@@ -60,6 +60,36 @@ public static class BitboardHelpers
     public static int CountBits(UInt128 mask) =>
         BitOperations.PopCount((ulong)mask) + BitOperations.PopCount((ulong)(mask >> 64));
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static UInt128 ShiftRight(UInt128 mask) =>
+        (mask & BitboardConstants.NotRightEdgeMask) << 1;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static UInt128 ShiftLeft(UInt128 mask) =>
+        (mask & BitboardConstants.NotLeftEdgeMask) >> 1;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static UInt128 ShiftUp(UInt128 mask) => mask << 10;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static UInt128 ShiftUpRight(UInt128 mask) =>
+        (mask & BitboardConstants.NotTopRightEdgeMask) << 11;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static UInt128 ShiftUpLeft(UInt128 mask) =>
+        (mask & BitboardConstants.NotTopLeftEdgeMask) << 9;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static UInt128 ShiftDown(UInt128 mask) => mask >> 10;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static UInt128 ShiftDownRight(UInt128 mask) =>
+        (mask & BitboardConstants.NotBottomRightEdgeMask) >> 9;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static UInt128 ShiftDownLeft(UInt128 mask) =>
+        (mask & BitboardConstants.NotBottomLeftEdgeMask) >> 11;
+
     public static void CreateMoveFromAttacks(
         byte from,
         BitPiece piece,
@@ -86,7 +116,7 @@ public static class BitboardHelpers
     {
         while (quiets != 0)
         {
-            byte toSquare = (byte)BitScanForward(ref quiets);
+            byte toSquare = BitScanForward(ref quiets);
             moves[moveCount++] = new BitMove
             {
                 From = from,
@@ -106,7 +136,7 @@ public static class BitboardHelpers
     {
         while (captures != 0)
         {
-            byte toSquare = (byte)BitScanForward(ref captures);
+            byte toSquare = BitScanForward(ref captures);
 
             BitMove move = new()
             {
