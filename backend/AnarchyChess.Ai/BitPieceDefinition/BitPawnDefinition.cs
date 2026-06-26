@@ -95,8 +95,7 @@ public sealed class BitPawnDefinition : IBitPieceDefinition
     {
         UInt128 mask = 0;
 
-        // forward
-        UInt128 forwardThrower = (positionBit & BitboardConstants.NotBottomEdgeMask) >> 10;
+        UInt128 forwardThrower = BitboardHelpers.ShiftDown(positionBit);
         if (
             (board.ValidWhiteThrowers & forwardThrower) != 0
             && (board.StunnedPieces & forwardThrower) == 0
@@ -105,8 +104,7 @@ public sealed class BitPawnDefinition : IBitPieceDefinition
             mask |= PieceMasks.WhiteThrowForwardMasks[position];
         }
 
-        // right
-        UInt128 rightThrower = (positionBit & BitboardConstants.NotBottomLeftEdgeMask) >> 11;
+        UInt128 rightThrower = BitboardHelpers.ShiftDownLeft(positionBit);
         if (
             (board.ValidWhiteThrowers & rightThrower) != 0
             && (board.StunnedPieces & rightThrower) == 0
@@ -115,8 +113,7 @@ public sealed class BitPawnDefinition : IBitPieceDefinition
             mask |= PieceMasks.WhiteThrowRightMasks[position];
         }
 
-        // left
-        UInt128 leftThrower = (positionBit & BitboardConstants.NotBottomRightEdgeMask) >> 9;
+        UInt128 leftThrower = BitboardHelpers.ShiftDownRight(positionBit);
         if (
             (board.ValidWhiteThrowers & leftThrower) != 0
             && (board.StunnedPieces & leftThrower) == 0
@@ -127,8 +124,8 @@ public sealed class BitPawnDefinition : IBitPieceDefinition
 
         return (
             throwMask: mask,
-            attackableSquares: ((nonPawnEnemies & BitboardConstants.NotRightEdgeMask) >> 9)
-                | ((nonPawnEnemies & BitboardConstants.NotLeftEdgeMask) >> 11)
+            attackableSquares: BitboardHelpers.ShiftDownRight(nonPawnEnemies)
+                | BitboardHelpers.ShiftDownLeft(nonPawnEnemies)
         );
     }
 
@@ -141,8 +138,7 @@ public sealed class BitPawnDefinition : IBitPieceDefinition
     {
         UInt128 mask = 0;
 
-        // forward
-        UInt128 forwardThrower = (positionBit & BitboardConstants.NotTopEdgeMask) << 10;
+        UInt128 forwardThrower = BitboardHelpers.ShiftUp(positionBit);
         if (
             (board.ValidBlackThrowers & forwardThrower) != 0
             && (board.StunnedPieces & forwardThrower) == 0
@@ -151,8 +147,7 @@ public sealed class BitPawnDefinition : IBitPieceDefinition
             mask |= PieceMasks.BlackThrowForwardMasks[position];
         }
 
-        // right
-        UInt128 rightThrower = (positionBit & BitboardConstants.NotTopLeftEdgeMask) << 9;
+        UInt128 rightThrower = BitboardHelpers.ShiftUpLeft(positionBit);
         if (
             (board.ValidBlackThrowers & rightThrower) != 0
             && (board.StunnedPieces & rightThrower) == 0
@@ -161,8 +156,7 @@ public sealed class BitPawnDefinition : IBitPieceDefinition
             mask |= PieceMasks.BlackThrowRightMasks[position];
         }
 
-        // left
-        UInt128 leftThrower = (positionBit & BitboardConstants.NotTopRightEdgeMask) << 11;
+        UInt128 leftThrower = BitboardHelpers.ShiftUpRight(positionBit);
         if (
             (board.ValidBlackThrowers & leftThrower) != 0
             && (board.StunnedPieces & leftThrower) == 0
@@ -173,8 +167,8 @@ public sealed class BitPawnDefinition : IBitPieceDefinition
 
         return (
             throwMask: mask,
-            attackableSquares: ((nonPawnEnemies & BitboardConstants.NotRightEdgeMask) << 11)
-                | ((nonPawnEnemies & BitboardConstants.NotLeftEdgeMask) << 9)
+            attackableSquares: BitboardHelpers.ShiftUpRight(nonPawnEnemies)
+                | BitboardHelpers.ShiftUpLeft(nonPawnEnemies)
         );
     }
 }

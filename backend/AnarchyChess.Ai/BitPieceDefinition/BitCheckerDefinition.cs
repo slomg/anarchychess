@@ -1,4 +1,5 @@
-﻿using AnarchyChess.Ai.Models;
+﻿using AnarchyChess.Ai.Helpers;
+using AnarchyChess.Ai.Models;
 using AnarchyChess.EngineShared;
 
 namespace AnarchyChess.Ai.BitPieceDefinition;
@@ -114,8 +115,8 @@ public sealed class BitCheckerDefinition : IBitPieceDefinition
         byte firstHopPosition = (byte)(position + 11);
         byte secondHopPosition = (byte)(position + 22);
 
-        UInt128 firstHop = (positionBit & BitboardConstants.NotTopRightEdgeMask) << 11;
-        UInt128 secondHop = (firstHop & BitboardConstants.NotTopRightEdgeMask) << 11;
+        UInt128 firstHop = BitboardHelpers.ShiftUpRight(positionBit);
+        UInt128 secondHop = BitboardHelpers.ShiftUpLeft(firstHop);
         return new()
         {
             FirstHop = firstHop,
@@ -131,8 +132,8 @@ public sealed class BitCheckerDefinition : IBitPieceDefinition
         byte firstHopPosition = (byte)(position + 9);
         byte secondHopPosition = (byte)(position + 18);
 
-        UInt128 firstHop = (positionBit & BitboardConstants.NotTopLeftEdgeMask) << 9;
-        UInt128 secondHop = (firstHop & BitboardConstants.NotTopLeftEdgeMask) << 9;
+        UInt128 firstHop = BitboardHelpers.ShiftUpLeft(positionBit);
+        UInt128 secondHop = BitboardHelpers.ShiftUpLeft(firstHop);
         return new()
         {
             FirstHop = firstHop,
@@ -148,8 +149,8 @@ public sealed class BitCheckerDefinition : IBitPieceDefinition
         byte firstHopPosition = (byte)(position - 9);
         byte secondHopPosition = (byte)(position - 18);
 
-        UInt128 firstHop = (positionBit & BitboardConstants.NotBottomRightEdgeMask) >> 9;
-        UInt128 secondHop = (firstHop & BitboardConstants.NotBottomRightEdgeMask) >> 9;
+        UInt128 firstHop = BitboardHelpers.ShiftDownRight(positionBit);
+        UInt128 secondHop = BitboardHelpers.ShiftDownRight(firstHop);
         return new()
         {
             FirstHop = firstHop,
@@ -165,8 +166,8 @@ public sealed class BitCheckerDefinition : IBitPieceDefinition
         byte firstHopPosition = (byte)(position - 11);
         byte secondHopPosition = (byte)(position - 22);
 
-        UInt128 firstHop = (positionBit & BitboardConstants.NotBottomLeftEdgeMask) >> 11;
-        UInt128 secondHop = (firstHop & BitboardConstants.NotBottomLeftEdgeMask) >> 11;
+        UInt128 firstHop = BitboardHelpers.ShiftDownLeft(positionBit);
+        UInt128 secondHop = BitboardHelpers.ShiftDownLeft(firstHop);
         return new()
         {
             FirstHop = firstHop,
