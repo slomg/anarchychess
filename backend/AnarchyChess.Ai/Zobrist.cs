@@ -19,7 +19,7 @@ public static class Zobrist
 
     static Zobrist()
     {
-        var rng = new Random(6969);
+        Random rng = new(6969);
 
         PieceSquare = new ulong[PieceTypes, Colors, 100];
         for (int piece = 0; piece < PieceTypes; piece++)
