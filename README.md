@@ -104,7 +104,6 @@ dotnet user-secrets set "AppSettings:Secrets:JwtSecret" "<jwt-secret>"
 
 dotnet user-secrets set "AppSettings:Secrets:DatabaseConnString" "Host=localhost;Port=5432;Username=postgres;Password=postgres;Database=anarchychess;MaxPoolSize=15;"
 dotnet user-secrets set "AppSettings:Secrets:BlobStorageConnString" "azure.blob://emu"
-dotnet user-secrets set "AppSettings:Secrets:RedisConnString" "localhost,abortConnect=false"
 
 dotnet user-secrets set "AppSettings:Secrets:TableCheckpointerConnString" "UseDevelopmentStorage=true"
 dotnet user-secrets set "AppSettings:Secrets:EventHubConnString" "Endpoint=sb://localhost;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;"

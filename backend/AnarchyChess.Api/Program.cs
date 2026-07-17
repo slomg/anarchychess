@@ -146,7 +146,7 @@ builder.Services.AddCors(options =>
     );
 });
 
-builder.Services.AddSignalR().AddStackExchangeRedis(appSettings.Secrets.RedisConnString);
+builder.Services.AddSignalR().AddPostgresBackplane(appSettings.Secrets.DatabaseConnString);
 
 #region Rate Limit
 builder.Services.AddRateLimiter(options =>

@@ -59,7 +59,7 @@ public class AnarchyChessWebApplicationFactory : WebApplicationFactory<Api::Prog
                 )
             );
 
-            // remove signalr redis backplane
+            // remove signalr backplane
             services.RemoveAll<HubOptions>();
             services.RemoveAll(typeof(HubLifetimeManager<>));
             services.RemoveAll<ISignalRBuilder>();

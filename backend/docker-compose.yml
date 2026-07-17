@@ -19,14 +19,6 @@ services:
             - postgresdata:/var/lib/postgresql/data
         restart: unless-stopped
 
-    redis:
-        image: redis
-        restart: unless-stopped
-        ports:
-            - "6379:6379"
-        volumes:
-            - redisdata:/data
-
     azurite:
         image: mcr.microsoft.com/azure-storage/azurite:latest
         restart: unless-stopped
@@ -39,5 +31,4 @@ services:
 
 volumes:
     postgresdata:
-    redisdata:
     azuritedata:
