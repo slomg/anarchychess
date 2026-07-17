@@ -39,4 +39,14 @@ jobs:
               uses: azure/cli@v3.0.0
               with:
                   inlineScript: |
-                      az vmss delete-instances --resource-group anarchybot-prod-resource --name anarchychess-prod-vmss --instance-ids "*"
+                      az vmss run-command invoke \
+                        --resource-group anarchybot-prod-resource \
+                        --name anarchybot-prod-vmss \
+                        --instance-id "*" \
+                        --command-id RunShellScript \
+                        --scripts " \
+                          docker pull ${{ secrets.DOCKER_USERNAME }}/anarchybot:latest
+                          docker stop anarchybot || true
+                          docker rm anarchybot || true
+                          docker run -d --restart=always --name anarchybot ${{ secrets.DOCKER_USERNAME }}/anarchybot:latest
+                        "
