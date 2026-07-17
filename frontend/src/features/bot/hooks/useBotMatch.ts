@@ -25,6 +25,7 @@ export default function useBotMatch(): {
     ): Promise<boolean> {
         setIsMatching(true);
 
+        let isRedirecting = false;
         try {
             const isHealthy = await redirectIfUnhealthy();
             if (!isHealthy) {
@@ -42,9 +43,12 @@ export default function useBotMatch(): {
             }
 
             router.push(`${constants.PATHS.BOT}/${gameToken}`);
+            isRedirecting = true;
             return true;
         } finally {
-            setIsMatching(false);
+            if (!isRedirecting) {
+                setIsMatching(false);
+            }
         }
     }
 
