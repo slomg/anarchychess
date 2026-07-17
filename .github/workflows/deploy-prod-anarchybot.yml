@@ -39,14 +39,20 @@ jobs:
               uses: azure/cli@v3.0.0
               with:
                   inlineScript: |
-                      az vmss run-command invoke \
-                        --resource-group anarchybot-prod-resource \
-                        --name anarchybot-prod-vmss \
-                        --instance-id "*" \
-                        --command-id RunShellScript \
-                        --scripts " \
-                          docker pull ${{ secrets.DOCKER_USERNAME }}/anarchybot:latest
-                          docker stop anarchybot || true
-                          docker rm anarchybot || true
-                          docker run -d --restart=always --name anarchybot ${{ secrets.DOCKER_USERNAME }}/anarchybot:latest
-                        "
+                      INSTANCE_IDS=$(az vmss list-instances -g anarchybot-prod-resource -n anarchybot-prod-vmss --query "[].instanceId" -o tsv | tr -d "[:space:]")
+
+                      for ID in $INSTANCE_IDS; do
+                        echo "Upgrading on instance id: $ID"
+
+                        az vmss run-command invoke \
+                          --resource-group anarchybot-prod-resource \
+                          --name anarchybot-prod-vmss \
+                          --instance-id "$ID" \
+                          --command-id RunShellScript \
+                          --scripts " \
+                            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/anarchybot:latest
+                            sudo docker stop anarchybot || true
+                            sudo docker rm anarchybot || true
+                            sudo docker run -d --name anarchybot -p 6969:6969 --restart unless-stopped ${{ secrets.DOCKER_USERNAME }}/anarchybot:latest
+                          "
+                      done
