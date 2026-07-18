@@ -33,6 +33,12 @@ export default function ChangeLogPage() {
                 </Link>
             </section>
 
+            <ChangeLogMonthDivider date="July 2026" />
+
+            <ChangeLogCard type={ChangeLogType.FIX} date="July 17">
+                Fixed the bot infrastructure so they have a lot less down time
+            </ChangeLogCard>
+
             <ChangeLogMonthDivider date="May 2026" />
 
             <ChangeLogCard type={ChangeLogType.FIX} date="May 20">
