@@ -112,10 +112,11 @@ public class BotDecisionService(
 
         List<CandidateBotMove> moves =
         [
-            .. evaluationResult
-                .Value.Select((move, i) => ScoreMove(move, board, bitboard, endgameFactor))
-                .Where(move => _behaviorProfile.MoveFilter?.Invoke(move) ?? true),
+            .. evaluationResult.Value.Select(
+                (move, i) => ScoreMove(move, board, bitboard, endgameFactor)
+            ),
         ];
+        moves = ApplyMoveFilter(moves);
 
         (List<CandidateBotMove> missableCheckmates, List<CandidateBotMove> nonCheckmates) =
             OrderInto(
@@ -220,6 +221,18 @@ public class BotDecisionService(
 
         _logger.LogInformation("Shouldn't happen: softmax all moves");
         return Softmax(moves, board, endgameFactor);
+    }
+
+    private List<CandidateBotMove> ApplyMoveFilter(List<CandidateBotMove> moves)
+    {
+        var filter = _behaviorProfile.MoveFilter;
+        if (filter is null)
+        {
+            return moves;
+        }
+
+        List<CandidateBotMove> filtered = [.. moves.Where(move => filter(move))];
+        return filtered.Count > 0 ? filtered : moves;
     }
 
     private CandidateBotMove ScoreMove(
