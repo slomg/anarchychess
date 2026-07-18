@@ -35,6 +35,11 @@ export default function ChangeLogPage() {
 
             <ChangeLogMonthDivider date="July 2026" />
 
+            <ChangeLogCard type={ChangeLogType.FIX} date="July 18">
+                Fixed a miscalculation in the lobotomized bots & did some bot
+                balancing
+            </ChangeLogCard>
+
             <ChangeLogCard type={ChangeLogType.FIX} date="July 17">
                 Fixed the bot infrastructure so they have a lot less down time
             </ChangeLogCard>
