@@ -23,7 +23,7 @@
 # Screenshots
 
 <div>
-    <img src="screenshots/long-passant.png" alt="Long Passant" width="400">
+    <img src="screenshots/anarchybot.png" alt="Anarchy Bot" width="400">
     <img src="screenshots/checker.png" alt="Checker" width="400">
     <img src="screenshots/home.png" alt="Home Page" width="400">
     <img src="screenshots/profile.png" alt="Profile Page" width="400">
