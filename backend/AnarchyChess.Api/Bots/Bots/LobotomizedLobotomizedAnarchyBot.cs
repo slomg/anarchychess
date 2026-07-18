@@ -27,13 +27,13 @@ public class LobotomizedLobotomizedAnarchyBot(IBotDecisionServiceFactory botDeci
             BlunderThreshold: -300,
             //
             BlunderChance: 0.3,
-            TacticChance: 0.05,
+            TacticChance: 0,
             TacticChancePerMoveBonus: 0,
-            SimpleTacticChance: 1,
+            SimpleTacticChance: 0,
             CheckmateChance: 0.05,
             //
-            HangPenalty: -70,
-            OpponentHangBonus: -70,
+            HangPenalty: -100,
+            OpponentHangBonus: -100,
             CausesForcedMovePenalty: 500,
             MultiStepMovePenalty: 500,
             LosesRookCastlingRightPenalty: 50,
@@ -48,11 +48,17 @@ public class LobotomizedLobotomizedAnarchyBot(IBotDecisionServiceFactory botDeci
             //
             FinalDecisionOrder:
             [
-                BotMoveCategory.NonBlunder,
                 BotMoveCategory.MissableBlunder,
+                BotMoveCategory.NonBlunder,
                 BotMoveCategory.Tactic,
                 BotMoveCategory.NonTactic,
-            ]
+            ],
+            ObviousMovePredicate: move =>
+                move.IsRecapture && !move.CausesForcedMove && !move.IsMultiStep,
+            MoveFilter: move =>
+                !move.IsMultiStep
+                && move.MoveEval.Move.SpecialMoveType is not SpecialMoveType.Throw
+                && move.MoveEval.Move.SpecialMoveType is not SpecialMoveType.OmnipotentPawnSpawn
         )
     );
 

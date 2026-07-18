@@ -51,7 +51,11 @@ public class LobotomizedAnarchyBot(IBotDecisionServiceFactory botDecisionService
                 BotMoveCategory.Tactic,
                 BotMoveCategory.MissableBlunder,
                 BotMoveCategory.NonTactic,
-            ]
+            ],
+            ObviousMovePredicate: move =>
+                (move.IsCapturingHanging || move.IsRecapture)
+                && !move.CausesForcedMove
+                && !move.IsMultiStep
         )
     );
 

@@ -52,7 +52,9 @@ public record BotBehaviorProfile(
     int CastleBonus,
     int SamePiecePenalty,
     int ThrowPenalty,
-    IReadOnlyList<BotMoveCategory> FinalDecisionOrder
+    IReadOnlyList<BotMoveCategory> FinalDecisionOrder,
+    Func<CandidateBotMove, bool> ObviousMovePredicate,
+    Func<CandidateBotMove, bool>? MoveFilter = null
 );
 
 public interface IBotDecisionService
@@ -110,9 +112,9 @@ public class BotDecisionService(
 
         List<CandidateBotMove> moves =
         [
-            .. evaluationResult.Value.Select(
-                (move, i) => ScoreMove(move, board, bitboard, endgameFactor)
-            ),
+            .. evaluationResult
+                .Value.Select((move, i) => ScoreMove(move, board, bitboard, endgameFactor))
+                .Where(move => _behaviorProfile.MoveFilter?.Invoke(move) ?? true),
         ];
 
         (List<CandidateBotMove> missableCheckmates, List<CandidateBotMove> nonCheckmates) =
@@ -140,7 +142,7 @@ public class BotDecisionService(
             );
         if (
             missableCheckmates.Count > 0
-            && _randomProvider.NextDouble() < _behaviorProfile.CheckmateChance
+            && _randomProvider.NextDouble() > _behaviorProfile.CheckmateChance
         )
         {
             _logger.LogInformation("Playing missable checkmate");
@@ -173,11 +175,7 @@ public class BotDecisionService(
 
         List<CandidateBotMove> obviousMoves =
         [
-            .. nonBlunders.Where(move =>
-                (move.IsCapturingHanging || move.IsRecapture)
-                && !move.CausesForcedMove
-                && !move.IsMultiStep
-            ),
+            .. nonBlunders.Where(move => _behaviorProfile.ObviousMovePredicate(move)),
         ];
         if (obviousMoves.Count > 0)
         {
@@ -189,7 +187,7 @@ public class BotDecisionService(
         if (
             board.Moves.Count > 10
             && missableBlunders.Count > 0
-            && _randomProvider.NextDouble() < _behaviorProfile.BlunderChance
+            && _randomProvider.NextDouble() > _behaviorProfile.BlunderChance
         )
         {
             _logger.LogInformation("Playing missable blunder");
@@ -405,7 +403,7 @@ public class BotDecisionService(
 
         if (
             _randomProvider.NextDouble()
-            < Math.Min(
+            > Math.Min(
                 1,
                 _behaviorProfile.TacticChance
                     + _behaviorProfile.TacticChancePerMoveBonus * tactics.Count
@@ -423,7 +421,7 @@ public class BotDecisionService(
             return true;
         }
 
-        bool playSimple = _randomProvider.NextDouble() < _behaviorProfile.SimpleTacticChance;
+        bool playSimple = _randomProvider.NextDouble() > _behaviorProfile.SimpleTacticChance;
         if (simpleTactics.Count == 0 && playSimple)
         {
             return false;
@@ -450,7 +448,7 @@ public class BotDecisionService(
     )
     {
         var (complexTactics, simpleTactics) = SortTactics(tactics);
-        bool playSimple = _randomProvider.NextDouble() < _behaviorProfile.SimpleTacticChance;
+        bool playSimple = _randomProvider.NextDouble() > _behaviorProfile.SimpleTacticChance;
 
         if (playSimple && simpleTactics.Count == 0)
         {
