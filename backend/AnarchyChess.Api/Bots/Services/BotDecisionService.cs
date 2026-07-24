@@ -461,25 +461,28 @@ public class BotDecisionService(
     )
     {
         var (complexTactics, simpleTactics) = SortTactics(tactics);
-        bool playSimple = _randomProvider.NextDouble() > _behaviorProfile.SimpleTacticChance;
-
-        if (playSimple && simpleTactics.Count == 0)
+        if (simpleTactics.Count == 0)
         {
             _logger.LogInformation("Playing complex tactic beacuse no simple tactics");
             return Softmax(complexTactics, board, endgameFactor);
         }
+        else if (complexTactics.Count == 0)
+        {
+            _logger.LogInformation("Playing simple tactic beacuse no simple tactics");
+            return Softmax(complexTactics, board, endgameFactor);
+        }
 
+        bool playSimple = _randomProvider.NextDouble() > _behaviorProfile.SimpleTacticChance;
         if (playSimple)
         {
             _logger.LogInformation("Playing simple tactic");
+            return Softmax(simpleTactics, board, endgameFactor);
         }
         else
         {
             _logger.LogInformation("Playing complex tactic");
+            return Softmax(complexTactics, board, endgameFactor);
         }
-        return playSimple
-            ? Softmax(simpleTactics, board, endgameFactor)
-            : Softmax(complexTactics, board, endgameFactor);
     }
 
     private static (List<CandidateBotMove> complex, List<CandidateBotMove> simple) SortTactics(
