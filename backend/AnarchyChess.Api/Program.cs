@@ -590,6 +590,7 @@ builder.Services.AddSingleton<IBotService, BotService>();
 builder.Services.AddSingleton<IBotMoveRunner, BotMoveRunner>();
 builder.Services.AddSingleton<IBotNotifier, BotNotifier>();
 builder.Services.AddSingleton<IBotHeuristics, BotHeuristics>();
+builder.Services.AddSingleton<IMoveClassifier, MoveClassifier>();
 builder.Services.AddSingleton<IBotSee, BotSee>();
 builder.Services.AddSingleton<IBotDecisionServiceFactory, BotDecisionServiceFactory>();
 

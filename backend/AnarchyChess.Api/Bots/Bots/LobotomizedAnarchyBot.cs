@@ -47,10 +47,9 @@ public class LobotomizedAnarchyBot(IBotDecisionServiceFactory botDecisionService
             //
             FinalDecisionOrder:
             [
-                BotMoveCategory.NonBlunder,
+                BotMoveCategory.NormalMove,
                 BotMoveCategory.Tactic,
                 BotMoveCategory.MissableBlunder,
-                BotMoveCategory.NonTactic,
             ],
             ObviousMovePredicate: move =>
                 (move.IsCapturingHanging || move.IsRecapture)

@@ -21,10 +21,9 @@ public readonly record struct CandidateBotMove(
 
 public enum BotMoveCategory
 {
-    NonBlunder,
     MissableBlunder,
     Tactic,
-    NonTactic,
+    NormalMove,
 }
 
 public record BotBehaviorProfile(
@@ -70,6 +69,7 @@ public class BotDecisionService(
     IBotService botService,
     IRandomProvider randomProvider,
     IBotHeuristics botHeuristics,
+    IMoveClassifier moveClassifier,
     ILogger<BotDecisionService> logger,
     BotBehaviorProfile behaviorProfile
 ) : IBotDecisionService
@@ -77,6 +77,7 @@ public class BotDecisionService(
     private readonly IBotService _botService = botService;
     private readonly IRandomProvider _randomProvider = randomProvider;
     private readonly IBotHeuristics _botHeuristics = botHeuristics;
+    private readonly IMoveClassifier _moveClassifier = moveClassifier;
     private readonly ILogger<BotDecisionService> _logger = logger;
 
     private readonly BotBehaviorProfile _behaviorProfile = behaviorProfile;
@@ -110,97 +111,63 @@ public class BotDecisionService(
         BitBoard bitboard = _botService.ConvertBoardToBit(board);
         float endgameFactor = EndgameFactorCalculator.EndgameFactor(bitboard);
 
-        List<CandidateBotMove> moves =
+        List<CandidateBotMove> allMoves =
         [
             .. evaluationResult.Value.Select(
                 (move, i) => ScoreMove(move, board, bitboard, endgameFactor)
             ),
         ];
-        moves = ApplyMoveFilter(moves);
+        allMoves = ApplyMoveFilter(allMoves);
 
-        (List<CandidateBotMove> missableCheckmates, List<CandidateBotMove> nonCheckmates) =
-            OrderInto(
-                moves,
-                move =>
-                {
-                    bool isCheckmate = move.MoveEval.EvalForBot >= 100_000;
-                    if (!isCheckmate)
-                    {
-                        return false;
-                    }
+        var classifiedMoves = _moveClassifier.Classify(allMoves, lastEval, _behaviorProfile);
 
-                    if (move.CausesForcedMove)
-                    {
-                        return true;
-                    }
-                    if (!move.IsRecapture && !move.IsCapturingHanging)
-                    {
-                        return true;
-                    }
+        if (classifiedMoves.MatesInOnes.Count > 0)
+        {
+            _logger.LogInformation("Playing mate in one");
+            return classifiedMoves.MatesInOnes.First().MoveEval;
+        }
 
-                    return false;
-                }
-            );
         if (
-            missableCheckmates.Count > 0
+            classifiedMoves.MissableCheckmates.Count > 0
             && _randomProvider.NextDouble() > _behaviorProfile.CheckmateChance
         )
         {
             _logger.LogInformation("Playing missable checkmate");
-            return Softmax(missableCheckmates, board, endgameFactor);
+            return Softmax(classifiedMoves.MissableCheckmates, board, endgameFactor);
         }
 
-        (List<CandidateBotMove> tactics, List<CandidateBotMove> nonTactics) = OrderInto(
-            nonCheckmates,
-            move =>
-                move.MoveEval.EvalForBot - lastEval > _behaviorProfile.TacticalThreshold
-                && (!move.IsCapturingHanging || move.CausesForcedMove || move.IsMultiStep)
-        );
-        if (tactics.Count == moves.Count)
+        if (classifiedMoves.Tactics.Count == allMoves.Count)
         {
             _logger.LogInformation("Playing tactic because all moves are tactics");
-            return SoftmaxTactics(tactics, board, endgameFactor);
+            return SoftmaxTactics(classifiedMoves.Tactics, board, endgameFactor);
         }
 
-        if (TrySoftmaxTactics(tactics, board, endgameFactor, out var tactic))
+        if (TrySoftmaxTactics(classifiedMoves.Tactics, board, endgameFactor, out var tactic))
         {
             return tactic;
         }
 
-        (List<CandidateBotMove> nonBlunders, List<CandidateBotMove> blunders) = OrderInto(
-            nonTactics,
-            move =>
-                move.MoveEval.EvalForBot - lastEval > _behaviorProfile.BlunderThreshold
-                && !move.IsHang
-        );
-
-        List<CandidateBotMove> obviousMoves =
-        [
-            .. nonBlunders.Where(move => _behaviorProfile.ObviousMovePredicate(move)),
-        ];
-        if (obviousMoves.Count > 0)
+        if (classifiedMoves.ObviousMoves.Count > 0)
         {
             _logger.LogInformation("Playing obvious move");
-            return Softmax(obviousMoves, board, endgameFactor);
+            return Softmax(classifiedMoves.ObviousMoves, board, endgameFactor);
         }
 
-        List<CandidateBotMove> missableBlunders = [.. blunders.Where(move => !move.IsHang)];
         if (
             board.Moves.Count > 10
-            && missableBlunders.Count > 0
+            && classifiedMoves.MissableBlunders.Count > 0
             && _randomProvider.NextDouble() > _behaviorProfile.BlunderChance
         )
         {
             _logger.LogInformation("Playing missable blunder");
-            return Softmax(missableBlunders, board, endgameFactor);
+            return Softmax(classifiedMoves.MissableBlunders, board, endgameFactor);
         }
 
         Dictionary<BotMoveCategory, List<CandidateBotMove>> categoryMap = new()
         {
-            [BotMoveCategory.NonBlunder] = nonBlunders,
-            [BotMoveCategory.MissableBlunder] = missableBlunders,
-            [BotMoveCategory.Tactic] = tactics,
-            [BotMoveCategory.NonTactic] = nonTactics,
+            [BotMoveCategory.Tactic] = classifiedMoves.Tactics,
+            [BotMoveCategory.MissableBlunder] = classifiedMoves.MissableBlunders,
+            [BotMoveCategory.NormalMove] = classifiedMoves.NormalMoves,
         };
 
         foreach (var category in _behaviorProfile.FinalDecisionOrder)
@@ -220,7 +187,7 @@ public class BotDecisionService(
         }
 
         _logger.LogInformation("Shouldn't happen: softmax all moves");
-        return Softmax(moves, board, endgameFactor);
+        return Softmax(allMoves, board, endgameFactor);
     }
 
     private List<CandidateBotMove> ApplyMoveFilter(List<CandidateBotMove> moves)
@@ -352,29 +319,6 @@ public class BotDecisionService(
             IsMultiStep: isMultiStep,
             PlayabilityEval: playabilityEval
         );
-    }
-
-    private static (List<T> match, List<T> fail) OrderInto<T>(
-        IEnumerable<T> source,
-        Func<T, bool> predicate
-    )
-    {
-        List<T> match = [];
-        List<T> fail = [];
-
-        foreach (var item in source)
-        {
-            if (predicate(item))
-            {
-                match.Add(item);
-            }
-            else
-            {
-                fail.Add(item);
-            }
-        }
-
-        return (match, fail);
     }
 
     private MoveEvaluation Softmax(
