@@ -38,7 +38,14 @@ public static class AggressionEvaluator
     {
         int score = 0;
 
-        UInt128 pieces = board.BitboardForFriendOf(color);
+        UInt128 pieces =
+            board.BitboardFor(PieceType.Horsey, color)
+            | board.BitboardFor(PieceType.Bishop, color)
+            | board.BitboardFor(PieceType.Checker, color)
+            | board.BitboardFor(PieceType.Rook, color)
+            | board.BitboardFor(PieceType.Queen, color)
+            | board.BitboardFor(PieceType.Knook, color)
+            | board.BitboardFor(PieceType.Antiqueen, color);
         while (pieces != 0)
         {
             byte square = BitboardHelpers.BitScanForward(ref pieces);
