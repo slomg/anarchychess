@@ -89,6 +89,7 @@ public class BotGrainTests : BaseOrleansIntegrationTest
             _botServiceMock,
             ApiTestBase.Scope.ServiceProvider.GetRequiredService<IRandomProvider>(),
             ApiTestBase.Scope.ServiceProvider.GetRequiredService<IBotHeuristics>(),
+            ApiTestBase.Scope.ServiceProvider.GetRequiredService<IMoveClassifier>(),
             ApiTestBase.Scope.ServiceProvider.GetRequiredService<ILogger<BotDecisionService>>()
         );
         ApiTestBase.Scope.ServiceProvider.GetRequiredService<IBotDecisionServiceFactory>();
