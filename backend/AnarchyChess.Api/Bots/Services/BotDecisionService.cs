@@ -469,7 +469,7 @@ public class BotDecisionService(
         else if (complexTactics.Count == 0)
         {
             _logger.LogInformation("Playing simple tactic beacuse no simple tactics");
-            return Softmax(complexTactics, board, endgameFactor);
+            return Softmax(simpleTactics, board, endgameFactor);
         }
 
         bool playSimple = _randomProvider.NextDouble() > _behaviorProfile.SimpleTacticChance;
