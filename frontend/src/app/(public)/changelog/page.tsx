@@ -35,7 +35,7 @@ export default function ChangeLogPage() {
 
             <ChangeLogMonthDivider date="October 2026" />
 
-            <ChangeLogCard type={ChangeLogType.FIX} date="July 18">
+            <ChangeLogCard type={ChangeLogType.FIX} date="October 16">
                 Fix discord SSO not working
             </ChangeLogCard>
 
