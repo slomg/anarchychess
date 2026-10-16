@@ -33,6 +33,12 @@ export default function ChangeLogPage() {
                 </Link>
             </section>
 
+            <ChangeLogMonthDivider date="October 2026" />
+
+            <ChangeLogCard type={ChangeLogType.FIX} date="July 18">
+                Fix discord SSO not working
+            </ChangeLogCard>
+
             <ChangeLogMonthDivider date="July 2026" />
 
             <ChangeLogCard type={ChangeLogType.FIX} date="July 18">
