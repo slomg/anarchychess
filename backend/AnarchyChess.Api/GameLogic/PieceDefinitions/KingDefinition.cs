@@ -10,15 +10,17 @@ public class KingDefinition : IPieceDefinition
 
     private readonly IPieceMovementRule[] _behaviours =
     [
-        new CaptureRule(
-            new StepBehaviour(new Offset(X: 0, Y: 1)),
-            new StepBehaviour(new Offset(X: 0, Y: -1)),
-            new StepBehaviour(new Offset(X: 1, Y: 1)),
-            new StepBehaviour(new Offset(X: 1, Y: 0)),
-            new StepBehaviour(new Offset(X: 1, Y: -1)),
-            new StepBehaviour(new Offset(X: -1, Y: 1)),
-            new StepBehaviour(new Offset(X: -1, Y: 0)),
-            new StepBehaviour(new Offset(X: -1, Y: -1))
+        new LaBastardaRule(
+            new CaptureRule(
+                new StepBehaviour(new Offset(X: 0, Y: 1)),
+                new StepBehaviour(new Offset(X: 0, Y: -1)),
+                new StepBehaviour(new Offset(X: 1, Y: 1)),
+                new StepBehaviour(new Offset(X: 1, Y: 0)),
+                new StepBehaviour(new Offset(X: 1, Y: -1)),
+                new StepBehaviour(new Offset(X: -1, Y: 1)),
+                new StepBehaviour(new Offset(X: -1, Y: 0)),
+                new StepBehaviour(new Offset(X: -1, Y: -1))
+            )
         ),
         new CastleRule(),
         new HyperAcceleratedBongcloudRule(),

@@ -17,19 +17,7 @@ public sealed class BitKingDefinition : IBitPieceDefinition
         ref int moveCount
     )
     {
-        UInt128 friendlyPieces = board.BitboardForFriendOf(piece.Color);
-
-        UInt128 attacks = PieceMasks.AdjacentMasks[position];
-        attacks &= ~friendlyPieces;
-
-        BitboardHelpers.CreateMoveFromAttacks(
-            position,
-            piece,
-            attacks,
-            board.Occupancy,
-            moves,
-            ref moveCount
-        );
+        GenerateLaBastardaMoves(board, piece, position, moves, ref moveCount);
         GenerateCastleMovesForColor(board, piece, position, moves, ref moveCount);
     }
 
@@ -162,5 +150,284 @@ public sealed class BitKingDefinition : IBitPieceDefinition
             SpecialMoveType = castleInfo.MoveType,
         };
         moves[moveCount++] = move;
+    }
+
+    private static void GenerateLaBastardaMoves(
+        BitBoard board,
+        BitPiece piece,
+        byte position,
+        Span<BitMove> moves,
+        ref int moveCount
+    )
+    {
+        UInt128 friendlyPieces = board.BitboardForFriendOf(piece.Color);
+        UInt128 attacks = PieceMasks.AdjacentMasks[position] & ~friendlyPieces;
+        UInt128 positionBit = UInt128.One << position;
+        UInt128 validQueens =
+            board.BitboardFor(
+                PieceType.Queen,
+                piece.Color == BitPieceColor.White ? BitPieceColor.Black : BitPieceColor.White
+            ) & ~board.StunnedPieces;
+        var topLeftMask = (positionBit & BitboardConstants.TopLeftEdgeExcludeMask) << 9;
+        var topMask = (positionBit & BitboardConstants.TopEdgeExcludeMask) << 10;
+        var topRightMask = (positionBit & BitboardConstants.TopRightEdgeExcludeMask) << 11;
+        var leftMask = (positionBit & BitboardConstants.LeftEdgeExcludeMask) >> 1;
+        var rightMask = (positionBit & BitboardConstants.RightEdgeExcludeMask) << 1;
+        var bottomLeftMask = (positionBit & BitboardConstants.BottomLeftEdgeExcludeMask) >> 11;
+        var bottomMask = (positionBit & BitboardConstants.BottomEdgeExcludeMask) >> 10;
+        var bottomRightMask = (positionBit & BitboardConstants.BottomRightEdgeExcludeMask) >> 9;
+        if ((topLeftMask & attacks) != 0)
+        {
+            if (
+                (
+                    validQueens
+                    & (topRightMask | rightMask | bottomLeftMask | bottomMask | bottomRightMask)
+                ) != 0
+            )
+            {
+                GenerateLaBastardaMove(
+                    board,
+                    piece,
+                    position,
+                    (byte)(position + 9),
+                    moves,
+                    ref moveCount
+                );
+            }
+            else
+            {
+                GenerateRegularKingMove(
+                    board,
+                    piece,
+                    position,
+                    (byte)(position + 9),
+                    moves,
+                    ref moveCount
+                );
+            }
+        }
+        if ((topRightMask & attacks) != 0)
+        {
+            if (
+                (
+                    validQueens
+                    & (topLeftMask | leftMask | bottomLeftMask | bottomMask | bottomRightMask)
+                ) != 0
+            )
+            {
+                GenerateLaBastardaMove(
+                    board,
+                    piece,
+                    position,
+                    (byte)(position + 11),
+                    moves,
+                    ref moveCount
+                );
+            }
+            else
+            {
+                GenerateRegularKingMove(
+                    board,
+                    piece,
+                    position,
+                    (byte)(position + 11),
+                    moves,
+                    ref moveCount
+                );
+            }
+        }
+        if ((bottomLeftMask & attacks) != 0)
+        {
+            if (
+                (validQueens & (bottomRightMask | rightMask | topLeftMask | topMask | topRightMask))
+                != 0
+            )
+            {
+                GenerateLaBastardaMove(
+                    board,
+                    piece,
+                    position,
+                    (byte)(position - 11),
+                    moves,
+                    ref moveCount
+                );
+            }
+            else
+            {
+                GenerateRegularKingMove(
+                    board,
+                    piece,
+                    position,
+                    (byte)(position - 11),
+                    moves,
+                    ref moveCount
+                );
+            }
+        }
+        if ((bottomRightMask & attacks) != 0)
+        {
+            if (
+                (validQueens & (bottomLeftMask | leftMask | topLeftMask | topMask | topRightMask))
+                != 0
+            )
+            {
+                GenerateLaBastardaMove(
+                    board,
+                    piece,
+                    position,
+                    (byte)(position - 9),
+                    moves,
+                    ref moveCount
+                );
+            }
+            else
+            {
+                GenerateRegularKingMove(
+                    board,
+                    piece,
+                    position,
+                    (byte)(position - 9),
+                    moves,
+                    ref moveCount
+                );
+            }
+        }
+        if ((topMask & attacks) != 0)
+        {
+            if ((validQueens & (bottomLeftMask | bottomMask | bottomRightMask)) != 0)
+            {
+                GenerateLaBastardaMove(
+                    board,
+                    piece,
+                    position,
+                    (byte)(position + 10),
+                    moves,
+                    ref moveCount
+                );
+            }
+            else
+            {
+                GenerateRegularKingMove(
+                    board,
+                    piece,
+                    position,
+                    (byte)(position + 10),
+                    moves,
+                    ref moveCount
+                );
+            }
+        }
+        if ((leftMask & attacks) != 0)
+        {
+            if ((validQueens & (topRightMask | rightMask | bottomRightMask)) != 0)
+            {
+                GenerateLaBastardaMove(
+                    board,
+                    piece,
+                    position,
+                    (byte)(position - 1),
+                    moves,
+                    ref moveCount
+                );
+            }
+            else
+            {
+                GenerateRegularKingMove(
+                    board,
+                    piece,
+                    position,
+                    (byte)(position - 1),
+                    moves,
+                    ref moveCount
+                );
+            }
+        }
+        if ((rightMask & attacks) != 0)
+        {
+            if ((validQueens & (topLeftMask | leftMask | bottomLeftMask)) != 0)
+            {
+                GenerateLaBastardaMove(
+                    board,
+                    piece,
+                    position,
+                    (byte)(position + 1),
+                    moves,
+                    ref moveCount
+                );
+            }
+            else
+            {
+                GenerateRegularKingMove(
+                    board,
+                    piece,
+                    position,
+                    (byte)(position + 1),
+                    moves,
+                    ref moveCount
+                );
+            }
+        }
+        if ((bottomMask & attacks) != 0)
+        {
+            if ((validQueens & (topLeftMask | topMask | topRightMask)) != 0)
+            {
+                GenerateLaBastardaMove(
+                    board,
+                    piece,
+                    position,
+                    (byte)(position - 10),
+                    moves,
+                    ref moveCount
+                );
+            }
+            else
+            {
+                GenerateRegularKingMove(
+                    board,
+                    piece,
+                    position,
+                    (byte)(position - 10),
+                    moves,
+                    ref moveCount
+                );
+            }
+        }
+    }
+
+    private static void GenerateLaBastardaMove(
+        BitBoard board,
+        BitPiece piece,
+        byte from,
+        byte to,
+        Span<BitMove> moves,
+        ref int moveCount
+    )
+    {
+        moves[moveCount++] = new BitMove()
+        {
+            From = from,
+            To = to,
+            Piece = piece,
+            CapturesMask = (UInt128.One << to) & board.BitboardForEnemyOf(piece.Color),
+            SpecialMoveType = SpecialMoveType.LaBastarda,
+        };
+    }
+
+    private static void GenerateRegularKingMove(
+        BitBoard board,
+        BitPiece piece,
+        byte from,
+        byte to,
+        Span<BitMove> moves,
+        ref int moveCount
+    )
+    {
+        moves[moveCount++] = new BitMove()
+        {
+            From = from,
+            To = to,
+            Piece = piece,
+            CapturesMask = (UInt128.One << to) & board.BitboardForEnemyOf(piece.Color),
+        };
     }
 }

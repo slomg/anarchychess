@@ -81,6 +81,16 @@ public partial class BitBoard
             case SpecialMoveType.QueentumTunnel:
                 SpawnPiece(PieceType.Antiqueen, move.Piece.Color, at: move.From);
                 break;
+
+            case SpecialMoveType.LaBastarda:
+                SpawnPiece(
+                    PieceType.UnderagePawn,
+                    move.Piece.Color == BitPieceColor.White
+                        ? BitPieceColor.Black
+                        : BitPieceColor.White,
+                    at: move.From
+                );
+                break;
         }
     }
 

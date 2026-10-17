@@ -1,4 +1,5 @@
-﻿using AnarchyChess.Api.TestInfrastructure.Factories;
+﻿using AnarchyChess.Api.GameLogic.Models;
+using AnarchyChess.Api.TestInfrastructure.Factories;
 using AnarchyChess.Api.TestInfrastructure.Fakes;
 using AnarchyChess.EngineShared;
 
@@ -229,6 +230,72 @@ public class KingTestData : TheoryData<PieceTestCase>
                 .WithDescription(
                     "Bishop would be self captured if castled, but another piece is blocking"
                 )
+        );
+        var blackQueen = PieceFactory.Black(PieceType.Queen);
+        MoveTestCase LaBastarda = new(
+            "e5",
+            Spawns: [new PieceSpawn(PieceType.UnderagePawn, GameColor.Black, new("e5"))],
+            SpecialMoveType: SpecialMoveType.LaBastarda
+        );
+        Add(
+            PieceTestCase
+                .From("e5", whiteKing)
+                .WithPieceAt("f5", blackQueen)
+                .GoesTo(LaBastarda with { To = "d4" })
+                .GoesTo(LaBastarda with { To = "d5" })
+                .GoesTo(LaBastarda with { To = "d6" })
+                .GoesTo("e4", "e6", "f4", "f6")
+                .GoesTo("f5", captures: ["f5"])
+                .WithDescription("King triggers LaBastarda with a single queen on left")
+        );
+        LaBastarda = LaBastarda with
+        {
+            Spawns = [new PieceSpawn(PieceType.UnderagePawn, GameColor.Black, new("a5"))],
+        };
+        Add(
+            PieceTestCase
+                .From("a5", whiteKing)
+                .WithPieceAt("a6", blackQueen)
+                .GoesTo(LaBastarda with { To = "a4" })
+                .GoesTo(LaBastarda with { To = "b4" })
+                .GoesTo("b5", "b6")
+                .GoesTo("a6", captures: ["a6"])
+                .WithDescription(
+                    "King triggers LaBastarda with a single queen on top while near left wall"
+                )
+        );
+        LaBastarda = LaBastarda with
+        {
+            Spawns = [new PieceSpawn(PieceType.UnderagePawn, GameColor.Black, new("d10"))],
+        };
+        Add(
+            PieceTestCase
+                .From("d10", whiteKing)
+                .WithPieceAt("e9", blackQueen)
+                .GoesTo(LaBastarda with { To = "c9" })
+                .GoesTo(LaBastarda with { To = "c10" })
+                .GoesTo("d9", "e10")
+                .GoesTo("e9", captures: ["e9"])
+                .WithDescription("King triggers LaBastarda on top wall with bottom right queen")
+        );
+        LaBastarda = LaBastarda with
+        {
+            Spawns = [new PieceSpawn(PieceType.UnderagePawn, GameColor.Black, new("f5"))],
+        };
+        Add(
+            PieceTestCase
+                .From("f5", whiteKing)
+                .WithPieceAt("e5", blackQueen)
+                .WithPieceAt("g4", blackQueen)
+                .GoesTo(LaBastarda with { To = "e4" })
+                .GoesTo(LaBastarda with { To = "e5", Captures = ["e5"] })
+                .GoesTo(LaBastarda with { To = "e6" })
+                .GoesTo(LaBastarda with { To = "f6" })
+                .GoesTo(LaBastarda with { To = "g6" })
+                .GoesTo(LaBastarda with { To = "g5" })
+                .GoesTo(LaBastarda with { To = "g4", Captures = ["g4"] })
+                .GoesTo("f4")
+                .WithDescription("King triggers LaBastarda with a multiple queens")
         );
     }
 }
