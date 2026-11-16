@@ -146,7 +146,7 @@ builder.Services.AddCors(options =>
     );
 });
 
-builder.Services.AddSignalR().AddPostgresBackplane(appSettings.Secrets.DatabaseConnString);
+builder.Services.AddSignalR();
 
 #region Rate Limit
 builder.Services.AddRateLimiter(options =>
